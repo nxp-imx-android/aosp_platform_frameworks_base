@@ -350,6 +350,13 @@ flag {
 }
 
 flag {
+    name: "native_app_zygote"
+    namespace: "system_performance"
+    description: "Enable support for the native-only variant of App Zygote"
+    bug: "442732151"
+}
+
+flag {
     name: "native_framework_prototype"
     namespace: "system_performance"
     description: "Enable support for the native framework prototype"
