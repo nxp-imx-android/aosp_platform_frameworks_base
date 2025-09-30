@@ -627,13 +627,16 @@ not_valid_surface:
         _exceptionMessage = "Make sure the SurfaceView or associated SurfaceHolder has a valid Surface";
         goto exit;
     }
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_SURFACETEXTURE)
+    window = android::SurfaceTexture_getSurface(_env, win);
+#else
     producer = android::SurfaceTexture_getProducer(_env, win);
 
     if (producer == NULL)
         goto not_valid_surface;
 
     window = android::sp<android::Surface>::make(producer, true);
-
+#endif
     if (window == NULL)
         goto not_valid_surface;
 
