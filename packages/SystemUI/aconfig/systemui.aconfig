@@ -2114,3 +2114,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_lockscreen_blur"
+    namespace: "systemui"
+    description: "Enable blur on more lockscreen surfaces"
+    bug: "444141641"
+}
