@@ -80,6 +80,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.InputConnectionCommandHeader;
 import com.android.server.LocalServices;
+import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -258,6 +259,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 return virtualDisplay;
             });
             mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
+
+            if (Flags.computerControlShowTouches()) {
+                InputManagerInternal inputManagerInternal = LocalServices.getService(
+                        InputManagerInternal.class);
+                inputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
+                        true /* enabled */);
+            }
 
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);

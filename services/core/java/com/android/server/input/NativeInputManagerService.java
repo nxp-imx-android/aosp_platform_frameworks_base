@@ -162,7 +162,9 @@ interface NativeInputManagerService {
 
     void setTouchpadsEnabled(boolean enabled);
 
-    void setShowTouches(boolean enabled);
+    void setShowTouchesEnabled(boolean enabled);
+
+    void setForceShowTouchesOnDisplay(int displayId, boolean enabled);
 
     void setNonInteractiveDisplays(int[] displayIds);
 
@@ -508,7 +510,10 @@ interface NativeInputManagerService {
         public native void setTouchpadsEnabled(boolean enabled);
 
         @Override
-        public native void setShowTouches(boolean enabled);
+        public native void setShowTouchesEnabled(boolean enabled);
+
+        @Override
+        public native void setForceShowTouchesOnDisplay(int displayId, boolean enabled);
 
         @Override
         public native void setNonInteractiveDisplays(int[] displayIds);

@@ -100,6 +100,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.server.LocalServices;
+import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.testutils.StubTransaction;
@@ -163,6 +164,8 @@ public class ComputerControlSessionTest {
     private UserManagerInternal mUserManagerInternal;
     @Mock
     private InputMethodManagerInternal mInputMethodManagerInternal;
+    @Mock
+    private InputManagerInternal mInputManagerInternal;
     @Mock
     private ViewConfiguration mViewConfiguration;
     @Mock
@@ -230,6 +233,7 @@ public class ComputerControlSessionTest {
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
         LocalServices.addService(InputMethodManagerInternal.class, mInputMethodManagerInternal);
+        LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
         ViewConfiguration.setInstanceForTesting(mContext, mViewConfiguration);
 
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
@@ -380,6 +384,13 @@ public class ComputerControlSessionTest {
     public void createSession_disablesAnimationsOnDisplay() {
         createComputerControlSession(mDefaultParams);
         verify(mWindowManagerInternal).setAnimationsDisabledForDisplay(VIRTUAL_DISPLAY_ID, true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_SHOW_TOUCHES)
+    public void createSession_setsShowTouchesOnDisplay() {
+        createComputerControlSession(mDefaultParams);
+        verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, true);
     }
 
     @Test

@@ -316,3 +316,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "computer_control_show_touches"
+    namespace: "virtual_devices"
+    description: "Show touch indicator in ComputerControl displays"
+    bug: "444467476"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
