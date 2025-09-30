@@ -49,6 +49,7 @@ import android.util.IntArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
+import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -209,7 +210,9 @@ class BackgroundLaunchProcessController {
                     return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token")
                             .allowNewTask();
                 }
-                binderTokens.add(backgroundStartPrivileges.getOriginatingToken());
+                if (!Flags.balIgnoreCallback()) {
+                    binderTokens.add(backgroundStartPrivileges.getOriginatingToken());
+                }
             }
             if (binderTokens.isEmpty()) {
                 // no tokens to allow anything
