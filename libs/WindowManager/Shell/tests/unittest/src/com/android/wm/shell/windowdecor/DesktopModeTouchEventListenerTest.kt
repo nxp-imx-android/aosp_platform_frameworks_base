@@ -177,7 +177,7 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
             flushAll()
 
             verify(mockWindowDecorationActions)
-                .onClose(taskId = decor.defaultWindowDecoration.taskInfo.taskId)
+                .onClose(taskInfo = decor.defaultWindowDecoration.taskInfo)
         }
 
     @Test
@@ -232,7 +232,7 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
             flushAll()
 
             verify(mockWindowDecorationActions)
-                .onClose(taskId = decor.defaultWindowDecoration.taskInfo.taskId)
+                .onClose(taskInfo = decor.defaultWindowDecoration.taskInfo)
         }
 
     @Test

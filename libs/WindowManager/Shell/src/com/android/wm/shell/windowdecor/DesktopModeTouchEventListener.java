@@ -206,7 +206,7 @@ public class DesktopModeTouchEventListener
         }
         final int id = v.getId();
         if (id == R.id.close_window) {
-            mWindowDecorationActions.onClose(mTaskId);
+            mWindowDecorationActions.onClose(decoration.getTaskInfo());
         } else if (id == R.id.back_button) {
             mTaskOperations.injectBackKey(decoration.getTaskInfo().displayId);
         } else if (id == R.id.caption_handle || id == R.id.open_menu_button) {

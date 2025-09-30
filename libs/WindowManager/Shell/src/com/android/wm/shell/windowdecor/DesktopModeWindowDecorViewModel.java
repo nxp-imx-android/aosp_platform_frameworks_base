@@ -1239,16 +1239,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mCaptionTouchStatusListener = l;
     }
 
-    private void onCloseTask(int taskId) {
-        final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
-        if (decoration == null) {
-            ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                    "%s: onCloseTask(taskId=%d): decoration is null, ignoring", TAG, taskId);
-            return;
-        }
-        closeTask(decoration.getTaskInfo());
-    }
-
     /**
      * Closes a task.
      * This method closes a task as if the close button on the window decor is clicked.
@@ -2136,8 +2126,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
 
         @Override
-        public void onClose(int taskId) {
-            mViewModel.onCloseTask(taskId);
+        public void onClose(@NonNull RunningTaskInfo taskInfo) {
+            mViewModel.closeTask(taskInfo);
         }
 
         @Override

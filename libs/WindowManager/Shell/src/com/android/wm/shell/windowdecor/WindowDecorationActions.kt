@@ -34,7 +34,7 @@ interface WindowDecorationActions {
     fun onMinimize(taskInfo: RunningTaskInfo)
 
     /** Close the task */
-    fun onClose(taskId: Int)
+    fun onClose(taskInfo: RunningTaskInfo)
 
     /**
      * Moves task to immersive mode or exits immersive and restores task to previous size if task is
