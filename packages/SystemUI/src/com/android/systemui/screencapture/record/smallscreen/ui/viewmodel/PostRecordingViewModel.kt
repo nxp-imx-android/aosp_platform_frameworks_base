@@ -22,7 +22,6 @@ import android.net.Uri
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
@@ -44,9 +43,7 @@ constructor(
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     fun retake() {
-        screenCaptureUiInteractor.show(
-            ScreenCaptureUiParameters(screenCaptureType = ScreenCaptureType.RECORD)
-        )
+        screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())
     }
 
     fun edit() {

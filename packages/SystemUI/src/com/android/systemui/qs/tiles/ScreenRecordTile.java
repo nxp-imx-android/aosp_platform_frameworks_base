@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.media.projection.StopReason;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.UserHandle;
 import android.service.quicksettings.Tile;
 import android.text.TextUtils;
 import android.util.Log;
@@ -50,7 +49,6 @@ import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType;
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters;
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor;
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor;
@@ -132,19 +130,9 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
         if (ScreenCaptureRecordFeaturesInteractor.INSTANCE.getShouldShowNewToolbar()) {
-            UserHandle userHandle = UserHandle.of(getCurrentTileUser());
-
             mUiHandler.post(() -> mActivityStarter.executeRunnableDismissingKeyguard(
                     () -> mScreenCaptureUiInteractor.show(
-                            new ScreenCaptureUiParameters(
-                                    /* screenCaptureType= */ ScreenCaptureType.RECORD,
-                                    /* isUserConsentRequired= */ false,
-                                    /* resultReceiver= */ null,
-                                    /* onApprovedCallback= */ null,
-                                    /* mediaProjection= */ null,
-                                    /* hostAppUserHandle= */ userHandle,
-                                    /* hostAppUid= */ 0
-                            )
+                            new ScreenCaptureUiParameters.Record()
                     ),
                     /* cancelAction= */ null,
                     /* dismissShade= */ true,

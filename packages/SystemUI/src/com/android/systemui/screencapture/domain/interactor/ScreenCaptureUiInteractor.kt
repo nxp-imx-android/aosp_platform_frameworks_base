@@ -77,7 +77,7 @@ constructor(
     fun onScreenSharingApproved(taskId: Int) {
         val uiState = repository.uiState(ScreenCaptureType.SHARE_SCREEN).value
         if (uiState is ScreenCaptureUiState.Visible) {
-            val parameters = uiState.parameters
+            val parameters = uiState.parameters as? ScreenCaptureUiParameters.ShareScreen ?: return
             parameters.onApprovedCallback?.invoke(taskId)
             repository.updateStateForType(ScreenCaptureType.SHARE_SCREEN) {
                 ScreenCaptureUiState.Invisible

@@ -47,7 +47,7 @@ constructor(
         repository
             .appContentsFor(
                 packageName = packageName,
-                user = parameters.hostAppUserHandle,
+                user = (parameters as ScreenCaptureUiParameters.ShareScreen).hostAppUserHandle,
                 thumbnailWidthPx = thumbnailWidthPx,
                 thumbnailHeightPx = thumbnailHeightPx,
             )

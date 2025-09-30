@@ -27,7 +27,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
-import com.android.systemui.screencapture.common.shared.model.recordScreenCaptureUiParameters
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
@@ -49,7 +48,7 @@ class ScreenCaptureComponentInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             testComponentLifecycle(
                 screenCaptureType = ScreenCaptureType.RECORD,
-                parameters = recordScreenCaptureUiParameters,
+                parameters = ScreenCaptureUiParameters.Record(),
                 startCapture = {
                     screenRecordingServiceInteractor.startRecording(
                         ScreenRecordingParameters(
