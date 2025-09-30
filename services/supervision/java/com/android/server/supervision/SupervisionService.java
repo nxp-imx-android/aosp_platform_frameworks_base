@@ -41,6 +41,7 @@ import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
+import android.app.supervision.Policy;
 import android.app.supervision.SupervisionManager;
 import android.app.supervision.SupervisionManagerInternal;
 import android.app.supervision.SupervisionRecoveryInfo;
@@ -326,6 +327,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 record.unlinkToDeath();
             }
         }
+    }
+
+    @Override
+    public List<Policy> getPolicies(@UserIdInt int userId) {
+        // TODO(b/446218039): Implement list fetching.
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void setPolicy(@UserIdInt int userId, @NonNull Policy policy) {
+        // TODO(b/446218039): Implement policy verification and storage.
     }
 
     /**
