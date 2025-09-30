@@ -40,6 +40,8 @@ constructor(
                 initialValue = ScreenCaptureUiState.Invisible,
             )
 
+    val isLargeScreen: Boolean? by interactor.isLargeScreen.hydratedStateOf(null)
+
     fun dismiss() {
         interactor.hide(type)
     }
