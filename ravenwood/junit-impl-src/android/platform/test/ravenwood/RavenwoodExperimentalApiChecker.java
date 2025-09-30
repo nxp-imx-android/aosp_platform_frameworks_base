@@ -66,7 +66,7 @@ public class RavenwoodExperimentalApiChecker {
         if (isExperimentalApiEnabled()) {
             return;
         }
-        throw new RavenwoodUnsupportedApiException().skipStackTraces(skipStackTraces);
+        throw new RavenwoodUnsupportedApiException().skipStackTracesForReason(skipStackTraces);
     }
 
 

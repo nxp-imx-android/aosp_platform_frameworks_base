@@ -17,6 +17,8 @@
 package android.platform.test.ravenwood;
 
 import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.isExperimentalApiEnabled;
+import static android.platform.test.ravenwood.RavenwoodProxyHelper.sDefaultHandler;
+import static android.platform.test.ravenwood.RavenwoodProxyHelper.sNotImplementedHandler;
 
 import android.app.IActivityClientController;
 import android.app.IActivityTaskManager;
@@ -49,6 +51,7 @@ import com.android.server.compat.PlatformCompatNative;
 import com.android.server.utils.TimingsTraceAndSlog;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 public class RavenwoodSystemServer {
@@ -152,10 +155,8 @@ public class RavenwoodSystemServer {
 
             final String serviceName = sKnownServices.get(serviceClass);
             if (serviceName == null) {
-                throw new RuntimeException("The requested service " + serviceClass
-                        + " is not yet supported under the Ravenwood deviceless testing "
-                        + "environment; consider requesting support from the API owner or "
-                        + "consider using Mockito; more details at go/ravenwood");
+                throw new RavenwoodUnsupportedApiException("The requested service " + serviceClass)
+                        .setReason(serviceClass.getName());
             }
 
             // Start service and then depth-first traversal of any dependencies
@@ -172,9 +173,10 @@ public class RavenwoodSystemServer {
 
         public static final BinderHelper<IUserManager> sIBinder =
                 new BinderHelper<>(IUserManager.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "getUserRestrictionSources" -> Collections.emptyList();
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
     }
 
@@ -186,14 +188,16 @@ public class RavenwoodSystemServer {
 
         public static final BinderHelper<IDisplayManager> sIBinder =
                 new BinderHelper<>(IDisplayManager.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                        case "getDisplayInfo":
-                            return new DisplayInfo();
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "getDisplayInfo" -> new DisplayInfo();
+                        case "getOverlaySupport",
+                             "getPreferredWideGamutColorSpaceId",
+                             "registerCallbackWithEventMask" ->
+                                sDefaultHandler.invoke(proxy, method, args);
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
     }
-
 
     /**
      * Minimal implementation of {@link IInputManager} to allow experimental APIs to work.
@@ -212,13 +216,15 @@ public class RavenwoodSystemServer {
 
         public static final BinderHelper<IInputManager> sIBinder =
                 new BinderHelper<>(IInputManager.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                        case "getInputDeviceIds":
-                            return new int[]{VIRTUAL_KEYBOARD};
-                        case "getInputDevice":
-                            return getDefaultInputDevice(); // TODO Cache it?
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "getInputDeviceIds" -> new int[]{VIRTUAL_KEYBOARD};
+                        case "getInputDevice" -> getDefaultInputDevice(); // TODO Cache it?
+                        case "getVelocityTrackerStrategy",
+                             "injectInputEventToTarget",
+                             "registerInputDevicesChangedListener" ->
+                                sDefaultHandler.invoke(proxy, method, args);
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
     }
 
@@ -230,11 +236,15 @@ public class RavenwoodSystemServer {
 
         public static final BinderHelper<IWindowManager> sIBinder =
                 new BinderHelper<>(IWindowManager.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                        case "openSession":
-                            return IWindowSession_ravenwood.sIBinder.getObject();
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "openSession" -> IWindowSession_ravenwood.sIBinder.getObject();
+                        case "getWindowInsets",
+                             "hasNavigationBar",
+                             "setInTouchModeOnAllDisplays",
+                             "syncInputTransactions" ->
+                                sDefaultHandler.invoke(proxy, method, args);
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
     }
 
@@ -246,15 +256,16 @@ public class RavenwoodSystemServer {
 
         public static final BinderHelper<IWindowSession> sIBinder =
                 new BinderHelper<>(IWindowSession.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                    case "addToDisplayAsUser":
-                        return 0;
-                    case "setOnBackInvokedCallbackInfo":
-                        return null;
-                    case "relayout":
-                        return 0; //"int Result flags, defined in {@link WindowManagerGlobal}."
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "addToDisplayAsUser",
+                             "onRectangleOnScreenRequested",
+                             "relayout",
+                             "reportSystemGestureExclusionChanged",
+                             "setOnBackInvokedCallbackInfo",
+                             "updateRequestedVisibleTypes" ->
+                                sDefaultHandler.invoke(proxy, method, args);
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
     }
 
@@ -267,21 +278,18 @@ public class RavenwoodSystemServer {
 
         public static final BinderHelper<IActivityClientController> sACC =
                 new BinderHelper<>(IActivityClientController.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                        case "finishActivity":
-                        case "setTaskDescription":
-                            return true;
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "finishActivity", "setTaskDescription" -> true;
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
 
         public static final BinderHelper<IActivityTaskManager> sIBinder =
                 new BinderHelper<>(IActivityTaskManager.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                        case "getActivityClientController":
-                            return sACC.getObject();
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "getActivityClientController" -> sACC.getObject();
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
     }
 
@@ -293,9 +301,13 @@ public class RavenwoodSystemServer {
 
         public static final BinderHelper<IInputMethodManager> sIBinder =
                 new BinderHelper<>(IInputMethodManager.class, (proxy, method, args) -> {
-                    switch (method.getName()) {
-                    }
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
+                    return switch (method.getName()) {
+                        case "addClient",
+                             "getImeTrackerService",
+                             "startInputOrWindowGainedFocus" ->
+                                sDefaultHandler.invoke(proxy, method, args);
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
                 });
     }
 
@@ -306,8 +318,6 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IAutoFillManager_ravenwood";
 
         public static final BinderHelper<IAutoFillManager> sIBinder =
-                new BinderHelper<>(IAutoFillManager.class, (proxy, method, args) -> {
-                    return RavenwoodProxyHelper.sDefaultHandler.invoke(proxy, method, args);
-                });
+                new BinderHelper<>(IAutoFillManager.class, sNotImplementedHandler);
     }
 }

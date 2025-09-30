@@ -15,36 +15,43 @@
  */
 package android.platform.test.ravenwood;
 
-import java.util.Arrays;
-
 public class RavenwoodUnsupportedApiException extends UnsupportedOperationException {
 
     private int mSkipStackTraces = 0;
+    private String mReason = null;
 
     public RavenwoodUnsupportedApiException(String message) {
-        super(message);
-    }
-
-    public RavenwoodUnsupportedApiException() {
-        super("This method is not yet supported under the Ravenwood deviceless testing "
+        super(message + " is not yet supported under the Ravenwood deviceless testing "
                 + "environment; consider requesting support from the API owner or "
                 + "consider using Mockito; more details at go/ravenwood");
     }
 
+    public RavenwoodUnsupportedApiException() {
+        this("This method");
+    }
+
     /**
-     * Sets the number of stack frames to skip when calling {@link #getStackTrace()}.
+     * Sets the number of stack frames to skip when determining the reason.
      */
-    public RavenwoodUnsupportedApiException skipStackTraces(int number) {
+    public RavenwoodUnsupportedApiException skipStackTracesForReason(int number) {
         mSkipStackTraces = number;
         return this;
     }
 
-    @Override
-    public StackTraceElement[] getStackTrace() {
-        var traces = super.getStackTrace();
-        if (mSkipStackTraces > 0) {
-            return Arrays.copyOfRange(traces, mSkipStackTraces, traces.length);
-        }
-        return traces;
+    /**
+     * Set a custom reason for the unsupported API exception.
+     */
+    public RavenwoodUnsupportedApiException setReason(String reason) {
+        mReason = reason;
+        return this;
+    }
+
+    /**
+     * Return the API that causes this exception.
+     */
+    public String getReason() {
+        if (mReason != null) return mReason;
+        var caller = getStackTrace()[mSkipStackTraces];
+        return caller.getClassName() + "#" + caller.getMethodName();
     }
 }
