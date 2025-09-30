@@ -19,9 +19,10 @@ package com.android.systemui.kairos.internal
 import com.android.systemui.kairos.internal.store.Single
 import com.android.systemui.kairos.internal.store.SingletonMapK
 import com.android.systemui.kairos.util.Maybe
-import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.NameData
+import com.android.systemui.kairos.util.map
 import com.android.systemui.kairos.util.maybeOf
+import com.android.systemui.kairos.util.orElseGet
 import com.android.systemui.kairos.util.plus
 
 internal inline fun <A> filterPresentImpl(
@@ -31,11 +32,7 @@ internal inline fun <A> filterPresentImpl(
     DemuxImpl(
             nameData,
             mapImpl(getPulse, nameData + "toSingletonMap") { maybeResult, _ ->
-                if (maybeResult is Present) {
-                    Single(maybeResult.value)
-                } else {
-                    Single<A>()
-                }
+                maybeResult.map { Single<A>(it) }.orElseGet { Single() }
             },
             numKeys = 1,
             storeFactory = SingletonMapK.Factory(),

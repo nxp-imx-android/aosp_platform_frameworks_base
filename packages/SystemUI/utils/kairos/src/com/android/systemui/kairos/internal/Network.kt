@@ -22,8 +22,8 @@ import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.kairos.internal.util.logDuration
 import com.android.systemui.kairos.internal.util.logDurationCoroutine
 import com.android.systemui.kairos.util.Maybe
-import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.maybeOf
+import com.android.systemui.kairos.util.whenPresent
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.ContinuationInterceptor
 import kotlinx.coroutines.CompletableDeferred
@@ -277,10 +277,7 @@ internal class ScheduledAction<T>(
 
     fun completed() {
         if (onResult != null) {
-            when (val result = result) {
-                is Present -> onResult.complete(result.value)
-                else -> {}
-            }
+            result.whenPresent { onResult.complete(it) }
         }
         result = maybeOf()
     }

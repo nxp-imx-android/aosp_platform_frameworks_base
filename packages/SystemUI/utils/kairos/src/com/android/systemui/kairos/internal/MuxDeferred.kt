@@ -29,16 +29,16 @@ import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.kairos.internal.util.hashString
 import com.android.systemui.kairos.internal.util.logDuration
 import com.android.systemui.kairos.util.Maybe
-import com.android.systemui.kairos.util.Maybe.Absent
-import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.NameData
 import com.android.systemui.kairos.util.These
 import com.android.systemui.kairos.util.flatMap
 import com.android.systemui.kairos.util.forceInit
 import com.android.systemui.kairos.util.getMaybe
+import com.android.systemui.kairos.util.map
 import com.android.systemui.kairos.util.maybeFirst
 import com.android.systemui.kairos.util.maybeSecond
 import com.android.systemui.kairos.util.merge
+import com.android.systemui.kairos.util.orElseGet
 import com.android.systemui.kairos.util.orError
 import com.android.systemui.kairos.util.plus
 import com.android.systemui.kairos.util.these
@@ -118,14 +118,10 @@ internal class MuxDeferredNode<W, K, V>(
 
         // TODO: this logic is very similar to what's in MuxPrompt, maybe turn into an inline fun?
 
-        // We have a patch, process additions/updates and removals
         val adds = mutableListOf<Pair<K, EventsImpl<V>>>()
         val removes = mutableListOf<K>()
         patch.forEach { (k, newUpstream) ->
-            when (newUpstream) {
-                is Present -> adds.add(k to newUpstream.value)
-                Absent -> removes.add(k)
-            }
+            newUpstream.map { adds.add(k to it) }.orElseGet { removes.add(k) }
         }
 
         val severed = mutableListOf<NodeConnection<*>>()

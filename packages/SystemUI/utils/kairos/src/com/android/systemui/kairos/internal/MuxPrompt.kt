@@ -25,10 +25,10 @@ import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.kairos.internal.util.hashString
 import com.android.systemui.kairos.internal.util.logDuration
 import com.android.systemui.kairos.util.Maybe
-import com.android.systemui.kairos.util.Maybe.Absent
-import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.NameData
 import com.android.systemui.kairos.util.forceInit
+import com.android.systemui.kairos.util.map
+import com.android.systemui.kairos.util.orElseGet
 import com.android.systemui.kairos.util.plus
 
 internal class MuxPromptNode<W, K, V>(
@@ -84,10 +84,7 @@ internal class MuxPromptNode<W, K, V>(
         val adds = mutableListOf<Pair<K, EventsImpl<V>>>()
         val removes = mutableListOf<K>()
         patch.forEach { (k, newUpstream) ->
-            when (newUpstream) {
-                is Present -> adds.add(k to newUpstream.value)
-                Absent -> removes.add(k)
-            }
+            newUpstream.map { adds.add(k to it) }.orElseGet { removes.add(k) }
         }
 
         val severed = mutableListOf<NodeConnection<*>>()

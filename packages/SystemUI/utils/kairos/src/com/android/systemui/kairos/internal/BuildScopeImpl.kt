@@ -42,8 +42,6 @@ import com.android.systemui.kairos.launchEffect
 import com.android.systemui.kairos.mergeLeft
 import com.android.systemui.kairos.takeUntil
 import com.android.systemui.kairos.util.Maybe
-import com.android.systemui.kairos.util.Maybe.Absent
-import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.NameData
 import com.android.systemui.kairos.util.NameTag
 import com.android.systemui.kairos.util.forceInit
@@ -51,6 +49,7 @@ import com.android.systemui.kairos.util.map
 import com.android.systemui.kairos.util.mapName
 import com.android.systemui.kairos.util.plus
 import com.android.systemui.kairos.util.toNameData
+import com.android.systemui.kairos.util.whenPresent
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
@@ -244,12 +243,10 @@ internal class BuildScopeImpl(
         val subRef = AtomicReference<Maybe<Output<A>>?>(null)
         val childScope: CoroutineScope = coroutineScope.childScope(context)
         val handle = DisposableHandle {
-            subRef.getAndSet(Absent)?.let { output ->
-                if (output is Present) {
+            subRef.getAndSet(Maybe.absent)?.let { output ->
+                output.whenPresent {
                     @Suppress("DeferredResultUnused")
-                    network.transaction("observeEffect cancelled") {
-                        scheduleDeactivation(output.value)
-                    }
+                    network.transaction("observeEffect cancelled") { scheduleDeactivation(it) }
                 }
             }
         }
@@ -257,11 +254,12 @@ internal class BuildScopeImpl(
         val outputNode =
             Output<A>(
                 nameData,
-                onDeath = { subRef.set(Absent) },
+                onDeath = { subRef.set(Maybe.absent) },
                 onEmit = onEmit@{ output ->
-                        if (subRef.get() !is Present) return@onEmit
-                        // Not cancelled, safe to emit]
-                        block(effectScope, output)
+                        subRef.get()?.whenPresent {
+                            // Not cancelled, safe to emit
+                            block(effectScope, output)
+                        }
                     },
             )
         // Defer, in case any EventsLoops / StateLoops still need to be set
