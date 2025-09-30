@@ -5428,6 +5428,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         if (com.android.window.flags.Flags.rankTaskLayerWithWindowLayout()
                 && mRootWindowContainer.mTaskLayersChanged
+                // The later ActivityRecord#setState RESUMED will invoke WindowProcessController's
+                // updateProcessInfo -> prepareOomAdjustment -> rankTaskLayers.
+                && !mTaskSupervisor.hasPendingTopResumedSwitch()
                 && !mWindowManager.mWindowPlacerLocked.isLayoutDeferred()) {
             mRootWindowContainer.rankTaskLayers();
         }
