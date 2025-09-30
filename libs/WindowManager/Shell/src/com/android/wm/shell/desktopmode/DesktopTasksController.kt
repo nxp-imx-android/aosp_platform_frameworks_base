@@ -2373,26 +2373,32 @@ class DesktopTasksController(
             }
         }
 
-        // Return early to let PipScheduler handle exiting PiP via expand in Shell.
-        for (op in wct.hierarchyOps) {
-            if (
-                DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH.isTrue &&
+        val pipTaskComponent = pipTransitionState.getOrNull()?.pipTaskInfo?.baseIntent?.component
+        // If a task was previously in PiP and is being launched in freeform in Desktop mode,
+        // return early to let PipScheduler handle exiting PiP via expand in Shell.
+        if (
+            DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH.isTrue &&
+                pipTaskComponent != null
+        ) {
+            for (op in wct.hierarchyOps) {
+                if (
                     op.type == HIERARCHY_OP_TYPE_PENDING_INTENT &&
-                    op.activityIntent?.component ==
-                        pipTransitionState.getOrNull()?.pipTaskInfo?.baseIntent?.component
-            ) {
-                if (deskId != null && launchingTaskId != null) {
-                    shellTaskOrganizer.getRunningTaskInfo(launchingTaskId)?.let {
-                        addMoveToDeskTaskChanges(wct, it, deskId)
+                        op.activityIntent?.component == pipTaskComponent
+                ) {
+                    if (deskId != null && launchingTaskId != null) {
+                        shellTaskOrganizer.getRunningTaskInfo(launchingTaskId)?.let {
+                            addMoveToDeskTaskChanges(wct, it, deskId)
+                        }
                     }
+                    logV("Scheduling exit PiP via expand on app launch for $pipTaskComponent")
+                    mPipScheduler.scheduleExitPipViaExpand(
+                        /* wasVisible= */ true,
+                        displayId,
+                        bounds,
+                        WINDOWING_MODE_FREEFORM,
+                    )
+                    return Binder()
                 }
-                mPipScheduler.scheduleExitPipViaExpand(
-                    /* wasVisible= */ true,
-                    displayId,
-                    bounds,
-                    WINDOWING_MODE_FREEFORM,
-                )
-                return Binder()
             }
         }
 
