@@ -58,6 +58,7 @@ import com.android.compose.theme.PlatformTheme
 import com.android.compose.theme.colorAttr
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.Flags
+import com.android.systemui.clock.ui.composable.Clock
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
@@ -436,13 +437,36 @@ private fun addStartSideComposable(
                         )
                     }
 
-                if (showDate) {
-                    val clockViewModel =
+                var clockViewModel: ClockViewModel? = null
+                if (showDate || Flags.clockModernization()) {
+                    clockViewModel =
                         rememberViewModel("HomeStatusBar.Clock") {
                             clockViewModelFactory.create(AmPmStyle.Gone)
                         }
+                }
+
+                if (Flags.clockModernization()) {
+                    clockView.visibility = View.GONE
+                    Clock(
+                        clockViewModel = checkNotNull(clockViewModel),
+                        modifier =
+                            Modifier.onGloballyPositioned { coordinates ->
+                                val boundsInWindow = coordinates.boundsInWindow()
+                                val bounds =
+                                    Rect(
+                                        boundsInWindow.left.toInt(),
+                                        boundsInWindow.top.toInt(),
+                                        boundsInWindow.right.toInt(),
+                                        boundsInWindow.bottom.toInt(),
+                                    )
+                                statusBarBoundsViewModel.updateComposeClockBounds(bounds)
+                            },
+                    )
+                }
+
+                if (showDate) {
                     VariableDayDate(
-                        longerDateText = clockViewModel.longerDateText,
+                        longerDateText = checkNotNull(clockViewModel).longerDateText,
                         shorterDateText = clockViewModel.shorterDateText,
                         textColor = colorAttr(R.attr.wallpaperTextColor),
                         modifier =
