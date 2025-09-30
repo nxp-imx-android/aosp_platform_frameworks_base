@@ -64,29 +64,29 @@ public class AconfigFlagsPerfTest {
 
     @Test
     public void timeAconfigreadWriteFlagForTest() {
-        android.provider.flags.Flags.readWriteFlagForTest();
+        com.android.server.deviceconfig.Flags.readWriteFlagForTest();
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
         while (state.keepRunning()) {
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
-            android.provider.flags.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
+            com.android.server.deviceconfig.Flags.readWriteFlagForTest();
         }
     }
 
@@ -120,29 +120,29 @@ public class AconfigFlagsPerfTest {
 
     @Test
     public void timeAconfigreadOnlyFlagForTest() {
-        android.provider.flags.Flags.readOnlyFlagForTest();
+        com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
         while (state.keepRunning()) {
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
-            android.provider.flags.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
+            com.android.server.deviceconfig.Flags.readOnlyFlagForTest();
         }
     }
 
