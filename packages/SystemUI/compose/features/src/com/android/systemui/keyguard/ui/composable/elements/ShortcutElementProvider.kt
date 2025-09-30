@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.ui.composable.elements
 import android.annotation.DrawableRes
 import android.content.Context
 import android.content.res.Resources
+import android.view.View
 import android.view.ViewConfiguration
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector2D
@@ -34,6 +35,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
@@ -45,6 +47,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -58,14 +61,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.Expandable
 import com.android.compose.animation.rememberExpandableController
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.internal.graphics.drawable.BackgroundBlurDrawable
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
+import com.android.systemui.Flags.enableLockscreenBlur
 import com.android.systemui.animation.Expandable
+import com.android.systemui.common.shared.colors.SurfaceEffectColors
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon as SysUiIcon
 import com.android.systemui.dagger.SysUISingleton
@@ -216,6 +223,7 @@ constructor(
                             translationX = xAnimation.value.x,
                         )
                         .shortcutBackground(quickAffordanceViewModel)
+                        .blurBackground(quickAffordanceViewModel, alpha)
                         .clickableShortcut(
                             expandable,
                             quickAffordanceViewModel,
@@ -269,9 +277,62 @@ constructor(
     }
 
     @Composable
+    private fun Modifier.blurBackground(
+        viewModel: KeyguardQuickAffordanceViewModel,
+        alpha: Float,
+    ): Modifier {
+        var backgroundBlurDrawable by remember { mutableStateOf<BackgroundBlurDrawable?>(null) }
+
+        if (enableLockscreenBlur()) {
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { context ->
+                    View(context).apply {
+                        addOnAttachStateChangeListener(
+                            object : View.OnAttachStateChangeListener {
+                                override fun onViewAttachedToWindow(v: View) {
+                                    val bg =
+                                        v.viewRootImpl.createBackgroundBlurDrawable().apply {
+                                            setCornerRadius(
+                                                context.resources
+                                                    .getDimensionPixelOffset(
+                                                        R.dimen.keyguard_affordance_fixed_radius
+                                                    )
+                                                    .toFloat()
+                                            )
+                                            setBlurRadius(
+                                                context.resources.getDimensionPixelOffset(
+                                                    R.dimen.keyguard_shortcuts_blur_radius
+                                                )
+                                            )
+                                            setColor(SurfaceEffectColors.surfaceEffect1(context))
+                                        }
+                                    backgroundBlurDrawable = bg
+                                    removeOnAttachStateChangeListener(this)
+                                }
+
+                                override fun onViewDetachedFromWindow(v: View) {}
+                            }
+                        )
+                    }
+                },
+                update = { view ->
+                    backgroundBlurDrawable?.let {
+                        view.background = it
+
+                        val backgroundAlpha = if (viewModel.isDimmed) DIM_ALPHA else alpha
+                        it.alpha = (backgroundAlpha * 255).toInt()
+                    }
+                },
+            )
+        }
+        return this
+    }
+
+    @Composable
     private fun Modifier.shortcutBackground(viewModel: KeyguardQuickAffordanceViewModel): Modifier {
-        return if (!viewModel.isSelected) {
-            this.background(
+        if (!enableLockscreenBlur() && !viewModel.isSelected) {
+            return this.background(
                 color =
                     if (viewModel.isActivated) {
                         MaterialTheme.colorScheme.primaryFixed
@@ -280,9 +341,8 @@ constructor(
                     },
                 shape = CircleShape,
             )
-        } else {
-            this
         }
+        return this
     }
 
     @OptIn(ExperimentalAnimationGraphicsApi::class)
