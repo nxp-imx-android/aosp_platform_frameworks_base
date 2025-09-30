@@ -584,10 +584,11 @@ private fun shouldUseLockscreenStackBounds(state: SceneTransitionLayoutState): B
         // Idle on the Lockscreen without Shade overlays.
         state.isIdleOnLockscreenWithNoShade() -> true
 
-        // Transitioning from Lockscreen, but not to Shade. Let Shade send its own bounds.
+        // When going from Lockscreen to a content without the placeholder, keep the LS bounds.
         state.isTransitioning(from = Scenes.Lockscreen) &&
             !state.isTransitioning(to = Scenes.Shade) &&
-            !state.isTransitioning(to = Overlays.NotificationsShade) -> true
+            !state.isTransitioning(to = Overlays.NotificationsShade) &&
+            !state.isTransitioning(to = Scenes.QuickSettings) -> true
 
         // When transitioning between LS and Bouncer, keep using the LS bounds, because there is no
         // placeholder on Bouncer.
