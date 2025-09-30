@@ -207,13 +207,10 @@ flag {
 }
 
 flag {
-  name: "use_on_binding_died"
+  name: "fix_managed_services_double_binding"
   namespace: "notifications"
-  description: "Prefer onBindingDied for package updates to avoid duplicate service bindings"
+  description: "Couple of tweaks to fix b/434679743"
   bug: "434679743"
-  metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
