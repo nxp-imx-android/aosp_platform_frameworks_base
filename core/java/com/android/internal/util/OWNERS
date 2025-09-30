@@ -9,3 +9,4 @@ per-file *Screenshot* = file:/packages/SystemUI/src/com/android/systemui/screens
 per-file *LatencyTracker* = file:/core/java/com/android/internal/util/LATENCY_TRACKER_OWNERS
 # Haptics
 per-file *Vibrat*.java = file:/services/core/java/com/android/server/vibrator/OWNERS
+per-file MemInfoReader.java = file:/MEMORY_OWNERS
