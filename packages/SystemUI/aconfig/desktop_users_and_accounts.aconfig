@@ -4,6 +4,13 @@ container: "system"
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
 
 flag {
+    name: "add_new_unlock_hint_on_keyguard"
+    namespace: "desktop_users_and_accounts"
+    description: "Add hints to Keyguard's message rotation explaining how users can get to the bouncer (click or key press)"
+    bug: "427686939"
+}
+
+flag {
     name: "back_button_on_bouncer_fix"
     namespace: "desktop_users_and_accounts"
     description: "Add a 'back' button to bouncer"
