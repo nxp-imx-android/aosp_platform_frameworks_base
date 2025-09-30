@@ -47,16 +47,6 @@ flag {
 }
 
 flag {
-  name: "fix_wallpaper_crops_on_restore"
-  namespace: "systemui"
-  description: "Preserve center for wallpaper crops on restore"
-  bug: "332937943"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "always_rebind_user_set_wallpaper"
     namespace: "systemui"
     description: "Always rebind wallpapers after a change via WallpaperManager API"

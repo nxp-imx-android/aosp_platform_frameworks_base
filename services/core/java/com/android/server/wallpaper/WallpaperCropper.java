@@ -16,7 +16,6 @@
 
 package com.android.server.wallpaper;
 
-import static android.app.Flags.fixWallpaperCropsOnRestore;
 import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
 import static android.app.WallpaperManager.ORIENTATION_PORTRAIT;
 import static android.app.WallpaperManager.ORIENTATION_UNKNOWN;
@@ -238,8 +237,7 @@ public class WallpaperCropper {
         // exists. In that case we'd rather go to case 6 and use the portrait suggested crop. This
         // is in order to have a consistent wallpaper position on both SQUARE_PORTRAIT and
         // SQUARE_LANDSCAPE orientations.
-        boolean skip = fixWallpaperCropsOnRestore()
-                && foldedOrientation == ORIENTATION_LANDSCAPE
+        boolean skip = foldedOrientation == ORIENTATION_LANDSCAPE
                 && suggestedCrops.contains(ORIENTATION_PORTRAIT);
         suggestedDisplaySize = defaultDisplayInfo.defaultDisplaySizes.get(foldedOrientation);
         if (suggestedCrop != null && !skip) {
