@@ -114,9 +114,8 @@ internal fun <K, V> State<Incremental<K, V>>.switchIncremental(
         }
     val innerChanges =
         map(nameData + "innerChangesPatch") { inner ->
-                merge(
+                stateChangePatches.mergeWith(
                     nameData + "mergeCoincidentalPatches",
-                    stateChangePatches,
                     inner.updates(nameData + "innerUpdates"),
                 ) { switchPatch, upcomingPatch ->
                     switchPatch + upcomingPatch

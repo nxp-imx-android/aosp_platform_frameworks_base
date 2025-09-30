@@ -201,9 +201,9 @@ internal fun <A, B> Events<These<A, B>>.partitionThese(
     val grouped =
         mapCheap(nameData + "projectBools") {
                 when (it) {
-                    is These.Both -> mapOf(true to it, false to it)
-                    is These.Second -> mapOf(false to it)
-                    is These.First -> mapOf(true to it)
+                    is These.Both -> hashMapOf(true to it, false to it)
+                    is These.Second -> hashMapOf(false to it)
+                    is These.First -> hashMapOf(true to it)
                 }
             }
             .groupByKey(nameData, numKeys = 2)

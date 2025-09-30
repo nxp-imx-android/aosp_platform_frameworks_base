@@ -39,9 +39,6 @@ internal data class NodeConnection<out A>(
     val schedulerUpstream: PushNode<*>,
 )
 
-internal fun <A> NodeConnection<A>.hasCurrentValue(logIndent: Int, evalScope: EvalScope): Boolean =
-    schedulerUpstream.hasCurrentValue(logIndent, evalScope)
-
 internal fun <A> NodeConnection<A>.removeDownstreamAndDeactivateIfNeeded(downstream: Schedulable) =
     schedulerUpstream.removeDownstreamAndDeactivateIfNeeded(downstream)
 

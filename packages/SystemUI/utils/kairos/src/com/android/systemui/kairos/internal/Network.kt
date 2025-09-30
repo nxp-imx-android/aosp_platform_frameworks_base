@@ -75,7 +75,7 @@ internal class Network(
     private val fastOutputs = ArrayDeque<Output<*>>()
     private val outputsByDispatcher =
         MutableScatterMap<ContinuationInterceptor, ArrayDeque<() -> Unit>>()
-    private val muxMovers = ArrayDeque<MuxDeferredNode<*, *, *>>()
+    private val muxMovers = ArrayDeque<MuxDeferredNode<*, *, *, *>>()
     private val deactivations = ArrayDeque<PushNode<*>>()
     private val outputDeactivations = ArrayDeque<Output<*>>()
     private val inputScheduleChan = Channel<ScheduledAction<*>>(Channel.UNLIMITED)
@@ -93,7 +93,7 @@ internal class Network(
             .add(block)
     }
 
-    override fun scheduleMuxMover(muxMover: MuxDeferredNode<*, *, *>) {
+    override fun scheduleMuxMover(muxMover: MuxDeferredNode<*, *, *, *>) {
         muxMovers.add(muxMover)
     }
 

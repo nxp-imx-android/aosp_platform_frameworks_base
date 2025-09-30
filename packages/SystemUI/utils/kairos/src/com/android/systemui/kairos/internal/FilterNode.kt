@@ -16,7 +16,7 @@
 
 package com.android.systemui.kairos.internal
 
-import com.android.systemui.kairos.internal.store.Single
+import com.android.systemui.kairos.internal.store.SingleHolderK
 import com.android.systemui.kairos.internal.store.SingletonMapK
 import com.android.systemui.kairos.util.Maybe
 import com.android.systemui.kairos.util.NameData
@@ -29,13 +29,13 @@ internal inline fun <A> filterPresentImpl(
     nameData: NameData,
     crossinline getPulse: EvalScope.() -> EventsImpl<Maybe<A>>,
 ): EventsImpl<A> =
-    DemuxImpl(
+    demuxImpl(
             nameData,
             mapImpl(getPulse, nameData + "toSingletonMap") { maybeResult, _ ->
-                maybeResult.map { Single<A>(it) }.orElseGet { Single() }
+                maybeResult.map { SingleHolderK<A>(it) }.orElseGet { SingleHolderK() }
             },
-            numKeys = 1,
-            storeFactory = SingletonMapK.Factory(),
+            1,
+            SingletonMapK.Factory,
         )
         .eventsForKey(Unit)
 

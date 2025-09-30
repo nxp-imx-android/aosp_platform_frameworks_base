@@ -18,6 +18,9 @@ package com.android.systemui.kairos
 
 import com.android.systemui.kairos.internal.NoScope
 import com.android.systemui.kairos.internal.init
+import com.android.systemui.kairos.internal.store.MapHolderK
+import com.android.systemui.kairos.internal.zipStateList
+import com.android.systemui.kairos.internal.zipStateMap
 import com.android.systemui.kairos.internal.zipStates
 import com.android.systemui.kairos.util.NameData
 import com.android.systemui.kairos.util.nameTag
@@ -54,11 +57,7 @@ internal fun <A> Iterable<State<A>>.combine(nameData: NameData): State<List<A>> 
     StateInit(
         init(nameData) {
             val states = map { it.init }
-            zipStates(
-                nameData,
-                states.size,
-                states = init(nameData) { states.map { it.connect(this) } },
-            )
+            zipStateList(nameData, init(nameData) { states.map { it.connect(this) } })
         }
     )
 
@@ -72,12 +71,15 @@ fun <K, A> Map<K, State<A>>.combine(): State<Map<K, A>> =
     combine(nameTag("Map<K, State>.combine").toNameData("Map<K, State>.combine"))
 
 internal fun <K, A> Map<K, State<A>>.combine(nameData: NameData): State<Map<K, A>> =
-    asIterable()
-        .map { (k, state) ->
-            state.mapCheapUnsafe(nameData + { "pairWithKey[$k]" }) { v -> k to v }
+    StateInit(
+        init(nameData) {
+            zipStateMap(
+                nameData,
+                size,
+                states = init(nameData) { MapHolderK(mapValues { (_, v) -> v.init.connect(this) }) },
+            )
         }
-        .combine(nameData)
-        .map(nameData + "toMap") { it.toMap() }
+    )
 
 /**
  * Returns a [State] whose value is generated with [transform] by combining the current values of
