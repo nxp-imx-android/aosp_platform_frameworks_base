@@ -78,8 +78,6 @@ android_test {
         "mockito-target-extended-minus-junit4",
         "platform-test-annotations",
         "truth",
-        "Nene",
-        "Harrier",
         "bedstead-enterprise",
     ],
     libs: [
