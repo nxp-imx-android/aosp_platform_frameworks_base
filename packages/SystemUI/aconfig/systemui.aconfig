@@ -1394,6 +1394,13 @@ flag {
 }
 
 flag {
+    name: "expanded_audio_detailed_view"
+    namespace: "systemui"
+    description: "Enables the expanded audio detailed view and entry point."
+    bug: "374173773"
+}
+
+flag {
     name: "bouncer_ui_revamp"
     namespace: "systemui"
     description: "Updates to background (blur) for bouncer"

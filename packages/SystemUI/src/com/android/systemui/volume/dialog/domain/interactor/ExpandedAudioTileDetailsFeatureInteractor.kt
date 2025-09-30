@@ -16,8 +16,16 @@
 
 package com.android.systemui.volume.dialog.domain.interactor
 
-import android.content.applicationContext
-import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.qs.flags.ExpandedAudioDetailedView
+import com.android.systemui.qs.flags.QsDetailedView
+import javax.inject.Inject
 
-val Kosmos.desktopAudioTileDetailsFeatureInteractor by
-    Kosmos.Fixture { DesktopAudioTileDetailsFeatureInteractor(applicationContext) }
+@SysUISingleton
+class ExpandedAudioTileDetailsFeatureInteractor @Inject constructor() {
+    private val isEnabled = QsDetailedView.isEnabled && ExpandedAudioDetailedView.isEnabled
+
+    fun isEnabled(): Boolean {
+        return isEnabled
+    }
+}
