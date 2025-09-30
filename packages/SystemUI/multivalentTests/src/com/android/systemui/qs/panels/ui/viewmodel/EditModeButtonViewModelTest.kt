@@ -124,7 +124,6 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_QS_EDIT_MODE_TOOLTIP)
     fun showTooltip_tooltipWasAlreadyShown_shouldNotBeVisible() =
         kosmos.runTest {
             val underTest = createEditModeButtonViewModel()
@@ -134,7 +133,6 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_QS_EDIT_MODE_TOOLTIP)
     fun showTooltip_tooltipWasNotShown_shouldBeVisible() =
         kosmos.runTest {
             val underTest = createEditModeButtonViewModel()
@@ -144,7 +142,6 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_QS_EDIT_MODE_TOOLTIP)
     fun showTooltip_tooltipWasDismissed_shouldBeMarkedAsShown() =
         kosmos.runTest {
             val underTest = createEditModeButtonViewModel()
@@ -153,16 +150,6 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
             assertThat(underTest.showTooltip).isTrue()
 
             underTest.onTooltipDisposed()
-
-            assertThat(underTest.showTooltip).isFalse()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_QS_EDIT_MODE_TOOLTIP)
-    fun showTooltip_flagDisabled_shouldNotBeVisible() =
-        kosmos.runTest {
-            val underTest = createEditModeButtonViewModel()
-            qsPreferencesRepository.writeEditTooltipShown(false)
 
             assertThat(underTest.showTooltip).isFalse()
         }

@@ -24,7 +24,6 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
-import com.android.systemui.qs.flags.QSEditModeTooltip
 import com.android.systemui.qs.panels.domain.interactor.QSPreferencesInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
@@ -70,7 +69,7 @@ constructor(
         hydrator.hydratedStateOf(
             traceName = "showTooltip",
             source =
-                if (QSEditModeTooltip.isEnabled && !runningInTestHarness) {
+                if (!runningInTestHarness) {
                     qsPreferencesInteractor.editTooltipShown.map {
                         // Show the tooltip if it wasn't shown before
                         !it
