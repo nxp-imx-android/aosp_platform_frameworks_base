@@ -72,6 +72,7 @@ import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
+import com.android.systemui.brightness.ui.compose.BrightnessSliderDimensions
 import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
@@ -384,6 +385,7 @@ private fun ContentScope.QuickSettingsLayout(
                             mirrorColor = OverlayShade.Colors.panelBackground(isTransparencyEnabled),
                         ),
                     modifier = Modifier.fillMaxWidth(),
+                    dimensions = QuickSettingsShade.Dimensions.brightnessSliderDimensions,
                 )
             }
 
@@ -480,6 +482,15 @@ object QuickSettingsShade {
     }
 
     object Dimensions {
+        val brightnessSliderDimensions: BrightnessSliderDimensions
+            @Composable
+            @ReadOnlyComposable
+            get() = BrightnessSliderDimensions(
+                brightnessThumbHeight,
+                brightnessThumbWidth,
+                brightnessTrackHeight,
+            )
+
         val volumeSliderDimensions: VolumeSliderDimensions
             @Composable
             @ReadOnlyComposable
@@ -494,6 +505,21 @@ object QuickSettingsShade {
         val ShortPadding = 8.dp
         val Padding = 16.dp
         val ToolbarHeight = 48.dp
+
+        private val brightnessThumbHeight: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_thumb_height)
+
+        private val brightnessThumbWidth: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_thumb_width)
+
+        private val brightnessTrackHeight: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_track_height)
 
         private val volumeVerticalPadding: Dp
             @Composable
@@ -513,7 +539,7 @@ object QuickSettingsShade {
         private val volumeTrackHeight: Dp
             @Composable
             @ReadOnlyComposable
-            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_track_height)
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_volume_track_height)
     }
 
     /**
