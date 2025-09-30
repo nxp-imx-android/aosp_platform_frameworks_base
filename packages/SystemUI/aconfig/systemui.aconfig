@@ -336,16 +336,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_universal_battery_data_source"
-    namespace: "systemui"
-    description: "Refactors SysUI to always use the battery data source in status bar"
-    bug: "434194794"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "status_bar_system_status_icons_in_compose"
   namespace: "systemui"
   description: "Use compose for displaying icons in the status bar system status area"
@@ -440,16 +430,6 @@ flag {
     namespace: "systemui"
     description: "Fix DarkIconInteractor#toIsAreaDark result for mixed status bar lightness, for icons that do not overlap with the dark icon area."
     bug: "423390143"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "status_bar_battery_no_conflation"
-    namespace: "systemui"
-    description: "Use callbackFlow instead of conflatedCallbackFlow in BatteryRepository"
-    bug: "433239990"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.common.data.repository
+package com.android.systemui.statusbar.pipeline.airplane.domain.interactor.impl
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import dagger.Binds
+import dagger.Module
 
-class FakeBatteryRepositoryDeprecated : BatteryRepositoryDeprecated {
-    private val _isDevicePluggedIn = MutableStateFlow(false)
-
-    override val isDevicePluggedIn: Flow<Boolean> = _isDevicePluggedIn.asStateFlow()
-
-    fun setDevicePluggedIn(isPluggedIn: Boolean) {
-        _isDevicePluggedIn.value = isPluggedIn
-    }
+@Module
+public interface AirplaneModeDomainLayerModule {
+    @Binds
+    public fun airplaneModeInteractor(impl: AirplaneModeInteractorImpl): AirplaneModeInteractor
 }
-
-val BatteryRepositoryDeprecated.fake
-    get() = this as FakeBatteryRepositoryDeprecated
