@@ -100,6 +100,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.Pair;
 
@@ -107,6 +108,7 @@ import com.android.internal.backup.IBackupTransport;
 import com.android.internal.infra.AndroidFuture;
 import com.android.server.EventLogTags;
 import com.android.server.LocalServices;
+import com.android.server.backup.Flags;
 import com.android.server.backup.BackupAgentConnectionManager;
 import com.android.server.backup.BackupRestoreTask;
 import com.android.server.backup.BackupRestoreTask.CancellationReason;
@@ -182,6 +184,7 @@ import java.util.stream.Stream;
             ShadowSystemServiceRegistry.class,
         })
 @Presubmit
+@EnableFlags(Flags.FLAG_ENABLE_KV_BACKUP_LOGS_FROM_TRANSPORT_WITH_PROPER_FLOW_ID)
 public class KeyValueBackupTaskTest  {
     private static final PackageData PACKAGE_1 = keyValuePackage(1);
     private static final PackageData PACKAGE_2 = keyValuePackage(2);
@@ -2731,7 +2734,8 @@ public class KeyValueBackupTaskTest  {
                         emptyList(),
                         /* userInitiated */ false,
                         nonIncremental,
-                        mBackupEligibilityRules);
+                        mBackupEligibilityRules,
+                        mObserver);
         mBackupManager.setUp(mBackupHandler, task);
         return task;
     }
