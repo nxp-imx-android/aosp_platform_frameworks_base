@@ -5,9 +5,8 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
-import com.android.systemui.scene.shared.model.Scenes
 
-fun TransitionBuilder.lockscreenToGoneTransition() {
+fun TransitionBuilder.lockscreenToGoneWithAnimationOverLockscreenTransition() {
     spec = tween(durationMillis = 500)
 
     fractionRange(end = 0.3f, easing = Easings.PredictiveBack) {
@@ -19,6 +18,13 @@ fun TransitionBuilder.lockscreenToGoneTransition() {
         fade(LockscreenElementKeys.SettingsMenu)
 
         fade(LockscreenElementKeys.BehindScrim)
+    }
+}
+
+fun TransitionBuilder.lockscreenToGoneTransition() {
+    lockscreenToGoneWithAnimationOverLockscreenTransition()
+
+    fractionRange(end = 0.3f, easing = Easings.PredictiveBack) {
         translate(LockscreenElementKeys.Region.Upper, y = (-48).dp)
         translate(LockscreenElementKeys.Notifications.Stack, y = (-72).dp)
     }
