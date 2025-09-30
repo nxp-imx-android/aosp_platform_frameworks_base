@@ -358,6 +358,13 @@ public final class CompanionDeviceManager {
     public static final int MESSAGE_ONEWAY_TO_WEARABLE = 0x43847987; // +TOW
 
     /**
+     * Message header assigned to the one-way message sent to the CrossDeviceSync system app.
+     *
+     * @hide
+     */
+    public static final int MESSAGE_ONEWAY_CROSS_DEVICE_SYNC = 0x43676883; // +CDS
+
+    /**
      * Callback for applications to receive updates about and the outcome of
      * {@link AssociationRequest} issued via {@code associate()} call.
      *
