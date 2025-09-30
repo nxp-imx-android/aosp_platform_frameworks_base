@@ -194,6 +194,10 @@ public final class ApplicationConfig {
         return CERTIFICATE_TRANSPARENCY_REASON_UNKNOWN;
     }
 
+    int getDomainEncryptionMode(@NonNull String hostname) {
+        return getConfigForHostname(hostname).getDomainEncryptionMode();
+    }
+
     public void handleTrustStorageUpdate() {
         synchronized(mLock) {
             // If the config is uninitialized then there is no work to be done to handle an update,
