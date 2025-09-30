@@ -235,7 +235,9 @@ class FalsingCollectorImpl implements FalsingCollector {
         mJavaAdapter.alwaysCollectFlow(
                 BooleanFlowOperators.allOf(
                         communalInteractor.isCommunalEnabled(),
-                        communalSceneInteractor.isIdleOnCommunal()),
+                        SceneContainerFlag.isEnabled()
+                                ? communalSceneInteractor.isCommunalCurrentScene()
+                                : communalSceneInteractor.isIdleOnCommunal()),
                 this::onShowingCommunalHubChanged
         );
 
