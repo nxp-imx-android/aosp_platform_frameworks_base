@@ -7812,4 +7812,7 @@
 
     <!-- location button service components -->
     <string name="config_locationButtonRenderService" translatable="false">com.android.systemui/.widget.service.LocationButtonRenderService</string>
+
+     <!-- Whether user information setup is enabled in SuW. -->
+    <bool name="config_enableUserInfoSetupInSuw">false</bool>
 </resources>
