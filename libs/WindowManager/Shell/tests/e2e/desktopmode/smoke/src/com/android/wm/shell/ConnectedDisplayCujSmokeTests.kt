@@ -27,7 +27,6 @@ import android.content.Intent
 import android.graphics.PointF
 import android.hardware.display.DisplayManager
 import android.hardware.display.DisplayTopology
-import android.hardware.input.InputManager
 import android.os.Bundle
 import android.platform.helpers.SysuiRestarter
 import android.platform.test.annotations.Postsubmit
@@ -63,6 +62,7 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.TestHelpers
 import com.android.window.flags.Flags
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import java.time.Duration
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Assume
@@ -75,7 +75,6 @@ import org.junit.runners.BlockJUnit4ClassRunner
 import platform.test.desktop.DesktopMouseTestRule
 import platform.test.desktop.ShadeDisplayGoesAroundTestRule
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
-import java.time.Duration
 
 // TODO(b/416608975) - Move the utility methods to shared library or/and utilize existing library (
 // e.g., sysui-tapl).
@@ -99,10 +98,6 @@ class ConnectedDisplayCujSmokeTests {
     private val displayManager = context.getSystemService(DisplayManager::class.java)
     private val activityManager = context.getSystemService(ActivityManager::class.java)
 
-    // TODO(b/419392000) - Remove once [DesktopMouseTestRule] supports dynamic display changes.
-    private val inputManager = context.getSystemService(InputManager::class.java)
-    private val displayIdsWithMouseScalingDisabled = mutableListOf<Int>()
-
     @get:Rule(order = 0)
     val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
@@ -124,7 +119,7 @@ class ConnectedDisplayCujSmokeTests {
     val shadeDisplayGoesAroundTestRule = ShadeDisplayGoesAroundTestRule()
 
     @get:Rule(order = 6)
-    val desktopMouseRule = DesktopMouseTestRule()
+    val desktopMouseRule = DesktopMouseTestRule(/* deferSetup= */ true)
 
     @Before
     fun setup() {
@@ -148,7 +143,7 @@ class ConnectedDisplayCujSmokeTests {
 
     fun cuj1() {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
-        disableMouseScaling(externalDisplayId)
+        desktopMouseRule.setupMouse()
 
         // Open settings.
         context.startActivity(
@@ -446,7 +441,7 @@ class ConnectedDisplayCujSmokeTests {
     @ExtendedOnly
     fun cuj8e() {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
-        disableMouseScaling(externalDisplayId)
+        desktopMouseRule.setupMouse()
         assertTaskbarVisible(DEFAULT_DISPLAY)
 
         launchAppFromAllApps(DEFAULT_DISPLAY, clockApp)
@@ -535,12 +530,6 @@ class ConnectedDisplayCujSmokeTests {
 
     @After
     fun teardown() {
-        // TODO(b/419392000) - Remove once [DesktopMouseTestRule] supports dynamic display changes.
-        for (displayId in displayIdsWithMouseScalingDisabled) {
-            inputManager.setMouseScalingEnabled(true, displayId)
-        }
-        displayIdsWithMouseScalingDisabled.clear()
-
         activityManager.forceStopPackage(SETTINGS_PACKAGE)
         browserApp.exit(wmHelper)
         clockApp.exit(wmHelper)
@@ -725,12 +714,6 @@ class ConnectedDisplayCujSmokeTests {
 
     fun appsListSelector(displayId: Int): BySelector =
         By.res(device.launcherPackageName, APPS_LIST_VIEW_RES_ID).displayId(displayId)
-
-    // TODO(b/419392000) - Remove once [DesktopMouseTestRule] supports dynamic display changes.
-    fun disableMouseScaling(displayId: Int) {
-        displayIdsWithMouseScalingDisabled += displayId
-        inputManager.setMouseScalingEnabled(false, displayId)
-    }
 
     fun createActivityOptions(
         launchDisplayId: Int,
