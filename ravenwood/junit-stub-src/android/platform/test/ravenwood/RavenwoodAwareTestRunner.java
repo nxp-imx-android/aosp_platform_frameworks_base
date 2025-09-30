@@ -38,10 +38,7 @@ public class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase {
         }
     }
 
-    public static final TestRule sImplicitClassOuterRule = new NopRule();
-    public static final TestRule sImplicitClassInnerRule = sImplicitClassOuterRule;
-    public static final TestRule sImplicitInstOuterRule = sImplicitClassOuterRule;
-    public static final TestRule sImplicitInstInnerRule = sImplicitClassOuterRule;
+    public static final TestRule sImplicitInstOuterRule = new NopRule();
 
     private final Runner mRealRunner;
 
