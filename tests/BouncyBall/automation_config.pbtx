@@ -65,8 +65,8 @@ data_sources: {
         }
     }
 }
-# The test ignores the first 0.1 seconds, then tests for 2 minutes.  (See
-# APK code for INITIAL_TIME_TO_IGNORE_IN_SECONDS and
+# The test ignores up to the first 0.5 seconds, then tests for 2 minutes.  (See
+# APK code for INITIAL_MAX_TIME_TO_IGNORE_IN_SECONDS and
 # AUTOMATED_TEST_DURATION_IN_SECONDS).
 # We want to give additional buffer for:
 # - Time between perfetto being launched and the app starting

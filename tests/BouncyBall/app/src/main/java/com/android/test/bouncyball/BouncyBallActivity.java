@@ -61,14 +61,18 @@ public class BouncyBallActivity extends Activity {
     // if that maximum is less than this minimum, we'll use this minimum.
     private static final float MINIMUM_TEST_FRAME_RATE = 60.0f;
 
-    // This test measures sustained frame rate, so it's safe to ignore
-    // frame drops around the start time.
-    // This value must be high enough to skip jank due to clocks not having
-    // ramped up yet.
-    // This value must not be too high as to miss jank due to clocks ramping
-    // down.
+    // This test focuses on sustained frame rate, so we want to ignore drops
+    // right at app start.  We don't want to wait too long, though, lest we
+    // miss drops due to clocks ramping down.  Unfortunately, some low end
+    // devices take a while to give the app focus.  So we provide a range
+    // here, starting our measurement as soon as we have focus within this
+    // range (and failing if we don't get focus in time).
+    private static final float INITIAL_MIN_TIME_TO_IGNORE_IN_SECONDS = 0.1f;
+
+    // If we've been up and running, drawing frames, for half a second, and
+    // we still don't have focus, that's not acceptable and we'll fail.
     // LINT.IfChange
-    private static final float INITIAL_TIME_TO_IGNORE_IN_SECONDS = 0.1f;
+    private static final float INITIAL_MAX_TIME_TO_IGNORE_IN_SECONDS = 0.5f;
     // LINT.ThenChange(/tests/BouncyBall/automation_config.pbtx)
 
     // The app itself can run "forever".  But for automated testing, we want
@@ -82,8 +86,9 @@ public class BouncyBallActivity extends Activity {
     // We use a trace counter to let trace analysis know if a frame is relevant.
     private static final String TRACE_COUNTER_RELEVANT_FRAME = "relevant_frame";
 
-    // This is before INITIAL_TIME_TO_IGNORE_IN_SECONDS have passed.
-    private static final int TRACE_STATE_TOO_EARLY = 1;
+    // Initial state, before we've gotten focus and waited at least
+    // INITIAL_MIN_TIME_TO_IGNORE_IN_SECONDS.
+    private static final int TRACE_STATE_PRE_TEST_TIME = 1;
 
     // These are the relevant frames for automated testing.
     // LINT.IfChange
@@ -98,9 +103,11 @@ public class BouncyBallActivity extends Activity {
     private boolean mWarmedUp = false;
     private float mFrameRate;
     private int mFrameCount = 0;
-    private int mFirstAutomatedTestFrame = -1;
-    private int mEndingAutomatedTestFrame = -1;
-    private int mTraceState = TRACE_STATE_TOO_EARLY;
+    private int mMinFirstRelevantFrame = -1;
+    private int mMaxFirstRelevantFrame = -1;
+    private int mActualFirstRelevantFrame = -1;
+    private int mLastRelevantFrame = -1;
+    private int mTraceState = TRACE_STATE_PRE_TEST_TIME;
     private Choreographer mChoreographer;
 
     private final DisplayManager.DisplayListener mDisplayListener =
@@ -174,17 +181,12 @@ public class BouncyBallActivity extends Activity {
 
                 @Override
                 public void doFrame(long frameTimeNanos) {
-                    if (mFrameCount == mFirstAutomatedTestFrame) {
+                    if (!mWarmedUp && isReadyToStartTesting()) {
                         mWarmedUp = true;
                         mTraceState = TRACE_STATE_IN_TEST_TIME;
                         // We chose not to log this state change to minimize
                         // system load during testing time.
-                        if (!mHasFocus) {
-                            String msg = "App does not have focus after "
-                                    + mFrameCount + " frames";
-                            reportAssumptionFailure(msg);
-                        }
-                    } else if (mFrameCount == mEndingAutomatedTestFrame) {
+                    } else if (mFrameCount == mLastRelevantFrame) {
                         mTraceState = TRACE_STATE_POST_TEST_TIME;
                         Log.i(LOG_TAG, "Done with frames for automated testing.");
                     }
@@ -322,19 +324,18 @@ public class BouncyBallActivity extends Activity {
     private void setFrameRate(float frameRate) {
         mFrameRate = frameRate;
 
-        if (mTraceState != TRACE_STATE_TOO_EARLY) {
+        if (mTraceState != TRACE_STATE_PRE_TEST_TIME) {
             String msg = "Got new frame rate (" + frameRate + ") after "
-                    + mFrameCount + " frames, later than max of " + mFirstAutomatedTestFrame;
+                    + mFrameCount + " frames, later than first relevant frame "
+                    + mActualFirstRelevantFrame;
             reportAssumptionFailure(msg);
         }
         Log.i(LOG_TAG, "Running at frame rate " + mFrameRate + "Hz");
 
-        mFirstAutomatedTestFrame =
-            Math.round(INITIAL_TIME_TO_IGNORE_IN_SECONDS * mFrameRate);
-
-        // We'll stop our automated test tracking on this frame.
-        mEndingAutomatedTestFrame =
-            mFirstAutomatedTestFrame + (AUTOMATED_TEST_DURATION_IN_SECONDS * (int) mFrameRate);
+        mMinFirstRelevantFrame =
+            Math.round(INITIAL_MIN_TIME_TO_IGNORE_IN_SECONDS * mFrameRate);
+        mMaxFirstRelevantFrame =
+            Math.round(INITIAL_MAX_TIME_TO_IGNORE_IN_SECONDS * mFrameRate);
     }
 
     private float nanosToMillis(long nanos) {
@@ -347,5 +348,28 @@ public class BouncyBallActivity extends Activity {
             Log.e(LOG_TAG, "Exiting app due to assumption failure.");
             System.exit(1);
         }
+    }
+
+    private boolean isReadyToStartTesting() {
+        // We should only be checking this when we're before the testing time.
+        assert mTraceState == TRACE_STATE_PRE_TEST_TIME;
+
+        if (mFrameCount < mMinFirstRelevantFrame) {
+            return false;
+        }
+        if (mHasFocus) {
+            // We have the focus and we've reached our min first frame.
+            // Let's set our last frame and start testing.
+            mActualFirstRelevantFrame = mFrameCount;
+            mLastRelevantFrame = mActualFirstRelevantFrame
+                    + (AUTOMATED_TEST_DURATION_IN_SECONDS * (int) mFrameRate);
+            return true;
+        }
+
+        if (mFrameCount > mMaxFirstRelevantFrame) {
+            String msg = "App does not have focus after " + mFrameCount + " frames";
+            reportAssumptionFailure(msg);
+        }
+        return false;
     }
 }
