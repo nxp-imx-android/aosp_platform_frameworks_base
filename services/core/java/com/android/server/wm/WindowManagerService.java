@@ -2382,7 +2382,7 @@ public class WindowManagerService extends IWindowManager.Stub
         synchronized (mGlobalLock) {
             if (a11yControllerInternal.hasWindowManagerEventDispatcher()) {
                 WindowState window = mWindowMap.get(token);
-                if (window != null) {
+                if (window != null && window.isFocused()) {
                     a11yControllerInternal.onRectangleOnScreenRequested(
                             window.getDisplayId(), rectangle, source);
                 }
