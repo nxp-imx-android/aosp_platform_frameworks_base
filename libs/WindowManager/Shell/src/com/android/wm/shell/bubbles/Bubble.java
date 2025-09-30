@@ -494,7 +494,6 @@ public class Bubble implements BubbleViewProvider {
                 getTitle(),
                 getAppName(),
                 isImportantConversation(),
-                showAppBadge(),
                 getParcelableFlyoutMessage(),
                 isApp());
     }
@@ -1151,7 +1150,7 @@ public class Bubble implements BubbleViewProvider {
      * Whether an app badge should be shown for this bubble.
      */
     public boolean showAppBadge() {
-        return isChat() || isShortcut() || isNote();
+        return !isApp();
     }
 
     /**
