@@ -66,8 +66,8 @@ internal fun <A> Events<A>.mergeWith(
     val node =
         mergeNodes(
             nameData,
-            getPulse = { init.connect(evalScope = this) },
-            getOther = { other.init.connect(evalScope = this) },
+            getPulse = { init.connect(initScope = this) },
+            getOther = { other.init.connect(initScope = this) },
         ) { a, b ->
             transformCoincidence(a, b)
         }
@@ -151,7 +151,7 @@ fun <A> Iterable<Events<A>>.merge(): Events<List<A>> =
 
 internal fun <A> Iterable<Events<A>>.merge(nameData: NameData): Events<List<A>> =
     EventsInit(
-        constInit(nameData, mergeNodes(nameData) { map { it.init.connect(evalScope = this) } })
+        constInit(nameData, mergeNodes(nameData) { map { it.init.connect(initScope = this) } })
     )
 
 /**
@@ -175,7 +175,7 @@ fun <A> Iterable<Events<A>>.mergeLeft(): Events<A> =
 
 internal fun <A> Iterable<Events<A>>.mergeLeft(nameData: NameData): Events<A> =
     EventsInit(
-        constInit(nameData, mergeNodesLeft(nameData) { map { it.init.connect(evalScope = this) } })
+        constInit(nameData, mergeNodesLeft(nameData) { map { it.init.connect(initScope = this) } })
     )
 
 /**

@@ -177,7 +177,7 @@ internal class BuildScopeImpl(
         return EventsInit(
             constInit(
                 nameData,
-                mapImpl({ init.connect(evalScope = this) }, nameData) { spec, _ ->
+                mapImpl({ init.connect(initScope = this) }, nameData) { spec, _ ->
                         reenterBuildScope(outerScope = this@BuildScopeImpl, childScope)
                             .transform(spec)
                     }
@@ -211,7 +211,7 @@ internal class BuildScopeImpl(
         }
         val changesImpl: EventsImpl<Map<K, Maybe<A>>> =
             mapImpl(
-                upstream = { this@applyLatestSpecForKey.init.connect(evalScope = this) },
+                upstream = { this@applyLatestSpecForKey.init.connect(initScope = this) },
                 nameData + "changes",
             ) { upstreamMap, _ ->
                 reenterBuildScope(this@BuildScopeImpl, childCoroutineScope).run {
@@ -274,7 +274,7 @@ internal class BuildScopeImpl(
             // Stop observing when this scope dies
             truncateToScope(this@observeInternal, nameData + "truncateToScope")
                 .init
-                .connect(evalScope = stateScope.evalScope)
+                .connect(initScope = stateScope.evalScope)
                 .activate(evalScope = stateScope.evalScope, outputNode.schedulable)
                 ?.let { (conn, needsEval) ->
                     outputNode.upstream = conn
