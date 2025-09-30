@@ -484,9 +484,14 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
         HdmiCecMessage routingChange =
                 HdmiCecMessageBuilder.buildRoutingChange(
                         getDeviceInfo().getLogicalAddress(), oldPath, newPath);
-        mService.sendCecCommand(routingChange);
-        addAndStartAction(
-                new RoutingControlAction(this, newPath, callback), true);
+        mService.sendCecCommand(routingChange, new HdmiControlService.SendMessageCallback() {
+            @Override
+            public void onSendCompleted(int error) {
+                addAndStartAction(
+                        new RoutingControlAction(HdmiCecLocalDeviceTv.this, newPath, callback),
+                        true);
+            }
+        });
     }
 
     @ServiceThreadOnly
