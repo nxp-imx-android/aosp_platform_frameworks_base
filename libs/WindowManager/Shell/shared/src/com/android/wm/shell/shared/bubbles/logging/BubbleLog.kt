@@ -21,6 +21,7 @@ import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog.addLogger
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog.dump
 import java.io.PrintWriter
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Logs debug events related to bubbles.
@@ -36,8 +37,9 @@ object BubbleLog {
 
     const val TAG = "BubbleLog"
 
-    private val bubbleEventHistoryLogger = BubbleEventHistoryLogger()
-    @VisibleForTesting val loggers = mutableListOf<DebugLogger>(bubbleEventHistoryLogger)
+    @VisibleForTesting val bubbleEventHistoryLogger = BubbleEventHistoryLogger()
+    @VisibleForTesting
+    var loggers = CopyOnWriteArrayList<DebugLogger>().apply { add(bubbleEventHistoryLogger) }
 
     /**
      * Adds a new [DebugLogger] to the list of loggers used by this class.
@@ -49,7 +51,7 @@ object BubbleLog {
      */
     @JvmStatic
     fun addLogger(debugLogger: DebugLogger) {
-        synchronized(loggers) { loggers.add(debugLogger) }
+        loggers.add(debugLogger)
     }
 
     /** Logs a DEBUG level message for all registered [DebugLogger]s. */
@@ -97,8 +99,7 @@ object BubbleLog {
     }
 
     private inline fun logSafelyForAllLoggers(logFunction: (DebugLogger) -> Unit) {
-        val loggersCopy = synchronized(loggers) { ArrayList(loggers) }
-        for (logger in loggersCopy) {
+        for (logger in loggers) {
             performSafely("Exception while logging for $logger") { logFunction.invoke(logger) }
         }
     }

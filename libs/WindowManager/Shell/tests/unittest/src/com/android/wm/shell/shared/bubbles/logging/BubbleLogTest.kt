@@ -39,9 +39,10 @@ class BubbleLogTest {
 
     @Before
     fun setup() {
+        val historyLogger = BubbleLog.bubbleEventHistoryLogger
         // Clear all loggers except BubbleEventHistoryLogger
-        BubbleLog.loggers.removeIf { it !is BubbleEventHistoryLogger }
-        val historyLogger = BubbleLog.loggers.first() as BubbleEventHistoryLogger
+        BubbleLog.loggers.clear()
+        BubbleLog.loggers.add(historyLogger)
         // Clear BubbleEventHistoryLogger previous events
         historyLogger.recentEvents.clear()
     }
