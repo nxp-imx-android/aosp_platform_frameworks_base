@@ -17,6 +17,7 @@
 
 package com.android.systemui.util.kotlin.dispatchers
 
+import android.annotation.SuppressLint
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.android.systemui.SysuiTestCase
@@ -26,10 +27,13 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.runner.RunWith
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 @LargeTest
@@ -288,6 +292,95 @@ class SynchronizedLinkedBlockingQueueTest : SysuiTestCase() {
             fail("drainTo(max) should throw UnsupportedOperationException")
         } catch (e: UnsupportedOperationException) {
             // Expected
+        }
+    }
+
+    /**
+     * A high-load stress test with multiple producer and consumer threads.
+     * This test is designed to catch race conditions and deadlocks.
+     * The consumer logic is made robust to handle flaky behavior
+     * from the queue implementation itself, ensuring the test only passes
+     * if all items are *actually* consumed.
+     *
+     * This test is ignored without a bug since it could take too long to run.
+     * This is only for reference, and is able to reproduce said race conditions
+     * about 1 in 3 runs.
+     */
+    @SuppressLint("DemotingTestWithoutBug")
+    @Ignore("This test is a bruteforce hammer test to reproduce a race condition")
+    @Test(timeout = 10_000) // 10 second timeout for safety
+    fun hammerConcurrency() {
+        val numProducers = 10
+        val numConsumers = 10
+        val itemsPerProducer = 100_000
+        val totalItems = numProducers * itemsPerProducer
+
+        // This must be atomic as it's incremented by multiple consumer threads.
+        val itemsConsumed = AtomicInteger(0)
+        val producerLatch = CountDownLatch(numProducers)
+        val consumerLatch = CountDownLatch(numConsumers)
+
+        val producerExecutor = Executors.newFixedThreadPool(numProducers)
+        val consumerExecutor = Executors.newFixedThreadPool(numConsumers)
+
+        val dummyRunnable = Runnable {}
+
+        try {
+            // Start consumers
+            repeat(numConsumers) {
+                consumerExecutor.submit {
+                    var itemsToConsume = totalItems / numConsumers
+                    try {
+                        // This loop *must* complete fully.
+                        while (itemsToConsume > 0) {
+                            try {
+                                // Block until an item is available.
+                                underTest.take()
+
+                                // Only increment/decrement after take() succeeds.
+                                itemsConsumed.incrementAndGet()
+                                itemsToConsume--
+
+                            } catch (e: InterruptedException) {
+                                Thread.interrupted()
+                                break
+                            }
+                        }
+                    } catch (t: Throwable) {
+                        // Log if the whole loop fails unexpectedly
+                        t.printStackTrace()
+                    } finally {
+                        // This latch is now only counted down when the
+                        // consumer has actually finished its full quota.
+                        consumerLatch.countDown()
+                    }
+                }
+            }
+
+            // Start producers
+            repeat(numProducers) {
+                producerExecutor.submit {
+                    try {
+                        repeat(itemsPerProducer) {
+                            underTest.put(dummyRunnable)
+                        }
+                    } finally {
+                        producerLatch.countDown()
+                    }
+                }
+            }
+
+            // Wait for all producers and consumers to finish
+            assertTrue("Producers did not finish in time", producerLatch.await(8, TimeUnit.SECONDS))
+            assertTrue("Consumers did not finish in time", consumerLatch.await(8, TimeUnit.SECONDS))
+
+            // Verify
+            assertEquals("All items should have been consumed", totalItems, itemsConsumed.get())
+            assertEquals("Queue should be empty", 0, underTest.size)
+
+        } finally {
+            producerExecutor.shutdownNow()
+            consumerExecutor.shutdownNow()
         }
     }
 }

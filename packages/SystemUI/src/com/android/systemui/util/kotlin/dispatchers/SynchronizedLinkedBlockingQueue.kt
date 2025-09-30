@@ -18,7 +18,6 @@ package com.android.systemui.util.kotlin.dispatchers
 
 import java.io.Closeable
 import java.util.AbstractQueue
-import java.util.ArrayDeque
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -31,18 +30,60 @@ import java.util.concurrent.atomic.AtomicInteger
  * This is designed to make producer operations (like on the main thread)
  * extremely fast and free of contention with consumer threads.
  */
-class SynchronizedLinkedBlockingQueue : AbstractQueue<Runnable>(), BlockingQueue<Runnable>, Closeable {
+class SynchronizedLinkedBlockingQueue : AbstractQueue<Runnable>(), BlockingQueue<Runnable>,
+    Closeable {
 
-    private val queue = ArrayDeque<Runnable>()
+    /**
+     * Internal node for the linked list.
+     * [task] is mutable to allow nulling for GC.
+     */
+    private class Node(var task: Runnable?, var next: Node? = null)
+
+    /**
+     * The head of the list, which is *always* a dummy node.
+     * The first *real* item is at [head.next].
+     * Guarded by: [takeLock]
+     */
+    @Suppress("KDocUnresolvedReference")
+    private var head: Node = Node(null)
+
+    /**
+     * The tail of the list.
+     * Guarded by: [putLock]
+     */
+    private var tail: Node = head
+
+    /**
+     * Links a new node at the tail.
+     * MUST be called while holding 'putLock'.
+     */
+    private fun enqueue(node: Node) {
+        tail.next = node
+        tail = node
+    }
+
+    /**
+     * Unlinks and returns the first item from the head.
+     * MUST be called while holding 'takeLock' and
+     * MUST only be called when count > 0.
+     */
+    private fun dequeue(): Runnable {
+        // head is the dummy node, head.next is the first real item
+        val firstNode = head.next!!
+        val item = firstNode.task!!
+        firstNode.task = null // Help GC clean this node up
+        head = firstNode // The (now empty) item becomes the new dummy
+        return item
+    }
+
+    /** The current size of the queue. */
+    private val count = AtomicInteger(0)
 
     /** The lock for all producer operations (`offer`, `put`). */
     private val putLock = Object()
 
     /** The lock for all consumer operations (`take`, `poll`). */
     private val takeLock = Object()
-
-    /** The current size of the queue. */
-    private val count = AtomicInteger(0)
 
     /**
      * A dedicated thread to send notifications, so the producer thread
@@ -73,9 +114,11 @@ class SynchronizedLinkedBlockingQueue : AbstractQueue<Runnable>(), BlockingQueue
         get() = count.get()
 
     override fun offer(e: Runnable): Boolean {
+        val newNode = Node(e)
+
         synchronized(putLock) {
-            queue.addLast(e)
-            count.incrementAndGet()
+            enqueue(newNode)
+            count.getAndIncrement()
         }
 
         // If a notification isn't already pending, schedule one.
@@ -95,22 +138,27 @@ class SynchronizedLinkedBlockingQueue : AbstractQueue<Runnable>(), BlockingQueue
     }
 
     override fun take(): Runnable {
+        val item: Runnable
+
         try {
             synchronized(takeLock) {
                 while (count.get() == 0) {
                     takeLock.wait()
                 }
-                val ret = queue.removeFirst()
+                // We hold the lock, and we know count > 0
+                item = dequeue()
                 count.decrementAndGet()
-                return ret
             }
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
             throw e
         }
+
+        return item
     }
 
     override fun poll(timeout: Long, unit: TimeUnit): Runnable? {
+        var item: Runnable?
         var nanos = unit.toNanos(timeout)
         val deadline = System.nanoTime() + nanos
 
@@ -126,29 +174,52 @@ class SynchronizedLinkedBlockingQueue : AbstractQueue<Runnable>(), BlockingQueue
                     nanos = deadline - System.nanoTime()
                 }
 
-                val item = queue.removeFirst()
+                // We hold the lock, and we know count > 0
+                item = dequeue()
                 count.decrementAndGet()
-                return item
             }
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
             throw e
         }
+
+        return item
     }
 
     override fun poll(): Runnable? {
+        // Fast-path check without locking
+        if (count.get() == 0) {
+            return null
+        }
+
+        var item: Runnable? = null
         synchronized(takeLock) {
-            val ret = queue.pollFirst()
-            if (ret != null) {
+            // Re-check inside the lock
+            if (count.get() > 0) {
+                item = dequeue()
                 count.decrementAndGet()
             }
-            return ret
         }
+
+        return item
     }
 
     override fun peek(): Runnable? {
+        // Fast-path check without locking
+        if (count.get() == 0) {
+            return null
+        }
+
         synchronized(takeLock) {
-            return queue.peekFirst()
+            // Re-check inside lock
+            if (count.get() == 0) {
+                return null
+            }
+            // head.next could be null if a poll() just ran
+            // but count.decrementAndGet() hasn't completed yet.
+            // Such a race condition is harmless, since we don't
+            // alter count in peek()
+            return head.next?.task
         }
     }
 
