@@ -62,6 +62,10 @@ constructor(
     private val repository: DualShadeEducationRepository,
 ) : ExclusiveActivatable(), CoreStartable {
 
+    /** Whether an education tooltip is in progress. */
+    var isEducationInProgress: Boolean by mutableStateOf(false)
+        private set
+
     /** The education that's still needed, regardless of the tooltip that needs to be shown. */
     var education: DualShadeEducationModel by mutableStateOf(DualShadeEducationModel.None)
         private set
@@ -99,7 +103,7 @@ constructor(
         logD(TAG) { "marking notification shade tooltip as dismissed" }
         backgroundScope.launch {
             if (education == DualShadeEducationModel.ForNotificationsShade) {
-                education = DualShadeEducationModel.None
+                dismissEducation()
             }
         }
     }
@@ -108,7 +112,7 @@ constructor(
         logD(TAG) { "marking quick settings shade tooltip as dismissed" }
         backgroundScope.launch {
             if (education == DualShadeEducationModel.ForQuickSettingsShade) {
-                education = DualShadeEducationModel.None
+                dismissEducation()
             }
         }
     }
@@ -173,7 +177,7 @@ constructor(
                                     " the tooltip for the other overlay is still showing, hiding" +
                                     " tooltip"
                             }
-                            education = DualShadeEducationModel.None
+                            dismissEducation()
                         }
                     }
                 }
@@ -186,7 +190,7 @@ constructor(
                                     " the tooltip for the other overlay is still showing, hiding" +
                                     " tooltip"
                             }
-                            education = DualShadeEducationModel.None
+                            dismissEducation()
                         }
                     }
                 }
@@ -303,6 +307,7 @@ constructor(
             logD(TAG) {
                 "${shownOverlay.debugName} shown, waiting ${TOOLTIP_APPEARANCE_DELAY_MS}ms before starting to educate about ${overlayToEducateAbout.debugName}"
             }
+            isEducationInProgress = true
 
             delay(TOOLTIP_APPEARANCE_DELAY_MS)
             logD(TAG) {
@@ -319,8 +324,13 @@ constructor(
             logD(TAG) {
                 "Canceled education for ${overlayToEducateAbout.debugName}, resetting state"
             }
-            education = DualShadeEducationModel.None
+            dismissEducation()
         }
+    }
+
+    private fun dismissEducation() {
+        isEducationInProgress = false
+        education = DualShadeEducationModel.None
     }
 
     companion object {
