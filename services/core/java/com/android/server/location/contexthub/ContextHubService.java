@@ -253,6 +253,14 @@ public class ContextHubService extends IContextHubService.Stub {
         }
 
         @Override
+        public void handleServiceDied() {
+            Log.i(TAG, "Context Hub HAL service died");
+            if (mEndpointManager != null) {
+                mEndpointManager.onHalDeath();
+            }
+        }
+
+        @Override
         public void handleServiceRestart() {
             Log.i(TAG, "Recovering from Context Hub HAL restart...");
             initExistingCallbacks();

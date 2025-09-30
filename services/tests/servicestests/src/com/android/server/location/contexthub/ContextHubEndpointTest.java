@@ -174,6 +174,7 @@ public class ContextHubEndpointTest {
     }
 
     private void restartHalAndVerifyHubRegistration() throws RemoteException {
+        mEndpointManager.onHalDeath();
         mEndpointManager.onHalRestart();
         mNumHalRestarts++;
         verify(mMockContextHubWrapper, times(mNumHalRestarts + 1))
