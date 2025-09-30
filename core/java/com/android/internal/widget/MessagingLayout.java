@@ -99,7 +99,6 @@ public class MessagingLayout extends FrameLayout
     private int mSpacingForExpander;
     private int mSpacingForImage;
     private LinearLayout mMessageContentView;
-    private int mDefaultStartMargin;
     private int mSummarizationStartMargin;
 
     public MessagingLayout(@NonNull Context context) {
@@ -162,8 +161,6 @@ public class MessagingLayout extends FrameLayout
         setMessagingClippingDisabled(false);
 
         mMessageContentView = findViewById(R.id.notification_main_column);
-        mDefaultStartMargin = getResources().getDimensionPixelSize(
-                R.dimen.notification_2025_content_margin_start);
         mSummarizationStartMargin = getResources().getDimensionPixelSize(
                 R.dimen.notification_2025_content_margin_start_summarization);
     }
@@ -363,11 +360,13 @@ public class MessagingLayout extends FrameLayout
             }
         }
         mMessagingLinearLayout.setMaxDisplayedLines(maxLines);
-        ViewGroup.LayoutParams lp = mMessageContentView.getLayoutParams();
-        if (lp instanceof MarginLayoutParams mlp) {
-            mlp.setMarginStart(
-                    isShowingSummarization() ? mSummarizationStartMargin : mDefaultStartMargin);
-            // this happens before layout, so we don't need to explicitly ask for one
+        if (isShowingSummarization()) {
+            ViewGroup.LayoutParams lp = mMessageContentView.getLayoutParams();
+            if (lp != null && lp instanceof MarginLayoutParams) {
+                final MarginLayoutParams mlp = (MarginLayoutParams) lp;
+                mlp.setMarginStart(mSummarizationStartMargin);
+                // this happens before layout, so we don't need to explicitly ask for one
+            }
         }
     }
 
