@@ -11589,8 +11589,9 @@ public class NotificationManagerService extends SystemService {
     }
 
     /**
-     * Cancels all notifications from a given package that have all of the
-     * {@code mustHaveFlags} and none of the {@code mustNotHaveFlags}.
+     * Cancels all notifications from a given package (or, optionally, in a specific channel from
+     * said package) that have all of the {@code mustHaveFlags} and none of the
+     * {@code mustNotHaveFlags}.
      */
     void cancelAllNotificationsInt(int callingUid, int callingPid, String pkg,
             @Nullable String channelId, int mustHaveFlags, int mustNotHaveFlags, int userId,
@@ -11701,7 +11702,9 @@ public class NotificationManagerService extends SystemService {
             if (pkg != null && !r.getSbn().getPackageName().equals(pkg)) {
                 continue;
             }
-            if (channelId != null && !channelId.equals(r.getChannel().getId())) {
+            if (channelId != null // Compare against possibly bundled channel AND original channel
+                    && !channelId.equals(r.getChannel().getId())
+                    && !channelId.equals(r.getNotification().getChannelId())) {
                 continue;
             }
             if (r.getSbn().isGroup() && r.getNotification().isGroupChild()) {

@@ -2010,6 +2010,95 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    public void updateChannel_blocking_cancelsPostedNotifications() throws Exception {
+        // Have two notifications on two different channels.
+        NotificationChannel channel1 =
+                new NotificationChannel("c1", "one", IMPORTANCE_DEFAULT);
+        NotificationChannel channel2 =
+                new NotificationChannel("c2", "two", IMPORTANCE_DEFAULT);
+        mBinderService.createNotificationChannels(mPkg,
+                new ParceledListSlice(Arrays.asList(channel1, channel2)));
+        Notification n1 = new Notification.Builder(mContext, "c1").setSmallIcon(1).build();
+        Notification n2 = new Notification.Builder(mContext, "c2").setSmallIcon(1).build();
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "", 1, n1, mUserId);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "", 2, n2, mUserId);
+        waitForIdle();
+        assertThat(mBinderService.getActiveNotifications(mPkg)).hasLength(3); // 2 + autogroup
+
+        // The user blocks the channel.
+        NotificationChannel updatedChannel1 =
+                new NotificationChannel("c1", "one", IMPORTANCE_NONE);
+        mBinderService.updateNotificationChannelForPackage(mPkg, mUid, updatedChannel1);
+        waitForIdle();
+
+        // Notifications from that channel are gone (but others stay).
+        StatusBarNotification[] activeNotifications = mBinderService.getActiveNotifications(mPkg);
+        assertThat(activeNotifications).hasLength(2);
+        assertThat(activeNotifications[0].getNotification().isGroupSummary()).isTrue();
+        assertThat(activeNotifications[1].getNotification().getChannelId()).isEqualTo("c2");
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void updateChannel_blocking_cancelsPostedNotificationsEvenIfClassified()
+            throws Exception {
+        // Have two notifications on two different channels.
+        NotificationChannel channel1 =
+                new NotificationChannel("c1", "one", IMPORTANCE_DEFAULT);
+        NotificationChannel channel2 =
+                new NotificationChannel("c2", "two", IMPORTANCE_DEFAULT);
+        mBinderService.createNotificationChannels(mPkg,
+                new ParceledListSlice(Arrays.asList(channel1, channel2)));
+        Notification n1 = new Notification.Builder(mContext, "c1").setSmallIcon(1).build();
+        Notification n2 = new Notification.Builder(mContext, "c2").setSmallIcon(1).build();
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "", 1, n1, mUserId);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "", 2, n2, mUserId);
+        waitForIdle();
+        assertThat(mService.mNotificationList).hasSize(3); // 2 + autogroup
+
+        // They get both classified as "News".
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        doAnswer(invocationOnMock -> {
+            RankingReconsideration recon =
+                    ((RankingReconsideration) invocationOnMock.getArguments()[0]);
+            final NotificationRecord r = mService.mNotificationsByKey.get(recon.getKey());
+            if (r != null) {
+                recon.applyChangesLocked(r);
+            }
+            return null;
+        }).when(mRankingHandler).requestReconsideration(any());
+        for (NotificationRecord nr : mService.mNotificationList) {
+            if (!nr.getNotification().isGroupSummary()) {
+                Bundle signals = new Bundle();
+                signals.putInt(Adjustment.KEY_TYPE, Adjustment.TYPE_NEWS);
+                Adjustment adjustment = new Adjustment(nr.getSbn().getPackageName(), nr.getKey(),
+                        signals, "", nr.getUser().getIdentifier());
+                mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+            }
+        }
+        mService.handleRankingSort();
+        waitForIdle();
+        assertThat(mService.mNotificationList.get(0).getNotification().isGroupSummary()).isTrue();
+        assertThat(mService.mNotificationList.get(1).getChannel().getId()).isEqualTo(NEWS_ID);
+        assertThat(mService.mNotificationList.get(2).getChannel().getId()).isEqualTo(NEWS_ID);
+
+        // The user blocks the original channel.
+        NotificationChannel updatedChannel1 =
+                new NotificationChannel("c1", "one", IMPORTANCE_NONE);
+        mBinderService.updateNotificationChannelForPackage(mPkg, mUid, updatedChannel1);
+        waitForIdle();
+
+        // Notifications from that channel are gone (but others stay).
+        StatusBarNotification[] activeNotifications = mBinderService.getActiveNotifications(mPkg);
+        assertThat(activeNotifications).hasLength(2);
+        assertThat(activeNotifications[0].getNotification().isGroupSummary()).isTrue();
+        assertThat(activeNotifications[1].getNotification().getChannelId()).isEqualTo("c2");
+    }
+
+    @Test
     public void testEnqueueNotificationInternal_noChannel() throws Exception {
         when(mPermissionHelper.hasPermission(mUid)).thenReturn(false);
         NotificationRecord nr = generateNotificationRecord(
