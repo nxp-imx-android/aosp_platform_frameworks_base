@@ -139,7 +139,6 @@ public final class FoldableDeviceStateProviderTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_DUAL_DISPLAY_BLOCKING, true);
 
         mHingeAngleSensor = new Sensor(mInputSensorInfo);
     }

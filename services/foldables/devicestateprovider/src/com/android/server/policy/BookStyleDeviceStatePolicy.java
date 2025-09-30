@@ -81,8 +81,6 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
     private static final int MAX_CLOSED_ANGLE_DEGREES = 5;
 
     private final FoldableDeviceStateProvider mProvider;
-
-    private final boolean mIsDualDisplayBlockingEnabled;
     private static final Predicate<FoldableDeviceStateProvider> ALLOWED = p -> true;
     private static final Predicate<FoldableDeviceStateProvider> NOT_ALLOWED = p -> false;
 
@@ -105,8 +103,6 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
         final PowerManager powerManager = mContext.getSystemService(PowerManager.class);
         final PowerManagerInternal powerManagerInternal = LocalServices.getService(
                 PowerManagerInternal.class);
-
-        mIsDualDisplayBlockingEnabled = featureFlags.enableDualDisplayBlocking();
 
         final DeviceStatePredicateWrapper[] configuration = createConfiguration(
                 leftAccelerometerSensor, rightAccelerometerSensor, closeAngleDegrees, featureFlags);
@@ -133,12 +129,12 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
                         /* activeStatePredicate= */ NOT_ALLOWED),
                 createConfig(getDualDisplayDeviceState(),
                         /* activeStatePredicate= */ NOT_ALLOWED,
-                        /* availabilityPredicate= */ provider -> !mIsDualDisplayBlockingEnabled
-                                || provider.hasNoConnectedExternalDisplay()),
+                        /* availabilityPredicate= */ provider ->
+                                provider.hasNoConnectedExternalDisplay()),
                 createConfig(getRearDisplayOuterDefaultState(),
                         /* activeStatePredicate= */ NOT_ALLOWED,
-                        /* availabilityPredicate= */ provider -> !mIsDualDisplayBlockingEnabled
-                                || provider.hasNoConnectedExternalDisplay())
+                        /* availabilityPredicate= */ provider ->
+                                provider.hasNoConnectedExternalDisplay())
         };
     }
 

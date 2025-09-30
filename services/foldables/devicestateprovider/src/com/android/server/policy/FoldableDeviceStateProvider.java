@@ -120,8 +120,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     @GuardedBy("mLock")
     private boolean mPowerSaveModeEnabled;
 
-    private final boolean mIsDualDisplayBlockingEnabled;
-
     public FoldableDeviceStateProvider(
             @NonNull Context context,
             @NonNull SensorManager sensorManager,
@@ -151,7 +149,6 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
         mDisplayManager = displayManager;
         mConfigurations = deviceStatePredicateWrappers;
         mPowerManagerInternal = powerManagerInternal;
-        mIsDualDisplayBlockingEnabled = featureFlags.enableDualDisplayBlocking();
 
         sensorManager.registerListener(this, mHingeAngleSensor, SENSOR_DELAY_FASTEST);
 
@@ -268,8 +265,7 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
                 PROPERTY_POLICY_UNSUPPORTED_WHEN_POWER_SAVE_MODE)) {
             return false;
         }
-        if (mIsDualDisplayBlockingEnabled
-                && mStateAvailabilityConditions.contains(deviceState.getIdentifier())) {
+        if (mStateAvailabilityConditions.contains(deviceState.getIdentifier())) {
             return mStateAvailabilityConditions
                     .get(deviceState.getIdentifier())
                     .getAsBoolean();
@@ -393,8 +389,7 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     public void onDisplayAdded(int displayId) {
         // TODO(b/312397262): consider virtual displays cases
         synchronized (mLock) {
-            if (mIsDualDisplayBlockingEnabled
-                    && !mExternalDisplaysConnected.get(displayId, false)) {
+            if (!mExternalDisplaysConnected.get(displayId, false)) {
                 var display = mDisplayManager.getDisplay(displayId);
                 if (display == null || (display.getType() != TYPE_EXTERNAL
                         && display.getType() != TYPE_OVERLAY)) {
@@ -414,7 +409,7 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
     @Override
     public void onDisplayRemoved(int displayId) {
         synchronized (mLock) {
-            if (mIsDualDisplayBlockingEnabled && mExternalDisplaysConnected.get(displayId, false)) {
+            if (mExternalDisplaysConnected.get(displayId, false)) {
                 mExternalDisplaysConnected.delete(displayId);
 
                 // Only update the supported states when going from 1 external display to 0

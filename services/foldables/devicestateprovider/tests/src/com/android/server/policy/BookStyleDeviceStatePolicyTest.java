@@ -135,8 +135,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-
-        mFakeFeatureFlags.setFlag(Flags.FLAG_ENABLE_DUAL_DISPLAY_BLOCKING, true);
         mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
 
         when(mInputSensorInfo.getName()).thenReturn("hall-effect");
