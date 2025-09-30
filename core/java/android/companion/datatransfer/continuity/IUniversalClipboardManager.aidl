@@ -18,7 +18,7 @@ package android.companion.datatransfer.continuity;
 
 /**
  * Interface for communication with the Universal Clipboard service.
- * {@hide}
+ * @hide
  */
 interface IUniversalClipboardManager {
 
