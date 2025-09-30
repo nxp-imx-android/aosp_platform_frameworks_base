@@ -71,7 +71,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_BACK_BUTTON_ON_BOUNCER)
+    @EnableFlags(com.android.systemui.Flags.FLAG_BACK_BUTTON_ON_BOUNCER_FIX)
     fun backButton_shownOnLargeScreens() {
         kosmos.testableContext.orCreateTestableResources.addOverride(
             R.bool.config_improveLargeScreenInteractionOnLockscreen,
@@ -85,7 +85,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_BACK_BUTTON_ON_BOUNCER)
+    @EnableFlags(com.android.systemui.Flags.FLAG_BACK_BUTTON_ON_BOUNCER_FIX)
     fun backButton_hiddenOnSmallScreens() {
         kosmos.testableContext.orCreateTestableResources.addOverride(
             R.bool.config_improveLargeScreenInteractionOnLockscreen,

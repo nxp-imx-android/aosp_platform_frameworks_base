@@ -4,10 +4,13 @@ container: "system"
 # NOTE: Keep alphabetized to help limit merge conflicts from multiple simultaneous editors.
 
 flag {
-    name: "back_button_on_bouncer"
+    name: "back_button_on_bouncer_fix"
     namespace: "desktop_users_and_accounts"
     description: "Add a 'back' button to bouncer"
     bug: "432062209"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
