@@ -32,23 +32,6 @@ flag {
 }
 
 flag {
-    name: "adpf_graphics_pipeline"
-    is_exported: true
-    namespace: "game"
-    description: "Guards use of SessionCreationConfig and Graphics Pipeline mode"
-    is_fixed_read_only: true
-    bug: "367803904"
-}
-
-flag {
-    name: "adpf_hwui_gpu"
-    namespace: "game"
-    description: "Guards use of the FMQ channel for ADPF"
-    is_fixed_read_only: true
-    bug: "330922490"
-}
-
-flag {
     name: "adpf_measure_during_input_event_boost"
     namespace: "game"
     description: "Guards use of a boost when view measures during input events"
