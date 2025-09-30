@@ -1123,3 +1123,13 @@ test_module_config {
     ],
     include_filters: ["com.android.server.adb"],
 }
+
+test_module_config {
+    name: "FrameworksServicesTests_companion_virtual",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.companion.virtual"],
+}

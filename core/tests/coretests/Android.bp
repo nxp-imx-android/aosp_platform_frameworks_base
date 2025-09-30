@@ -868,3 +868,14 @@ test_module_config {
         "android.os.WaitStateTest",
     ],
 }
+
+test_module_config {
+    name: "FrameworksCoreTests_companion_virtual",
+    base: "FrameworksCoreTests",
+    test_suites: [
+        "automotive-tests",
+        "device-platinum-tests",
+        "device-tests",
+    ],
+    include_filters: ["android.companion.virtual."],
+}
