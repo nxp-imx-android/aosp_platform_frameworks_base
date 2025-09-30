@@ -825,6 +825,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         bt.startAnimation(transitionToken, info, startT, finishT, finishCb);
 
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
+        // Check that task is cropped to the start bounds
+        verify(startT).setCrop(taskLeash,
+                new Rect(0, 0, FULLSCREEN_TASK_WIDTH, FULLSCREEN_TASK_HEIGHT));
         // Verify startT modifications (position, snapshot handling)
         verify(startT).setPosition(taskLeash, 0, 0);
         verify(startT).show(snapshot);
