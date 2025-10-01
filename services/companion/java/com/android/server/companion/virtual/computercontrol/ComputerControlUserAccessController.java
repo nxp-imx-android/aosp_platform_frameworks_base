@@ -32,11 +32,11 @@ import android.util.ArraySet;
 import java.util.Map;
 import java.util.Set;
 
-/** Provides constraints for which users are allowed in a Computer Control session. */
-public final class ComputerControlAccessManager {
+/** Provides constraints for which users are allowed in a computer control session. */
+final class ComputerControlUserAccessController {
     private final UserManager mUserManager;
 
-    public ComputerControlAccessManager(Context context) {
+    ComputerControlUserAccessController(Context context) {
         mUserManager = requireNonNull(context.getSystemService(UserManager.class));
     }
 
@@ -46,7 +46,7 @@ public final class ComputerControlAccessManager {
      * @throws SecurityException if the caller is not allowed because it's a managed profile.
      */
     @SuppressLint("AndroidFrameworkRequiresPermission")
-    public Set<UserHandle> validateAndGetAllowedUsers(AttributionSource attributionSource) {
+    Set<UserHandle> validateAndGetAllowedUsers(AttributionSource attributionSource) {
         if (!Flags.computerControlUserRestriction()) {
             return emptySet();
         }
