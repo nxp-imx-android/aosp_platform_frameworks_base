@@ -442,3 +442,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_display_event_merging"
+    namespace: "display_manager"
+    description: "Enable merging of display events"
+    bug: "378668902"
+}

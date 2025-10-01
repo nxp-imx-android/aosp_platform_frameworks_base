@@ -949,17 +949,32 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         // to ensure that addition and removal notifications happen in the right order.
         sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_DEVICE_STATE_TRANSITION);
         sendUpdatesForGroupsLocked(DISPLAY_GROUP_EVENT_ADDED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_REMOVED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_DISCONNECTED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_BASIC_CHANGED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_STATE_CHANGED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_FRAME_RATE_OVERRIDES_CHANGED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_SWAPPED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_CONNECTED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_ADDED);
-        sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_HDR_SDR_RATIO_CHANGED);
+        if (Flags.enableDisplayEventMerging()) {
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_REMOVED
+                    | LOGICAL_DISPLAY_EVENT_DISCONNECTED
+                    | LOGICAL_DISPLAY_EVENT_BASIC_CHANGED
+                    | LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED
+                    | LOGICAL_DISPLAY_EVENT_STATE_CHANGED
+                    | LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED
+                    | LOGICAL_DISPLAY_EVENT_FRAME_RATE_OVERRIDES_CHANGED
+                    | LOGICAL_DISPLAY_EVENT_SWAPPED
+                    | LOGICAL_DISPLAY_EVENT_CONNECTED
+                    | LOGICAL_DISPLAY_EVENT_ADDED
+                    | LOGICAL_DISPLAY_EVENT_HDR_SDR_RATIO_CHANGED
+            );
+        } else {
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_REMOVED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_DISCONNECTED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_BASIC_CHANGED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_STATE_CHANGED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_FRAME_RATE_OVERRIDES_CHANGED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_SWAPPED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_CONNECTED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_ADDED);
+            sendUpdatesForDisplaysLocked(LOGICAL_DISPLAY_EVENT_HDR_SDR_RATIO_CHANGED);
+        }
         sendUpdatesForGroupsLocked(DISPLAY_GROUP_EVENT_CHANGED);
         sendUpdatesForGroupsLocked(DISPLAY_GROUP_EVENT_REMOVED);
 
@@ -1005,10 +1020,11 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     /**
      * Send the specified message for all relevant displays in the specified display-to-message map.
      */
-    private void sendUpdatesForDisplaysLocked(int logicalDisplayEvent) {
+    private void sendUpdatesForDisplaysLocked(int eventMask) {
         for (int i = mLogicalDisplaysToUpdate.size() - 1; i >= 0; --i) {
             final int logicalDisplayEventMask = mLogicalDisplaysToUpdate.valueAt(i);
-            if ((logicalDisplayEventMask & logicalDisplayEvent) == 0) {
+            final int eventsToDispatch = eventMask & logicalDisplayEventMask;
+            if (eventsToDispatch == 0) {
                 continue;
             }
 
@@ -1017,19 +1033,19 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             if (DEBUG) {
                 final DisplayDevice device = display.getPrimaryDisplayDeviceLocked();
                 final String uniqueId = device == null ? "null" : device.getUniqueId();
-                Slog.d(TAG, "Sending " + displayEventToString(logicalDisplayEvent) + " for "
+                Slog.d(TAG, "Sending " + displayEventMaskToString(eventsToDispatch) + " for "
                         + "display=" + id + " with device=" + uniqueId);
             }
 
-            if (logicalDisplayEvent == LOGICAL_DISPLAY_EVENT_ADDED) {
+            if ((eventsToDispatch & LOGICAL_DISPLAY_EVENT_ADDED) != 0) {
                 mDisplaysEnabledCache.put(id, true);
-            } else if (logicalDisplayEvent == LOGICAL_DISPLAY_EVENT_REMOVED) {
+            } else if ((eventsToDispatch & LOGICAL_DISPLAY_EVENT_REMOVED) != 0) {
                 mDisplaysEnabledCache.delete(id);
             }
 
-            mListener.onLogicalDisplayEventLocked(display, logicalDisplayEvent);
+            mListener.onLogicalDisplayEventLocked(display, eventsToDispatch);
 
-            if (logicalDisplayEvent == LOGICAL_DISPLAY_EVENT_DISCONNECTED) {
+            if ((eventsToDispatch & LOGICAL_DISPLAY_EVENT_DISCONNECTED) != 0) {
                 mLogicalDisplays.delete(id);
             }
         }
@@ -1409,6 +1425,24 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 || mFoldSettingProvider.shouldSelectiveStayAwakeOnFold();
     }
 
+    /** Converts an event mask to a string. */
+    public String displayEventMaskToString(int eventMask) {
+        if (eventMask == 0) {
+            return "NONE";
+        }
+        StringBuilder sb = new StringBuilder();
+        int remainingEvents = eventMask;
+        while (remainingEvents != 0) {
+            int nextEvent = Integer.lowestOneBit(remainingEvents);
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(displayEventToString(nextEvent));
+            remainingEvents &= ~nextEvent;
+        }
+        return sb.toString();
+    }
+
     private String displayEventToString(int msg) {
         switch(msg) {
             case LOGICAL_DISPLAY_EVENT_ADDED:
@@ -1436,7 +1470,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             case LOGICAL_DISPLAY_EVENT_BASIC_CHANGED:
                 return "basic_changed";
         }
-        return null;
+        return "unknown";
     }
 
     void setDisplayEnabledLocked(@NonNull LogicalDisplay display, boolean enabled) {
@@ -1587,7 +1621,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     }
 
     public interface Listener {
-        void onLogicalDisplayEventLocked(LogicalDisplay display, int event);
+        void onLogicalDisplayEventLocked(LogicalDisplay display, int eventMask);
         void onDisplayGroupEventLocked(int groupId, int event);
         void onTraversalRequested();
     }
