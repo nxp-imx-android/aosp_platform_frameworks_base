@@ -16,7 +16,6 @@
 package com.android.server.notification;
 
 import static android.content.Context.DEVICE_POLICY_SERVICE;
-import static android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_CURRENT;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
@@ -76,6 +75,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -95,11 +95,15 @@ import com.google.android.collect.Lists;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -114,6 +118,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+@RunWith(ParameterizedAndroidJunit4.class)
 public class ManagedServicesTest extends UiServiceTestCase {
     private static final IBinderSession NULL_BINDER_SESSION = null;
 
@@ -159,6 +164,16 @@ public class ManagedServicesTest extends UiServiceTestCase {
     private static final String PKG2 = "pkg2";
     private static final int PKG2_UID = 10002;
     private static final int PKG3_UID = 10003;
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING);
+    }
+
+    public ManagedServicesTest(FlagsParameterization flags) {
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -1970,7 +1985,6 @@ public class ManagedServicesTest extends UiServiceTestCase {
                 APPROVAL_BY_COMPONENT);
         ComponentName cn = ComponentName.unflattenFromString("a/a");
 
-        service.registerSystemService(cn, 0);
         when(context.bindServiceAsUser(any(), any(), any(), any())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             ServiceConnection sc = (ServiceConnection) args[1];
@@ -2000,7 +2014,6 @@ public class ManagedServicesTest extends UiServiceTestCase {
                 APPROVAL_BY_COMPONENT);
         ComponentName cn = ComponentName.unflattenFromString("a/a");
 
-        service.registerSystemService(cn, 0);
         when(context.bindServiceAsUser(any(), any(), any(), any())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             ServiceConnection sc = (ServiceConnection) args[1];
@@ -2669,6 +2682,56 @@ public class ManagedServicesTest extends UiServiceTestCase {
         assertThat(service.isPackageOrComponentUserSet("onemore", userId)).isTrue();
     }
 
+    @Test
+    public void registerSystemService_linksToDeath() throws Exception {
+        IInterface service = mock(IInterface.class);
+        IBinder binder = mock(IBinder.class);
+        when(service.asBinder()).thenReturn(binder);
+
+        mService.registerSystemService(service, ComponentName.unflattenFromString("a/a"), 0, 15);
+
+        verify(binder).linkToDeath(any(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING)
+    public void registerGuestService_doesNotLinkToDeath() throws Exception {
+        ManagedServices ownerService = new TestManagedServices(getContext(), mLock, mUserProfiles,
+                mIpm, APPROVAL_BY_PACKAGE);
+        IInterface service = mock(IInterface.class);
+        IBinder binder = mock(IBinder.class);
+        when(service.asBinder()).thenReturn(binder);
+        ManagedServices.ManagedServiceInfo guest = ownerService.new ManagedServiceInfo(service,
+                ComponentName.unflattenFromString("a/a"), 0, false, mock(ServiceConnection.class),
+                26, 34);
+
+        mService.registerGuestService(guest);
+
+        verify(binder, never()).linkToDeath(any(), anyInt());
+    }
+
+    @Test
+    public void registerService_bindAsUserSuccess_isBound() {
+        ComponentName cn = ComponentName.unflattenFromString("a/a");
+        doReturn(true).when(mContext).bindServiceAsUser(any(), any(), any(), any());
+        assertThat(mService.isBound(cn, mUserId)).isFalse();
+
+        mService.registerService(cn, mUserId);
+
+        assertThat(mService.isBound(cn, mUserId)).isTrue();
+    }
+
+    @Test
+    public void registerService_bindAsUserFailure_isNotBound() {
+        ComponentName cn = ComponentName.unflattenFromString("a/a");
+        doReturn(false).when(mContext).bindServiceAsUser(any(), any(), any(), any());
+        assertThat(mService.isBound(cn, mUserId)).isFalse();
+
+        mService.registerService(cn, mUserId);
+
+        assertThat(mService.isBound(cn, mUserId)).isFalse();
+    }
+
     private void mockServiceInfoWithMetaData(List<ComponentName> componentNames,
             ManagedServices service, ArrayMap<ComponentName, Bundle> metaDatas)
             throws RemoteException {
@@ -2920,7 +2983,6 @@ public class ManagedServicesTest extends UiServiceTestCase {
             }
         }
     }
-
 
     private void verifyExpectedApprovedPackages(ManagedServices service) {
         verifyExpectedApprovedPackages(service, true);
