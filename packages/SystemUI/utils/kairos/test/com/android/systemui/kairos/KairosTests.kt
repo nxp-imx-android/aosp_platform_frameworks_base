@@ -952,12 +952,14 @@ class KairosTests {
         val result =
             activateSpecWithResult(network) {
                 val tres =
-                    merge(e2.map { 1 }, e2.map { 2 }, transformCoincidence = { a, b -> a + b })
+                    mergeReduce(
+                        e2.map { 1 },
+                        e2.map { 2 },
+                        transformCoincidence = { a, b -> a + b },
+                    )
                 tres.observeSync()
                 val switch = emitter.map { tres }.flatten()
-                merge(switch, e2.map { null }, transformCoincidence = { a, _ -> a })
-                    .filterNotNull()
-                    .nextDeferred()
+                mergeLeft(switch, e2.map { null }).filterNotNull().nextDeferred()
             }
         runCurrent()
 

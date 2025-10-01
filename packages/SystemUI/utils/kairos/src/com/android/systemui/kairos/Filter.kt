@@ -98,7 +98,10 @@ fun <A> Events<A>.filter(predicate: TransactionScope.(A) -> Boolean): Events<A> 
 internal fun <A> Events<A>.filter(
     nameData: NameData,
     predicate: TransactionScope.(A) -> Boolean,
-): Events<A> {
-    val impl = filterImpl(nameData, { init.connect(initScope = this) }) { predicate(it) }
-    return EventsInit(constInit(nameData, impl))
-}
+): Events<A> =
+    EventsInit(
+        constInit(
+            nameData,
+            filterImpl(nameData, { init.connect(initScope = this) }) { predicate(it) },
+        )
+    )
