@@ -3334,28 +3334,6 @@ class Task extends TaskFragment {
         return "Task=" + mTaskId + (mName != null ? "(" + mName + ")" : "");
     }
 
-    // It is replaced by WindowState#getDimController().
-    @Deprecated
-    @Override
-    Dimmer getDimmer() {
-        // If the window is in multi-window mode, we want to dim at the Task level to ensure the dim
-        // bounds match the area the app lives in
-        if (inMultiWindowMode()) {
-            return mDimmer;
-        }
-
-        // If we're not at the root task level, we want to keep traversing through the parents to
-        // find the root.
-        // Once at the root task level, we want to check {@link #isTranslucent(ActivityRecord)}.
-        // If true, we want to get the Dimmer from the level above since we don't want to animate
-        // the dim with the Task.
-        if (!isRootTask() || isTranslucentAndVisible() || isTranslucentForTransition()) {
-            return super.getDimmer();
-        }
-
-        return mDimmer;
-    }
-
     boolean isSuitableForDimming() {
         // If the window is in multi-window mode, we want to dim at the Task level to ensure the dim
         // bounds match the area the app lives in.
