@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.Icon
@@ -174,7 +175,8 @@ private fun IconButton(
             modifier
                 .sizeIn(minHeight = dimensions.minimumSize, minWidth = dimensions.minimumSize)
                 .aspectRatio(1.0F)
-                .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50)),
+                .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
+                .wrapContentSize(),
         useModifierBasedImplementation = true,
     ) {
         val protectionColor =
