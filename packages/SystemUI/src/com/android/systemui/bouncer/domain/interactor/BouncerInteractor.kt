@@ -118,8 +118,8 @@ constructor(
         }
 
     /** Whether interactions should be improved for large-screen (non-handheld) form factor. */
-    val isImproveLargeScreenInteractionEnabled: Boolean =
-        repository.isImproveLargeScreenInteractionEnabledInConfig
+    val isImproveLargeScreenInteractionEnabled: Boolean
+        get() = repository.isImproveLargeScreenInteractionEnabledInConfig
 
     /**
      * Preferred side of the screen where the input area on the bouncer should be. This is

@@ -42,6 +42,13 @@ flag {
 }
 
 flag {
+    name: "more_indicators_and_buttons_on_password_bouncer"
+    namespace: "desktop_users_and_accounts"
+    description: "Enable more indicators and buttons on PasswordBouncer, such as a 'reveal password' button"
+    bug: "448546093"
+}
+
+flag {
     name: "sign_out_button_on_keyguard_status_bar"
     namespace: "desktop_users_and_accounts"
     description: "Add a 'Sign out' button on keyguard's status bar"
