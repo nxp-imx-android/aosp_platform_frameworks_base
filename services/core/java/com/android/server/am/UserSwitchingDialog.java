@@ -71,7 +71,7 @@ class UserSwitchingDialog extends Dialog {
     protected static final boolean DEBUG = true;
 
     private static final long DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS = 300;
-    private final boolean mDisableAnimations;
+    private volatile boolean mDisableAnimations;
 
     // Time to wait for the onAnimationEnd() callbacks before moving on
     private static final int ANIMATION_TIMEOUT_MS = 1000;
@@ -311,6 +311,7 @@ class UserSwitchingDialog extends Dialog {
         };
         mHandler.postDelayed(() -> {
             Slog.w(TAG, name + " animation not completed in " + ANIMATION_TIMEOUT_MS + " ms");
+            mDisableAnimations = true;
             onAnimationEndOrTimeout.run();
         }, USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG, ANIMATION_TIMEOUT_MS);
 
