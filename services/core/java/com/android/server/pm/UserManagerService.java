@@ -1670,7 +1670,7 @@ public class UserManagerService extends IUserManager.Stub {
                     /* resolveNullNames= */ true);
         }
         var filter = getFilter(excludeDying);
-        return getUsers(filter);
+        return getUsers(filter, mNameConverter);
     }
 
     // Used by cmd users
