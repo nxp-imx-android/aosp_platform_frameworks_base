@@ -289,6 +289,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         } else {
             // Update title and subtitle
             mHeaderTitle.setText(getHeaderText());
+            mHeaderTitle.setTextColor(mMediaSwitchingController.getColorScheme().getOnSurface());
             final CharSequence subTitle = getHeaderSubtitle();
             if (TextUtils.isEmpty(subTitle)) {
                 mHeaderSubtitle.setVisibility(View.GONE);
@@ -296,6 +297,8 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             } else {
                 mHeaderSubtitle.setVisibility(View.VISIBLE);
                 mHeaderSubtitle.setText(subTitle);
+                mHeaderSubtitle.setTextColor(mMediaSwitchingController
+                        .getColorScheme().getOnSurface());
                 mHeaderTitle.setGravity(Gravity.NO_GRAVITY);
             }
         }

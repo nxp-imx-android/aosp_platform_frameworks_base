@@ -27,6 +27,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
@@ -66,6 +67,9 @@ public class MediaSessionReleaseDialog extends SystemUIDialog {
         final WindowManager.LayoutParams lp = window.getAttributes();
         lp.gravity = Gravity.CENTER;
         lp.width = (int) (mContext.getResources().getDisplayMetrics().widthPixels * 0.90);
+
+        TextView endSessionDialogTitle = mDialogView.requireViewById(R.id.end_session_dialog_title);
+        endSessionDialogTitle.setTextColor(mColorScheme.getOnSurface());
 
         ImageView headerIcon = mDialogView.requireViewById(R.id.end_icon);
         headerIcon.setImageDrawable(mContext.getDrawable(R.drawable.media_output_status_failed));
