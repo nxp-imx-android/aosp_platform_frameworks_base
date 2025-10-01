@@ -34,6 +34,7 @@ import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_WORK
 import static android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.PermissionChecker.PID_UNKNOWN;
+import static android.service.chooser.Flags.resolverEscExit;
 import static android.stats.devicepolicy.nano.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_PERSONAL;
 import static android.stats.devicepolicy.nano.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_WORK;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
@@ -88,6 +89,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -1259,6 +1261,16 @@ public class ResolverActivity extends Activity implements
             viewPager.setCurrentItem(savedInstanceState.getInt(LAST_SHOWN_TAB_KEY));
         }
         mMultiProfilePagerAdapter.clearInactiveProfileCache();
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (resolverEscExit() && keyCode == KeyEvent.KEYCODE_ESCAPE) {
+            finish();
+            return true;
+        }
+
+        return super.onKeyUp(keyCode, event);
     }
 
     private boolean hasManagedProfile() {
