@@ -68,6 +68,7 @@ constructor(
         )
         Spacer(modifier.fillMaxSize())
         SnoozableHeadsUpNotificationPlaceholder(
+            tag = "OccludedScene",
             useDrawBounds = {
                 with(layoutState.transitionState) {
                     isIdle(key) &&

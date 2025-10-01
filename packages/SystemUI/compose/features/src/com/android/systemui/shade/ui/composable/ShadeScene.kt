@@ -198,6 +198,7 @@ private fun ContentScope.ShadeScene(
 ) {
     if (viewModel.shadeMode is ShadeMode.Split) {
         SplitShade(
+            tag = "ShadeScene",
             notificationStackScrollView = notificationStackScrollView,
             viewModel = viewModel,
             headerViewModel = headerViewModel,
@@ -210,6 +211,7 @@ private fun ContentScope.ShadeScene(
         // Compose SingleShade even if we're in Dual shade mode; the view-model will take care of
         // switching scenes.
         SingleShade(
+            tag = "ShadeScene",
             notificationStackScrollView = notificationStackScrollView,
             viewModel = viewModel,
             headerViewModel = headerViewModel,
@@ -223,6 +225,7 @@ private fun ContentScope.ShadeScene(
 
 @Composable
 private fun ContentScope.SingleShade(
+    tag: String,
     notificationStackScrollView: NotificationScrollView,
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
@@ -340,6 +343,7 @@ private fun ContentScope.SingleShade(
             },
             scrollableScrim = { onContentHeightChanged ->
                 NestedScrollingNotificationPanel(
+                    tag = "$tag.Single",
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
@@ -399,6 +403,7 @@ private fun MediaAndQqsLayout(
 
 @Composable
 private fun ContentScope.SplitShade(
+    tag: String,
     notificationStackScrollView: NotificationScrollView,
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
@@ -543,6 +548,7 @@ private fun ContentScope.SplitShade(
                     }
                 }
                 ScrollingNotificationPanel(
+                    tag = "$tag.Split",
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,

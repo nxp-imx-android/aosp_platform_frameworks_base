@@ -382,6 +382,7 @@ private fun ContentScope.QuickSettingsContent(
             )
         }
         HeadsUpNotificationPlaceholder(
+            tag = "QSScene",
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
             useHunBounds = { shouldUseQuickSettingsHunBounds(layoutState) },
@@ -402,6 +403,7 @@ private fun ContentScope.QuickSettingsContent(
         val minNotificationStackTop = screenHeight.roundToInt() + 1
         val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
         ScrollingNotificationPanel(
+            tag = "QSScene",
             shadeSession = shadeSession,
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
