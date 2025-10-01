@@ -19,8 +19,6 @@ package android.companion;
 import static android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES;
 import static android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED;
 
-import static com.android.internal.util.CollectionUtils.emptyIfNull;
-
 import static java.util.Objects.requireNonNull;
 
 import android.Manifest;
@@ -362,7 +360,7 @@ public final class AssociationRequest implements Parcelable {
      * The extra permissions to request/grant for non-profile device.
      */
     @NonNull
-    private Set<String> mExtraPermissions = new HashSet<>();
+    private final Set<String> mExtraPermissions;
 
     private static final int DISPLAY_NAME_LENGTH_LIMIT = 1024;
 
@@ -370,48 +368,17 @@ public final class AssociationRequest implements Parcelable {
             PERMISSION_NEARBY
     );
 
-    /**
-     * Creates a new AssociationRequest.
-     *
-     * @param singleDevice     Whether only a single device should match the provided filter.
-     *
-     *                         When scanning for a single device with a specific
-     *                         {@link BluetoothDeviceFilter} mac
-     *                         address, bonded devices are also searched among. This allows to
-     *                         obtain the necessary app
-     *                         privileges even if the device is already paired.
-     * @param deviceFilters    If set, only devices matching either of the given filters will be
-     *                         shown to the user
-     * @param deviceProfile    Profile of the device.
-     * @param displayName      The Display name of the device to be shown in the CDM confirmation
-     *                         UI. Must be non-null for
-     *                         "self-managed" association.
-     * @param selfManaged      Whether the association is to be managed by the companion
-     *                         application.
-     * @param extraPermissions The extra permissions to request/grant for non-profile device.
-     */
-    private AssociationRequest(
-            boolean singleDevice,
-            @NonNull List<DeviceFilter<?>> deviceFilters,
-            @Nullable @DeviceProfile String deviceProfile,
-            @Nullable CharSequence displayName,
-            boolean selfManaged,
-            boolean forceConfirmation,
-            boolean skipRoleGrant,
-            @Nullable Icon deviceIcon,
-            @NonNull Set<String> extraPermissions
-    ) {
-        validateDisplayName(displayName);
-        mSingleDevice = singleDevice;
-        mDeviceFilters = requireNonNull(deviceFilters);
-        mDeviceProfile = deviceProfile;
-        mDisplayName = displayName;
-        mSelfManaged = selfManaged;
-        mForceConfirmation = forceConfirmation;
-        mSkipRoleGrant = skipRoleGrant;
+    private AssociationRequest(Builder builder) {
+        mSingleDevice = builder.mSingleDevice;
+        mDeviceFilters = builder.mDeviceFilters;
+        mDeviceProfile = builder.mDeviceProfile;
+        mDisplayName = builder.mDisplayName;
+        mSelfManaged = builder.mSelfManaged;
+        mForceConfirmation = builder.mForceConfirmation;
+        mSkipRoleGrant = builder.mSkipRoleGrant;
         mCreationTime = System.currentTimeMillis();
-        mDeviceIcon = deviceIcon;
-        mExtraPermissions = extraPermissions;
+        mDeviceIcon = builder.mDeviceIcon;
+        mExtraPermissions = builder.mExtraPermissions;
     }
 
     /**
@@ -515,11 +482,6 @@ public final class AssociationRequest implements Parcelable {
     }
 
     /** @hide */
-    public void setDeviceProfilePrivilegesDescription(@NonNull String desc) {
-        mDeviceProfilePrivilegesDescription = desc;
-    }
-
-    /** @hide */
     public void setSkipPrompt(boolean value) {
         mSkipPrompt = value;
     }
@@ -550,185 +512,6 @@ public final class AssociationRequest implements Parcelable {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public List<DeviceFilter<?>> getDeviceFilters() {
         return mDeviceFilters;
-    }
-
-    /**
-     * A builder for {@link AssociationRequest}
-     */
-    public static final class Builder extends OneTimeUseBuilder<AssociationRequest> {
-        private boolean mSingleDevice = false;
-        private ArrayList<DeviceFilter<?>> mDeviceFilters = null;
-        private String mDeviceProfile;
-        private CharSequence mDisplayName;
-        private boolean mSelfManaged = false;
-        private boolean mForceConfirmation = false;
-        private boolean mSkipRoleGrant = false;
-        private Icon mDeviceIcon = null;
-        private Set<String> mExtraPermissions = new HashSet<>();
-
-        public Builder() {
-        }
-
-        /**
-         * Whether only a single device should match the provided filter.
-         *
-         * When scanning for a single device with a specific {@link BluetoothDeviceFilter} mac
-         * address, bonded devices are also searched among. This allows to obtain the necessary app
-         * privileges even if the device is already paired.
-         *
-         * @param singleDevice if true, scanning for a device will stop as soon as at least one
-         *                     fitting device is found
-         */
-        @NonNull
-        public Builder setSingleDevice(boolean singleDevice) {
-            checkNotUsed();
-            this.mSingleDevice = singleDevice;
-            return this;
-        }
-
-        /**
-         * @param deviceFilter if set, only devices matching the given filter will be shown to the
-         *                     user
-         */
-        @NonNull
-        public Builder addDeviceFilter(@Nullable DeviceFilter<?> deviceFilter) {
-            checkNotUsed();
-            if (deviceFilter != null) {
-                mDeviceFilters = ArrayUtils.add(mDeviceFilters, deviceFilter);
-            }
-            return this;
-        }
-
-        /**
-         * If set, association will be requested as a corresponding kind of device
-         */
-        @NonNull
-        public Builder setDeviceProfile(@NonNull @DeviceProfile String deviceProfile) {
-            checkNotUsed();
-            mDeviceProfile = deviceProfile;
-            return this;
-        }
-
-        /**
-         * Adds a display name.
-         * Generally {@link AssociationRequest}s are not required to provide a display name, except
-         * for request for creating "self-managed" associations, which MUST provide a display name.
-         *
-         * @param displayName the display name of the device.
-         */
-        @NonNull
-        public Builder setDisplayName(@NonNull CharSequence displayName) {
-            checkNotUsed();
-            mDisplayName = requireNonNull(displayName);
-            validateDisplayName(displayName);
-            return this;
-        }
-
-        /**
-         * Indicate whether the association would be managed by the companion application.
-         *
-         * Requests for creating "self-managed" association MUST provide a Display name.
-         *
-         * @see #setDisplayName(CharSequence)
-         */
-        @RequiresPermission(REQUEST_COMPANION_SELF_MANAGED)
-        @NonNull
-        public Builder setSelfManaged(boolean selfManaged) {
-            checkNotUsed();
-            mSelfManaged = selfManaged;
-            return this;
-        }
-
-        /**
-         * Indicates whether the application requires the {@link CompanionDeviceManager} service to
-         * collect an explicit confirmation from the user before creating an association, even if
-         * such confirmation is not required from the service's perspective.
-         */
-        @RequiresPermission(REQUEST_COMPANION_SELF_MANAGED)
-        @NonNull
-        public Builder setForceConfirmation(boolean forceConfirmation) {
-            checkNotUsed();
-            mForceConfirmation = forceConfirmation;
-            return this;
-        }
-
-        /**
-         * Do not attempt to grant the role corresponding to the device profile.
-         *
-         * <p>This will skip the permission checks and consent dialog but will not fail if the
-         * role cannot be granted.</p>
-         *
-         * <p>Requires that the device not to have secure lock screen and that there no locked SIM
-         * card. See {@link KeyguardManager#isKeyguardSecure()}</p>
-         *
-         * @hide
-         */
-        @RequiresPermission(ASSOCIATE_COMPANION_DEVICES)
-        @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
-        @TestApi
-        @NonNull
-        public Builder setSkipRoleGrant(boolean skipRoleGrant) {
-            checkNotUsed();
-            mSkipRoleGrant = skipRoleGrant;
-            return this;
-        }
-
-        /**
-         * Set the device icon for the self-managed device and to display the icon in the
-         * self-managed association dialog.
-         * <p>The given device icon will be resized to 24dp x 24dp.
-         *
-         * @throws IllegalArgumentException if the icon is
-         *                                  {@link Icon#TYPE_URI} or
-         *                                  {@link Icon#TYPE_URI_ADAPTIVE_BITMAP}.
-         * @see #setSelfManaged(boolean)
-         */
-        @NonNull
-        @RequiresPermission(REQUEST_COMPANION_SELF_MANAGED)
-        @FlaggedApi(Flags.FLAG_ASSOCIATION_DEVICE_ICON)
-        public Builder setDeviceIcon(@NonNull Icon deviceIcon) {
-            checkNotUsed();
-            mDeviceIcon = requireNonNull(deviceIcon);
-            return this;
-        }
-
-        /**
-         * Sets the set of extra permissions to be requested for this association.
-         *
-         * @param permissions a non-null set of permissions from
-         *                    {@link android.companion.AssociationRequest.Permission}.
-         *
-         * @throws IllegalArgumentException if the provided {@code permissions} set is empty or
-         * contains any unsupported permissions.
-         */
-        @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
-        @NonNull
-        public Builder setExtraPermissions(
-                @NonNull Set<@AssociationRequest.Permission String> permissions) {
-            if (CollectionUtils.isEmpty(permissions)
-                    || !ALLOWED_EXTRA_PERMISSIONS.containsAll(permissions)) {
-                throw new IllegalArgumentException(
-                        "Provided permissions set contains unsupported permission."
-                );
-            }
-            checkNotUsed();
-            mExtraPermissions.addAll(permissions);
-            return this;
-        }
-
-        /** @inheritDoc */
-        @NonNull
-        @Override
-        public AssociationRequest build() {
-            markUsed();
-            if (mSelfManaged && mDisplayName == null) {
-                throw new IllegalStateException("Request for a self-managed association MUST "
-                        + "provide the display name of the device");
-            }
-            return new AssociationRequest(mSingleDevice, emptyIfNull(mDeviceFilters),
-                    mDeviceProfile, mDisplayName, mSelfManaged, mForceConfirmation, mSkipRoleGrant,
-                    mDeviceIcon, mExtraPermissions);
-        }
     }
 
     /**
@@ -886,7 +669,7 @@ public final class AssociationRequest implements Parcelable {
 
     /** @hide */
     @SuppressWarnings("unchecked")
-    /* package-private */ AssociationRequest(@NonNull Parcel in) {
+    AssociationRequest(@NonNull Parcel in) {
         int flg = in.readInt();
         boolean singleDevice = (flg & 0x1) != 0;
         boolean selfManaged = (flg & 0x2) != 0;
@@ -906,23 +689,23 @@ public final class AssociationRequest implements Parcelable {
         String deviceProfilePrivilegesDescription = (flg & 0x100) == 0 ? null : in.readString8();
         long creationTime = in.readLong();
 
-        this.mSingleDevice = singleDevice;
-        this.mDeviceFilters = deviceFilters;
+        mSingleDevice = singleDevice;
+        mDeviceFilters = deviceFilters;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mDeviceFilters);
-        this.mDeviceProfile = deviceProfile;
-        this.mDisplayName = displayName;
-        this.mAssociatedDevice = associatedDevice;
-        this.mSelfManaged = selfManaged;
-        this.mForceConfirmation = forceConfirmation;
-        this.mSkipRoleGrant = skipRoleGrant;
-        this.mPackageName = packageName;
-        this.mUserId = userId;
+        mDeviceProfile = deviceProfile;
+        mDisplayName = displayName;
+        mAssociatedDevice = associatedDevice;
+        mSelfManaged = selfManaged;
+        mForceConfirmation = forceConfirmation;
+        mSkipRoleGrant = skipRoleGrant;
+        mPackageName = packageName;
+        mUserId = userId;
         com.android.internal.util.AnnotationValidations.validate(
                 UserIdInt.class, null, mUserId);
-        this.mDeviceProfilePrivilegesDescription = deviceProfilePrivilegesDescription;
-        this.mCreationTime = creationTime;
-        this.mSkipPrompt = skipPrompt;
+        mDeviceProfilePrivilegesDescription = deviceProfilePrivilegesDescription;
+        mCreationTime = creationTime;
+        mSkipPrompt = skipPrompt;
         if (in.readInt() == 1) {
             mDeviceIcon = Icon.CREATOR.createFromParcel(in);
         }
@@ -946,11 +729,187 @@ public final class AssociationRequest implements Parcelable {
                 }
             };
 
-
     private static void validateDisplayName(@Nullable CharSequence displayName) {
         if (displayName != null && displayName.length() > DISPLAY_NAME_LENGTH_LIMIT) {
             throw new IllegalArgumentException("Length of the display name must be at most "
                     + DISPLAY_NAME_LENGTH_LIMIT + " characters");
+        }
+    }
+
+    /**
+     * A builder for {@link AssociationRequest}
+     */
+    public static final class Builder extends OneTimeUseBuilder<AssociationRequest> {
+        private boolean mSingleDevice = false;
+        private ArrayList<DeviceFilter<?>> mDeviceFilters = new ArrayList<>();
+        private String mDeviceProfile;
+        private CharSequence mDisplayName;
+        private boolean mSelfManaged = false;
+        private boolean mForceConfirmation = false;
+        private boolean mSkipRoleGrant = false;
+        private Icon mDeviceIcon = null;
+        private Set<String> mExtraPermissions = new HashSet<>();
+
+        public Builder() {
+        }
+
+        /**
+         * Whether only a single device should match the provided filter.
+         *
+         * When scanning for a single device with a specific {@link BluetoothDeviceFilter} mac
+         * address, bonded devices are also searched among. This allows to obtain the necessary app
+         * privileges even if the device is already paired.
+         *
+         * @param singleDevice if true, scanning for a device will stop as soon as at least one
+         *                     fitting device is found
+         */
+        @NonNull
+        public Builder setSingleDevice(boolean singleDevice) {
+            checkNotUsed();
+            this.mSingleDevice = singleDevice;
+            return this;
+        }
+
+        /**
+         * @param deviceFilter if set, only devices matching the given filter will be shown to the
+         *                     user
+         */
+        @NonNull
+        public Builder addDeviceFilter(@Nullable DeviceFilter<?> deviceFilter) {
+            checkNotUsed();
+            if (deviceFilter != null) {
+                mDeviceFilters = ArrayUtils.add(mDeviceFilters, deviceFilter);
+            }
+            return this;
+        }
+
+        /**
+         * If set, association will be requested as a corresponding kind of device
+         */
+        @NonNull
+        public Builder setDeviceProfile(@NonNull @DeviceProfile String deviceProfile) {
+            checkNotUsed();
+            mDeviceProfile = deviceProfile;
+            return this;
+        }
+
+        /**
+         * Adds a display name.
+         * Generally {@link AssociationRequest}s are not required to provide a display name, except
+         * for request for creating "self-managed" associations, which MUST provide a display name.
+         *
+         * @param displayName the display name of the device.
+         */
+        @NonNull
+        public Builder setDisplayName(@NonNull CharSequence displayName) {
+            checkNotUsed();
+            mDisplayName = requireNonNull(displayName);
+            validateDisplayName(displayName);
+            return this;
+        }
+
+        /**
+         * Indicate whether the association would be managed by the companion application.
+         *
+         * Requests for creating "self-managed" association MUST provide a Display name.
+         *
+         * @see #setDisplayName(CharSequence)
+         */
+        @RequiresPermission(REQUEST_COMPANION_SELF_MANAGED)
+        @NonNull
+        public Builder setSelfManaged(boolean selfManaged) {
+            checkNotUsed();
+            mSelfManaged = selfManaged;
+            return this;
+        }
+
+        /**
+         * Indicates whether the application requires the {@link CompanionDeviceManager} service to
+         * collect an explicit confirmation from the user before creating an association, even if
+         * such confirmation is not required from the service's perspective.
+         */
+        @RequiresPermission(REQUEST_COMPANION_SELF_MANAGED)
+        @NonNull
+        public Builder setForceConfirmation(boolean forceConfirmation) {
+            checkNotUsed();
+            mForceConfirmation = forceConfirmation;
+            return this;
+        }
+
+        /**
+         * Do not attempt to grant the role corresponding to the device profile.
+         *
+         * <p>This will skip the permission checks and consent dialog but will not fail if the
+         * role cannot be granted.</p>
+         *
+         * <p>Requires that the device not to have secure lock screen and that there no locked SIM
+         * card. See {@link KeyguardManager#isKeyguardSecure()}</p>
+         *
+         * @hide
+         */
+        @RequiresPermission(ASSOCIATE_COMPANION_DEVICES)
+        @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+        @TestApi
+        @NonNull
+        public Builder setSkipRoleGrant(boolean skipRoleGrant) {
+            checkNotUsed();
+            mSkipRoleGrant = skipRoleGrant;
+            return this;
+        }
+
+        /**
+         * Set the device icon for the self-managed device and to display the icon in the
+         * self-managed association dialog.
+         * <p>The given device icon will be resized to 24dp x 24dp.
+         *
+         * @throws IllegalArgumentException if the icon is
+         *                                  {@link Icon#TYPE_URI} or
+         *                                  {@link Icon#TYPE_URI_ADAPTIVE_BITMAP}.
+         * @see #setSelfManaged(boolean)
+         */
+        @NonNull
+        @RequiresPermission(REQUEST_COMPANION_SELF_MANAGED)
+        @FlaggedApi(Flags.FLAG_ASSOCIATION_DEVICE_ICON)
+        public Builder setDeviceIcon(@NonNull Icon deviceIcon) {
+            checkNotUsed();
+            mDeviceIcon = requireNonNull(deviceIcon);
+            return this;
+        }
+
+        /**
+         * Sets the set of extra permissions to be requested for this association.
+         *
+         * @param permissions a non-null set of permissions from
+         *                    {@link android.companion.AssociationRequest.Permission}.
+         *
+         * @throws IllegalArgumentException if the provided {@code permissions} set is empty or
+         * contains any unsupported permissions.
+         */
+        @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
+        @NonNull
+        public Builder setExtraPermissions(
+                @NonNull Set<@AssociationRequest.Permission String> permissions) {
+            checkNotUsed();
+            if (CollectionUtils.isEmpty(permissions)
+                    || !ALLOWED_EXTRA_PERMISSIONS.containsAll(permissions)) {
+                throw new IllegalArgumentException(
+                        "Provided permissions set contains unsupported permission."
+                );
+            }
+            mExtraPermissions.addAll(permissions);
+            return this;
+        }
+
+        /** @inheritDoc */
+        @NonNull
+        @Override
+        public AssociationRequest build() {
+            markUsed();
+            if (mSelfManaged && mDisplayName == null) {
+                throw new IllegalStateException("Request for a self-managed association MUST "
+                        + "provide the display name of the device");
+            }
+            return new AssociationRequest(this);
         }
     }
 }

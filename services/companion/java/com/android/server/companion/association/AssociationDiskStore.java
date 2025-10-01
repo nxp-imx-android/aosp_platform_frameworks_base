@@ -612,15 +612,16 @@ public final class AssociationDiskStore {
                 parser, XML_ATTR_CUSTOM_DEVICE_ID);
         final MacAddress macAddress = stringToMacAddress(
                 readStringAttribute(parser, XML_ATTR_MAC_ADDRESS_DEVICE_ID));
-        byte[] id = readByteArrayAttribute(parser, XML_ATTR_KEY_DEVICE_ID);
-        if (id == null) {
-            id = generateRandom128BitKey();
+        byte[] key = readByteArrayAttribute(parser, XML_ATTR_KEY_DEVICE_ID);
+        if (key == null) {
+            key = generateRandom128BitKey();
         }
 
         // Manually move to the END tag of XML_TAG_DEVICE_ID.
         parser.nextTag();
 
-        return new DeviceId(customDeviceId, macAddress, id);
+        return new DeviceId.Builder().setCustomId(customDeviceId).setMacAddress(macAddress).setKey(
+                key).build();
     }
 
     private static PersistableBundle readMetadata(@NonNull TypedXmlPullParser parser)

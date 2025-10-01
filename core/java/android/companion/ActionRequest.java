@@ -91,9 +91,9 @@ public final class ActionRequest implements Parcelable {
     private final @RequestAction int mAction;
     private final @Operation int mOperation;
 
-    private ActionRequest(@RequestAction int action, @Operation int operation) {
-        this.mAction = action;
-        this.mOperation = operation;
+    private ActionRequest(Builder builder) {
+        mAction = builder.mAction;
+        mOperation = builder.mOperation;
     }
 
     /**
@@ -178,8 +178,8 @@ public final class ActionRequest implements Parcelable {
      * @hide
      */
     public static final class Builder {
-        private @RequestAction int mAction;
-        private @Operation int mOperation;
+        private final @RequestAction int mAction;
+        private final @Operation int mOperation;
 
         /**
          * @param action The action to request.
@@ -195,7 +195,7 @@ public final class ActionRequest implements Parcelable {
          */
         @NonNull
         public ActionRequest build() {
-            return new ActionRequest(mAction, mOperation);
+            return new ActionRequest(this);
         }
     }
 }

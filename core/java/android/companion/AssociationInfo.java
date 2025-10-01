@@ -125,42 +125,35 @@ public final class AssociationInfo implements Parcelable {
      *
      * @hide
      */
-    private AssociationInfo(int id, @UserIdInt int userId, @NonNull String packageName,
-            @Nullable MacAddress macAddress, @Nullable CharSequence displayName,
-            @Nullable String deviceProfile, @Nullable AssociatedDevice associatedDevice,
-            boolean selfManaged, boolean notifyOnDeviceNearby, boolean revoked, boolean pending,
-            long timeApprovedMs, long lastTimeConnectedMs, int systemDataSyncFlags,
-            int transportFlags, @Nullable Icon deviceIcon, @Nullable DeviceId deviceId,
-            @Nullable List<String> packagesToNotify, @Nullable PersistableBundle metadata,
-            @NonNull Set<String> extraPermissions) {
-        if (id <= 0) {
+    private AssociationInfo(Builder builder) {
+        if (builder.mId <= 0) {
             throw new IllegalArgumentException("Association ID should be greater than 0");
         }
-        if (macAddress == null && displayName == null) {
+        if (builder.mDeviceMacAddress == null && builder.mDisplayName == null) {
             throw new IllegalArgumentException("MAC address and the Display Name must NOT be null "
                     + "at the same time");
         }
 
-        mId = id;
-        mUserId = userId;
-        mPackageName = packageName;
-        mDeviceMacAddress = macAddress;
-        mDisplayName = displayName;
-        mDeviceProfile = deviceProfile;
-        mAssociatedDevice = associatedDevice;
-        mSelfManaged = selfManaged;
-        mNotifyOnDeviceNearby = notifyOnDeviceNearby;
-        mRevoked = revoked;
-        mPending = pending;
-        mTimeApprovedMs = timeApprovedMs;
-        mLastTimeConnectedMs = lastTimeConnectedMs;
-        mSystemDataSyncFlags = systemDataSyncFlags;
-        mTransportFlags = transportFlags;
-        mDeviceIcon = deviceIcon;
-        mDeviceId = deviceId;
-        mPackagesToNotify = packagesToNotify;
-        mMetadata = metadata;
-        mExtraPermissions = extraPermissions;
+        mId = builder.mId;
+        mUserId = builder.mUserId;
+        mPackageName = builder.mPackageName;
+        mDeviceMacAddress = builder.mDeviceMacAddress;
+        mDisplayName = builder.mDisplayName;
+        mDeviceProfile = builder.mDeviceProfile;
+        mAssociatedDevice = builder.mAssociatedDevice;
+        mSelfManaged = builder.mSelfManaged;
+        mNotifyOnDeviceNearby = builder.mNotifyOnDeviceNearby;
+        mRevoked = builder.mRevoked;
+        mPending = builder.mPending;
+        mTimeApprovedMs = builder.mTimeApprovedMs;
+        mLastTimeConnectedMs = builder.mLastTimeConnectedMs;
+        mSystemDataSyncFlags = builder.mSystemDataSyncFlags;
+        mTransportFlags = builder.mTransportFlags;
+        mDeviceIcon = builder.mDeviceIcon;
+        mDeviceId = builder.mDeviceId;
+        mPackagesToNotify = builder.mPackagesToNotify;
+        mMetadata = builder.mMetadata;
+        mExtraPermissions = builder.mExtraPermissions;
     }
 
     /**
@@ -874,28 +867,7 @@ public final class AssociationInfo implements Parcelable {
             if (mMetadata == null) {
                 throw new IllegalArgumentException("Association metadata cannot be null");
             }
-            return new AssociationInfo(
-                    mId,
-                    mUserId,
-                    mPackageName,
-                    mDeviceMacAddress,
-                    mDisplayName,
-                    mDeviceProfile,
-                    mAssociatedDevice,
-                    mSelfManaged,
-                    mNotifyOnDeviceNearby,
-                    mRevoked,
-                    mPending,
-                    mTimeApprovedMs,
-                    mLastTimeConnectedMs,
-                    mSystemDataSyncFlags,
-                    mTransportFlags,
-                    mDeviceIcon,
-                    mDeviceId,
-                    mPackagesToNotify,
-                    mMetadata,
-                    mExtraPermissions
-            );
+            return new AssociationInfo(this);
         }
     }
 }
