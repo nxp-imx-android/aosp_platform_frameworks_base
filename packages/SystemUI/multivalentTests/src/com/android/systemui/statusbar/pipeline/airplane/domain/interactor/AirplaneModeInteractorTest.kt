@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.pipeline.airplane.domain.interactor.impl
+package com.android.systemui.statusbar.pipeline.airplane.domain.interactor
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.shared.data.model.ConnectivitySlot
 import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
@@ -35,7 +34,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class AirplaneModeInteractorImplTest : SysuiTestCase() {
+class AirplaneModeInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     private val mobileConnectionsRepository = kosmos.fakeMobileConnectionsRepository
@@ -43,10 +42,10 @@ class AirplaneModeInteractorImplTest : SysuiTestCase() {
     private val connectivityRepository = FakeConnectivityRepository()
 
     private val underTest =
-        AirplaneModeInteractorImpl(
+        AirplaneModeInteractor(
             airplaneModeRepository,
             connectivityRepository,
-            mobileConnectionsRepository,
+            mobileConnectionsRepository
         )
 
     @Test
