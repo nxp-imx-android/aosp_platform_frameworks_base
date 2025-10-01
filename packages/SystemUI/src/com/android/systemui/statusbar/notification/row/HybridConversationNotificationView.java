@@ -21,7 +21,6 @@ import android.annotation.Nullable;
 import android.app.Flags;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -42,7 +41,6 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon;
  */
 public class HybridConversationNotificationView extends HybridNotificationView {
 
-    private static final int MAX_SUMMARIZATION_LINES = 1;
     private ImageView mConversationIconView;
     private TextView mConversationSenderName;
     private ViewStub mConversationFacePileStub;
@@ -165,9 +163,6 @@ public class HybridConversationNotificationView extends HybridNotificationView {
         if (!TextUtils.isEmpty(summarization)) {
             mConversationSenderName.setVisibility(GONE);
             contentText = summarization;
-            mTextView.setSingleLine(false);
-            mTextView.setMaxLines(MAX_SUMMARIZATION_LINES);
-            mTextView.setTypeface(Typeface.create("variable-body-medium", Typeface.ITALIC));
         } else {
             mTextView.setSingleLine(true);
             if (conversationSenderName == null) {
@@ -177,8 +172,7 @@ public class HybridConversationNotificationView extends HybridNotificationView {
                 mConversationSenderName.setText(conversationSenderName);
             }
         }
-        super.bind(/* title = */ titleText, /* text = */ contentText,
-                /* stripSpans = */ TextUtils.isEmpty(summarization));
+        super.bind(/* title = */ titleText, /* text = */ contentText, summarization);
     }
 
     private static void setSize(View view, int size) {

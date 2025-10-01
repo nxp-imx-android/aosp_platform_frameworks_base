@@ -6417,17 +6417,27 @@ public class Notification implements Parcelable
                 contentView.setViewVisibility(p.mTitleViewId, View.GONE);
                 contentView.setTextViewText(p.mTitleViewId, null);
             }
-            if (p.mText != null && p.mText.length() != 0
-                    && (!showProgress || p.mAllowTextWithProgress)) {
+            boolean isCollapsedContent = p.mViewType != StandardTemplateParams.VIEW_TYPE_EXPANDED;
+            if (Flags.nmSummarizationAll()
+                    && isCollapsedContent && !TextUtils.isEmpty(p.mSummarization)) {
                 contentView.setViewVisibility(p.mTextViewId, View.VISIBLE);
-                contentView.setTextViewText(p.mTextViewId,
-                        ensureColorSpanContrastOrStripStyling(p.mText, p));
+                contentView.setBoolean(p.mTextViewId, "showAsSummarization", true);
+                contentView.setTextViewText(p.mTextViewId, p.mSummarization);
                 setTextViewColorSecondary(contentView, p.mTextViewId, p);
                 hasSecondLine = true;
-            } else if (p.mTextViewId != R.id.text) {
-                // This alternate text view ID is not cleared by resetStandardTemplate
-                contentView.setViewVisibility(p.mTextViewId, View.GONE);
-                contentView.setTextViewText(p.mTextViewId, null);
+            } else {
+                if (p.mText != null && p.mText.length() != 0
+                        && (!showProgress || p.mAllowTextWithProgress)) {
+                    contentView.setViewVisibility(p.mTextViewId, View.VISIBLE);
+                    contentView.setTextViewText(p.mTextViewId,
+                            ensureColorSpanContrastOrStripStyling(p.mText, p));
+                    setTextViewColorSecondary(contentView, p.mTextViewId, p);
+                    hasSecondLine = true;
+                } else if (p.mTextViewId != R.id.text) {
+                    // This alternate text view ID is not cleared by resetStandardTemplate
+                    contentView.setViewVisibility(p.mTextViewId, View.GONE);
+                    contentView.setTextViewText(p.mTextViewId, null);
+                }
             }
 
             updateExpanderAlignment(contentView, p, hasSecondLine);
@@ -7461,6 +7471,9 @@ public class Notification implements Parcelable
                     .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
                     .needsExtraTextMargin(false)
                     .fillTextsFrom(this);
+            if (Flags.nmSummarizationAll()) {
+                p.mSummarization = getExtras().getCharSequence(EXTRA_SUMMARIZED_CONTENT);
+            }
             // Notification text is shown as secondary header text
             // for the minimal hun when it is provided.
             // Time(when and chronometer) is not shown for the minimal hun.
@@ -8534,6 +8547,17 @@ public class Notification implements Parcelable
     public boolean isStyle(@NonNull Class<? extends Style> styleClass) {
         String templateClass = extras.getString(Notification.EXTRA_TEMPLATE);
         return Objects.equals(templateClass, styleClass.getName());
+    }
+
+    /**
+     * returns whether the style supports showing summarized content
+     * @hide
+     */
+    public boolean supportsSummarization() {
+        return getNotificationStyle() == null
+                || isStyle(MessagingStyle.class)
+                || isStyle(InboxStyle.class)
+                || isStyle(BigTextStyle.class);
     }
 
     /**
@@ -16798,6 +16822,7 @@ public class Notification implements Parcelable
         @Nullable CharSequence mText;
         @Nullable CharSequence mHeaderTextSecondary;
         @Nullable CharSequence mSubText;
+        @Nullable CharSequence mSummarization;
         int maxRemoteInputHistory = Style.MAX_REMOTE_INPUT_HISTORY_LINES;
         boolean allowColorization  = true;
         boolean mHighlightExpander = false;
@@ -16827,6 +16852,7 @@ public class Notification implements Parcelable
             maxRemoteInputHistory = Style.MAX_REMOTE_INPUT_HISTORY_LINES;
             allowColorization = true;
             mHighlightExpander = false;
+            mSummarization = null;
             return this;
         }
 
@@ -16924,6 +16950,11 @@ public class Notification implements Parcelable
             return this;
         }
 
+        final StandardTemplateParams summarization(@Nullable CharSequence text) {
+            this.mSummarization = text;
+            return this;
+        }
+
         final StandardTemplateParams headerTextSecondary(@Nullable CharSequence text) {
             this.mHeaderTextSecondary = text;
             return this;
@@ -16955,6 +16986,9 @@ public class Notification implements Parcelable
             this.mTitle = b.processLegacyText(extras.getCharSequence(EXTRA_TITLE));
             this.mText = b.processLegacyText(extras.getCharSequence(EXTRA_TEXT));
             this.mSubText = extras.getCharSequence(EXTRA_SUB_TEXT);
+            if (Flags.nmSummarizationAll()) {
+                this.mSummarization = extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT);
+            }
             return this;
         }
 

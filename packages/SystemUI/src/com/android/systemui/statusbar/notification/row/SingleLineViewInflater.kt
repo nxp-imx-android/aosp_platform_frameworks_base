@@ -89,12 +89,14 @@ object SingleLineViewInflater {
                             com.android.systemui.res.R.string.empty_notification_single_line_title
                         ),
                     contentText = null,
+                    summarization = if (redactText) null else summarization,
                     conversationData = null,
                 )
             }
             return SingleLineViewModel(
                 titleText = titleText,
                 contentText = contentText,
+                summarization = if (redactText) null else summarization,
                 conversationData = null,
             )
         }
@@ -129,6 +131,7 @@ object SingleLineViewInflater {
         return SingleLineViewModel(
             titleText = titleText,
             contentText = contentText,
+            summarization = if (redactText) null else summarization,
             conversationData = conversationData,
         )
     }
@@ -157,6 +160,7 @@ object SingleLineViewInflater {
             context.getString(
                 com.android.systemui.res.R.string.public_notification_single_line_title
             ),
+            null,
             null,
             conversationData,
         )

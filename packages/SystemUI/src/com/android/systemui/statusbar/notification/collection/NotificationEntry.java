@@ -34,7 +34,6 @@ import static com.android.systemui.statusbar.notification.collection.NotifCollec
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.FlaggedApi;
 import android.app.Notification;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
@@ -50,6 +49,7 @@ import android.os.SystemClock;
 import android.service.notification.NotificationListenerService.Ranking;
 import android.service.notification.SnoozeCriterion;
 import android.service.notification.StatusBarNotification;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
@@ -62,6 +62,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.systemui.statusbar.InflationTask;
+import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter;
@@ -1099,6 +1100,17 @@ public final class NotificationEntry extends ListEntry {
         } else {
             Log.wtf(TAG, "setting promoted content without feature flag enabled", new Throwable());
         }
+    }
+
+    public @Nullable String getSummarization() {
+        CharSequence summarization = null;
+        if (NmSummarizationAllFlag.isEnabled()) {
+            summarization = mSbn.getNotification().getSummarizedContent();
+        }
+        if (TextUtils.isEmpty(summarization)) {
+            summarization = getRanking() != null ? getRanking().getSummarization() : null;
+        }
+        return summarization != null ? summarization.toString() : null;
     }
 
     /** Information about a suggestion that is being edited. */

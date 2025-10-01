@@ -28,6 +28,8 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 import static com.android.systemui.statusbar.NotificationEntryHelper.modifyRanking;
 import static com.android.systemui.statusbar.NotificationEntryHelper.modifySbn;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -54,9 +56,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
+import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.util.time.FakeSystemClock;
 
@@ -67,6 +71,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -82,6 +87,7 @@ public class NotificationEntryTest extends SysuiTestCase {
     private NotificationEntry mEntry;
     private NotificationChannel mChannel = Mockito.mock(NotificationChannel.class);
     private final FakeSystemClock mClock = new FakeSystemClock();
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -436,6 +442,47 @@ public class NotificationEntryTest extends SysuiTestCase {
         entry.isLastMessageFromReply();
 
         // no crash, good
+    }
+
+    @Test
+    public void getSummarization_onlyRankingSummarization() {
+        NotificationEntry entry = mKosmos.buildNotificationEntry(builder -> {
+            builder.updateRanking(rankingBuilder -> rankingBuilder.setSummarization("nas"));
+            return builder.done();
+        });
+        assertThat(entry.getSummarization()).isEqualTo("nas");
+    }
+
+    @Test
+    @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
+    public void getSummarization_onlyAppSummarization() {
+        NotificationEntry entry = mKosmos.buildNotificationEntry(builder -> {
+            builder.modifyNotification(mContext).setSummarizedContent("app");
+            return builder.done();
+        });
+        assertThat(entry.getSummarization()).isEqualTo("app");
+    }
+
+    @Test
+    @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
+    public void getSummarization_preferAppGeneratedSummarization() {
+        NotificationEntry entry = mKosmos.buildNotificationEntry(builder -> {
+            builder.modifyNotification(mContext).setSummarizedContent("app");
+            builder.updateRanking(rankingBuilder -> rankingBuilder.setSummarization("nas"));
+            return builder.done();
+        });
+        assertThat(entry.getSummarization()).isEqualTo("app");
+    }
+
+    @Test
+    @DisableFlags(NmSummarizationAllFlag.FLAG_NAME)
+    public void getSummarization_rankingSummarization() {
+        NotificationEntry entry = mKosmos.buildNotificationEntry(builder -> {
+            builder.modifyNotification(mContext).setSummarizedContent("app");
+            builder.updateRanking(rankingBuilder -> rankingBuilder.setSummarization("nas"));
+            return builder.done();
+        });
+        assertThat(entry.getSummarization()).isEqualTo("nas");
     }
 
     private Notification.Action createContextualAction(String title) {

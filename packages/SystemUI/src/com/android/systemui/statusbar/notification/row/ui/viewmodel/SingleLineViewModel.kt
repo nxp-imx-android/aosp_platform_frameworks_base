@@ -31,6 +31,7 @@ import android.graphics.drawable.Drawable
 data class SingleLineViewModel(
     var titleText: CharSequence?,
     var contentText: CharSequence?,
+    var summarization: CharSequence?,
     var conversationData: ConversationData?,
 ) {
     fun isConversation(): Boolean {
@@ -46,7 +47,7 @@ data class SingleLineViewModel(
 data class ConversationData(
     val conversationSenderName: CharSequence?,
     val avatar: ConversationAvatar,
-    val summarization: CharSequence?
+    val summarization: CharSequence?,
 )
 
 /**
@@ -64,5 +65,5 @@ data class SingleIcon(val iconDrawable: Drawable?) : ConversationAvatar()
 data class FacePile(
     val topIconDrawable: Drawable?,
     val bottomIconDrawable: Drawable?,
-    @ColorInt val bottomBackgroundColor: Int
+    @ColorInt val bottomBackgroundColor: Int,
 ) : ConversationAvatar()
