@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.ui.composable
 
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -26,6 +27,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags.FLAG_QS_TILE_DETAILED_VIEW
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.EnableSceneContainer
@@ -86,6 +88,7 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
     fun testVolumeSlider() = kosmos.runTest {
         overrideResource(R.bool.config_enableDesktopAudioTileDetailsView, true)
 
