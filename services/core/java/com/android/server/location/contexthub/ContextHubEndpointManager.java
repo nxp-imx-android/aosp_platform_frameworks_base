@@ -283,7 +283,7 @@ import java.util.function.Consumer;
             throws RemoteException {
         synchronized (mHalRestartLock) {
             if (!mIsRegistered) {
-                throw new IllegalStateException("ContextHubEndpointManager failed to initialize");
+                throw new IllegalStateException("ContextHubEndpointManager not registered");
             }
             ContextHubEndpointBroker broker;
             long endpointId = getNewEndpointId();
@@ -376,10 +376,21 @@ import java.util.function.Consumer;
     }
 
     /** Invoked by the service when the Context Hub HAL restarts. */
+    /* package */ void onHalDeath() {
+        Log.d(TAG, "onHalDeath");
+        synchronized (mHalRestartLock) {
+            mIsRegistered = false;
+
+            for (ContextHubEndpointBroker broker : mEndpointMap.values()) {
+                broker.onHalDeath();
+            }
+        }
+    }
+
+    /** Invoked by the service when the Context Hub HAL restarts. */
     /* package */ void onHalRestart() {
         synchronized (mHalRestartLock) {
             Log.d(TAG, "onHalRestart");
-            mIsRegistered = false;
             try {
                 initLocked();
             } catch (IllegalStateException
