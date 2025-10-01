@@ -17,23 +17,38 @@
 package com.android.systemui.qs.panels.ui.viewmodel.toolbar
 
 import android.app.ActivityManager
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
-import com.android.systemui.qs.flags.QSEditModeTooltip
 import com.android.systemui.qs.panels.domain.interactor.QSPreferencesInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
+import com.android.systemui.scene.domain.interactor.DualShadeEducationInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class EditModeButtonViewModel
 @AssistedInject
@@ -44,6 +59,8 @@ constructor(
     private val hsum: HeadlessSystemUserMode,
     private val qsPreferencesInteractor: QSPreferencesInteractor,
     selectedUserInteractor: SelectedUserInteractor,
+    private val dualShadeEducationInteractor: DualShadeEducationInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
     @Assisted private val ignoreTestHarness: Boolean,
 ) : ExclusiveActivatable() {
 
@@ -66,20 +83,9 @@ constructor(
                 },
         )
 
-    val showTooltip by
-        hydrator.hydratedStateOf(
-            traceName = "showTooltip",
-            source =
-                if (QSEditModeTooltip.isEnabled && !runningInTestHarness) {
-                    qsPreferencesInteractor.editTooltipShown.map {
-                        // Show the tooltip if it wasn't shown before
-                        !it
-                    }
-                } else {
-                    flowOf(false)
-                },
-            initialValue = false,
-        )
+    /** Whether or not the edit mode tooltip should be displayed. */
+    var showTooltip by mutableStateOf(false)
+        private set
 
     fun onButtonClick() {
         if (!falsingInteractor.isFalseTap(FalsingManager.LOW_PENALTY)) {
@@ -88,15 +94,70 @@ constructor(
     }
 
     fun onTooltipDisposed() {
+        showTooltip = false
         qsPreferencesInteractor.setEditTooltipShown(true)
     }
 
     override suspend fun onActivated(): Nothing {
-        hydrator.activate()
+        coroutineScope {
+            launch { hydrator.activate() }
+            launch { showTooltipsAsNeeded() }
+        }
+        awaitCancellation()
+    }
+
+    private suspend fun showTooltipsAsNeeded() {
+        if (!runningInTestHarness) {
+            repeatWhenSpaceIsAvailable {
+                repeatWhenTooltipStillNeedsToBeShown {
+                    try {
+                        delay(TOOLTIP_APPEARANCE_DELAY_MS)
+                        showTooltip = true
+                    } catch (e: CancellationException) {
+                        showTooltip = false
+                    }
+                }
+            }
+        }
+    }
+
+    /** Executes [cancellable] whenever it is appropriate for the tooltip to appear. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun repeatWhenSpaceIsAvailable(cancellable: suspend () -> Unit) {
+        shadeModeInteractor.shadeMode
+            .map { it == ShadeMode.Dual }
+            .distinctUntilChanged()
+            .flatMapLatest { isDualShade ->
+                if (isDualShade) {
+                    // In dual shade, we need to check for the notification shade tooltip to make
+                    // sure we don't try to show both tooltips at the same time.
+                    snapshotFlow { !dualShadeEducationInteractor.isEducationInProgress }
+                } else {
+                    flowOf(true)
+                }
+            }
+            .collectLatest { hasSpace ->
+                if (hasSpace) {
+                    cancellable()
+                }
+            }
+    }
+
+    private suspend fun repeatWhenTooltipStillNeedsToBeShown(cancellable: suspend () -> Unit) {
+        qsPreferencesInteractor.editTooltipShown.distinctUntilChanged().collectLatest {
+            tooltipWasShown ->
+            if (!tooltipWasShown) {
+                cancellable()
+            }
+        }
     }
 
     @AssistedFactory
     interface Factory {
         fun create(ignoreTestHarness: Boolean = false): EditModeButtonViewModel
+    }
+
+    companion object {
+        @VisibleForTesting const val TOOLTIP_APPEARANCE_DELAY_MS = 2000L
     }
 }

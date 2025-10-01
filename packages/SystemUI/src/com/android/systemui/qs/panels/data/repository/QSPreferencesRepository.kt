@@ -27,7 +27,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
-import com.android.systemui.qs.flags.QSEditModeTooltip
 import com.android.systemui.qs.panels.shared.model.PanelsLog
 import com.android.systemui.qs.pipeline.shared.InternetTileMigration.logMigration
 import com.android.systemui.qs.pipeline.shared.InternetTileMigration.migrateInternetTile
@@ -121,10 +120,8 @@ constructor(
 
     /** Sets the value for whether or not the edit icon tooltip was shown for the current user. */
     fun writeEditTooltipShown(value: Boolean) {
-        if (QSEditModeTooltip.isEnabled) {
-            getSharedPrefs(userRepository.getSelectedUserInfo().id).edit {
-                putBoolean(EDIT_TOOLTIP_SHOWN_KEY, value)
-            }
+        getSharedPrefs(userRepository.getSelectedUserInfo().id).edit {
+            putBoolean(EDIT_TOOLTIP_SHOWN_KEY, value)
         }
     }
 
