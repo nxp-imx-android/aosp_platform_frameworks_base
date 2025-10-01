@@ -471,7 +471,7 @@ public class XmlConfigTests {
 
     @Test
     public void testBadConfig5() throws Exception {
-        testBadConfig(R.xml.bad_config4);
+        testBadConfig(R.xml.bad_config5);
     }
 
     @Test
