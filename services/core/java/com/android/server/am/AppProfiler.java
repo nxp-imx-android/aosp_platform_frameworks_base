@@ -103,6 +103,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.MemInfoReader;
 import com.android.internal.util.QuickSelect;
 import com.android.server.am.LowMemDetector.MemFactor;
+import com.android.server.am.MemoryUsageStats;
 import com.android.server.power.stats.BatteryStatsImpl;
 import com.android.server.utils.PriorityDump;
 
@@ -1634,8 +1635,7 @@ public class AppProfiler {
         // Get a list of Stats that have vsize > 0
         final List<ProcessCpuTracker.Stats> stats = getCpuStats(st -> st.vsize > 0);
         final int statsCount = stats.size();
-        long totalMemtrackGraphics = 0;
-        long totalMemtrackGl = 0;
+        final MemoryUsageStats memUsageStats = new MemoryUsageStats();
         for (int i = 0; i < statsCount; i++) {
             ProcessCpuTracker.Stats st = stats.get(i);
             long pss = Debug.getPss(st.pid, swaptrackTmp, memtrackTmp);
@@ -1650,15 +1650,13 @@ public class AppProfiler {
                     mi.dmabufPss = dmabufPss;
                     mi.swapPss = swaptrackTmp[1];
                     mi.memtrack = memtrackTmp[0];
-                    totalMemtrackGraphics += memtrackTmp[1];
-                    totalMemtrackGl += memtrackTmp[2];
+                    memUsageStats.totalMemtrackGraphics += memtrackTmp[1];
+                    memUsageStats.totalMemtrackGl += memtrackTmp[2];
                     memInfos.add(mi);
                 }
             }
         }
 
-        long totalPss = 0;
-        long totalSwapPss = 0;
         long totalMemtrack = 0;
         for (int i = 0, size = memInfos.size(); i < size; i++) {
             ProcessMemInfo mi = memInfos.get(i);
@@ -1668,11 +1666,11 @@ public class AppProfiler {
                 mi.dmabufPss = readDmabufFromProcfs(DmaBufType.PSS, mi.pid);
                 mi.swapPss = swaptrackTmp[1];
                 mi.memtrack = memtrackTmp[0];
-                totalMemtrackGraphics += memtrackTmp[1];
-                totalMemtrackGl += memtrackTmp[2];
+                memUsageStats.totalMemtrackGraphics += memtrackTmp[1];
+                memUsageStats.totalMemtrackGl += memtrackTmp[2];
             }
-            totalPss += mi.pss;
-            totalSwapPss += mi.swapPss;
+            memUsageStats.totalPss += mi.pss;
+            memUsageStats.totalSwapPss += mi.swapPss;
             totalMemtrack += mi.memtrack;
         }
         Collections.sort(memInfos, new Comparator<ProcessMemInfo>() {
@@ -1690,8 +1688,8 @@ public class AppProfiler {
         StringBuilder tag = new StringBuilder(128);
         StringBuilder stack = new StringBuilder(128);
         tag.append("Low on memory -- ");
-        appendMemBucket(tag, totalPss, "total", false);
-        appendMemBucket(stack, totalPss, "total", true);
+        appendMemBucket(tag, memUsageStats.totalPss, "total", false);
+        appendMemBucket(stack, memUsageStats.totalPss, "total", true);
 
         StringBuilder fullNativeBuilder = new StringBuilder(1024);
         StringBuilder shortNativeBuilder = new StringBuilder(1024);
@@ -1701,12 +1699,11 @@ public class AppProfiler {
         int lastOomAdj = Integer.MIN_VALUE;
         long extraNativeRam = 0;
         long extraNativeMemtrack = 0;
-        long cachedPss = 0;
         for (int i = 0, size = memInfos.size(); i < size; i++) {
             ProcessMemInfo mi = memInfos.get(i);
 
             if (mi.oomAdj >= ProcessList.CACHED_APP_MIN_ADJ) {
-                cachedPss += mi.pss;
+                memUsageStats.cachedPss += mi.pss;
             }
 
             if (mi.oomAdj != ProcessList.NATIVE_ADJ
@@ -1772,7 +1769,7 @@ public class AppProfiler {
         }
 
         fullJavaBuilder.append("           ");
-        ProcessList.appendRamKb(fullJavaBuilder, totalPss);
+        ProcessList.appendRamKb(fullJavaBuilder, memUsageStats.totalPss);
         fullJavaBuilder.append(": TOTAL");
         if (totalMemtrack > 0) {
             fullJavaBuilder.append(" (");
@@ -1824,22 +1821,17 @@ public class AppProfiler {
             memInfoBuilder.append(" volatile\n");
         }
         memInfoBuilder.append("  Free RAM: ");
-        memInfoBuilder.append(stringifyKBSize(cachedPss + memInfo.getCachedSizeKb()
+        memInfoBuilder.append(stringifyKBSize(memUsageStats.cachedPss + memInfo.getCachedSizeKb()
                 + memInfo.getFreeSizeKb()));
         memInfoBuilder.append("\n");
-        long kernelUsed = memInfo.getKernelUsedSizeKb();
-        final long dmabufMapped = Debug.getDmabufMappedSizeKb();
+        long kernelUsed = memUsageStats.getKernelUsedSizeKb(memInfo);
+        final long dmabufMapped = memUsageStats.getDmabufMappedSizeKb();
         final long totalExportedDmabuf = Debug.getDmabufTotalExportedKb();
         if (totalExportedDmabuf >= 0) {
             final long dmabufUnmapped = totalExportedDmabuf - dmabufMapped;
             memInfoBuilder.append("DMA-BUF: ");
             memInfoBuilder.append(stringifyKBSize(totalExportedDmabuf));
             memInfoBuilder.append("\n");
-            // Account unmapped dmabufs as part of kernel memory allocations
-            kernelUsed += dmabufUnmapped;
-            // Replace memtrack HAL reported Graphics category with mapped dmabufs
-            totalPss -= totalMemtrackGraphics;
-            totalPss += dmabufMapped;
         }
         // These are included in the totalExportedDmabuf above and hence do not need to be added
         // to kernelUsed.
@@ -1869,10 +1861,6 @@ public class AppProfiler {
                 memInfoBuilder.append(" dmabuf + ");
                 memInfoBuilder.append(stringifyKBSize(gpuPrivateUsage));
                 memInfoBuilder.append(" private)\n");
-                // Replace memtrack HAL reported GL category with private GPU allocations and
-                // account it as part of kernel memory allocations
-                totalPss -= totalMemtrackGl;
-                kernelUsed += gpuPrivateUsage;
             } else {
                 memInfoBuilder.append("       GPU: ");
                 memInfoBuilder.append(stringifyKBSize(gpuUsage));
@@ -1881,16 +1869,13 @@ public class AppProfiler {
 
         }
         memInfoBuilder.append("  Used RAM: ");
-        memInfoBuilder.append(stringifyKBSize(
-                                  totalPss - cachedPss + kernelUsed));
+        memInfoBuilder.append(stringifyKBSize(memUsageStats.getUsedPss() + kernelUsed));
         memInfoBuilder.append("\n");
 
         // Note: ION/DMA-BUF heap pools are reclaimable and hence, they are included as part of
         // memInfo.getCachedSizeKb().
         memInfoBuilder.append("  Lost RAM: ");
-        memInfoBuilder.append(stringifyKBSize(memInfo.getTotalSizeKb()
-                - (totalPss - totalSwapPss) - memInfo.getFreeSizeKb() - memInfo.getCachedSizeKb()
-                - kernelUsed - memInfo.getZramTotalSizeKb()));
+        memInfoBuilder.append(stringifyKBSize(memUsageStats.getLostRam(memInfo)));
         memInfoBuilder.append("\n");
         Slog.i(TAG, "Low on memory:");
         Slog.i(TAG, shortNativeBuilder.toString());
