@@ -19,21 +19,13 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.platform.systemui_tapl.controller.QuickSettingsController
 import android.platform.systemui_tapl.ui.Root
-import android.tools.Rotation
-import android.tools.helpers.SYSTEMUI_PACKAGE
-import android.tools.helpers.retryIfStaleObject
-import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.By
-import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import java.util.regex.Pattern
+import com.android.server.wm.flicker.helpers.StartMediaProjectionAppHelper
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -46,44 +38,31 @@ import org.junit.Test
  * - Then make sure the panel for single app selection appears.
  */
 @Ignore("Test Base Class")
-abstract class StartAppScreenRecordingFromNotification(
-    val rotation: Rotation = Rotation.ROTATION_0
-) : TestScenarioBase(rotation) {
+abstract class StartScreenRecordingAppSelectorFromQS() : TestScenarioBase() {
 
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     val tapl = LauncherInstrumentation()
     val wmHelper = WindowManagerStateHelper(instrumentation)
     val device = UiDevice.getInstance(instrumentation)
-    private val packageManager = instrumentation.context.packageManager
 
-    val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val sysuiSelectorApp =
-        ComponentNameMatcher(
-            SYSTEMUI_PACKAGE,
-            "com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity",
-        )
+    private val mediaProjectionAppHelper = StartMediaProjectionAppHelper(instrumentation)
+    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
 
     @Before
     fun setup() {
         QuickSettingsController.get().addAsFirstTile(SCREEN_RECORD_TILE_NAME)
         testApp.enterDesktopMode(wmHelper, device)
+        openScreenRecorder()
     }
 
     @Test
     open fun startMediaProjection() {
-        startSingleAppMediaProjection(wmHelper)
+        mediaProjectionAppHelper.startMediaProjectionAppSelector(wmHelper)
     }
 
     @After
     fun teardown() {
         testApp.exit(wmHelper)
-    }
-
-    fun startSingleAppMediaProjection(wmHelper: WindowManagerStateHelper) {
-        openScreenRecorder()
-        chooseSingleAppOption()
-        startScreenSharing()
-        wmHelper.StateSyncBuilder().withWindowSurfaceAppeared(sysuiSelectorApp).waitForAndVerify()
     }
 
     protected fun openScreenRecorder() {
@@ -96,32 +75,7 @@ abstract class StartAppScreenRecordingFromNotification(
         Root.get().mediaProjectionPermissionDialog
     }
 
-    private fun chooseSingleAppOption() {
-        findObject(By.res(SCREEN_SHARE_OPTIONS_PATTERN)).also { it.click() }
-
-        val singleAppString = getSysUiResourceString(SINGLE_APP_STRING_RES_NAME)
-        retryIfStaleObject { findObject(By.text(singleAppString)).also { it.click() } }
-    }
-
-    private fun startScreenSharing() {
-        findObject(By.res(ACCEPT_RESOURCE_ID)).also { it.click() }
-    }
-
-    private fun findObject(selector: BySelector): UiObject2 =
-        device.wait(Until.findObject(selector), TIMEOUT) ?: error("Can't find object $selector")
-
-    private fun getSysUiResourceString(resName: String): String =
-        with(packageManager.getResourcesForApplication(SYSTEMUI_PACKAGE)) {
-            getString(getIdentifier(resName, "string", SYSTEMUI_PACKAGE))
-        }
-
     companion object {
         const val SCREEN_RECORD_TILE_NAME = "screenrecord"
-        const val TIMEOUT: Long = 5000L
-        const val ACCEPT_RESOURCE_ID: String = "android:id/button1"
-        val SCREEN_SHARE_OPTIONS_PATTERN: Pattern =
-            Pattern.compile("$SYSTEMUI_PACKAGE:id/screen_share_mode_(options|spinner)")
-        const val SINGLE_APP_STRING_RES_NAME: String =
-            "screenrecord_permission_dialog_option_text_single_app"
     }
 }

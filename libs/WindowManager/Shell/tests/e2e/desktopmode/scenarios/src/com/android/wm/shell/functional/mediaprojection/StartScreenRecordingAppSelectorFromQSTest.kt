@@ -19,13 +19,13 @@ package com.android.wm.shell.functional.mediaprojection
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.StartAppScreenRecordingFromNotification
+import com.android.wm.shell.scenarios.StartScreenRecordingAppSelectorFromQS
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/** Functional test for [StartAppScreenRecordingFromNotification]. */
+/** Functional test for [StartScreenRecordingAppSelectorFromQS]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class StartAppScreenRecordingFromNotificationTest : StartAppScreenRecordingFromNotification()
+class StartScreenRecordingAppSelectorFromQSTest : StartScreenRecordingAppSelectorFromQS()
