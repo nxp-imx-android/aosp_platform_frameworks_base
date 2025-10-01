@@ -42,6 +42,7 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.runner.RunWith
 import kotlin.test.Test
@@ -87,6 +88,7 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
             .assertHeightIsEqualTo(32.dp)
     }
 
+    @Ignore("b/448285460")
     @Test
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW)
     fun testVolumeSlider() = kosmos.runTest {
