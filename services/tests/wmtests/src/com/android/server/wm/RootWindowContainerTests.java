@@ -1618,6 +1618,22 @@ public class RootWindowContainerTests extends WindowTestsBase {
         assertEquals(activity0.token, result.get(1).getActivityToken());
     }
 
+    @Test
+    public void testOnDisplayAddedOrRemovedNotifiesTmaChanged() {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        final int displayId = dc.getDisplayId();
+
+        mRootWindowContainer.onDisplayAdded(displayId);
+
+        verify(mAtm).onTaskMoveAllowedChanged();
+
+        mRootWindowContainer.onDisplayRemoved(displayId);
+
+        verify(mAtm, times(2)).onTaskMoveAllowedChanged();
+    }
+
     /**
      * Mock {@link RootWindowContainer#resolveHomeActivity} for returning consistent activity
      * info for test cases.

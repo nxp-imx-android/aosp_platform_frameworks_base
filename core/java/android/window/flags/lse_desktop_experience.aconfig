@@ -1506,6 +1506,14 @@ flag {
 }
 
 flag {
+    name: "enable_task_move_allowed_listener_api"
+    namespace: "lse_desktop_experience"
+    description: "Enables the API to listen to changes of task movability state on displays."
+    bug: "400407139"
+    is_exported: true
+}
+
+flag {
     name: "enable_task_resizing_keyboard_shortcuts"
     namespace: "lse_desktop_experience"
     description: "Enables keyboard shortcuts for resizing tasks in desktop mode."

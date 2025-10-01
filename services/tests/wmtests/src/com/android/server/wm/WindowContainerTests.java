@@ -102,7 +102,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-
 /**
  * Test class for {@link WindowContainer}.
  *
@@ -1778,6 +1777,33 @@ public class WindowContainerTests extends WindowTestsBase {
         assertEquals(ime(), root.mMergedExcludeInsetsTypes);
         assertEquals(ime(), child1.mMergedExcludeInsetsTypes);
         verify(mockInsetsStateController, never()).notifyInsetsChanged(any());
+    }
+
+    @Test
+    public void testReparentToNewDisplay_expectTmaCallbacks() {
+        final DisplayContent newDisplayContent = createNewDisplay();
+
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setIsTaskMoveAllowed(true);
+
+        clearInvocations(mDisplayContent);
+
+        rootTask.reparent(newDisplayContent.getDefaultTaskDisplayArea(), POSITION_TOP);
+
+        verify(mDisplayContent).onDescendantsTaskMoveAllowedChanged();
+        verify(newDisplayContent).onDescendantsTaskMoveAllowedChanged();
+    }
+
+    @Test
+    public void testRemove_expectTmaCallbacks() {
+        final Task rootTask = createTask(mDisplayContent);
+        rootTask.setIsTaskMoveAllowed(true);
+
+        clearInvocations(mDisplayContent);
+
+        rootTask.getDisplayArea().removeRootTask(rootTask);
+
+        verify(mDisplayContent).onDescendantsTaskMoveAllowedChanged();
     }
 
     private WindowContainer<?> createWindowContainerSpy(SurfaceControl mockSurfaceControl,

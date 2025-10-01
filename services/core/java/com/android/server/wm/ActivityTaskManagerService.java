@@ -166,6 +166,7 @@ import android.app.IAssistDataReceiver;
 import android.app.IHandoffTaskDataReceiver;
 import android.app.INotificationManager;
 import android.app.IScreenCaptureObserver;
+import android.app.ITaskMoveAllowedListener;
 import android.app.ITaskStackListener;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -197,6 +198,7 @@ import android.content.pm.ConfigurationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
@@ -224,6 +226,7 @@ import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.RemoteCallback;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -233,6 +236,7 @@ import android.os.UpdateLock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
+import android.permission.PermissionManager;
 import android.provider.Settings;
 import android.service.dreams.DreamActivity;
 import android.service.voice.IVoiceInteractionSession;
@@ -243,8 +247,10 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IntArray;
 import android.util.Log;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
@@ -301,6 +307,7 @@ import com.android.server.sdksandbox.SdkSandboxManagerLocal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal.HandoffEnablementListener;
 import com.android.server.wm.utils.WindowStyleCache;
 import com.android.wm.shell.Flags;
 
@@ -820,6 +827,22 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private int mDeviceOwnerUid = Process.INVALID_UID;
 
     private Set<Integer> mProfileOwnerUids = new ArraySet<Integer>();
+
+    private RemoteCallbackList<ITaskMoveAllowedListener> mTaskMoveAllowedListeners =
+            new RemoteCallbackList<ITaskMoveAllowedListener>() {
+                @Override
+                public void onCallbackDied(ITaskMoveAllowedListener callback) {
+                    mLastSentTmaValues.remove(callback);
+                    if (mTaskMoveAllowedListeners.getRegisteredCallbackCount() == 0) {
+                        mContext.getSystemService(PermissionManager.class)
+                                .removeOnPermissionsChangeListener(
+                                        mRepositionSelfWindowsPermissionChangedListener);
+                    }
+                }
+            };
+    private OnPermissionsChangedListener mRepositionSelfWindowsPermissionChangedListener =
+            (uid -> sendTmaValuesToListeners(uid));
+    private Map<ITaskMoveAllowedListener, SparseBooleanArray> mLastSentTmaValues = new ArrayMap<>();
 
     private final class SettingObserver extends ContentObserver {
         private final Uri mFontScaleUri = Settings.System.getUriFor(FONT_SCALE);
@@ -1989,6 +2012,142 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             return false;
         }
         return dc.isTaskMoveAllowedOnDisplay();
+    }
+
+    /**
+     * Registers a listener for changes of the {@link
+     * ActivityTaskManagerService#isTaskMoveAllowedOnDisplay()} states for any display.
+     *
+     * <p>{@link ActivityTaskManagerService#isTaskMoveAllowedOnDisplay()} is determined by the
+     * existence of any root Tasks or TDAs with their {@link WindowContainer#mIsTaskMoveAllowed} set
+     * under the relevant {@link DisplayContent} and the permission state of {@link
+     * android.Manifest.permission.REPOSITION_SELF_WINDOWS} of callees. There are four types of
+     * events that may change its value:
+     *
+     * <p>1. Any changes in {@link WindowContainer#mIsTaskMoveAllowed} under any {@link
+     * DisplayContent};
+     *
+     * <p>2. Any appearances or disappearances of root Tasks or TDAs with {@link
+     * WindowContainer#mIsTaskMoveAllowed} set appearing under the {@link DisplayContent};
+     *
+     * <p>3. Any permission state changes of {@link
+     * android.Manifest.permission.REPOSITION_SELF_WINDOWS} for any apps;
+     *
+     * <p>4. Any changes to the set of active displays.
+     *
+     * <p>We calculate the value whenever one of those events is detected, and notify callbacks if
+     * we determine the values have changed for a callback or when the callback is newly registered.
+     */
+    public void registerTaskMoveAllowedListener(@NonNull ITaskMoveAllowedListener listener) {
+        Objects.requireNonNull(listener);
+        final int pid = Binder.getCallingPid();
+        final int uid = Binder.getCallingUid();
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                Pair<Integer, Integer> pidAndUid = Pair.create(pid, uid);
+                if (mTaskMoveAllowedListeners.register(listener, pidAndUid)
+                        && mTaskMoveAllowedListeners.getRegisteredCallbackCount() == 1) {
+                    mContext.getSystemService(PermissionManager.class)
+                            .addOnPermissionsChangeListener(
+                                    mRepositionSelfWindowsPermissionChangedListener);
+                }
+                sendTmaValuesToListeners(uid);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    /**
+     * Unregisters the given listener for changes of the {@link
+     * ActivityTaskManagerService#isTaskMoveAllowedOnDisplay()} state.
+     */
+    public void unregisterTaskMoveAllowedListener(@NonNull ITaskMoveAllowedListener listener) {
+        Objects.requireNonNull(listener);
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                if (mTaskMoveAllowedListeners.unregister(listener)
+                        && mTaskMoveAllowedListeners.getRegisteredCallbackCount() == 0) {
+                    mContext.getSystemService(PermissionManager.class)
+                            .removeOnPermissionsChangeListener(
+                                    mRepositionSelfWindowsPermissionChangedListener);
+                }
+                mLastSentTmaValues.remove(listener);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    void onTaskMoveAllowedChanged() {
+        sendTmaValuesToListeners(-1);
+    }
+
+    private SparseBooleanArray getTmaValuesForDisplays() {
+        SparseBooleanArray tmaValues = new SparseBooleanArray();
+        mRootWindowContainer.forAllDisplays(
+                (DisplayContent dc) -> {
+                    tmaValues.put(dc.getDisplayId(), dc.isTaskMoveAllowedOnDisplay());
+                });
+        return tmaValues;
+    }
+
+    /**
+     * @param uid If not equal to {@code -1}, then only listeners registered by callers with UID
+     *     equal to {@code uid} will be notified.
+     */
+    void sendTmaValuesToListeners(int uid) {
+        synchronized (mGlobalLock) {
+            final SparseBooleanArray tmaForDisplaysValues = getTmaValuesForDisplays();
+
+            int i = mTaskMoveAllowedListeners.beginBroadcast();
+            while (i > 0) {
+                i--;
+
+                final Pair<Integer, Integer> pidAndUid =
+                        (Pair<Integer, Integer>) mTaskMoveAllowedListeners.getBroadcastCookie(i);
+                final int listenerPid = pidAndUid.first;
+                final int listenerUid = pidAndUid.second;
+
+                if (uid != -1 && listenerUid != uid) continue;
+
+                final SparseBooleanArray tmaValues = new SparseBooleanArray();
+                final boolean hasPermission =
+                        checkPermission(
+                                        Manifest.permission.REPOSITION_SELF_WINDOWS,
+                                        listenerPid,
+                                        listenerUid)
+                                == PERMISSION_GRANTED;
+                for (int j = 0; j < tmaForDisplaysValues.size(); j++) {
+                    tmaValues.put(
+                            tmaForDisplaysValues.keyAt(j),
+                            tmaForDisplaysValues.valueAt(j) && hasPermission);
+                }
+                final ITaskMoveAllowedListener listener =
+                        mTaskMoveAllowedListeners.getBroadcastItem(i);
+
+                if (tmaValues.equals(mLastSentTmaValues.put(listener, tmaValues))) continue;
+
+                final int size = tmaValues.size();
+
+                final int[] keys = new int[size];
+                final boolean[] values = new boolean[size];
+
+                for (int j = 0; j < size; j++) {
+                    keys[j] = tmaValues.keyAt(j);
+                    values[j] = tmaValues.valueAt(j);
+                }
+
+                try {
+                    listener.onTaskMoveAllowedChanged(keys, values);
+                } catch (RemoteException e) {
+                    // client throws an exception back to the server, ignore it
+                }
+            }
+            mTaskMoveAllowedListeners.finishBroadcast();
+        }
     }
 
     @Override

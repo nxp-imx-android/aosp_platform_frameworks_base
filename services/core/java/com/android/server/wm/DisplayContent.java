@@ -1140,6 +1140,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     };
 
+    private boolean mIsTaskMoveAllowedOnDisplay = false;
+
     /**
      * Create new {@link DisplayContent} instance, add itself to the root window container and
      * initialize direct children.
@@ -7306,9 +7308,32 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     boolean isTaskMoveAllowedOnDisplay() {
+        // Since the listener work changes the model so that isTaskMoveAllowedOnDisplay uses cached
+        // values instead of calculating the value directly upon each call, let's have a killswitch
+        // that will let us go back to the original behavior if anything breaks (e.g. we haven't
+        // covered all events that may change this value).
+        if (!DesktopExperienceFlags.ENABLE_TASK_MOVE_ALLOWED_LISTENER_API.isTrue()) {
+            updateIsTaskMoveAllowedOnDisplay();
+        }
+        return mIsTaskMoveAllowedOnDisplay;
+    }
+
+    void onDescendantsTaskMoveAllowedChanged() {
+        boolean lastValueOfIsTaskMoveAllowedOnDisplay = isTaskMoveAllowedOnDisplay();
+        updateIsTaskMoveAllowedOnDisplay();
+        if (lastValueOfIsTaskMoveAllowedOnDisplay == isTaskMoveAllowedOnDisplay()) {
+            return;
+        }
+        mAtmService.onTaskMoveAllowedChanged();
+    }
+
+    // LINT.IfChange(updateIsTaskMoveAllowedOnDisplay)
+    private void updateIsTaskMoveAllowedOnDisplay() {
         // Keep the WindowContainer's subtypes we are traversing here in sync with
         // WindowContainer#canHoldSelfMovableTasks.
-        return forAllTaskDisplayAreas(TaskDisplayArea::getIsTaskMoveAllowed)
-                || forAllRootTasks(Task::getIsTaskMoveAllowed);
+        mIsTaskMoveAllowedOnDisplay =
+                forAllTaskDisplayAreas(TaskDisplayArea::getIsTaskMoveAllowed)
+                        || forAllRootTasks(Task::getIsTaskMoveAllowed);
     }
+    // LINT.ThenChange(WindowContainer.java:canHoldSelfMovableTasks)
 }
