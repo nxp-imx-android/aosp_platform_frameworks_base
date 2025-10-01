@@ -443,6 +443,16 @@ public abstract class OomAdjuster {
          */
         void onOomAdjUpdated(int adjSeq);
 
+        /**
+         * Notifies after OOM adjustment values are updated for all processes and memory trimming
+         * has been performed.
+         *
+         * @param numCached The number of processes in a cached state.
+         * @param numEmpty The number of empty processes.
+         * @param now The uptime timestamp of this event.
+         */
+        void onProcessUpdatedAndTrimmed(int numCached, int numEmpty, long now);
+
         /** Notifies when a process becomes effectively background restricted. */
         void onProcessBackgroundRestricted(ProcessRecordInternal app);
 
@@ -1301,7 +1311,7 @@ public abstract class OomAdjuster {
 
         mLastFreeSwapPercent = freeSwapPercent;
 
-        mService.mAppProfiler.updateLowMemStateLSP(numCached, numEmpty, numTrimming, now);
+        mCallback.onProcessUpdatedAndTrimmed(numCached, numEmpty, now);
     }
 
     @GuardedBy({"mService", "mProcLock"})

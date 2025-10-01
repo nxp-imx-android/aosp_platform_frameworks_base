@@ -19621,6 +19621,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
+        public void onProcessUpdatedAndTrimmed(int numCached, int numEmpty, long now) {
+            mAppProfiler.updateLowMemStateLSP(numCached, numEmpty, now);
+            mProcessStateController.setIsLastMemoryLevelNormal(
+                    mAppProfiler.isLastMemoryLevelNormal());
+        }
+
+        @Override
         public void onProcessBackgroundRestricted(ProcessRecordInternal app) {
             mHandler.post(() -> {
                 synchronized (ActivityManagerService.this) {
