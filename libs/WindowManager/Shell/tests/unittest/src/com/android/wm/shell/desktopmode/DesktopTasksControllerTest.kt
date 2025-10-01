@@ -138,6 +138,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSplitScreenTask
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
+import com.android.wm.shell.desktopmode.clientfullscreenrequest.ClientFullscreenRequestTransitionHandler
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
@@ -261,6 +262,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     lateinit var toggleResizeDesktopTaskTransitionHandler: ToggleResizeDesktopTaskTransitionHandler
     @Mock lateinit var dragToDesktopTransitionHandler: DragToDesktopTransitionHandler
     @Mock lateinit var mMockDesktopImmersiveController: DesktopImmersiveController
+    @Mock
+    lateinit var clientFullscreenRequestTransitionHandler: ClientFullscreenRequestTransitionHandler
     @Mock lateinit var splitScreenController: SplitScreenController
     @Mock lateinit var recentsTransitionHandler: RecentsTransitionHandler
     @Mock lateinit var dragAndDropController: DragAndDropController
@@ -509,6 +512,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             toggleResizeDesktopTaskTransitionHandler,
             dragToDesktopTransitionHandler,
             mMockDesktopImmersiveController,
+            clientFullscreenRequestTransitionHandler,
             userRepositories,
             repositoryInitializer,
             recentsTransitionHandler,

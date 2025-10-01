@@ -680,6 +680,26 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun getDeskIdFromTaskInfo_taskInDesk_returnsDesk() = runTest {
+        val desk = createDeskSuspending()
+        val taskInDesk = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+
+        val deskId = organizer.getDeskIdFromTaskInfo(taskInDesk)
+
+        assertThat(deskId).isEqualTo(desk.deskRoot.deskId)
+    }
+
+    @Test
+    fun getDeskIdFromTaskInfo_taskNotInDesk_returnsNull() = runTest {
+        val desk = createDeskSuspending()
+        val taskInDesk = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId + 1 }
+
+        val deskId = organizer.getDeskIdFromTaskInfo(taskInDesk)
+
+        assertThat(deskId).isNull()
+    }
+
+    @Test
     fun deactivateDesk_clearsLaunchRoot() = runTest {
         val wct = WindowContainerTransaction()
         val desk = createDeskSuspending()

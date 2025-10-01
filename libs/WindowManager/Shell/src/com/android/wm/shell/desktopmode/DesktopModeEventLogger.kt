@@ -743,6 +743,11 @@ class DesktopModeEventLogger {
                 FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__APP_SELF_REPOSITION
             ),
             TASKBAR_ICON(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__TASKBAR_ICON),
+            TASK_LAUNCH(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__TASK_LAUNCH),
+            CLIENT_REQUEST_EXIT_FULLSCREEN(
+                FrameworkStatsLog
+                    .DESKTOP_MODE_UICHANGED__ENTER_REASON__CLIENT_REQUEST_EXIT_FULLSCREEN
+            ),
         }
 
         /**
@@ -781,6 +786,11 @@ class DesktopModeEventLogger {
             ),
             RECENTS_DISMISS(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__RECENTS_DISMISS),
             ENTER_PIP(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__ENTER_PIP),
+            ENTER_BUBBLE(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__ENTER_BUBBLE),
+            CLIENT_REQUEST_ENTER_FULLSCREEN(
+                FrameworkStatsLog
+                    .DESKTOP_MODE_UICHANGED__EXIT_REASON__CLIENT_REQUEST_ENTER_FULLSCREEN
+            ),
         }
 
         /**
