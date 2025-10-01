@@ -25,7 +25,7 @@ public class SmartReplyLogger {
             FrameworkStatsLog.UI_EVENT_REPORTED,
             NotificationAnimatedChipEvent.NOTIFICATION_ANIMATED_REPLY_CHIP_VISIBLE.getId(),
             0,
-            null,
+            null as String?,
             0,
             ""
         )
@@ -36,7 +36,7 @@ public class SmartReplyLogger {
             FrameworkStatsLog.UI_EVENT_REPORTED,
             NotificationAnimatedChipEvent.NOTIFICATION_ANIMATED_ACTION_CHIP_VISIBLE.getId(),
             0,
-            null,
+            null as String?,
             0,
             ""
         )
