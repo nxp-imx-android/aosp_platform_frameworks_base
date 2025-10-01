@@ -109,9 +109,9 @@ public class RavenwoodTestStats {
                 // Keep unwrapping the exception until we found
                 // unsupported API exception or the deepest cause.
                 for (;;) {
-                    if (ex instanceof RavenwoodUnsupportedApiException) {
+                    if (ex instanceof RavenwoodUnsupportedApiException re) {
                         // The test hit a Ravenwood unsupported API
-                        return getCaller(ex);
+                        return re.getReason();
                     }
                     var cause = ex.getCause();
                     if (cause == null) {

@@ -38,6 +38,7 @@ android.content.ClipboardManager
 android.content.ComponentCallbacksController
 android.content.ComponentName
 android.content.ContentProvider
+android.content.ContentResolver
 android.content.ContentUris
 android.content.ContentValues
 android.content.Context

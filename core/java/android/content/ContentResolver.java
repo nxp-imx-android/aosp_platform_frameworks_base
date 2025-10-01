@@ -65,6 +65,8 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.system.Int64Ref;
 import android.text.TextUtils;
 import android.util.EventLog;
@@ -102,6 +104,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * developer guide.</p>
  * </div>
  */
+@RavenwoodKeepPartialClass
 public abstract class ContentResolver implements ContentInterface {
     /**
      * Enables logic that supports deprecation of {@code _data} columns,
@@ -810,11 +813,13 @@ public abstract class ContentResolver implements ContentInterface {
      * Note: passing a {@code null} context here could lead to unexpected behavior in certain
      * ContentResolver APIs so it is highly recommended to pass a non-null context here.
      */
+    @RavenwoodKeep
     public ContentResolver(@Nullable Context context) {
         this(context, null);
     }
 
     /** @hide */
+    @RavenwoodKeep
     public ContentResolver(@Nullable Context context, @Nullable ContentInterface wrapped) {
         mContext = context != null ? context : ActivityThread.currentApplication();
         mPackageName = mContext.getOpPackageName();
