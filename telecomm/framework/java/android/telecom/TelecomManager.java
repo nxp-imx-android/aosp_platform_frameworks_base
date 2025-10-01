@@ -3270,7 +3270,7 @@ public class TelecomManager {
     }
 
     /**
-     * Sets the user-specified local voicemail timeout for a given {@link PhoneAccountHandle}.
+     * Enables local voicemail for the given {@link PhoneAccountHandle}.
      * <p>
      * When a {@link android.telecom.Call} has been in {@link android.telecom.Call#STATE_RINGING}
      * for longer than the specified {@link Duration}, the {@link LocalVoicemailService} configured
@@ -3284,9 +3284,9 @@ public class TelecomManager {
      * {@link PhoneAccount} specifies an allowed range.  If one is not specified, the range must be
      * [0, 120].
      *
+     * @param phoneAccountHandle the {@link PhoneAccountHandle} to enable local voicemail for.
      * @param timeout the timeout after which the call will be answered for local voicemail
-     *                processing, or {@link #LOCAL_VOICEMAIl_DISABLED} if local voicemail should be
-     *                disabled for a {@link PhoneAccountHandle}.
+     *                processing.
      * @throws IllegalArgumentException if an invalid {@link PhoneAccountHandle} is specified.
      * @throws IllegalArgumentException if {@link #isLocalVoicemailSupported()} is {@code false}.
      * @throws IllegalArgumentException if the {@link Duration} is not within the allowed range.
@@ -3295,7 +3295,7 @@ public class TelecomManager {
     @SystemApi
     @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
-    public void setLocalVoicemailTimeout(@NonNull PhoneAccountHandle phoneAccountHandle,
+    public void enableLocalVoicemail(@NonNull PhoneAccountHandle phoneAccountHandle,
             @NonNull Duration timeout) {
         if (phoneAccountHandle == null) {
             throw new NullPointerException("phoneAccountHandle is required");
@@ -3306,8 +3306,69 @@ public class TelecomManager {
         ITelecomService service = getTelecomService();
         if (service != null) {
             try {
-                service.setLocalVoicemailTimeout(mContext.getOpPackageName(), phoneAccountHandle,
+                service.enableLocalVoicemail(mContext.getOpPackageName(), phoneAccountHandle,
                         timeout.toMillis());
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException disableLocalVoicemail: " + e);
+                throw e.rethrowFromSystemServer();
+            }
+        } else {
+            throw new IllegalStateException("Telecom is not available");
+        }
+    }
+
+    /**
+     * Disables local voicemail for the given {@link PhoneAccountHandle}.
+     * <p>
+     * Intended for use by the settings app to configure voicemail timeouts.
+     *
+     * @param phoneAccountHandle the {@link PhoneAccountHandle} for which local voicemail will be
+     *                           disabled.
+     * @throws IllegalArgumentException if an invalid {@link PhoneAccountHandle} is specified.
+     * @throws IllegalArgumentException if {@link #isLocalVoicemailSupported()} is {@code false}.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    public void disableLocalVoicemail(@NonNull PhoneAccountHandle phoneAccountHandle) {
+        if (phoneAccountHandle == null) {
+            throw new NullPointerException("phoneAccountHandle is required");
+        }
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            try {
+                service.disableLocalVoicemail(mContext.getOpPackageName(), phoneAccountHandle);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException disableLocalVoicemail: " + e);
+                throw e.rethrowFromSystemServer();
+            }
+        } else {
+            throw new IllegalStateException("Telecom is not available");
+        }
+    }
+
+    /**
+     * Determines if local voicemail is enabled for a given {@link PhoneAccountHandle}.
+     * <p>
+     * Where local voicemail is enabled, you can check how long a call must be ringing before it is
+     * sent to local voicemail using {@link #getLocalVoicemailTimeout(PhoneAccountHandle)}.
+     *
+     * @param phoneAccountHandle the phone account to check the local voicemail enabled state for.
+     * @return {@code true} if local voicemail is enabled for the specified
+     * {@link PhoneAccountHandle} or {@code false} otherwise.
+     * @throws IllegalArgumentException if {@link #isLocalVoicemailSupported()} is {@code false}.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    public boolean isLocalVoicemailEnabled(@NonNull PhoneAccountHandle phoneAccountHandle) {
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            try {
+                return service.isLocalVoicemailEnabled(mContext.getOpPackageName(),
+                        phoneAccountHandle);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException isLocalVoicemailSupported: " + e);
                 throw e.rethrowFromSystemServer();
@@ -3325,16 +3386,20 @@ public class TelecomManager {
      * on the device will be bound to handle taking a voicemail message for the user.
      * <p>
      * Intended for use by the settings app to configure voicemail timeouts.
+     * <p>
+     * You should only call this method for a {@link PhoneAccountHandle} which has local voicemail
+     * enabled (see {@link #isLocalVoicemailEnabled(PhoneAccountHandle)}.
      *
      * @param phoneAccountHandle the {@link PhoneAccountHandle} to get the local voicemail timeout
      *                           for.
      * @return a {@link Duration} specifying how long a {@link android.telecom.Call} needs to be in
      * {@link android.telecom.Call#STATE_RINGING} state before the device's
-     * {@link LocalVoicemailService} will be bound to take a message for the user.  Will be set to
-     * {@link #LOCAL_VOICEMAIL_DISABLED} when local voicemail is disabled for this
-     * {@link PhoneAccountHandle}.
+     * {@link LocalVoicemailService} will be bound to take a message for the user.  You should
+     * check if local voicemail is enabled before querying the timeout.
      * @throws IllegalArgumentException if an invalid {@link PhoneAccountHandle} is specified.
      * @throws IllegalArgumentException if {@link #isLocalVoicemailSupported()} is {@code false}.
+     * @throws IllegalArgumentException if local voicemail is disabled for the specified
+     * {@link PhoneAccountHandle}.
      * @hide
      */
     @SystemApi
