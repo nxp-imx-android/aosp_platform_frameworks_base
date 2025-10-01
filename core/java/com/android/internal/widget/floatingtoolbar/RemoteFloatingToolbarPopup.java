@@ -587,10 +587,9 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof LocalFloatingToolbarPopup.MenuItemRepr)) {
+            if (!(o instanceof MenuItemRepr other)) {
                 return false;
             }
-            final MenuItemRepr other = (MenuItemRepr) o;
             return mItemId == other.mItemId
                     && mGroupId == other.mGroupId
                     && TextUtils.equals(mTitle, other.mTitle)
