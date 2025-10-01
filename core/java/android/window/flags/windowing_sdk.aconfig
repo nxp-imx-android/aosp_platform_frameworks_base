@@ -136,6 +136,16 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "fix_bubble_trampoline_launch_twice"
+    description: "Fix the transition when a Task Trampoline is launched to Bubble twice"
+    bug: "448009266"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "return_all_visible_activities_for_vis"
     description: "Return all visible activities in multi-tasking feature to VIS"
     bug: "434114340"
