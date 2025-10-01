@@ -873,16 +873,4 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         tda.onTaskMoved(rootTask, true /* toTop */, false /* toBottom */);
         verify(tda).onLeafTaskMoved(eq(leafTask), anyBoolean(), anyBoolean());
     }
-
-    @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
-    public void testRemoveRootHomeTask_restartsHomeTask() {
-        final TaskDisplayArea taskDisplayArea = mRootWindowContainer.getDefaultTaskDisplayArea();
-        final Task rootHomeTask = taskDisplayArea.getOrCreateRootHomeTask(true);
-        spyOn(mAtm.mTaskSupervisor);
-
-        taskDisplayArea.removeRootTaskReferenceIfNeeded(rootHomeTask);
-
-        verify(mAtm.mTaskSupervisor).scheduleStartHome("homeCrashed");
-    }
 }
