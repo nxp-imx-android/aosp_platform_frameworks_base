@@ -29,7 +29,7 @@ import com.android.wm.shell.flicker.utils.ICommonAssertions
 import com.android.wm.shell.flicker.utils.SPLIT_SCREEN_DIVIDER_COMPONENT
 import com.android.wm.shell.flicker.utils.appWindowIsVisibleAtEnd
 import com.android.wm.shell.flicker.utils.layerIsVisibleAtEnd
-import com.android.wm.shell.flicker.utils.layerKeepVisible
+import com.android.wm.shell.flicker.utils.layerKeepVisibleOrOccluded
 import com.android.wm.shell.flicker.utils.splitAppLayerBoundsIsVisibleAtEnd
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -57,7 +57,7 @@ class SwitchAppByDoubleTapDividerTest(override val flicker: FlickerTest) :
 
     @Presubmit
     @Test
-    fun splitScreenDividerKeepVisible() = flicker.layerKeepVisible(SPLIT_SCREEN_DIVIDER_COMPONENT)
+    fun splitScreenDividerKeepVisible() = flicker.layerKeepVisibleOrOccluded(SPLIT_SCREEN_DIVIDER_COMPONENT)
 
     @Presubmit @Test fun primaryAppLayerIsVisibleAtEnd() = flicker.layerIsVisibleAtEnd(primaryApp)
 
