@@ -99,7 +99,7 @@ private inline fun <A> deferInline(
     crossinline block: InitScope.() -> Transactional<A>
 ): Transactional<A> =
     Transactional(
-        StateInit(init(NameTaggingDisabled) { block().impl.init.connect(evalScope = this) })
+        StateInit(init(NameTaggingDisabled) { block().impl.init.connect(initScope = this) })
     )
 
 /**
