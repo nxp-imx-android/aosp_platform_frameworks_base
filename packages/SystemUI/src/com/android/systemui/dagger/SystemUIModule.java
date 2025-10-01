@@ -157,7 +157,6 @@ import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.ConfigurationControllerModule;
 import com.android.systemui.statusbar.phone.LetterboxModule;
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeDataLayerModule;
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.impl.AirplaneModeDomainLayerModule;
 import com.android.systemui.statusbar.pipeline.airplane.shared.impl.AirplaneModeSharedModule;
 import com.android.systemui.statusbar.pipeline.dagger.StatusBarPipelineModule;
 import com.android.systemui.statusbar.policy.DeviceStateRotationLockSettingController;
@@ -224,7 +223,6 @@ import javax.inject.Named;
         AmbientModule.class,
         AppOpsModule.class,
         AirplaneModeDataLayerModule.class,
-        AirplaneModeDomainLayerModule.class,
         AirplaneModeSharedModule.class,
         AssistModule.class,
         AuthenticationModule.class,

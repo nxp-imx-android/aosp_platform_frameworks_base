@@ -18,13 +18,12 @@ package com.android.systemui.statusbar.pipeline.airplane.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.impl.AirplaneModeInteractorImpl
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 
 val Kosmos.airplaneModeInteractor: AirplaneModeInteractor by
     Kosmos.Fixture {
-        AirplaneModeInteractorImpl(
+        AirplaneModeInteractor(
             airplaneModeRepository,
             connectivityRepository,
             mobileConnectionsRepository,
