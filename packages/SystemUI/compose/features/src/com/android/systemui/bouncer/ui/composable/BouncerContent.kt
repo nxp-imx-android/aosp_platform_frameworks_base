@@ -85,6 +85,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
@@ -720,6 +721,7 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleLargeEmphasized,
                     overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
                 )
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
@@ -728,6 +730,7 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 2,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
