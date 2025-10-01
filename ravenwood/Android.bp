@@ -68,8 +68,8 @@ filegroup {
 }
 
 filegroup {
-    name: "ravenwood-services-jarjar-rules",
-    srcs: ["texts/ravenwood-services-jarjar-rules.txt"],
+    name: "ravenwood-services-rename-policies",
+    srcs: ["texts/ravenwood-services-rename-policies.txt"],
     visibility: ["//visibility:private"],
 }
 
@@ -144,6 +144,7 @@ java_library {
     srcs: [
         ":framework-configinfrastructure-ravenwood-sources",
         ":framework-ravenwood-sources",
+        ":services.fakes-sources",
         "junit-impl-src/**/*.java",
         "junit-src/**/*.java",
     ],
@@ -169,7 +170,7 @@ java_library {
     ],
     sdk_version: "core_current",
     visibility: [":__subpackages__"],
-    jarjar_rules: ":ravenwood-services-jarjar-rules",
+    jarjar_rules: "texts/ravenwood-runtime-jarjar-rules.txt",
 }
 
 java_device_for_host {
@@ -279,18 +280,6 @@ sh_test_host {
         ":framework-graphics.ravenwood-stats{framework-graphics_dump.txt}",
         ":framework-graphics.ravenwood-stats{framework-graphics_keep_all.txt}",
     ],
-}
-
-java_library {
-    name: "services.fakes.ravenwood-jarjar",
-    installable: false,
-    srcs: [":services.fakes-sources"],
-    libs: [
-        "ravenwood-framework",
-        "services.core.ravenwood",
-    ],
-    jarjar_rules: ":ravenwood-services-jarjar-rules",
-    visibility: ["//visibility:private"],
 }
 
 // On Ravenwood, we now use Mockito 5 throughout.
@@ -587,7 +576,6 @@ android_ravenwood_libgroup {
         "android.test.mock.ravenwood",
         "hoststubgen-helper-runtime",
         "services.core.ravenwood-jarjar",
-        "services.fakes.ravenwood-jarjar",
         "core-icu4j-for-host.ravenwood",
         "icu4j-icudata-jarjar",
         "icu4j-icutzdata-jarjar",

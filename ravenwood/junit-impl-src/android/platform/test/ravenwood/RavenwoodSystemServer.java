@@ -43,17 +43,28 @@ import android.view.WindowManagerGlobal;
 import android.view.autofill.IAutoFillManager;
 
 import com.android.internal.view.IInputMethodManager;
+import com.android.server.FakeClipboardService;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.compat.PlatformCompatNative;
+import com.android.server.example.BlueManagerService;
+import com.android.server.example.RedManagerService;
 import com.android.server.utils.TimingsTraceAndSlog;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Start system services for Ravenwood.
+ * (Which is done by SystemServer on a real device.)
+ *
+ * This class refers to various system service classes, including
+ * the real ones and fake ones. These classes are renamed with jarjar/hoststubgen.
+ * See ravenwood/texts/ravenwood-services-rename-policies.txt for more details.
+ */
 public class RavenwoodSystemServer {
 
     /**
@@ -64,18 +75,16 @@ public class RavenwoodSystemServer {
      * Map from {@code FooManager.class} to the {@code com.android.server.SystemService}
      * lifecycle class name used to instantiate and drive that service.
      */
-    private static final ArrayMap<Class<?>, String> sKnownServices = new ArrayMap<>();
+    private static final ArrayMap<Class<?>, Class<? extends SystemService>> sKnownServices =
+            new ArrayMap<>();
 
     static {
         // Services provided by a typical shipping device
-        sKnownServices.put(ClipboardManager.class,
-                "com.android.server.FakeClipboardService$Lifecycle");
+        sKnownServices.put(ClipboardManager.class, FakeClipboardService.Lifecycle.class);
 
         // Additional services we provide for testing purposes
-        sKnownServices.put(BlueManager.class,
-                "com.android.server.example.BlueManagerService$Lifecycle");
-        sKnownServices.put(RedManager.class,
-                "com.android.server.example.RedManagerService$Lifecycle");
+        sKnownServices.put(BlueManager.class, BlueManagerService.Lifecycle.class);
+        sKnownServices.put(RedManager.class, RedManagerService.Lifecycle.class);
     }
 
     private static Set<Class<?>> sStartedServices;
@@ -147,20 +156,20 @@ public class RavenwoodSystemServer {
         sStartedServices = null;
     }
 
-    private static void startServices(Collection<Class<?>> serviceClasses) {
-        for (Class<?> serviceClass : serviceClasses) {
+    private static void startServices(Collection<Class<?>> managerClasses) {
+        for (Class<?> managerClass : managerClasses) {
             // Quietly ignore duplicate requests if service already started
-            if (sStartedServices.contains(serviceClass)) continue;
-            sStartedServices.add(serviceClass);
+            if (sStartedServices.contains(managerClass)) continue;
+            sStartedServices.add(managerClass);
 
-            final String serviceName = sKnownServices.get(serviceClass);
-            if (serviceName == null) {
-                throw new RavenwoodUnsupportedApiException("The requested service " + serviceClass)
-                        .setReason(serviceClass.getName());
+            final Class<? extends SystemService> serviceClass = sKnownServices.get(managerClass);
+            if (serviceClass == null) {
+                throw new RavenwoodUnsupportedApiException("The requested service " + managerClass)
+                        .setReason(managerClass.getName());
             }
 
             // Start service and then depth-first traversal of any dependencies
-            final SystemService instance = sServiceManager.startService(serviceName);
+            final SystemService instance = sServiceManager.startService(serviceClass);
             startServices(instance.getDependencies());
         }
     }
