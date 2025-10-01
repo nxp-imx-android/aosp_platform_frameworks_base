@@ -22,10 +22,10 @@ import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_
 import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_UNKNOWN;
 
 import android.annotation.NonNull;
-import android.util.Pair;
-
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.util.Pair;
+
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -74,6 +74,22 @@ public final class ApplicationConfig {
         Context appContext = context.createPackageContext(packageName, 0);
         ManifestConfigSource source = new ManifestConfigSource(appContext);
         return new ApplicationConfig(source);
+    }
+
+    /**
+     * Overwrite the NetworkSecurityPolicy associated with this ApplicationConfig.
+     *
+     * The policy should only be updated for custom TrustManager instances that
+     * have been created via KeyStoreConfigSource.
+     */
+    void setNetworkSecurityPolicy(libcore.net.NetworkSecurityPolicy policy) {
+        ensureInitialized();
+        if (hasPerDomainConfigs()) {
+            throw new IllegalStateException(
+                    "setNetworkSecurityPolicy cannot be called when per-domain "
+                    + "configs are present");
+        }
+        mDefaultConfig.setNetworkSecurityPolicy(policy);
     }
 
     /**
