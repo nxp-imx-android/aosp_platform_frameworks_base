@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.companion.datatransfer.continuity;
+package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -64,11 +64,12 @@ public class TaskBroadcasterTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mTaskBroadcaster = new TaskBroadcaster(
-            mMockTaskContinuityMessenger,
-            mMockActivityTaskManager,
-            mMockActivityTaskManagerInternal,
-            mMockRunningTaskFetcher);
+        mTaskBroadcaster =
+                new TaskBroadcaster(
+                        mMockTaskContinuityMessenger,
+                        mMockActivityTaskManager,
+                        mMockActivityTaskManagerInternal,
+                        mMockRunningTaskFetcher);
     }
 
     @Test
@@ -76,7 +77,7 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster.onAllDevicesDisconnected();
         verify(mMockActivityTaskManager, never()).registerTaskStackListener(mTaskBroadcaster);
         verify(mMockActivityTaskManagerInternal, never())
-            .registerHandoffEnablementListener(mTaskBroadcaster);
+                .registerHandoffEnablementListener(mTaskBroadcaster);
     }
 
     @Test
@@ -85,35 +86,34 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster.onDeviceConnected(1);
         verify(mMockActivityTaskManager, times(1)).registerTaskStackListener(mTaskBroadcaster);
         verify(mMockActivityTaskManagerInternal, times(1))
-            .registerHandoffEnablementListener(mTaskBroadcaster);
+                .registerHandoffEnablementListener(mTaskBroadcaster);
 
         // Disconnect all devices, verify the listener is unregistered.
         mTaskBroadcaster.onAllDevicesDisconnected();
         verify(mMockActivityTaskManager, times(1)).unregisterTaskStackListener(mTaskBroadcaster);
         verify(mMockActivityTaskManagerInternal, times(1))
-            .unregisterHandoffEnablementListener(mTaskBroadcaster);
+                .unregisterHandoffEnablementListener(mTaskBroadcaster);
     }
 
     @Test
     public void testOnDeviceConnected_sendsMessageToDevice() throws RemoteException {
-        RemoteTaskInfo expectedRemoteTaskInfo = new RemoteTaskInfo(
-            100 /* taskId */,
-            "test" /* label */,
-            100 /* lastActiveTime */,
-            new byte[0] /* icon */,
-            true /* isHandoffEnabled */);
-        when(mMockRunningTaskFetcher.getRunningTasks())
-            .thenReturn(List.of(expectedRemoteTaskInfo));
+        RemoteTaskInfo expectedRemoteTaskInfo =
+                new RemoteTaskInfo(
+                        100 /* taskId */,
+                        "test" /* label */,
+                        100 /* lastActiveTime */,
+                        new byte[0] /* icon */,
+                        true /* isHandoffEnabled */);
+        when(mMockRunningTaskFetcher.getRunningTasks()).thenReturn(List.of(expectedRemoteTaskInfo));
 
         int associationId = 1;
         mTaskBroadcaster.onDeviceConnected(associationId);
 
         // Verify the message is sent.
-        ContinuityDeviceConnected expectedMessage
-            = new ContinuityDeviceConnected(List.of(expectedRemoteTaskInfo));
-        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(
-            eq(associationId),
-            eq(expectedMessage));
+        ContinuityDeviceConnected expectedMessage =
+                new ContinuityDeviceConnected(List.of(expectedRemoteTaskInfo));
+        verify(mMockTaskContinuityMessenger, times(1))
+                .sendMessage(eq(associationId), eq(expectedMessage));
 
         // Verify a listener was registered.
         verify(mMockActivityTaskManager, times(1)).registerTaskStackListener(mTaskBroadcaster);
@@ -121,14 +121,15 @@ public class TaskBroadcasterTest {
 
     @Test
     public void testOnTaskCreated_sendsMessageToAllAssociations() throws RemoteException {
-        RemoteTaskInfo expectedRemoteTaskInfo = new RemoteTaskInfo(
-            123 /* taskId */,
-            "newTask" /* label */,
-            0 /* lastActiveTime */,
-            new byte[0] /* icon */,
-            true /* isHandoffEnabled */);
+        RemoteTaskInfo expectedRemoteTaskInfo =
+                new RemoteTaskInfo(
+                        123 /* taskId */,
+                        "newTask" /* label */,
+                        0 /* lastActiveTime */,
+                        new byte[0] /* icon */,
+                        true /* isHandoffEnabled */);
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
-            .thenReturn(expectedRemoteTaskInfo);
+                .thenReturn(expectedRemoteTaskInfo);
 
         // Notify TaskBroadcaster of the new task.
         mTaskBroadcaster.onTaskCreated(expectedRemoteTaskInfo.id(), null);
@@ -141,8 +142,7 @@ public class TaskBroadcasterTest {
     @Test
     public void testOnTaskCreated_taskNotFound_doesNotSendMessage() throws RemoteException {
         int taskId = 123;
-        when(mMockRunningTaskFetcher.getRunningTaskById(taskId))
-            .thenReturn(null);
+        when(mMockRunningTaskFetcher.getRunningTaskById(taskId)).thenReturn(null);
 
         mTaskBroadcaster.onTaskCreated(taskId, null);
 
@@ -162,52 +162,53 @@ public class TaskBroadcasterTest {
 
     @Test
     public void testOnHandoffEnabledChanged_sendsMessageToAllAssociations() throws RemoteException {
-        RemoteTaskInfo expectedRemoteTaskInfo = new RemoteTaskInfo(
-            1 /* taskId */,
-            "task" /* label */,
-            100 /* lastActiveTime */,
-            new byte[0] /* icon */,
-            true /* isHandoffEnabled */);
+        RemoteTaskInfo expectedRemoteTaskInfo =
+                new RemoteTaskInfo(
+                        1 /* taskId */,
+                        "task" /* label */,
+                        100 /* lastActiveTime */,
+                        new byte[0] /* icon */,
+                        true /* isHandoffEnabled */);
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
-            .thenReturn(expectedRemoteTaskInfo);
+                .thenReturn(expectedRemoteTaskInfo);
         RunningTaskInfo taskInfo = new RunningTaskInfo();
         taskInfo.taskId = expectedRemoteTaskInfo.id();
 
         mTaskBroadcaster.onHandoffEnabledChanged(expectedRemoteTaskInfo.id(), true);
 
         // Verify sendMessage is called for each association.
-        RemoteTaskUpdatedMessage expectedMessage
-            = new RemoteTaskUpdatedMessage(expectedRemoteTaskInfo);
-       verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
+        RemoteTaskUpdatedMessage expectedMessage =
+                new RemoteTaskUpdatedMessage(expectedRemoteTaskInfo);
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
     }
 
     @Test
     public void testOnTaskMovedToFront_sendsMessageToAllAssociations() throws RemoteException {
-        RemoteTaskInfo expectedRemoteTaskInfo = new RemoteTaskInfo(
-            1 /* taskId */,
-            "task" /* label */,
-            100 /* lastActiveTime */,
-            new byte[0] /* icon */,
-            true /* isHandoffEnabled */);
+        RemoteTaskInfo expectedRemoteTaskInfo =
+                new RemoteTaskInfo(
+                        1 /* taskId */,
+                        "task" /* label */,
+                        100 /* lastActiveTime */,
+                        new byte[0] /* icon */,
+                        true /* isHandoffEnabled */);
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
-            .thenReturn(expectedRemoteTaskInfo);
+                .thenReturn(expectedRemoteTaskInfo);
         RunningTaskInfo taskInfo = new RunningTaskInfo();
         taskInfo.taskId = expectedRemoteTaskInfo.id();
 
         mTaskBroadcaster.onTaskMovedToFront(taskInfo);
 
         // Verify sendMessage is called for each association.
-        RemoteTaskUpdatedMessage expectedMessage
-            = new RemoteTaskUpdatedMessage(expectedRemoteTaskInfo);
-       verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
+        RemoteTaskUpdatedMessage expectedMessage =
+                new RemoteTaskUpdatedMessage(expectedRemoteTaskInfo);
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
     }
 
     @Test
     public void testOnTaskMovedToFront_taskNotFound_doesNotSendMessage() throws RemoteException {
         RunningTaskInfo taskInfo = new RunningTaskInfo();
         taskInfo.taskId = 123;
-        when(mMockRunningTaskFetcher.getRunningTaskById(taskInfo.taskId))
-            .thenReturn(null);
+        when(mMockRunningTaskFetcher.getRunningTaskById(taskInfo.taskId)).thenReturn(null);
 
         mTaskBroadcaster.onTaskMovedToFront(taskInfo);
 

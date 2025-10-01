@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.companion.datatransfer.continuity;
+package com.android.server.companion.datatransfer.continuity.tasks;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager.RunningTaskInfo;
@@ -41,10 +41,10 @@ import java.util.Objects;
 /**
  * Responsible for broadcasting recent tasks on the current device to the user's
  *
- * other devices via {@link CompanionDeviceManager}.
+ * <p>other devices via {@link CompanionDeviceManager}.
  */
-class TaskBroadcaster
-    extends TaskStackListener implements ActivityTaskManagerInternal.HandoffEnablementListener {
+public class TaskBroadcaster extends TaskStackListener
+        implements ActivityTaskManagerInternal.HandoffEnablementListener {
 
     private static final String TAG = "TaskBroadcaster";
 
@@ -56,20 +56,19 @@ class TaskBroadcaster
     private boolean mIsListeningToActivityTaskManager = false;
 
     public TaskBroadcaster(
-        @NonNull Context context,
-        @NonNull TaskContinuityMessenger taskContinuityMessenger) {
+            @NonNull Context context, @NonNull TaskContinuityMessenger taskContinuityMessenger) {
         this(
-            Objects.requireNonNull(taskContinuityMessenger),
-            Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
-            Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
-            new RunningTaskFetcher(Objects.requireNonNull(context)));
+                Objects.requireNonNull(taskContinuityMessenger),
+                Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
+                Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
+                new RunningTaskFetcher(Objects.requireNonNull(context)));
     }
 
     public TaskBroadcaster(
-        @NonNull TaskContinuityMessenger taskContinuityMessenger,
-        @NonNull ActivityTaskManager activityTaskManager,
-        @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-        @NonNull RunningTaskFetcher runningTaskFetcher) {
+            @NonNull TaskContinuityMessenger taskContinuityMessenger,
+            @NonNull ActivityTaskManager activityTaskManager,
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull RunningTaskFetcher runningTaskFetcher) {
 
         mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
@@ -80,8 +79,8 @@ class TaskBroadcaster
     public void onDeviceConnected(int associationId) {
         Slog.v(TAG, "Transport connected for association id: " + associationId);
         mTaskContinuityMessenger.sendMessage(
-            associationId,
-            new ContinuityDeviceConnected(mRunningTaskFetcher.getRunningTasks()));
+                associationId,
+                new ContinuityDeviceConnected(mRunningTaskFetcher.getRunningTasks()));
 
         synchronized (this) {
             if (!mIsListeningToActivityTaskManager) {
@@ -130,8 +129,12 @@ class TaskBroadcaster
 
     @Override
     public void onHandoffEnabledChanged(int taskId, boolean isHandoffEnabled) {
-        Slog.v(TAG, "onHandoffEnabledChanged: taskId=" + taskId
-                + ", isHandoffEnabled=" + isHandoffEnabled);
+        Slog.v(
+                TAG,
+                "onHandoffEnabledChanged: taskId="
+                        + taskId
+                        + ", isHandoffEnabled="
+                        + isHandoffEnabled);
 
         sendTaskUpdatedMessage(taskId);
     }
