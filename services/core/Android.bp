@@ -252,6 +252,7 @@ java_library_static {
         "AvfBuildFlags",
         "textclassifier_flags_lib",
         "accounts_flags_lib",
+        "android.bpfprogs.flags-aconfig-java",
     ],
     javac_shard_size: 50,
     javacflags: [
