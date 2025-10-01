@@ -437,7 +437,6 @@ java_library {
     name: "framework-non-updatable-unbundled-impl-libs",
     static_libs: [
         "framework-location.impl",
-        "framework-network-security-config.impl",
         "framework-virtualization.impl",
     ] + select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
         true: [],
@@ -455,6 +454,9 @@ java_library {
     }) + select(release_flag("RELEASE_TELEPHONY_MODULE"), {
         true: [],
         default: ["framework-platformtelephony.impl"],
+    }) + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: [],
+        default: ["framework-network-security-config.impl"],
     }),
     sdk_version: "core_platform",
     installable: false,
@@ -503,7 +505,6 @@ java_library {
         "//packages/modules/Virtualization:__subpackages__",
     ],
     libs: [
-        "framework-network-security-config.stubs.module_lib",
         "framework-telecom.stubs.module_lib",
     ],
     compile_dex: false,
@@ -592,7 +593,6 @@ java_library {
         "framework-minus-apex",
         "framework-platform-compat-config",
         "framework-location-compat-config",
-        "framework-network-security-config-compat-config",
         "services-platform-compat-config",
         "icu4j-platform-compat-config",
         "TeleService-platform-compat-config",
@@ -611,6 +611,9 @@ java_library {
     }) + select(release_flag("RELEASE_TELEPHONY_MODULE"), {
         true: [],
         default: ["framework-platformtelephony-compat-config"],
+    }) + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: [],
+        default: ["framework-network-security-config-compat-config"],
     }) + select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
         true: [],
         default: ["framework-telecom-compat-config"],
