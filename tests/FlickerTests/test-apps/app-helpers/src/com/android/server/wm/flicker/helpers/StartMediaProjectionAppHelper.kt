@@ -97,6 +97,18 @@ constructor(
             .waitForAndVerify()
     }
 
+    fun startMediaProjectionAppSelector(wmHelper: WindowManagerStateHelper) {
+        val mediaProjectionAppSelector =
+            ComponentNameMatcher(SYSTEMUI_PACKAGE, APP_SELECTOR_CLASS_NAME)
+
+        chooseSingleAppOption()
+        startScreenSharing()
+        wmHelper
+            .StateSyncBuilder()
+            .withWindowSurfaceAppeared(mediaProjectionAppSelector)
+            .waitForAndVerify()
+    }
+
     private fun clickStartMediaProjectionButton() {
         findObject(By.res(packageName, START_MEDIA_PROJECTION_BUTTON_ID)).also { it.click() }
     }
@@ -161,7 +173,7 @@ constructor(
             getString(getIdentifier(resName, "string", SYSTEMUI_PACKAGE))
         }
 
-    companion object {
+    private companion object {
         const val TAG: String = "StartMediaProjectionAppHelper"
         const val TIMEOUT: Long = 5000L
         const val ACCEPT_RESOURCE_ID: String = "android:id/button1"
@@ -174,5 +186,7 @@ constructor(
             "screen_share_permission_dialog_option_entire_screen"
         const val SINGLE_APP_STRING_RES_NAME: String =
             "screen_share_permission_dialog_option_single_app"
+        const val APP_SELECTOR_CLASS_NAME: String =
+            "com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity"
     }
 }
