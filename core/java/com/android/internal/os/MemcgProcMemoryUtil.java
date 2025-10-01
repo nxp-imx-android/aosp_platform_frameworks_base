@@ -19,6 +19,7 @@ import static android.os.Process.PROC_OUT_LONG;
 
 import android.annotation.Nullable;
 import android.os.Process;
+import android.os.UserHandle;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -42,8 +43,8 @@ public final class MemcgProcMemoryUtil {
       *
       * Returns values of memory.current, memory.swap in bytes or null if not available.
       */
-    public static MemcgMemorySnapshot readMemcgMemorySnapshot(int pid) {
-        String cgroupPath = getCgroupPathForPid(pid);
+    public static MemcgMemorySnapshot readMemcgMemorySnapshot(int uid, int pid) {
+        String cgroupPath = getCgroupPath(uid, pid);
         if (cgroupPath == null) {
             return null;
         }
@@ -57,9 +58,8 @@ public final class MemcgProcMemoryUtil {
       * Returns values of memory.current.peak, memory.swap.peak in bytes or null if not available.
      */
     public static MemcgHighWaterMarkMemorySnapshot readHighWaterMarkMemorySnapshot(
-            int pid
-    ) {
-        String cgroupPath = getCgroupPathForPid(pid);
+            int uid, int pid) {
+        String cgroupPath = getCgroupPath(uid, pid);
         if (cgroupPath == null) {
             return null;
         }
@@ -67,26 +67,23 @@ public final class MemcgProcMemoryUtil {
     }
 
     /**
-     * Gets the cgroup v2 path for a given process ID (pid).
+     * Gets the cgroup v2 path for a given user ID (uid) and process ID (pid).
      *
+     * @param uid The user ID.
      * @param pid The process ID.
-     * @return The cgroup v2 path string, or null if not found or an error occurs.
+     * @return The cgroup v2 path string.
      */
-    @Nullable
-    private static String getCgroupPathForPid(int pid) {
-        Path cgroupPathFile = Paths.get(PROC_ROOT, String.valueOf(pid), "cgroup");
+    private static String getCgroupPath(int uid, int pid) {
+        StringBuilder sb = new StringBuilder();
 
-        try (BufferedReader reader = Files.newBufferedReader(cgroupPathFile)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("0::")) {
-                    return line.substring(3);
-                }
-            }
-        } catch (IOException e) {
-            Log.d(TAG, "Failed to read cgroup file for pid " + pid, e);
-        }
-        return null;
+        if (UserHandle.isCore(uid)) sb.append("system/");
+        else                        sb.append("apps/");
+
+        sb.append("uid_").append(Integer.toString(uid));
+        sb.append("/pid_").append(Integer.toString(pid));
+        sb.append("/");
+
+        return sb.toString();
     }
 
     private static MemcgHighWaterMarkMemorySnapshot
