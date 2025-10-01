@@ -178,3 +178,11 @@ flag {
   description: "Flag that enables metrics log for PIN related flows"
   bug: "443286819"
 }
+
+flag {
+  name: "enable_supervision_manager_policy_apis"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables supervision policy APIs in Supervision Service"
+  bug: "443997530"
+}

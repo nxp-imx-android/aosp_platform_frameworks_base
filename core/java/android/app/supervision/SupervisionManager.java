@@ -36,7 +36,10 @@ import android.app.supervision.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class provides information about and manages supervision.
@@ -340,6 +343,44 @@ public class SupervisionManager {
         if (mService != null) {
             try {
                 mService.unregisterSupervisionListener(listener.mListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Returns a list of all policies that have been set by supervision apps.
+     *
+     * @return The list of policies
+     * @see Policy
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    @NonNull
+    public List<Policy> getPolicies() {
+        if (mService != null) {
+            try {
+                return mService.getPolicies(mContext.getUserId());
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+
+        return new ArrayList<>();
+    }
+
+    /**
+     * Sets a policy.
+     *
+     * @param policy The policy to set.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    public void setPolicy(@NonNull Policy policy) {
+        if (mService != null) {
+            try {
+                mService.setPolicy(mContext.getUserId(), policy);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
