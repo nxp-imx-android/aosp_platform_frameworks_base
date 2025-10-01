@@ -5758,7 +5758,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     // move to something different.  Just finish the session, we can't
                     // return to it and retain the proper state and synchronization with
                     // the voice interaction service.
-                    finishVoiceTask(session);
+                    mRootWindowContainer.finishVoiceTask(session);
                 }
             }
         }
@@ -5799,15 +5799,14 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     void updateSleepIfNeededLocked() {
         final boolean shouldSleep = !mRootWindowContainer.hasAwakeDisplay();
-        final boolean wasSleeping = mSleeping;
 
         try (var unused = mActivityStateUpdater.startBatchSession()) {
             boolean updateOomAdj = false;
             if (!shouldSleep) {
-                // If wasSleeping is true, we need to wake up activity manager state from when
+                // If mSleeping is true, we need to wake up activity manager state from when
                 // we started sleeping. In either case, we need to apply the sleep tokens, which
                 // will wake up root tasks or put them to sleep as appropriate.
-                if (wasSleeping) {
+                if (mSleeping) {
                     mSleeping = false;
                     FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED,
                             FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED__STATE__AWAKE);
@@ -5821,8 +5820,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     mTaskSupervisor.comeOutOfSleepIfNeededLocked();
                     updateOomAdj = true;
                 }
-                mRootWindowContainer.applySleepTokens(true /* applyToRootTasks */);
-            } else if (!mSleeping && shouldSleep) {
+                final ActionChain chain = mChainTracker.startTransit("sleepTokens");
+                mRootWindowContainer.applySleepTokens(chain);
+                mChainTracker.endPartial();
+            } else if (!mSleeping) {
                 mSleeping = true;
                 FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED,
                         FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED__STATE__ASLEEP);

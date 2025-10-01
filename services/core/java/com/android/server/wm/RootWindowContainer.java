@@ -37,7 +37,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_WAKE;
@@ -2617,7 +2616,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     }
 
-    void applySleepTokens(boolean applyToRootTasks) {
+    void applySleepTokens(@NonNull ActionChain chain) {
         boolean scheduleSleepTransition = false;
         Transition newWakeTransition = null;
 
@@ -2628,32 +2627,20 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (displayShouldSleep == display.isSleeping()) {
                 continue;
             }
-            final boolean wasSleeping = display.isSleeping();
             display.setIsSleeping(displayShouldSleep);
             scheduleSleepTransition |= displayShouldSleep && display.isScreenSleeping();
 
-            if (!applyToRootTasks) {
-                continue;
-            }
-
-            final ActionChain chain = mService.mChainTracker.startTransit("sleepTokens");
             // Prepare transition before resume top activity, so it can be collected.
             if (!displayShouldSleep && display.mTransitionController.isShellTransitionsEnabled()
                     && !chain.isCollecting()) {
-                // Use NONE if keyguard is not showing.
-                int transit = TRANSIT_NONE;
                 Task startTask = null;
                 int flags = 0;
                 if (display.isKeyguardOccluded()) {
                     startTask = display.getTaskOccludingKeyguard();
                     flags = TRANSIT_FLAG_KEYGUARD_OCCLUDING;
-                    transit = WindowManager.TRANSIT_KEYGUARD_OCCLUDE;
-                }
-                if (wasSleeping) {
-                    transit = TRANSIT_WAKE;
                 }
                 chain.attachTransition(
-                        display.mTransitionController.createTransition(transit, flags));
+                        display.mTransitionController.createTransition(TRANSIT_WAKE, flags));
                 newWakeTransition = chain.getTransition();
                 display.mTransitionController.requestStartTransition(chain.getTransition(),
                         startTask, null /* remoteTransition */, null /* displayChange */);
@@ -2683,20 +2670,35 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     rootTask.ensureActivitiesVisible(null /* starting */);
                 }
             });
-            mService.mChainTracker.endPartial();
         }
         if (newWakeTransition != null) {
             newWakeTransition.setAllReady();
         }
-        if (mService.getTransitionController().isShellTransitionsEnabled()) {
-            if (scheduleSleepTransition) {
-                if (!mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) {
-                    mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SEND_SLEEP_TRANSITION),
-                            SLEEP_TRANSITION_WAIT_MILLIS);
-                }
-            } else {
-                mHandler.removeMessages(MSG_SEND_SLEEP_TRANSITION);
-            }
+        if (scheduleSleepTransition) {
+            scheduleSleepTransition();
+        } else {
+            mHandler.removeMessages(MSG_SEND_SLEEP_TRANSITION);
+        }
+    }
+
+    private void scheduleSleepTransition() {
+        if (!mService.getTransitionController().isShellTransitionsEnabled()) return;
+        if (mHandler.hasMessages(MSG_SEND_SLEEP_TRANSITION)) return;
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_SEND_SLEEP_TRANSITION),
+                SLEEP_TRANSITION_WAIT_MILLIS);
+    }
+
+    void sleepAllDisplays() {
+        boolean scheduleSleepTransition = false;
+        for (int displayNdx = getChildCount() - 1; displayNdx >= 0; --displayNdx) {
+            // Set the sleeping state of the display.
+            final DisplayContent display = getChildAt(displayNdx);
+            if (display.isSleeping()) continue;
+            display.setIsSleeping(true);
+            scheduleSleepTransition |= display.isScreenSleeping();
+        }
+        if (scheduleSleepTransition) {
+            scheduleSleepTransition();
         }
     }
 
