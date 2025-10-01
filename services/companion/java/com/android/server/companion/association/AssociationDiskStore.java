@@ -204,6 +204,7 @@ public final class AssociationDiskStore {
     private static final String XML_ATTR_NOTIFY_DEVICE_NEARBY = "notify_device_nearby";
     private static final String XML_ATTR_REVOKED = "revoked";
     private static final String XML_ATTR_PENDING = "pending";
+    private static final String XML_ATTR_TRUSTED = "trusted";
     private static final String XML_ATTR_TIME_APPROVED = "time_approved";
     private static final String XML_ATTR_LAST_TIME_CONNECTED = "last_time_connected";
     private static final String XML_ATTR_SYSTEM_DATA_SYNC_FLAGS = "system_data_sync_flags";
@@ -544,6 +545,7 @@ public final class AssociationDiskStore {
         final boolean notify = readBooleanAttribute(parser, XML_ATTR_NOTIFY_DEVICE_NEARBY);
         final boolean revoked = readBooleanAttribute(parser, XML_ATTR_REVOKED, false);
         final boolean pending = readBooleanAttribute(parser, XML_ATTR_PENDING, false);
+        final boolean trusted = readBooleanAttribute(parser, XML_ATTR_TRUSTED, false);
         final long timeApproved = readLongAttribute(parser, XML_ATTR_TIME_APPROVED, 0L);
         final long lastTimeConnected = readLongAttribute(
                 parser, XML_ATTR_LAST_TIME_CONNECTED, Long.MAX_VALUE);
@@ -587,6 +589,7 @@ public final class AssociationDiskStore {
                 .setNotifyOnDeviceNearby(notify)
                 .setRevoked(revoked)
                 .setPending(pending)
+                .setTrusted(trusted)
                 .setTimeApproved(timeApproved)
                 .setLastTimeConnected(lastTimeConnected)
                 .setSystemDataSyncFlags(systemDataSyncFlags)
@@ -665,6 +668,7 @@ public final class AssociationDiskStore {
                 serializer, XML_ATTR_NOTIFY_DEVICE_NEARBY, a.isNotifyOnDeviceNearby());
         writeBooleanAttribute(serializer, XML_ATTR_REVOKED, a.isRevoked());
         writeBooleanAttribute(serializer, XML_ATTR_PENDING, a.isPending());
+        writeBooleanAttribute(serializer, XML_ATTR_TRUSTED, a.isTrusted());
         writeLongAttribute(serializer, XML_ATTR_TIME_APPROVED, a.getTimeApprovedMs());
         writeLongAttribute(
                 serializer, XML_ATTR_LAST_TIME_CONNECTED, a.getLastTimeConnectedMs());

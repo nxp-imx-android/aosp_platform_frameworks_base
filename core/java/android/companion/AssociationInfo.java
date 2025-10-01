@@ -90,6 +90,10 @@ public final class AssociationInfo implements Parcelable {
      * backup.
      */
     private final boolean mPending;
+    /**
+     * Indicates that the association has been verified as a trusted device.
+     */
+    private final boolean mTrusted;
     private final long mTimeApprovedMs;
     /**
      * A long value indicates the last time connected reported by selfManaged devices
@@ -146,6 +150,7 @@ public final class AssociationInfo implements Parcelable {
         mNotifyOnDeviceNearby = builder.mNotifyOnDeviceNearby;
         mRevoked = builder.mRevoked;
         mPending = builder.mPending;
+        mTrusted = builder.mTrusted;
         mTimeApprovedMs = builder.mTimeApprovedMs;
         mLastTimeConnectedMs = builder.mLastTimeConnectedMs;
         mSystemDataSyncFlags = builder.mSystemDataSyncFlags;
@@ -284,6 +289,14 @@ public final class AssociationInfo implements Parcelable {
      */
     public boolean isPending() {
         return mPending;
+    }
+
+    /**
+     * @return true if the association has been verified as a trusted device.
+     * @hide
+     */
+    public boolean isTrusted() {
+        return mTrusted;
     }
 
     /**
@@ -469,6 +482,7 @@ public final class AssociationInfo implements Parcelable {
                 + ", mNotifyOnDeviceNearby=" + mNotifyOnDeviceNearby
                 + ", mRevoked=" + mRevoked
                 + ", mPending=" + mPending
+                + ", mTrusted=" + mTrusted
                 + ", mTimeApprovedMs=" + new Date(mTimeApprovedMs)
                 + ", mLastTimeConnectedMs=" + (
                 mLastTimeConnectedMs == Long.MAX_VALUE
@@ -495,6 +509,7 @@ public final class AssociationInfo implements Parcelable {
                 && mNotifyOnDeviceNearby == that.mNotifyOnDeviceNearby
                 && mRevoked == that.mRevoked
                 && mPending == that.mPending
+                && mTrusted == that.mTrusted
                 && mTimeApprovedMs == that.mTimeApprovedMs
                 && mLastTimeConnectedMs == that.mLastTimeConnectedMs
                 && Objects.equals(mPackageName, that.mPackageName)
@@ -523,7 +538,7 @@ public final class AssociationInfo implements Parcelable {
     public int hashCode() {
         return Objects.hash(mId, mUserId, mPackageName, mDeviceMacAddress, mDisplayName,
                 mDeviceProfile, mAssociatedDevice, mSelfManaged, mNotifyOnDeviceNearby, mRevoked,
-                mPending, mTimeApprovedMs, mLastTimeConnectedMs, mSystemDataSyncFlags,
+                mPending, mTrusted, mTimeApprovedMs, mLastTimeConnectedMs, mSystemDataSyncFlags,
                 mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify, mMetadata,
                 mExtraPermissions);
     }
@@ -546,6 +561,7 @@ public final class AssociationInfo implements Parcelable {
         dest.writeBoolean(mNotifyOnDeviceNearby);
         dest.writeBoolean(mRevoked);
         dest.writeBoolean(mPending);
+        dest.writeBoolean(mTrusted);
         dest.writeLong(mTimeApprovedMs);
         dest.writeLong(mLastTimeConnectedMs);
         dest.writeInt(mSystemDataSyncFlags);
@@ -582,6 +598,7 @@ public final class AssociationInfo implements Parcelable {
         mNotifyOnDeviceNearby = in.readBoolean();
         mRevoked = in.readBoolean();
         mPending = in.readBoolean();
+        mTrusted = in.readBoolean();
         mTimeApprovedMs = in.readLong();
         mLastTimeConnectedMs = in.readLong();
         mSystemDataSyncFlags = in.readInt();
@@ -636,6 +653,7 @@ public final class AssociationInfo implements Parcelable {
         private boolean mNotifyOnDeviceNearby;
         private boolean mRevoked;
         private boolean mPending;
+        private boolean mTrusted;
         private long mTimeApprovedMs = System.currentTimeMillis();
         private long mLastTimeConnectedMs = Long.MAX_VALUE; // Never connected.
         private int mSystemDataSyncFlags = -1; // By default, all system data sync is enabled.
@@ -679,6 +697,7 @@ public final class AssociationInfo implements Parcelable {
             mNotifyOnDeviceNearby = info.mNotifyOnDeviceNearby;
             mRevoked = info.mRevoked;
             mPending = info.mPending;
+            mTrusted = info.mTrusted;
             mTimeApprovedMs = info.mTimeApprovedMs;
             mLastTimeConnectedMs = info.mLastTimeConnectedMs;
             mSystemDataSyncFlags = info.mSystemDataSyncFlags;
@@ -762,6 +781,14 @@ public final class AssociationInfo implements Parcelable {
         @SuppressLint("MissingGetterMatchingBuilder")
         public Builder setPending(boolean pending) {
             mPending = pending;
+            return this;
+        }
+
+        /** @hide */
+        @NonNull
+        @SuppressLint("MissingGetterMatchingBuilder")
+        public Builder setTrusted(boolean trusted) {
+            mTrusted = trusted;
             return this;
         }
 
