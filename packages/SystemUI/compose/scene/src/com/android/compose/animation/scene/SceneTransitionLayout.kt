@@ -313,6 +313,15 @@ interface BaseContentScope : ElementStateScope {
      * layout, drawing or in a LaunchedEffect.
      */
     fun ElementKey.currentAlpha(): Float?
+
+    /**
+     * Return the drawing scale of [this] element in this content, given the current transition
+     * state and transition transformations (e.g. drawScale).
+     *
+     * Important: This should *not* be read during composition and should instead be read during
+     * layout, drawing or in a LaunchedEffect.
+     */
+    fun ElementKey.currentScale(): Scale?
 }
 
 @Stable
