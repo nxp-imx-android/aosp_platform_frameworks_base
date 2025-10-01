@@ -272,10 +272,11 @@ public class TaskContinuityManager {
      * #registerHandoffFeatureStateListener} if the enablement status has changed.
      *
      * @param enabled Whether handoff should be enabled or disabled.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#MODIFY_HANDOFF_SETTINGS} permission.
      */
+    @RequiresPermission(android.Manifest.permission.MODIFY_HANDOFF_SETTINGS)
     public void enableHandoffForDevice(boolean enabled) {
-        // TODO: joeantonetti - Add a permission check here.
-
         try {
             mService.enableHandoffForDevice(enabled);
         } catch (RemoteException e) {
@@ -288,12 +289,12 @@ public class TaskContinuityManager {
      *
      * @param executor The executor to be used to invoke the listener.
      * @param listener The listener to be registered.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
      */
+    @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
     public void registerHandoffFeatureStateListener(
             @NonNull Executor executor, @NonNull HandoffFeatureStateListener listener) {
-
-        // TODO: joeantonetti - Add a permission check here.
-
         Objects.requireNonNull(executor);
         Objects.requireNonNull(listener);
 
@@ -309,12 +310,13 @@ public class TaskContinuityManager {
      * #registerHandoffFeatureStateListener}.
      *
      * @param listener The listener to be unregistered.
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
      */
+    @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
     public void unregisterHandoffFeatureStateListener(
             @NonNull HandoffFeatureStateListener listener) {
         Objects.requireNonNull(listener);
-
-        // TODO: joeantonetti - Add a permission check here.
 
         try {
             mHandoffFeatureStateListenerHolder.unregisterListener(listener);

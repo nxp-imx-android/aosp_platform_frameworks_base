@@ -39,10 +39,13 @@ oneway interface ITaskContinuityManager {
         in int remoteTaskId,
         in IHandoffRequestCallback callback);
 
+    @EnforcePermission("MODIFY_HANDOFF_SETTINGS")
     void enableHandoffForDevice(boolean enabled);
 
+    @EnforcePermission("READ_HANDOFF_SETTINGS")
     void registerHandoffFeatureStateListener(IHandoffFeatureStateListener listener);
 
+    @EnforcePermission("READ_HANDOFF_SETTINGS")
     void unregisterHandoffFeatureStateListener(IHandoffFeatureStateListener listener);
 
 }
