@@ -2633,7 +2633,8 @@ public class PreferencesHelper implements RankingConfig {
                 }
 
                 final boolean requestedFSIPermission = mPermissionHelper.hasRequestedPermission(
-                        android.Manifest.permission.USE_FULL_SCREEN_INTENT, r.pkg, r.uid);
+                        android.Manifest.permission.USE_FULL_SCREEN_INTENT, r.pkg,
+                        UserHandle.getUserId(r.uid));
 
                 final int fsiState = getFsiState(r.pkg, r.uid, requestedFSIPermission);
 
