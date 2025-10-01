@@ -122,9 +122,10 @@ constructor(
     }
 
     /** @return an Intent to start the LongScreenshotActivity */
-    fun createLongScreenshotIntent(owner: UserHandle): Intent {
+    fun createLongScreenshotIntent(owner: UserHandle, originalScreenshotUri: Uri): Intent {
         return Intent(context, LongScreenshotActivity::class.java)
             .putExtra(LongScreenshotActivity.EXTRA_SCREENSHOT_USER_HANDLE, owner)
+            .putExtra(LongScreenshotActivity.EXTRA_ORIGINAL_SCREENSHOT_URI, originalScreenshotUri)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)

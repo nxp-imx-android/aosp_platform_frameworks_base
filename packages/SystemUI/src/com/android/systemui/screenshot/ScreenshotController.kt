@@ -385,13 +385,17 @@ internal constructor(
                 0,
                 response.packageName,
             )
-            actionsController.onScrollChipReady(requestId) {
-                onScrollButtonClicked(owner, response)
+            actionsController.onScrollChipReady(requestId) { uri ->
+                onScrollButtonClicked(owner, response, uri)
             }
         }
     }
 
-    private fun onScrollButtonClicked(owner: UserHandle, response: ScrollCaptureResponse) {
+    private fun onScrollButtonClicked(
+        owner: UserHandle,
+        response: ScrollCaptureResponse,
+        originalBitmapUri: Uri,
+    ) {
         if (LogConfig.DEBUG_INPUT) {
             Log.d(TAG, "scroll chip tapped")
         }
@@ -407,15 +411,20 @@ internal constructor(
         }
         // delay starting scroll capture to make sure scrim is up before the app moves
         viewProxy.prepareScrollingTransition(response, newScreenshot, screenshotTakenInPortrait) {
-            executeBatchScrollCapture(response, owner)
+            executeBatchScrollCapture(response, owner, originalBitmapUri)
         }
     }
 
-    private fun executeBatchScrollCapture(response: ScrollCaptureResponse, owner: UserHandle) {
+    private fun executeBatchScrollCapture(
+        response: ScrollCaptureResponse,
+        owner: UserHandle,
+        originalBitmapUri: Uri,
+    ) {
         scrollCaptureExecutor.executeBatchScrollCapture(
             response,
             {
-                val intent = actionIntentCreator.createLongScreenshotIntent(owner)
+                val intent =
+                    actionIntentCreator.createLongScreenshotIntent(owner, originalBitmapUri)
                 if (SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE.isTrue) {
                     val options = ActivityOptions.makeBasic()
                     options.setLaunchDisplayId(context.displayId)
