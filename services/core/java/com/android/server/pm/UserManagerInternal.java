@@ -647,13 +647,20 @@ public abstract class UserManagerInternal {
     /** Optimized version of {@link UserManager#isHeadlessSystemUserMode()} */
     public abstract boolean isHeadlessSystemUserMode();
 
-    // TODO(b/414326600): for now it's only logging launched activities, but once the allowlist
-    // mechanism is implemented, it should pass some sort of @HsuUiActionResult int result
+    /**
+     * Checks if the given activity can be launched for the
+     * {@link UserManager#isHeadlessSystemUserMode() Headless System User}.
+     */
+    public abstract boolean isActivityAllowlistedForHsu(ComponentName activity);
+
+    // TODO(b/414326600): for now it's only using different methods for launched and blocked
+    // activities, but once the allowlist logging mechanism is properly designed, it should pass
+    // some sort of @HsuUiActionResult int result instead
     /** Logs an activity launched in the headless system user */
     public abstract void logLaunchedHsuActivity(ComponentName activity);
+    /** Logs an activity blocked in the headless system user */
+    public abstract void logBlockedHsuActivity(ComponentName activity);
 
-    // TODO(b/414326600): for now it's only logging shown notifications, but once the allowlist
-    // mechanism is implemented, it should pass some sort of @HsuNotificationStatus
     /** Logs a notification shown in the headless system user */
     public abstract void logShownHsuNotification(StatusBarNotification sbn);
 

@@ -69,7 +69,7 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
     protected ActivityStartController mController;
     protected ActivityMetricsLogger mActivityMetricsLogger;
     protected PackageManagerInternal mMockPackageManager;
-    protected UserManagerInternal mMockUmi;
+    protected final UserManagerInternal mMockUmi = mock(UserManagerInternal.class);
     protected AppOpsManager mAppOpsManager;
 
     @Before
@@ -156,7 +156,6 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
         doReturn(signingDetails).when(mockPackage).getSigningDetails();
         doReturn(false).when(signingDetails).hasAncestorOrSelfWithDigest(any());
 
-        mMockUmi = mock(UserManagerInternal.class);
         doReturn(mMockUmi).when(mAtm).getUserManagerInternal();
 
         final Intent intent = new Intent();
