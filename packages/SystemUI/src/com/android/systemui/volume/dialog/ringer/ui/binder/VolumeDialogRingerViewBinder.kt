@@ -18,8 +18,10 @@ package com.android.systemui.volume.dialog.ringer.ui.binder
 
 import android.animation.ArgbEvaluator
 import android.content.res.Configuration
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.InsetDrawable
+import android.graphics.drawable.LayerDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
@@ -35,6 +37,7 @@ import com.android.app.tracing.coroutines.launchTraced
 import com.android.internal.graphics.drawable.BackgroundBlurDrawable
 import com.android.internal.R as internalR
 import com.android.systemui.Flags.blurOnMoreSurfaces
+import com.android.systemui.common.shared.colors.SurfaceEffectColors
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.ringer.ui.util.VolumeDialogRingerDrawerTransitionListener
@@ -120,13 +123,9 @@ constructor(
             backgroundAnimationProgress = it
         }
         drawerContainer.setTransitionListener(ringerDrawerTransitionListener)
-        if (blurOnMoreSurfaces()) {
-            volumeDialogBackgroundView.updateBackground()
-            ringerBackgroundView.updateBackground()
-        } else {
-            volumeDialogBackgroundView.background = volumeDialogBackgroundView.background.mutate()
-            ringerBackgroundView.background = ringerBackgroundView.background.mutate()
-        }
+
+        volumeDialogBackgroundView.updateBackground()
+        ringerBackgroundView.updateBackground()
         launchTraced("VDRVB#addTouchableBounds") {
             dialogViewModel.addTouchableBounds(ringerBackgroundView)
         }
@@ -150,15 +149,16 @@ constructor(
                         // Set up view background and visibility
                         drawerContainer.visibility = View.VISIBLE
                         if (blurOnMoreSurfaces()) {
-                            if (volumeDialogBackgroundView.background !is BackgroundBlurDrawable) {
-                                volumeDialogBackgroundView.updateBackground()
-                            }
-                            (volumeDialogBackgroundView.background as BackgroundBlurDrawable)
-                                .setCornerRadius(
-                                    0f,
-                                    0f,
-                                    bottomDefaultRadius,
-                                    bottomDefaultRadius)
+                            val layers = (volumeDialogBackgroundView.background as LayerDrawable)
+                            val blurDrawable = layers.getDrawable(0) as BackgroundBlurDrawable
+                            blurDrawable.setCornerRadius(
+                                0f,
+                                0f,
+                                bottomDefaultRadius,
+                                bottomDefaultRadius
+                            )
+                            (layers.getDrawable(1) as GradientDrawable).cornerRadii =
+                                bottomCornerRadii
                         } else {
                             (volumeDialogBackgroundView.background as GradientDrawable)
                                 .cornerRadii = bottomCornerRadii
@@ -255,9 +255,17 @@ constructor(
                     }
                     is RingerViewModelState.Unavailable -> {
                         drawerContainer.visibility = View.GONE
-                        volumeDialogBackgroundView.setBackgroundResource(
-                            R.drawable.volume_dialog_background
-                        )
+                        if (blurOnMoreSurfaces()) {
+                            val layers = (volumeDialogBackgroundView.background as LayerDrawable)
+                            val blurDrawable = layers.getDrawable(0) as BackgroundBlurDrawable
+                            blurDrawable.setCornerRadius(volumeDialogBgFullRadius.toFloat())
+                            (layers.getDrawable(1) as GradientDrawable).cornerRadius =
+                                volumeDialogBgFullRadius.toFloat()
+                        } else {
+                            volumeDialogBackgroundView.setBackgroundResource(
+                                R.drawable.volume_dialog_background
+                            )
+                        }
                     }
                 }
             }
@@ -459,7 +467,9 @@ constructor(
     private fun View.applyCorners(fullRadius: Int, diff: Int, progress: Float) {
         val radius = fullRadius - progress * diff
         if (blurOnMoreSurfaces()) {
-            (background as BackgroundBlurDrawable).setCornerRadius(radius)
+            val layers = (background as LayerDrawable)
+            (layers.getDrawable(0) as BackgroundBlurDrawable).setCornerRadius(radius)
+            (layers.getDrawable(1) as GradientDrawable).cornerRadius = radius
         } else {
             (background as GradientDrawable).cornerRadius = radius
         }
@@ -467,16 +477,28 @@ constructor(
     }
 
     private fun View.updateBackground() {
-        val blurDrawable: BackgroundBlurDrawable =
-            getViewRootImpl().createBackgroundBlurDrawable()
-        val dialogCornerRadius: Int = context.resources.getDimensionPixelSize(
-            R.dimen.volume_dialog_background_corner_radius
-        )
-        blurDrawable.setCornerRadius(dialogCornerRadius.toFloat())
-        blurDrawable.setBlurRadius(
-            context.resources.getDimensionPixelSize(
-                R.dimen.volume_dialog_background_surface_blur_radius))
-        setBackgroundDrawable(blurDrawable)
+        if (blurOnMoreSurfaces() && background is GradientDrawable) {
+            val surfaceEffect = background as GradientDrawable
+            surfaceEffect.setColor(SurfaceEffectColors.surfaceEffect0(context))
+
+            val blurDrawable = viewRootImpl.createBackgroundBlurDrawable()
+            val dialogCornerRadius: Int = context.resources.getDimensionPixelSize(
+                R.dimen.volume_dialog_background_corner_radius
+            )
+            blurDrawable.setCornerRadius(dialogCornerRadius.toFloat())
+            blurDrawable.setBlurRadius(
+                context.resources.getDimensionPixelSize(
+                    R.dimen.volume_dialog_background_surface_blur_radius))
+            setBackgroundDrawable(
+                LayerDrawable(
+                    arrayOf<Drawable>(
+                        blurDrawable,
+                        surfaceEffect
+                    )
+                ))
+        } else {
+            background = background.mutate()
+        }
     }
 }
 
