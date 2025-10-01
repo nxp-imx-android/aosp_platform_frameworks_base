@@ -304,7 +304,7 @@ public class AdbDebuggingManager {
                         continue;
                     }
 
-                    Slog.d(TAG, "Recv packet: " + messageType);
+                    Slog.d(TAG, "Recv packet: " + messageType.get());
 
                     // TODO, convert all these tests to check with messageType.
                     if (buffer[0] == 'P' && buffer[1] == 'K') {
