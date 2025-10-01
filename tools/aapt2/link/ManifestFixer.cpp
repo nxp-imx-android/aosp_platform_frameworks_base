@@ -620,12 +620,15 @@ bool ManifestFixer::BuildRules(xml::XmlActionExecutor* executor, IAaptContext* c
   manifest_action["adopt-permissions"];
   manifest_action["uses-permission"];
   manifest_action["uses-permission"]["purpose"];
+  manifest_action["uses-permission"]["general-purpose"];
   manifest_action["uses-permission"]["required-feature"].Action(RequiredNameIsNotEmpty);
   manifest_action["uses-permission"]["required-not-feature"].Action(RequiredNameIsNotEmpty);
   manifest_action["uses-permission-sdk-23"];
   manifest_action["uses-permission-sdk-23"]["purpose"];
+  manifest_action["uses-permission-sdk-23"]["general-purpose"];
   manifest_action["permission"];
   manifest_action["permission"]["valid-purpose"].Action(RequiredNameIsNotEmpty);
+  manifest_action["permission"]["valid-general-purpose"].Action(RequiredNameIsNotEmpty);
   manifest_action["permission"]["meta-data"] = meta_data_action;
   manifest_action["permission-tree"];
   manifest_action["permission-group"];
