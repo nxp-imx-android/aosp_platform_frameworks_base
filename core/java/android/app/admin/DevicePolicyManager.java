@@ -18753,6 +18753,21 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Template free version of setPolicy to clear policies. The other type specific versions
+     * defined below don't allow specifying null as a value.
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void clearPolicy(
+            @NonNull String key,
+            @PolicyScope int scope) {
+        // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
+        setPolicy(new PolicyIdentifier(key), scope, null);
+    }
+
+    /**
      * Template free version of setPolicy for booleans.
      *
      * @hide
