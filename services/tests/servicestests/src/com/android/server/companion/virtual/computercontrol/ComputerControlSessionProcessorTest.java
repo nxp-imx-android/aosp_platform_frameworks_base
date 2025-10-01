@@ -59,6 +59,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.LocalServices;
+import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -103,6 +104,8 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private UserManagerInternal mUserManagerInternal;
     @Mock
+    private InputManagerInternal mInputManagerInternal;
+    @Mock
     private UserManager mUserManager;
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
@@ -130,6 +133,9 @@ public class ComputerControlSessionProcessorTest {
 
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
+
+        LocalServices.removeServiceForTest(InputManagerInternal.class);
+        LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
 
         Context context = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
