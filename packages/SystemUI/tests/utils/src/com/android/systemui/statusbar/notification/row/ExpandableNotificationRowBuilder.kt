@@ -149,6 +149,7 @@ class ExpandableNotificationRowBuilder(
     private val mMainCoroutineContext = mTestScope.coroutineContext
     private val mFakeSystemClock = FakeSystemClock()
     private val mMainExecutor = FakeExecutor(mFakeSystemClock)
+    private val mHeadsUpStyleProvider: HeadsUpStyleProvider
 
     init {
         featureFlags.setDefault(Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE)
@@ -164,6 +165,7 @@ class ExpandableNotificationRowBuilder(
         mKeyguardBypassController = Mockito.mock(KeyguardBypassController::class.java, STUB_ONLY)
         mGroupMembershipManager = GroupMembershipManagerImpl()
         mSmartReplyController = Mockito.mock(SmartReplyController::class.java, STUB_ONLY)
+        mHeadsUpStyleProvider = kosmos.headsUpStyleProvider
 
         mUserManager = Mockito.mock(UserManager::class.java, STUB_ONLY)
         mHeadsUpManager =
@@ -262,7 +264,7 @@ class ExpandableNotificationRowBuilder(
                 Mockito.mock(Executor::class.java, STUB_ONLY),
                 smartReplyStateInflater,
                 notifLayoutInflaterFactoryProvider,
-                Mockito.mock(HeadsUpStyleProvider::class.java, STUB_ONLY),
+                mHeadsUpStyleProvider,
                 promotedNotificationContentExtractor,
                 Mockito.mock(NotificationRowContentBinderLogger::class.java, STUB_ONLY),
             )
