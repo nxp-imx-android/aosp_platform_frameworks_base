@@ -10354,7 +10354,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             ),
         )
 
-        assertThat(taskRepository.removeBoundsBeforeMaximize(task.taskId)).isEqualTo(bounds)
+        assertThat(taskRepository.removeBoundsBeforeSnapOrMaximize(task.taskId)).isEqualTo(bounds)
         verify(desktopModeEventLogger)
             .logTaskResizingEnded(
                 resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
@@ -10529,7 +10529,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         // Assert last bounds before maximize removed after use
-        assertThat(taskRepository.removeBoundsBeforeMaximize(task.taskId)).isNull()
+        assertThat(taskRepository.removeBoundsBeforeSnapOrMaximize(task.taskId)).isNull()
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
                 resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,

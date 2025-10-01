@@ -2836,7 +2836,8 @@ class DesktopTasksController(
             // The desktop task is at the maximized width and/or height of the stable bounds.
             // If the task's pre-maximize stable bounds were saved, toggle the task to those bounds.
             // Otherwise, toggle to the default bounds.
-            val taskBoundsBeforeMaximize = repository.removeBoundsBeforeMaximize(taskInfo.taskId)
+            val taskBoundsBeforeMaximize =
+                repository.removeBoundsBeforeSnapOrMaximize(taskInfo.taskId)
             if (taskBoundsBeforeMaximize != null) {
                 destinationBounds.set(taskBoundsBeforeMaximize)
             } else {
@@ -2850,7 +2851,7 @@ class DesktopTasksController(
             // Save current bounds so that task can be restored back to original bounds if necessary
             // and toggle to the stable bounds.
             snapEventHandler.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
-            repository.saveBoundsBeforeMaximize(taskInfo.taskId, currentTaskBounds)
+            repository.saveBoundsBeforeSnapOrMaximize(taskInfo.taskId, currentTaskBounds)
             destinationBounds.set(calculateMaximizeBounds(displayLayout, taskInfo))
         }
 

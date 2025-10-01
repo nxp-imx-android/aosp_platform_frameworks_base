@@ -72,8 +72,8 @@ class DesktopRepository(
     /* Tracks corner/caption regions of desktop tasks, used to determine gesture exclusion. */
     private val desktopExclusionRegions = SparseArray<Region>()
 
-    /* Tracks last bounds of task before toggled to stable bounds. */
-    private val boundsBeforeMaximizeByTaskId = SparseArray<Rect>()
+    /* Tracks previous bounds of the task right before being snapped or maximized. */
+    private val boundsBeforeSnapOrMaximizeByTaskId = SparseArray<Rect>()
 
     /* Tracks last bounds of task before it is minimized. */
     private val boundsBeforeMinimizeByTaskId = SparseArray<Rect>()
@@ -1086,7 +1086,7 @@ class DesktopRepository(
         // TODO: b/362720497 - consider not clearing bounds on any removal, such as when moving
         //  it between desks. It might be better to allow restoring to the previous bounds as long
         //  as they're valid (probably valid if in the same display).
-        boundsBeforeMaximizeByTaskId.remove(taskId)
+        boundsBeforeSnapOrMaximizeByTaskId.remove(taskId)
         boundsBeforeFullImmersiveByTaskId.remove(taskId)
         val desk = desktopData.getDesk(deskId) ?: return
         if (desk.freeformTasksInZOrder.remove(taskId)) {
@@ -1183,13 +1183,13 @@ class DesktopRepository(
         }
     }
 
-    /** Removes and returns the bounds saved before maximizing the given task. */
-    fun removeBoundsBeforeMaximize(taskId: Int): Rect? =
-        boundsBeforeMaximizeByTaskId.removeReturnOld(taskId)
+    /** Removes and returns the bounds saved before snapping or maximizing the given task. */
+    fun removeBoundsBeforeSnapOrMaximize(taskId: Int): Rect? =
+        boundsBeforeSnapOrMaximizeByTaskId.removeReturnOld(taskId)
 
-    /** Saves the bounds of the given task before maximizing. */
-    fun saveBoundsBeforeMaximize(taskId: Int, bounds: Rect) =
-        boundsBeforeMaximizeByTaskId.set(taskId, Rect(bounds))
+    /** Saves the bounds of the given task before snapping or maximizing. */
+    fun saveBoundsBeforeSnapOrMaximize(taskId: Int, bounds: Rect) =
+        boundsBeforeSnapOrMaximizeByTaskId.set(taskId, Rect(bounds))
 
     /** Removes and returns the bounds saved before minimizing the given task. */
     fun removeBoundsBeforeMinimize(taskId: Int): Rect? =

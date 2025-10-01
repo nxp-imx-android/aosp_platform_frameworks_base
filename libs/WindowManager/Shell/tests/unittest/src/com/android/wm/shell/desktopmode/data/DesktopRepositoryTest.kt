@@ -1459,14 +1459,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    fun removeTask_removesTaskBoundsBeforeMaximize() {
+    fun removeTask_removesTaskBoundsBeforeSnapOrMaximize() {
         val taskId = 1
         repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
-        repo.saveBoundsBeforeMaximize(taskId, Rect(0, 0, 200, 200))
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, Rect(0, 0, 200, 200))
 
         repo.removeTask(taskId)
 
-        assertThat(repo.removeBoundsBeforeMaximize(taskId)).isNull()
+        assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId)).isNull()
     }
 
     @Test
@@ -1517,23 +1517,23 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    fun saveBoundsBeforeMaximize_boundsSavedByTaskId() {
+    fun saveBoundsBeforeSnapOrMaximize_boundsSavedByTaskId() {
         val taskId = 1
         val bounds = Rect(0, 0, 200, 200)
 
-        repo.saveBoundsBeforeMaximize(taskId, bounds)
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, bounds)
 
-        assertThat(repo.removeBoundsBeforeMaximize(taskId)).isEqualTo(bounds)
+        assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId)).isEqualTo(bounds)
     }
 
     @Test
-    fun removeBoundsBeforeMaximize_returnsNullAfterBoundsRemoved() {
+    fun removeBoundsBeforeSnapOrMaximize_returnsNullAfterBoundsRemoved() {
         val taskId = 1
         val bounds = Rect(0, 0, 200, 200)
-        repo.saveBoundsBeforeMaximize(taskId, bounds)
-        repo.removeBoundsBeforeMaximize(taskId)
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, bounds)
+        repo.removeBoundsBeforeSnapOrMaximize(taskId)
 
-        val boundsBeforeMaximize = repo.removeBoundsBeforeMaximize(taskId)
+        val boundsBeforeMaximize = repo.removeBoundsBeforeSnapOrMaximize(taskId)
 
         assertThat(boundsBeforeMaximize).isNull()
     }
@@ -2173,11 +2173,11 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             isVisible = true,
             taskBounds = TEST_TASK_BOUNDS,
         )
-        repo.saveBoundsBeforeMaximize(taskId = 10, bounds = Rect(10, 10, 100, 100))
+        repo.saveBoundsBeforeSnapOrMaximize(taskId = 10, bounds = Rect(10, 10, 100, 100))
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
 
-        assertThat(repo.removeBoundsBeforeMaximize(taskId = 10)).isNull()
+        assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId = 10)).isNull()
     }
 
     @Test
