@@ -18,7 +18,6 @@ package com.android.systemui.shade
 
 import com.android.systemui.assist.AssistManager
 import com.android.systemui.concurrency.fakeExecutor
-import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
@@ -36,6 +35,7 @@ import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.phone.statusBarKeyguardViewManager
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.policy.deviceProvisionedController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.mockito.mock
 
 val Kosmos.shadeControllerSceneImpl by
@@ -64,7 +64,7 @@ val Kosmos.shadeControllerImpl by
             mock<KeyguardStateController>(),
             statusBarStateController,
             statusBarKeyguardViewManager,
-            displaySubcomponentPerDisplayRepository,
+            mock<StatusBarWindowControllerStore>(),
             deviceProvisionedController,
             mock<NotificationShadeWindowController>(),
             0,

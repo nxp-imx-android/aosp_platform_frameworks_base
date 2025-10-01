@@ -16,12 +16,8 @@
 
 package com.android.systemui.statusbar.notification.headsup;
 
-import android.view.Display;
-
-import com.android.app.displaylib.PerDisplayRepository;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.dagger.SysUISingleton;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.ShadeViewController;
@@ -31,6 +27,7 @@ import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 
 import javax.inject.Inject;
 
@@ -40,8 +37,7 @@ import javax.inject.Inject;
 @SysUISingleton
 public class StatusBarHeadsUpChangeListener implements OnHeadsUpChangedListener, CoreStartable {
     private final NotificationShadeWindowController mNotificationShadeWindowController;
-    private final PerDisplayRepository<SystemUIDisplaySubcomponent>
-            mPerDisplaySubcomponentRepository;
+    private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     private final ShadeViewController mShadeViewController;
     private final PanelExpansionInteractor mPanelExpansionInteractor;
     private final NotificationStackScrollLayoutController mNsslController;
@@ -53,7 +49,7 @@ public class StatusBarHeadsUpChangeListener implements OnHeadsUpChangedListener,
     @Inject
     StatusBarHeadsUpChangeListener(
             NotificationShadeWindowController notificationShadeWindowController,
-            PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepository,
+            StatusBarWindowControllerStore statusBarWindowControllerStore,
             ShadeViewController shadeViewController,
             PanelExpansionInteractor panelExpansionInteractor,
             NotificationStackScrollLayoutController nsslController,
@@ -62,7 +58,7 @@ public class StatusBarHeadsUpChangeListener implements OnHeadsUpChangedListener,
             StatusBarStateController statusBarStateController,
             NotificationRemoteInputManager notificationRemoteInputManager) {
         mNotificationShadeWindowController = notificationShadeWindowController;
-        mPerDisplaySubcomponentRepository = perDisplaySubcomponentRepository;
+        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
         mShadeViewController = shadeViewController;
         mPanelExpansionInteractor = panelExpansionInteractor;
         mNsslController = nsslController;
@@ -82,10 +78,8 @@ public class StatusBarHeadsUpChangeListener implements OnHeadsUpChangedListener,
         String logString = "HeadsUpChangeListener#onHeadsUpPinnedModeChanged";
         if (inPinnedMode) {
             mNotificationShadeWindowController.setHeadsUpShowing(true);
-            // TODO(b/444658036): use display specific instance of StatusBarWindowController
-            mPerDisplaySubcomponentRepository
-                    .get(Display.DEFAULT_DISPLAY)
-                    .getStatusBarWindowController()
+            mStatusBarWindowControllerStore
+                    .getDefaultDisplay()
                     .setForceStatusBarVisible(true, /* source= */ logString);
             if (mPanelExpansionInteractor.isFullyCollapsed()) {
                 mShadeViewController.updateTouchableRegion();
@@ -101,10 +95,8 @@ public class StatusBarHeadsUpChangeListener implements OnHeadsUpChangedListener,
                 // open artificially.
                 mNotificationShadeWindowController.setHeadsUpShowing(false);
                 if (bypassKeyguard) {
-                    // TODO(b/444658036): use display specific instance of StatusBarWindowController
-                    mPerDisplaySubcomponentRepository
-                            .get(Display.DEFAULT_DISPLAY)
-                            .getStatusBarWindowController()
+                    mStatusBarWindowControllerStore
+                            .getDefaultDisplay()
                             .setForceStatusBarVisible(
                                     false, /* source= */ logString);
                 }

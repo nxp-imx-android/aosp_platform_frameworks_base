@@ -102,7 +102,6 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
 
 import com.android.app.animation.Interpolators;
-import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.colorextraction.ColorExtractor;
@@ -128,7 +127,6 @@ import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository;
 import com.android.systemui.display.shared.model.DisplayWindowProperties;
 import com.android.systemui.globalactions.domain.interactor.GlobalActionsInteractor;
@@ -146,6 +144,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.window.StatusBarWindowController;
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.telephony.TelephonyListenerManager;
 import com.android.systemui.topui.TopUiController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
@@ -267,8 +266,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private final IStatusBarService mStatusBarService;
     protected final LightBarController mLightBarController;
     protected final TopUiController mTopUiController;
-    private final PerDisplayRepository<SystemUIDisplaySubcomponent>
-            mPerDisplaySubcomponentRepository;
+    private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     private final IWindowManager mIWindowManager;
     private final Executor mBackgroundExecutor;
     private final RingerModeTracker mRingerModeTracker;
@@ -406,7 +404,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             IStatusBarService statusBarService,
             LightBarController lightBarController,
             TopUiController topUiController,
-            PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepository,
+            StatusBarWindowControllerStore statusBarWindowControllerStore,
             IWindowManager iWindowManager,
             @Background Executor backgroundExecutor,
             UiEventLogger uiEventLogger,
@@ -444,7 +442,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mStatusBarService = statusBarService;
         mLightBarController = lightBarController;
         mTopUiController = topUiController;
-        mPerDisplaySubcomponentRepository = perDisplaySubcomponentRepository;
+        mStatusBarWindowControllerStore = statusBarWindowControllerStore;
         mIWindowManager = iWindowManager;
         mBackgroundExecutor = backgroundExecutor;
         mRingerModeTracker = ringerModeTracker;
@@ -818,8 +816,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         final Context context = getContextForDisplay(displayId);
         initDialogItems();
 
-        SystemUIDisplaySubcomponent displaySubcomponent = mPerDisplaySubcomponentRepository.get(
-                context.getDisplayId());
         ActionsDialogLite dialog = new ActionsDialogLite(
                 context,
                 com.android.systemui.res.R.style.Theme_SystemUI_Dialog_GlobalActionsLite,
@@ -830,7 +826,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 mLightBarController,
                 mKeyguardStateController,
                 mTopUiController,
-                displaySubcomponent.getStatusBarWindowController(),
+                mStatusBarWindowControllerStore.forDisplay(context.getDisplayId()),
                 this::onRefresh,
                 mKeyguardShowing,
                 mPowerAdapter,

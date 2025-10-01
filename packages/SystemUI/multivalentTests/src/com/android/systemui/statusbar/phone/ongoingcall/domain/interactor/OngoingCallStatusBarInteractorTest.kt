@@ -37,7 +37,7 @@ import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoing
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
-import com.android.systemui.statusbar.window.fakeStatusBarWindowController
+import com.android.systemui.statusbar.window.fakeStatusBarWindowControllerStore
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -71,7 +71,8 @@ class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
                 collectLastValue(statusBarModeRepository.ongoingProcessRequiresStatusBarVisible)
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
             addOngoingCallState()
 
@@ -88,7 +89,8 @@ class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
                 collectLastValue(statusBarModeRepository.ongoingProcessRequiresStatusBarVisible)
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
 
             addOngoingCallState(key = "testKey")
@@ -109,7 +111,8 @@ class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
                 collectLastValue(statusBarModeRepository.ongoingProcessRequiresStatusBarVisible)
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
 
             addOngoingCallState(uid = UID, isAppVisible = false)
@@ -183,7 +186,8 @@ class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
                 collectLastValue(statusBarModeRepository.ongoingProcessRequiresStatusBarVisible)
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
 
             // Start with an ongoing call (which should set status bar required)
@@ -210,7 +214,8 @@ class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
                 collectLastValue(statusBarModeRepository.ongoingProcessRequiresStatusBarVisible)
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
             addOngoingCallState()
 
@@ -234,7 +239,8 @@ class OngoingCallStatusBarInteractorTest : SysuiTestCase() {
                 collectLastValue(statusBarModeRepository.ongoingProcessRequiresStatusBarVisible)
             val requiresStatusBarVisibleInWindowController by
                 collectLastValue(
-                    fakeStatusBarWindowController.ongoingProcessRequiresStatusBarVisible
+                    fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
                 )
             addOngoingCallState()
 

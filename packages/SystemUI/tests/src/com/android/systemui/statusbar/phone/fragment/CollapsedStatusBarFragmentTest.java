@@ -81,6 +81,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.StatusBarOperatorNameViewModel;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.window.StatusBarWindowController;
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.statusbar.window.StatusBarWindowStateListener;
 import com.android.systemui.util.CarrierConfigTracker;
@@ -140,6 +141,7 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
     private StatusBarWindowStateController mStatusBarWindowStateController;
     @Mock
     private KeyguardUpdateMonitor mKeyguardUpdateMonitor;
+    @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     @Mock private StatusBarWindowController mStatusBarWindowController;
     @Mock private StatusBarConfigurationControllerStore mStatusBarConfigurationControllerStore;
     @Mock private StatusBarConfigurationController mStatusBarConfigurationController;
@@ -155,6 +157,8 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
 
     @Before
     public void setup() {
+        when(mStatusBarWindowControllerStore.forDisplay(anyInt()))
+                .thenReturn(mStatusBarWindowController);
         when(mStatusBarConfigurationControllerStore.forDisplay(anyInt()))
                 .thenReturn(mStatusBarConfigurationController);
         injectLeakCheckedDependencies(ALL_SUPPORTED_CLASSES);
@@ -1076,11 +1080,12 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
                 mStatusBarWindowStateController,
                 mKeyguardUpdateMonitor,
                 mock(DemoModeController.class),
+                mStatusBarWindowControllerStore,
                 mStatusBarConfigurationControllerStore);
     }
 
     private void setUpDaggerComponent() {
-        when(mStatusBarFragmentComponentFactory.create(any(), any()))
+        when(mStatusBarFragmentComponentFactory.create(any(), any(), any()))
                 .thenReturn(mHomeStatusBarComponent);
         when(mHomeStatusBarComponent.getHeadsUpAppearanceController())
                 .thenReturn(mHeadsUpAppearanceController);

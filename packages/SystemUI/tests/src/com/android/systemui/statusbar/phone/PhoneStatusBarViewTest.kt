@@ -47,6 +47,7 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.StatusBarLongPressGestureDetector
 import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.systemui.statusbar.window.StatusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.window.flags.Flags.FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -72,11 +73,13 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
         get() = view.requireViewById(R.id.system_icons)
 
     @Mock private lateinit var windowController: StatusBarWindowController
+    @Mock private lateinit var windowControllerStore: StatusBarWindowControllerStore
     @Mock private lateinit var longPressGestureDetector: StatusBarLongPressGestureDetector
 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
+        whenever(windowControllerStore.defaultDisplay).thenReturn(windowController)
         context.ensureTestableResources()
         view = spy(createStatusBarView(context))
         whenever(view.rootWindowInsets).thenReturn(emptyWindowInsets())
@@ -252,7 +255,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeight() {
-        view.setStatusBarWindowController(windowController)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
 
         view.onAttachedToWindow()
 
@@ -262,10 +265,10 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeightAfterControllerStoreSet() {
-        // windowController is not yet set in the view
+        // windowControllerStore is not yet set in the view
         view.onAttachedToWindow()
 
-        view.setStatusBarWindowController(windowController)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
 
         verify(windowController).refreshStatusBarHeight()
     }
@@ -273,13 +276,13 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onAttachedToWindow_connectedDisplayFlagOff_updatesWindowHeightOnceAfterControllerStoreSet() {
-        // windowController is not yet set in the view
+        // windowControllerStore is not yet set in the view
         view.onAttachedToWindow()
 
-        view.setStatusBarWindowController(windowController)
-        view.setStatusBarWindowController(windowController)
-        view.setStatusBarWindowController(windowController)
-        view.setStatusBarWindowController(windowController)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
 
         verify(windowController, times(1)).refreshStatusBarHeight()
     }
@@ -287,7 +290,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onAttachedToWindow_connectedDisplayFlagOn_doesNotUpdateWindowHeight() {
-        view.setStatusBarWindowController(windowController)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
 
         view.onAttachedToWindow()
 
@@ -297,7 +300,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @DisableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onConfigurationChanged_connectedDisplayFlagOff_updatesWindowHeight() {
-        view.setStatusBarWindowController(windowController)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
 
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())
@@ -310,7 +313,7 @@ class PhoneStatusBarViewTest : SysuiTestCase() {
     @Test
     @EnableFlags(FLAG_STATUS_BAR_CONNECTED_DISPLAYS)
     fun onConfigurationChanged_connectedDisplayFlagOn_neverUpdatesWindowHeight() {
-        view.setStatusBarWindowController(windowController)
+        view.setStatusBarWindowControllerStore(windowControllerStore)
 
         view.onConfigurationChanged(Configuration())
         view.onConfigurationChanged(Configuration())

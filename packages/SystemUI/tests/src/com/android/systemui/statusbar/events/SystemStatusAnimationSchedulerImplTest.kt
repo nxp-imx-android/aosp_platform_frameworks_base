@@ -31,7 +31,6 @@ import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
-import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.privacy.PrivacyApplication
@@ -48,9 +47,8 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.RunningChipAnim
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.ShowingPersistentDot
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
-import com.android.systemui.statusbar.window.mockStatusBarWindowController
-import com.android.systemui.statusbar.window.statusBarWindowController
-import com.android.systemui.testKosmos
+import com.android.systemui.statusbar.window.StatusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.time.FakeSystemClock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -83,11 +81,10 @@ import platform.test.runner.parameterized.Parameters
 @UsesFlags(Flags::class)
 class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
 
-    private val kosmos =
-        testKosmos().also { it.statusBarWindowController = it.mockStatusBarWindowController }
-    private val statusBarWindowController = kosmos.mockStatusBarWindowController
-
     @Mock private lateinit var systemEventCoordinator: SystemEventCoordinator
+
+    @Mock private lateinit var statusBarWindowController: StatusBarWindowController
+    @Mock private lateinit var statusBarWindowControllerStore: StatusBarWindowControllerStore
 
     @Mock private lateinit var statusBarContentInsetProvider: StatusBarContentInsetsProvider
 
@@ -119,6 +116,8 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
     fun setup() {
         MockitoAnnotations.initMocks(this)
 
+        whenever(statusBarWindowControllerStore.defaultDisplay)
+            .thenReturn(statusBarWindowController)
         systemClock = FakeSystemClock()
         chipAnimationController =
             SystemEventChipAnimationControllerImpl(
@@ -768,7 +767,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
             SystemStatusAnimationSchedulerImpl(
                 systemEventCoordinator,
                 chipAnimationController,
-                kosmos.displaySubcomponentPerDisplayRepository,
+                statusBarWindowControllerStore,
                 dumpManager,
                 systemClock,
                 CoroutineScope(StandardTestDispatcher(testScope.testScheduler)),

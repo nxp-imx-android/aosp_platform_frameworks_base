@@ -19,12 +19,12 @@ package com.android.systemui.statusbar.core
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.phone.AutoHideControllerStore
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStateRepositoryStore
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +37,7 @@ constructor(
     @Background backgroundApplicationScope: CoroutineScope,
     displayRepository: DisplayRepository,
     private val factory: StatusBarOrchestrator.Factory,
-    private val perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
     private val initializerStore: StatusBarInitializerStore,
     private val autoHideControllerStore: AutoHideControllerStore,
@@ -55,10 +55,11 @@ constructor(
     }
 
     override fun createInstanceForDisplay(displayId: Int): StatusBarOrchestrator? {
-        val displaySubcomponent = perDisplaySubcomponentRepository[displayId] ?: return null
         val statusBarModeRepository =
             statusBarModeRepositoryStore.forDisplay(displayId) ?: return null
         val statusBarInitializer = initializerStore.forDisplay(displayId) ?: return null
+        val statusBarWindowController =
+            statusBarWindowControllerStore.forDisplay(displayId) ?: return null
         val autoHideController = autoHideControllerStore.forDisplay(displayId) ?: return null
         val displayScope = displayScopeRepository[displayId] ?: return null
         val statusubarIconRefreshInteractor =
@@ -69,7 +70,7 @@ constructor(
             statusBarWindowStateRepositoryStore.forDisplay(displayId),
             statusBarModeRepository,
             statusBarInitializer,
-            displaySubcomponent.statusBarWindowController,
+            statusBarWindowController,
             statusubarIconRefreshInteractor,
             autoHideController,
         )

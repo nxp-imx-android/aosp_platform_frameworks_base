@@ -34,6 +34,7 @@ import com.android.systemui.statusbar.notification.shared.ActiveNotificationMode
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
 import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -69,6 +70,7 @@ constructor(
     @Application private val scope: CoroutineScope,
     private val activityManagerRepository: ActivityManagerRepository,
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
+    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val displayComponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     keyguardInteractor: KeyguardInteractor,
@@ -208,13 +210,10 @@ constructor(
         statusBarModeRepositoryStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
             statusBarRequired
         )
-
-        displayComponentRepo[Display.DEFAULT_DISPLAY]!!
-            .statusBarWindowController
-            .setOngoingProcessRequiresStatusBarVisible(
-                statusBarRequired,
-                source = "OngoingCallInteractor",
-            )
+        statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
+            statusBarRequired,
+            source = "OngoingCallInteractor",
+        )
     }
 
     private fun updateGestureListening(isEnabled: Boolean) {

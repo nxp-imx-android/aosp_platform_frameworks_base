@@ -53,10 +53,6 @@ import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DelegateTransitionAnimatorController;
 import com.android.systemui.dagger.qualifiers.Main;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton;
 import com.android.systemui.fragments.FragmentHostManager;
 import com.android.systemui.fragments.FragmentService;
 import com.android.systemui.log.LogBuffer;
@@ -71,15 +67,16 @@ import com.android.systemui.statusbar.window.StatusBarWindowModule.InternalWindo
 import com.android.systemui.unfold.UnfoldTransitionProgressProvider;
 import com.android.systemui.unfold.util.JankMonitorTransitionProgressListener;
 
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
+
 import java.util.Optional;
 import java.util.concurrent.Executor;
-
-import javax.inject.Inject;
 
 /**
  * Encapsulates all logic for the status bar window state management.
  */
-@PerDisplaySingleton
 public class StatusBarWindowControllerImpl implements StatusBarWindowController {
     private static final String TAG = "StatusBarWindowController";
     private static final boolean DEBUG = false;
@@ -113,19 +110,19 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
                 }
             };
 
-    @Inject
+    @AssistedInject
     public StatusBarWindowControllerImpl(
-            @DisplayAwareStatusBar Context context,
+            @Assisted Context context,
             @InternalWindowViewInflater StatusBarWindowViewInflater statusBarWindowViewInflater,
-            @DisplayAware WindowManager windowManager,
-            @DisplayAware StatusBarConfigurationController statusBarConfigurationController,
+            @Assisted WindowManager windowManager,
+            @Assisted StatusBarConfigurationController statusBarConfigurationController,
             IWindowManager iWindowManager,
-            @DisplayAware StatusBarContentInsetsProvider contentInsetsProvider,
+            @Assisted StatusBarContentInsetsProvider contentInsetsProvider,
             FragmentService fragmentService,
             Optional<UnfoldTransitionProgressProvider> unfoldTransitionProgressProvider,
             @Main Executor mainExecutor,
             @StatusBarWindowLog LogBuffer logBuffer,
-            @DisplayAware int displayId) {
+            @Assisted int displayId) {
         mContext = context;
         mDisplayId = displayId;
         mWindowManager = windowManager;
@@ -469,4 +466,18 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
             mLpChanged.forciblyShownTypes &= ~WindowInsets.Type.statusBars();
         }
     }
+
+    @AssistedFactory
+    public interface Factory extends StatusBarWindowController.Factory {
+        /** Creates a new instance. */
+        @NonNull
+        @Override
+        StatusBarWindowControllerImpl create(
+                @NonNull Context context,
+                @NonNull WindowManager windowManager,
+                @NonNull StatusBarConfigurationController statusBarConfigurationController,
+                @NonNull StatusBarContentInsetsProvider contentInsetsProvider,
+                int displayId);
+    }
+
 }

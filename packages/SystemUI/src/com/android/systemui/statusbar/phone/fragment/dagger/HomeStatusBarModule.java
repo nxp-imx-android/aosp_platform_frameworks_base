@@ -21,7 +21,6 @@ import android.view.ViewStub;
 
 import com.android.systemui.battery.BatteryMeterView;
 import com.android.systemui.dagger.qualifiers.RootView;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions;
 import com.android.systemui.statusbar.phone.PhoneStatusBarView;
@@ -125,7 +124,7 @@ public interface HomeStatusBarModule {
     @HomeStatusBarScope
     static PhoneStatusBarTransitions providePhoneStatusBarTransitions(
             @RootView PhoneStatusBarView view,
-            @DisplayAware StatusBarWindowController statusBarWindowController) {
+            StatusBarWindowController statusBarWindowController) {
         return new PhoneStatusBarTransitions(view, statusBarWindowController.getBackgroundView());
     }
 }

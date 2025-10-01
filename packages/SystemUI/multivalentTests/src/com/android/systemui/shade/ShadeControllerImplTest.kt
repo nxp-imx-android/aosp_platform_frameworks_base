@@ -24,7 +24,6 @@ import androidx.test.filters.SmallTest
 import com.android.internal.statusbar.IStatusBarService
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.assist.AssistManager
-import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository
 import com.android.systemui.kosmos.testScope
@@ -44,6 +43,7 @@ import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.statusbar.window.StatusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.mockito.mock
@@ -74,6 +74,7 @@ class ShadeControllerImplTest : SysuiTestCase() {
     @Mock private lateinit var statusBarStateController: StatusBarStateController
     @Mock private lateinit var statusBarKeyguardViewManager: StatusBarKeyguardViewManager
     @Mock private lateinit var statusBarWindowController: StatusBarWindowController
+    @Mock private lateinit var statusBarWindowControllerStore: StatusBarWindowControllerStore
     @Mock private lateinit var deviceProvisionedController: DeviceProvisionedController
     @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
     @Mock private lateinit var windowManager: WindowManager
@@ -106,6 +107,8 @@ class ShadeControllerImplTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
         whenever(windowManager.defaultDisplay).thenReturn(display)
         whenever(deviceProvisionedController.isCurrentUserSetup).thenReturn(true)
+        whenever(statusBarWindowControllerStore.defaultDisplay)
+            .thenReturn(statusBarWindowController)
         shadeController =
             ShadeControllerImpl(
                 commandQueue,
@@ -114,7 +117,7 @@ class ShadeControllerImplTest : SysuiTestCase() {
                 keyguardStateController,
                 statusBarStateController,
                 statusBarKeyguardViewManager,
-                kosmos.displaySubcomponentPerDisplayRepository,
+                statusBarWindowControllerStore,
                 deviceProvisionedController,
                 notificationShadeWindowController,
                 0,

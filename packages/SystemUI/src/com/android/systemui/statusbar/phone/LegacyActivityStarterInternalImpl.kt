@@ -28,7 +28,6 @@ import android.os.RemoteException
 import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
-import android.view.Display
 import android.view.RemoteAnimationAdapter
 import android.view.View
 import android.view.WindowManager
@@ -47,7 +46,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.DesktopFirstRepository
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.model.SysUiState
@@ -66,6 +64,7 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.kotlin.getOrNull
 import dagger.Lazy
@@ -93,7 +92,7 @@ constructor(
     private val activityTransitionAnimator: ActivityTransitionAnimator,
     private val contextInteractor: ShadeDialogContextInteractor,
     private val lockScreenUserManager: NotificationLockscreenUserManager,
-    private val perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val wakefulnessLifecycle: WakefulnessLifecycle,
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
     private val deviceProvisionedController: DeviceProvisionedController,
@@ -147,11 +146,8 @@ constructor(
                 ): ActivityTransitionAnimator.Controller {
                     val baseController = controllerFactory.createController(forLaunch)
                     val rootView = baseController.transitionContainer.rootView
-                    // TODO: b/432399564 - use display specific instance of
-                    //  StatusBarWindowController
                     val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller> =
-                        perDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
-                            .statusBarWindowController
+                        statusBarWindowControllerStore.defaultDisplay
                             .wrapAnimationControllerIfInStatusBar(rootView, baseController)
                     return if (controllerFromStatusBar.isPresent) {
                         controllerFromStatusBar.get()
@@ -688,11 +684,11 @@ constructor(
             return null
         }
         val rootView = animationController.transitionContainer.rootView
-        // TODO: b/432399564 - use display specific instance of StatusBarWindowController
         val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller> =
-            perDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
-                .statusBarWindowController
-                .wrapAnimationControllerIfInStatusBar(rootView, animationController)
+            statusBarWindowControllerStore.defaultDisplay.wrapAnimationControllerIfInStatusBar(
+                rootView,
+                animationController,
+            )
         if (controllerFromStatusBar.isPresent) {
             return controllerFromStatusBar.get()
         }

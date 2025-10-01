@@ -57,9 +57,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModelFactory
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.ui.systemBarUtilsState
-import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
-import com.android.systemui.statusbar.window.statusBarWindowController
 import com.android.systemui.util.mockito.mock
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
@@ -88,7 +86,6 @@ fun Kosmos.createFakeDisplaySubcomponent(
     statusBarContentInsetsProvider: () -> StatusBarContentInsetsProvider = {
         this.mockStatusBarContentInsetsProvider
     },
-    statusBarWindowController: () -> StatusBarWindowController = { this.statusBarWindowController },
     darkIconDispatcher: () -> DarkIconDispatcher = { this.fakeDarkIconDispatcher },
     sysUiDarkIconDispatcher: () -> SysuiDarkIconDispatcher = { this.fakeDarkIconDispatcher },
     systemBarUtilsState: () -> SystemBarUtilsState = { this.systemBarUtilsState },
@@ -143,9 +140,6 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarWindowStateController: StatusBarWindowStateController
             get() = mock<StatusBarWindowStateController>()
-
-        override val statusBarWindowController: StatusBarWindowController
-            get() = statusBarWindowController()
 
         override val darkIconDispatcher: DarkIconDispatcher
             get() = darkIconDispatcher()

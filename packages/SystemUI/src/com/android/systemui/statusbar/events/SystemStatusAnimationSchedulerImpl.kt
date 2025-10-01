@@ -19,14 +19,11 @@ package com.android.systemui.statusbar.events
 import android.location.flags.Flags.locationIndicatorsEnabled
 import android.os.Process
 import android.provider.DeviceConfig
-import android.view.Display
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
-import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
@@ -35,6 +32,7 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.RunningChipAnim
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.ShowingPersistentDot
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.Assert
 import com.android.systemui.util.time.SystemClock
 import java.io.PrintWriter
@@ -76,7 +74,7 @@ open class SystemStatusAnimationSchedulerImpl
 constructor(
     private val coordinator: SystemEventCoordinator,
     private val chipAnimationController: SystemEventChipAnimationController,
-    private val perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+    private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     dumpManager: DumpManager,
     private val systemClock: SystemClock,
     @Application private val coroutineScope: CoroutineScope,
@@ -297,13 +295,10 @@ constructor(
     private fun runChipAppearAnimation() {
         Assert.isMainThread()
         if (hasPersistentDot) {
-            // TODO: b/444658781 - use display specific instance of StatusBarWindowController
-            perDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
-                .statusBarWindowController
-                .setForceStatusBarVisible(
-                    true,
-                    source = "SystemStatusAnimSchedule#runChipAppearAnimation",
-                )
+            statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(
+                true,
+                source = "SystemStatusAnimSchedule#runChipAppearAnimation",
+            )
         }
         _animationState.value = AnimatingIn
 
@@ -337,13 +332,10 @@ constructor(
                             scheduledEvent.value != null -> AnimationQueued
                             else -> Idle
                         }
-                    // TODO: b/444658781 - use display specific StatusBarWindowController
-                    perDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
-                        .statusBarWindowController
-                        .setForceStatusBarVisible(
-                            false,
-                            source = "SystemStatusAnimSchedule#runChipDisappearAnimation",
-                        )
+                    statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(
+                        false,
+                        source = "SystemStatusAnimSchedule#runChipDisappearAnimation",
+                    )
                 }
             }
         )

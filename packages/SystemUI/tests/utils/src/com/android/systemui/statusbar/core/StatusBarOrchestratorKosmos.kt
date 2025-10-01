@@ -22,7 +22,6 @@ import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.bouncer.domain.interactor.primaryBouncerInteractor
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.displayScopeRepository
-import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -45,6 +44,7 @@ import com.android.systemui.statusbar.policy.statusBarConfigurationController
 import com.android.systemui.statusbar.window.data.repository.fakeStatusBarWindowStatePerDisplayRepository
 import com.android.systemui.statusbar.window.data.repository.statusBarWindowStateRepositoryStore
 import com.android.systemui.statusbar.window.fakeStatusBarWindowController
+import com.android.systemui.statusbar.window.statusBarWindowControllerStore
 import com.android.wm.shell.bubbles.bubblesOptional
 
 val Kosmos.multiDisplayStatusBarOrchestratorStore by
@@ -53,7 +53,7 @@ val Kosmos.multiDisplayStatusBarOrchestratorStore by
             applicationCoroutineScope,
             displayRepository,
             statusBarOrchestratorFactory,
-            displaySubcomponentPerDisplayRepository,
+            statusBarWindowControllerStore,
             statusBarModeRepository,
             statusBarInitializerStore,
             fakeAutoHideControllerStore,

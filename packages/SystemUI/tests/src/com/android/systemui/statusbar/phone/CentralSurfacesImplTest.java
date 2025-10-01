@@ -197,6 +197,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor;
 import com.android.systemui.statusbar.window.StatusBarWindowController;
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.topui.TopUiController;
 import com.android.systemui.util.FakeEventLog;
@@ -311,6 +312,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock private KeyguardBypassController mKeyguardBypassController;
     @Mock private AutoHideController mAutoHideController;
     @Mock private StatusBarWindowController mStatusBarWindowController;
+    @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     @Mock private Provider<CollapsedStatusBarFragment> mCollapsedStatusBarFragmentProvider;
     @Mock private StatusBarWindowStateController mStatusBarWindowStateController;
     @Mock private SystemUIDisplaySubcomponent mSystemUIDisplaySubcomponent;
@@ -406,6 +408,9 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
         when(mBubbles.canShowBubbleNotification()).thenReturn(true);
 
+        when(mStatusBarWindowControllerStore.getDefaultDisplay())
+                .thenReturn(mStatusBarWindowController);
+
         when(mSystemUIDisplaySubcomponent.getStatusBarWindowStateController())
                 .thenReturn(mStatusBarWindowStateController);
         when(mPerDisplaySubcomponentRepository.get(anyInt()))
@@ -495,7 +500,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                     mKeyguardStateController,
                     mStatusBarStateController,
                     mStatusBarKeyguardViewManager,
-                    mPerDisplaySubcomponentRepository,
+                    mStatusBarWindowControllerStore,
                     mDeviceProvisionedController,
                     mNotificationShadeWindowController,
                     0,
@@ -544,6 +549,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                         mock(StatusBarRootFactory.class),
                         mock(HomeStatusBarComponent.Factory.class),
                         emptySet()),
+                mStatusBarWindowControllerStore,
                 mPerDisplaySubcomponentRepository,
                 new FakeStatusBarModeRepository(),
                 mKeyguardUpdateMonitor,

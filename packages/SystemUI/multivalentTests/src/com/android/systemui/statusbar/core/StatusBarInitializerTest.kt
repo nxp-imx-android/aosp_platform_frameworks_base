@@ -31,8 +31,8 @@ import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import com.android.systemui.statusbar.policy.statusBarConfigurationController
-import com.android.systemui.statusbar.window.mockStatusBarWindowController
-import com.android.systemui.statusbar.window.statusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowController
+import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -49,7 +49,8 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class StatusBarInitializerTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val windowController = kosmos.mockStatusBarWindowController
+    private val windowController = mock(StatusBarWindowController::class.java)
+    private val windowControllerStore = mock(StatusBarWindowControllerStore::class.java)
     private val transaction = mock(FragmentTransaction::class.java)
     private val fragmentManager = mock(FragmentManager::class.java)
     private val fragmentHostManager = mock(FragmentHostManager::class.java)
@@ -64,6 +65,7 @@ class StatusBarInitializerTest : SysuiTestCase() {
         whenever(fragmentHostManager.fragmentManager).thenReturn(fragmentManager)
         whenever(fragmentManager.beginTransaction()).thenReturn(transaction)
         whenever(transaction.replace(any(), any(), any())).thenReturn(transaction)
+        whenever(windowControllerStore.defaultDisplay).thenReturn(windowController)
         whenever(windowController.fragmentHostManager).thenReturn(fragmentHostManager)
         whenever(windowController.backgroundView).thenReturn(backgroundView)
     }
