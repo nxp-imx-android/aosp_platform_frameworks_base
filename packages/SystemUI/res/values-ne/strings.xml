@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकर्ड गर्नुहोस्"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"सेयर गर्नुहोस्"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"सेयर गर्न कुनै एप चयन गर्नुहोस्"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"अडियो सेयर गर्नुहोस्"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"एपको विन्डो सेयर गर्नुहोस्"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"तपाईंले स्क्रिन सेयर गर्दा तपाईंको स्क्रिनमा भएका सामग्री देखिन्छन्"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विन्डोको स्क्रिनसट लिनुहोस्"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विन्डो रेकर्ड गर्नुहोस्"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"चयन गरिएको भागको स्क्रिनसट लिनुहोस्"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> अर्थात् सर्वसुलभता कायम गर्ने सुविधा प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। तपाईं यसका सहायताले स्क्रिनमा तुरुन्तै जुम इन गरेर त्यसमा भएको कन्टेन्ट अझ ठुलो बनाउन सक्नुहुन्छ। जुम इन गर्ने सुविधा अन भएपछि जुम मिलाउन एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> र \"+\" वा \"-\" थिच्नुहोस्।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"सर्टकट अफ गर्नुहोस्"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"अन राखिरहनुहोस्"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। <xliff:g id="ID_4">^3</xliff:g> भनेको वस्तुहरू ठुलो आवाजमा पढेर सुनाउने स्क्रिन रिडर हो। स्क्रिनमा भएको कुरा देख्न गाह्रो हुने मान्छेहरूका लागि यो सुविधा उपयोगी हुन सक्छ। यसले तपाईंको डिभाइसले काम गर्ने तरिका परिवर्तन गर्न सक्छ।"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"तपाईंले कारबाही "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> थिच्नुभयो भने <xliff:g id="ID_3">^3</xliff:g> अन हुन्छ। यो सर्वसुलभता कायम गर्ने एउटा सुविधा हो। तपाईं यो सुविधा प्रयोग गरेर आफ्नो डिभाइस ह्यान्ड्सफ्री तरिकाले नियन्त्रण गर्न सक्नुहुन्छ।"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
@@ -1712,8 +1708,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"पछाडि"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"अघिल्लो"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"अर्को"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"अर्को पेजमा जानुहोस्"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"स्वतः भर्नुहोस्"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"एक्स्पान्ड गर्नुहोस्"</string>
 </resources>

@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Record"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Share"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Select an app to share"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Share audio"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Share app window"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"When sharing, the contents of your screen are visible"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Take screenshot of window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Record window"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Take screenshot of selected area"</string>
@@ -755,11 +752,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Your personal apps are connected to the Internet through <xliff:g id="VPN_APP">%1$s</xliff:g>. Your network activity, including emails and browsing data, is visible to your VPN provider."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Open VPN settings"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"This device is managed by your parent. Your parent can see and manage information such as the apps that you use, your location and your screen time."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Some controls on your device, like daily limits and downtime, can only be changed with a PIN."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"Some controls can only be changed by your parent"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Kept unlocked by trust agent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Screen locked. Too many authentication attempts."</string>
@@ -1151,8 +1146,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is the keyboard shortcut to use <xliff:g id="ID_3">^3</xliff:g>, an accessibility feature. This allows you to quickly zoom in on the screen to make content larger. Once magnification is on, press Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> and \'+\' or \'-\' to adjust zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Turn off shortcut"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Keep on"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is the keyboard shortcut to use <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen. This may change how your device works."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Pressing Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> turns on <xliff:g id="ID_3">^3</xliff:g>, an accessibility feature. This lets you control your device hands-free."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lock screen"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Shutting down…"</string>

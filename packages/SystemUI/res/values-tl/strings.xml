@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"I-record"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"I-share"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Pumili ng app na ise-share"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"I-share ang audio"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"I-share ang window ng app"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Kapag nagse-share, nakikita ang laman ng iyong screen"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Kunan ng screenshot ang window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"I-record ang window"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Kunan ng screenshot ang napiling bahagi"</string>
@@ -755,11 +752,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Nakakonekta ang iyong mga personal na app sa internet sa pamamagitan ng <xliff:g id="VPN_APP">%1$s</xliff:g>. Nakikita ng iyong VPN provider ang aktibidad ng network, kasama ang mga email at data mula sa pag-browse."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Buksan ang mga setting ng VPN"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"Pinapamahalaan ng iyong magulang ang device na ito. Makikita at mapapamahalaan ng iyong magulang ang impormasyon tulad ng mga app na ginagamit mo, iyong lokasyon, at tagal ng paggamit mo sa device."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Puwede lang baguhin gamit ang PIN ang ilang kontrol sa iyong device, tulad ng pang-araw-araw na limitasyon at downtime."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"Ang magulang mo lang ang puwedeng magbago sa ilang kontrol"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Pinanatiling naka-unlock ng TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Naka-lock ang screen. Masyadong maraming pagsubok na mag-authenticate."</string>
@@ -1151,8 +1146,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ang keyboard shortcut para gamitin ang <xliff:g id="ID_3">^3</xliff:g>, isang feature ng accessibilty. Nagbibigay-daan ito sa iyo na mabilis na mag-zoom in sa screen para palakihin ang content. Kapag naka-on na ang pag-magnify, pindutin ang Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> at \"+\" o \"-\" para i-adjust ang zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"I-off ang shortcut"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Panatilihing naka-on"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Ang "<annotation id="action_key_icon">"icon"</annotation>" ng Action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ang keyboard shortcut na gagamitin sa <xliff:g id="ID_3">^3</xliff:g>. Screen reader ang <xliff:g id="ID_4">^3</xliff:g> na nagbibigay-daan sa iyong marinig ang mga item na binibigkas nang malakas. Makakatulong ito sa mga taong nahihirapang makita ang screen. Posibleng mabago nito ang paggana ng iyong device."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kapag pinindot ang "<annotation id="action_key_icon">"icon"</annotation>" na Aksyon + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, mao-on ang <xliff:g id="ID_3">^3</xliff:g>, na isang feature ng accessibility. Nagbibigay-daan ito sa iyo na kontrolin ang device mo nang hands-free."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lock screen"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Nagsa-shut down…"</string>

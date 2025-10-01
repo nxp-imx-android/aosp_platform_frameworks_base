@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Rakam"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Kongsi"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Pilih apl untuk dikongsi"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Kongsi audio"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Kongsi tetingkap apl"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Semasa berkongsi, kandungan skrin anda akan kelihatan"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ambil tangkapan skrin tetingkap"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rakam tetingkap"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ambil tangkapan skrin kawasan yang dipilih"</string>
@@ -755,11 +752,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Apl peribadi anda disambungkan kepada Internet melalui <xliff:g id="VPN_APP">%1$s</xliff:g>. Aktiviti rangkaian anda, termasuk e-mel dan data semakan imbas boleh dilihat oleh pembekal VPN anda."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Buka tetapan VPN"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"Peranti ini diurus oleh ibu bapa anda. Ibu bapa anda dapat melihat dan mengurus maklumat seperti apl yang anda gunakan, lokasi dan masa skrin anda."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Sesetengah kawalan pada peranti anda, seperti had harian &amp; waktu gendala, hanya boleh ditukar dengan PIN."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"Sesetengah kawalan hanya boleh ditukar oleh ibu bapa anda"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Dibiarkan tidak berkunci oleh TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Skrin dikunci. Terlalu banyak percubaan pengesahan."</string>
@@ -1151,8 +1146,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Ikon"</annotation>" Tindakan + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ialah pintasan papan kekunci untuk menggunakan <xliff:g id="ID_3">^3</xliff:g>, yang merupakan ciri kebolehaksesan. Ciri ini membolehkan anda mengezum masuk dengan pantas pada skrin untuk menjadikan kandungan lebih besar. Setelah pembesaran dihidupkan, tekan "<annotation id="action_key_icon">"ikon"</annotation>" Tindakan + <xliff:g id="ID_4">^1</xliff:g> dan \"+\" atau \"-\" untuk melaraskan zum."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Matikan pintasan"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Sentiasa hidupkan"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Ikon"</annotation>" tindakan + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ialah pintasan papan kekunci untuk menggunakan <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> ialah pembaca skrin yang membolehkan anda mendengar item dituturkan dengan kuat. Ciri ini dapat membantu orang yang mengalami kesukaran melihat skrin. Ciri ini mungkin mengubah cara peranti anda berfungsi."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Tindakan menekan "<annotation id="action_key_icon">"ikon"</annotation>" Tindakan + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> menghidupkan <xliff:g id="ID_3">^3</xliff:g>, ciri kebolehaksesan. Tindakan ini membolehkan anda mengawal peranti anda secara bebas tangan."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Kunci skrin"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Mematikan…"</string>

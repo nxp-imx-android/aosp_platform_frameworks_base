@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ریکارڈ کریں"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"اشتراک کریں"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"اشتراک کرنے کے لیے کوئی ایپ منتخب کریں"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"آڈیو کا اشتراک کریں"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ایپ ونڈو کا اشتراک کریں"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"اشتراک کرتے وقت، آپ کی اسکرین کے مشمولات دکھائی دیتے ہیں"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ونڈو کا اسکرین شاٹ لیں"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ونڈو کو ریکارڈ کریں"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"منتخب ایریا کا اسکرین شاٹ لیں"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"‫<xliff:g id="ID_3">^3</xliff:g>، ایک ایکسیسبیلٹی خصوصیات کا استعمال کرنے کیلئے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>، کی بورڈ شارٹ کٹ ہے۔ اس سے آپ کو مواد کو بڑا کرنے کیلئے اسکرین پر تیزی سے زوم ان کرنے کی سہولت حاصل ہوتی ہے۔ میگنیفکیشن آن ہونے پر، زوم کو ایڈجسٹ کرنے کیلئے، ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> اور \"+\" یا \"-\" دبائیں۔"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"شارٹ کٹ آف کریں"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"آن رکھیں"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"<xliff:g id="ID_3">^3</xliff:g> کا استعمال کرنے کیلئے ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کی بورڈ شارٹ کٹ ہے۔ <xliff:g id="ID_4">^3</xliff:g> ایک ایسی اسکرین قاری ہے جو آپ کو بلند آواز میں بولے جانے والے آئٹمز کو سننے کی سہولت دیتی ہے۔ یہ ان لوگوں کیلئے مفید ثابت ہو سکتی ہے جنہیں اسکرین دیکھنے میں دشواری پیش آتی ہے۔ اس سے آپ کے آلے کے کام کرنے کا طریقہ تبدیل ہو سکتا ہے۔"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ایکشن "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کو دبانے سے <xliff:g id="ID_3">^3</xliff:g>، ایک ایکسیسبیلٹی خصوصیت آن ہو جاتی ہے۔ یہ آپ کو اپنے آلے کو ہینڈز فری کنٹرول کرنے دیتی ہے۔"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"مقفل اسکرین"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"بند ہو رہا ہے…"</string>

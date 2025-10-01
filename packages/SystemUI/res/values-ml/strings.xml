@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"പങ്കിടുക"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"പങ്കിടാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ഓഡിയോ പങ്കിടുക"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ആപ്പ് വിൻഡോ പങ്കിടുക"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"പങ്കിടുമ്പോൾ, നിങ്ങളുടെ സ്ക്രീനിലെ ഉള്ളടക്കം ദൃശ്യമാകും"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"വിൻഡോയുടെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"വിൻഡോ റെക്കോർഡ് ചെയ്യുക"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"തിരഞ്ഞെടുത്ത ഭാഗത്തിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. ഉള്ളടക്കം വലുതാക്കുന്നതിനായി വേഗത്തിൽ സ്ക്രീനിൽ സൂം ഇൻ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു. മാഗ്നിഫിക്കേഷൻ ഓണായാൽ, സൂം ക്രമീകരിക്കാൻ പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> ഒപ്പം \"+\" അല്ലെങ്കിൽ \"-\" അമർത്തുക."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"കുറുക്കുവഴി ഓഫാക്കുക"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ഓണാക്കി നിർത്തുക"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. സ്ക്രീനിലുള്ള കാര്യങ്ങൾ ഉറക്കെ വായിച്ചുകേൾക്കാൻ അനുവദിക്കുന്ന സ്ക്രീൻ റീഡറാണ് <xliff:g id="ID_4">^3</xliff:g>. സ്‌ക്രീൻ കാണാൻ ബുദ്ധിമുട്ടുള്ള ആളുകൾക്ക് ഇത് സഹായകരമായേക്കാം. നിങ്ങളുടെ ഉപകരണം പ്രവർത്തിക്കുന്ന രീതി ഇത് മാറ്റിയേക്കാം."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"പ്രവൃത്തി "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> അമർത്തുന്നതിലൂടെ ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="ID_3">^3</xliff:g> ഓണാകുന്നു. ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ഷട്ട്‌ഡൗൺ ചെയ്യുന്നു…"</string>

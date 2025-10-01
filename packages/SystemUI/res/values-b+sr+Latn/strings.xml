@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Snimanje ekrana"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deli"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Izaberite aplikaciju za deljenje"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Deli zvuk"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Prozor za deljenje aplikacije"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Kada delite, sadržaj ekrana je vidljiv"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Napravi snimak ekrana prozora aplikacije"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Snimi prozor aplikacije"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Napravi snimak ekrana izabrane oblasti"</string>
@@ -755,11 +752,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Vaše lične aplikacije su povezane na internet preko: <xliff:g id="VPN_APP">%1$s</xliff:g>. Vaša aktivnost na mreži, uključujući imejlove i podatke pregledanja, vidljiva je dobavljaču VPN-a."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Otvori podešavanja VPN-a"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"Ovim uređajem upravlja roditelj. Roditelj može da vidi informacije, kao što su aplikacije koje koristiš, tvoju lokaciju i vreme ispred ekrana, i da upravlja njima."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Neke kontrole na uređaju, poput dnevnih ograničenja i perioda za odmor, mogu da se promene samo pomoću PIN-a."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"Neke kontrole može da promeni samo roditelj"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Pouzdani agent sprečava zaključavanje"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Ekran je zaključan. Previše pokušaja potvrde identiteta."</string>
@@ -1151,8 +1146,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Ikona"</annotation>" Radnja + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je tasterska prečica za korišćenje funkcije pristupačnosti za <xliff:g id="ID_3">^3</xliff:g>. To vam omogućava da brzo zumirate ekran da bi sadržaj bio veći. Kada je uvećanje uključeno, pritisnite "<annotation id="action_key_icon">"ikonu"</annotation>" Radnja + <xliff:g id="ID_4">^1</xliff:g> i „+“ ili „–“ da biste prilagodili zumiranje."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Isključi prečicu"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ne isključuj"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Ikona"</annotation>" Radnja + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je tasterska prečica za korišćenje funkcije <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> je čitač ekrana koji vam omogućava da čujete naglas izgovorene nazive stavki. Može da bude koristan osobama koje slabo vide ekran. To može da promeni način rada uređaja."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kada pritisnete "<annotation id="action_key_icon">"ikonu"</annotation>" Radnja + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, uključuje se funkcija pristupačnosti za <xliff:g id="ID_3">^3</xliff:g>. Ovo vam omogućava da kontrolišete uređaj hendsfri."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaključan ekran"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Isključuje se…"</string>
