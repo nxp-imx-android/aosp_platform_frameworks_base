@@ -25,7 +25,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.UsbManager;
-import android.nfc.NfcAdapter;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -122,7 +121,7 @@ public class SecureLockDeviceSettingsManagerImpl implements SecureLockDeviceSett
     private final Map<String, ManagedSetting<?>> mManagedSettings = new HashMap<>();
     private final DevicePolicyRestrictionsController mDevicePolicyRestrictionsController =
             new DevicePolicyRestrictionsController();
-    private final NfcSettingController mNfcSettingController = new NfcSettingController();
+    private final NfcSettingController mNfcSettingController;
     private final UsbSettingController mUsbSettingController = new UsbSettingController();
     private final DisableFlagsController mDisableFlagsController;
     private final SecureSettingController mSecureSettingController;
@@ -138,6 +137,7 @@ public class SecureLockDeviceSettingsManagerImpl implements SecureLockDeviceSett
         mVoiceInteractionManagerService = voiceInteractionManagerService;
         mDisableFlagsController = new DisableFlagsController(context.getPackageName(),
                 statusBarService);
+        mNfcSettingController = new NfcSettingController(context);
         ContentResolver contentResolver = context.getContentResolver();
         mSecureSettingController = new SecureSettingController(context);
         mSystemSettingController = new SystemSettingController(context);
@@ -155,10 +155,9 @@ public class SecureLockDeviceSettingsManagerImpl implements SecureLockDeviceSett
 
     @Override
     public void initSettingsControllerDependencies(
-            @Nullable DevicePolicyManager devicePolicyManager, @Nullable NfcAdapter nfcAdapter,
-            @Nullable UsbManager usbManager, @Nullable IUsbManagerInternal usbManagerInternal) {
+            @Nullable DevicePolicyManager devicePolicyManager, @Nullable UsbManager usbManager,
+            @Nullable IUsbManagerInternal usbManagerInternal) {
         mDevicePolicyRestrictionsController.setDevicePolicyManager(devicePolicyManager);
-        mNfcSettingController.setNfcAdapter(nfcAdapter);
         mUsbSettingController.setUsbManager(usbManager);
         mUsbSettingController.setUsbManagerInternal(usbManagerInternal);
     }

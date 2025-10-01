@@ -16,6 +16,7 @@
 
 package com.android.server.security.authenticationpolicy.settings;
 
+import android.content.Context;
 import android.nfc.NfcAdapter;
 import android.util.Slog;
 
@@ -33,18 +34,27 @@ import java.io.IOException;
 class NfcSettingController implements SettingController<Boolean> {
     private static final String TAG = "NfcSettingController";
 
-    @Nullable
-    private NfcAdapter mNfcAdapter;
+    private final Context mContext;
     private boolean mSkipSecurityFeaturesForTest = false;
+
+    NfcSettingController(Context context) {
+        mContext = context;
+    }
+
+    @Nullable
+    private NfcAdapter getNfcAdapter() {
+        return NfcAdapter.getDefaultAdapter(mContext);
+    }
 
     @Override
     public void storeOriginalValue(@NonNull SettingState<Boolean> state, int userId)
             throws Exception {
-        if (mNfcAdapter == null) {
-            Slog.w(TAG, "NfcAdapter is null, cannot retrieve original value for NFC setting.");
-            return;
+        NfcAdapter nfcAdapter = getNfcAdapter();
+        if (nfcAdapter == null) {
+            Slog.w(TAG, "NFC adapter is not available, cannot store original value.");
+        } else {
+            state.setOriginalValue(nfcAdapter.isEnabled());
         }
-        state.setOriginalValue(mNfcAdapter.isEnabled());
     }
 
     @Override
@@ -53,26 +63,28 @@ class NfcSettingController implements SettingController<Boolean> {
         if (mSkipSecurityFeaturesForTest) {
             Slog.d(TAG, "Skipping NFC disable for test.");
             return;
-        } else if (mNfcAdapter == null) {
-            Slog.w(TAG, "NfcAdapter is null, cannot change NFC setting.");
-            return;
         }
-        mNfcAdapter.disable();
+        NfcAdapter nfcAdapter = getNfcAdapter();
+        if (nfcAdapter == null) {
+            Slog.w(TAG, "NFC adapter is not available, cannot apply secure lock device value.");
+        } else {
+            nfcAdapter.disable();
+        }
     }
 
     @Override
     public void restoreFromOriginalValue(@NonNull SettingState<Boolean> state, int userId)
             throws Exception {
-        if (mNfcAdapter == null) {
-            Slog.w(TAG, "NfcAdapter is null, cannot restore NFC setting");
-            return;
-        }
-
-        Boolean originalValue = state.getOriginalValue();
-        if (originalValue != null && originalValue) {
-            mNfcAdapter.enable();
+        NfcAdapter nfcAdapter = getNfcAdapter();
+        if (nfcAdapter == null) {
+            Slog.w(TAG, "NFC adapter is not available, cannot restore original value.");
         } else {
-            Slog.w(TAG, "NFC was disabled prior to secure lock device, leave unchanged.");
+            Boolean originalValue = state.getOriginalValue();
+            if (originalValue != null && originalValue) {
+                nfcAdapter.enable();
+            } else {
+                Slog.w(TAG, "NFC was disabled prior to secure lock device, leave unchanged.");
+            }
         }
     }
 
@@ -86,14 +98,6 @@ class NfcSettingController implements SettingController<Boolean> {
     public Boolean deserializeOriginalValue(@NonNull TypedXmlPullParser parser,
             @NonNull String settingKey) throws IOException, XmlPullParserException {
         return Boolean.parseBoolean(parser.nextText());
-    }
-
-    /**
-     * Sets the NfcAdapter for this controller.
-     * @param nfcAdapter The NfcAdapter to set.
-     */
-    void setNfcAdapter(@Nullable NfcAdapter nfcAdapter) {
-        mNfcAdapter = nfcAdapter;
     }
 
     /**
