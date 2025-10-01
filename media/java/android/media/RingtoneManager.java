@@ -16,6 +16,7 @@
 
 package android.media;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -803,11 +804,29 @@ public class RingtoneManager {
     }
 
     /**
+     * Returns a {@link Ringtone} for a given sound URI, VolumeShaper config, and provided audio
+     * attributes.
+     * <p>
+     * If the given URI cannot be opened for any reason, this method will
+     * attempt to fallback on another sound. If it cannot find any, it will
+     * return null.
+     *
+     * @param context A context used to query.
+     * @param ringtoneUri The {@link Uri} of a sound or ringtone.
+     * @param volumeShaperConfig The {@link VolumeShaper.Configuration} containing curve/duration
+     *                           info used in controlling audio volume for media playback.
+     * @param audioAttributes The {@link AudioAttributes} that contain info regarding an audio
+     *                        stream.
+     * @return A {@link Ringtone} for the provided params, or null if there's an issue loading the
+     * {@link Uri} and there are fallback options available.
      * @hide
      */
-    public static Ringtone getRingtone(final Context context, Uri ringtoneUri,
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @SystemApi
+    public static @Nullable Ringtone getRingtone(@NonNull final Context context,
+            @NonNull Uri ringtoneUri,
             @Nullable VolumeShaper.Configuration volumeShaperConfig,
-            AudioAttributes audioAttributes) {
+            @NonNull AudioAttributes audioAttributes) {
         // Don't set the stream type
         Ringtone ringtone = getRingtone(context, ringtoneUri, -1 /* streamType */,
                 volumeShaperConfig, false);
