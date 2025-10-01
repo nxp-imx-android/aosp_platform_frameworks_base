@@ -18,6 +18,7 @@ package com.android.systemui.qs.tiles.impl.hearingdevices.domain.interactor
 
 import android.bluetooth.BluetoothProfile
 import android.os.UserHandle
+import com.android.app.tracing.TraceUtils
 import com.android.systemui.accessibility.hearingaid.HearingDevicesChecker
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
@@ -66,8 +67,18 @@ constructor(
             .flowOn(backgroundContext)
             .distinctUntilChanged()
 
-    override fun availability(user: UserHandle): Flow<Boolean> =
-        flow { emit(isHearingDeviceRelatedProfileSupported()) }.flowOn(backgroundContext)
+    override fun availability(user: UserHandle) =
+        flow {
+                emit(
+                    TraceUtils.traceAsync(
+                        "HearingDevicesTileDataInteractor",
+                        "isHearingDeviceRelatedProfileSupported",
+                    ) {
+                        isHearingDeviceRelatedProfileSupported()
+                    }
+                )
+            }
+            .flowOn(backgroundContext)
 
     private suspend fun isHearingDeviceRelatedProfileSupported(): Boolean {
         withContext(backgroundContext) {
