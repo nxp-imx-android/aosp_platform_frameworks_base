@@ -54,7 +54,7 @@ import java.util.List;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
-public class ComputerControlAccessManagerTest {
+public class ComputerControlUserAccessControllerTest {
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
@@ -65,14 +65,14 @@ public class ComputerControlAccessManagerTest {
                             InstrumentationRegistry.getInstrumentation().getTargetContext()));
     private final List<UserHandle> mAllUsers = new ArrayList<>();
 
-    private ComputerControlAccessManager mAccessManager;
+    private ComputerControlUserAccessController mUserAccessController;
 
     @Before
     public void setUp() {
         when(mContext.getSystemService(UserManager.class)).thenReturn(mUserManager);
         when(mUserManager.getAllProfiles()).thenReturn(mAllUsers);
 
-        mAccessManager = new ComputerControlAccessManager(mContext);
+        mUserAccessController = new ComputerControlUserAccessController(mContext);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ComputerControlAccessManagerTest {
         UserHandle anotherUser = createUser(USER_TYPE_FULL_SECONDARY);
         /* anotherUserClone= */ createUser(USER_TYPE_PROFILE_CLONE, anotherUser);
 
-        assertThat(mAccessManager.validateAndGetAllowedUsers(attributionSource(callingUser)))
+        assertThat(mUserAccessController.validateAndGetAllowedUsers(attributionSource(callingUser)))
                 .containsExactly(callingUser, callingUserCloneChild, callingUserCloneGrandchild);
     }
 
@@ -105,7 +105,7 @@ public class ComputerControlAccessManagerTest {
         UserHandle anotherUser = createUser(USER_TYPE_FULL_SECONDARY);
         /* anotherUserClone= */ createUser(USER_TYPE_PROFILE_CLONE, anotherUser);
 
-        assertThat(mAccessManager.validateAndGetAllowedUsers(attributionSource(callingUser)))
+        assertThat(mUserAccessController.validateAndGetAllowedUsers(attributionSource(callingUser)))
                 .containsExactly(
                         callingUser, callingUserParent, callingUserClone, callingUserCloneSibling);
     }
@@ -120,7 +120,7 @@ public class ComputerControlAccessManagerTest {
         UserHandle callingUser = createUser(USER_TYPE_FULL_SECONDARY, callingUserParent);
         UserHandle callingUserClone = createUser(USER_TYPE_PROFILE_CLONE, callingUser);
 
-        assertThat(mAccessManager.validateAndGetAllowedUsers(attributionSource(callingUser)))
+        assertThat(mUserAccessController.validateAndGetAllowedUsers(attributionSource(callingUser)))
                 .containsExactly(callingUser, callingUserClone);
     }
 
@@ -131,7 +131,9 @@ public class ComputerControlAccessManagerTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> mAccessManager.validateAndGetAllowedUsers(attributionSource(callingUser)));
+                () ->
+                        mUserAccessController.validateAndGetAllowedUsers(
+                                attributionSource(callingUser)));
     }
 
     @Test
@@ -142,7 +144,9 @@ public class ComputerControlAccessManagerTest {
 
         assertThrows(
                 SecurityException.class,
-                () -> mAccessManager.validateAndGetAllowedUsers(attributionSource(callingUser)));
+                () ->
+                        mUserAccessController.validateAndGetAllowedUsers(
+                                attributionSource(callingUser)));
     }
 
     @Test
@@ -150,7 +154,7 @@ public class ComputerControlAccessManagerTest {
     public void validateAndGetAllowedUsers_flagDisabledNormalUser_returnsEmpty() {
         UserHandle callingUser = createUser(USER_TYPE_FULL_SECONDARY);
 
-        assertThat(mAccessManager.validateAndGetAllowedUsers(attributionSource(callingUser)))
+        assertThat(mUserAccessController.validateAndGetAllowedUsers(attributionSource(callingUser)))
                 .isEmpty();
     }
 
@@ -159,7 +163,7 @@ public class ComputerControlAccessManagerTest {
     public void validateAndGetAllowedUsers_flagDisabledManagedUser_doesNotThrow() {
         UserHandle callingUser = createUser(USER_TYPE_PROFILE_MANAGED);
 
-        assertThat(mAccessManager.validateAndGetAllowedUsers(attributionSource(callingUser)))
+        assertThat(mUserAccessController.validateAndGetAllowedUsers(attributionSource(callingUser)))
                 .isEmpty();
     }
 

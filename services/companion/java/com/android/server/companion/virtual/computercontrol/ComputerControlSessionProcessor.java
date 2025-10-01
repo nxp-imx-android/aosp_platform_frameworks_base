@@ -75,7 +75,7 @@ public class ComputerControlSessionProcessor {
     private final KeyguardManager mKeyguardManager;
     private final AppOpsManager mAppOpsManager;
     private final PackageManager mPackageManager;
-    private final ComputerControlAccessManager mAccessManager;
+    private final ComputerControlUserAccessController mUserAccessController;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
 
@@ -102,7 +102,7 @@ public class ComputerControlSessionProcessor {
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mPackageManager = context.getPackageManager();
-        mAccessManager = new ComputerControlAccessManager(context);
+        mUserAccessController = new ComputerControlUserAccessController(context);
     }
 
     /**
@@ -117,7 +117,8 @@ public class ComputerControlSessionProcessor {
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
         validateParams(attributionSource, params);
-        Set<UserHandle> allowedUsers = mAccessManager.validateAndGetAllowedUsers(attributionSource);
+        Set<UserHandle> allowedUsers =
+                mUserAccessController.validateAndGetAllowedUsers(attributionSource);
         startHandlerThreadIfNeeded();
 
         final boolean canCreateWithoutConsent;
