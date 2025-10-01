@@ -519,7 +519,7 @@ public class DesktopModeVisualIndicator {
      *
      * <p>Split-screen is always allowed on the default display. For non-default (external)
      * displays, it is only allowed if the
-     * {@link DesktopExperienceFlags#ENABLE_NON_DEFAULT_DISPLAY_SPLIT} flag is enabled.
+     * {@link DesktopExperienceFlags#ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX} flag is enabled.
      *
      * @return {@code true} if split-screen is allowed on the task's current display,
      *         {@code false} otherwise.
@@ -527,7 +527,7 @@ public class DesktopModeVisualIndicator {
     private boolean isSplitAllowedOnDisplay() {
         if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
             return mTaskInfo.displayId == DEFAULT_DISPLAY
-                    || DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue();
+                    || DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue();
         }
         return true;
     }
