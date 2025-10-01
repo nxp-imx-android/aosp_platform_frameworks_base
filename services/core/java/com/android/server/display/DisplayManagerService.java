@@ -1507,24 +1507,31 @@ public final class DisplayManagerService extends SystemService {
         DisplayInfo overriddenInfo = new DisplayInfo();
         overriddenInfo.copyFrom(info);
 
-        // If there is a mode that matches the override, use that one
-        for (Display.Mode mode : info.supportedModes) {
-            if (!mode.equalsExceptRefreshRate(currentMode)) {
-                continue;
-            }
-
-            if (mode.getRefreshRate() >= frameRateHz - THRESHOLD_FOR_REFRESH_RATES_DIVISORS
-                    && mode.getRefreshRate()
-                    <= frameRateHz + THRESHOLD_FOR_REFRESH_RATES_DIVISORS) {
-                if (DEBUG) {
-                    Slog.d(TAG, "found matching modeId " + mode.getModeId());
+        // If there is a mode that matches the override, use that one.
+        // On ARR devices, this logic is not needed as the mode doesn't change based
+        // on refresh rate override.
+        boolean skipMatchingModeSearch =
+                com.android.graphics.surfaceflinger.flags.Flags.supportedRefreshRateUpdate()
+                        && info.hasArrSupport;
+        if (!skipMatchingModeSearch) {
+            for (Display.Mode mode : info.supportedModes) {
+                if (!mode.equalsExceptRefreshRate(currentMode)) {
+                    continue;
                 }
-                overriddenInfo.refreshRateOverride = mode.getRefreshRate();
 
-                if (!displayModeReturnsPhysicalRefreshRate) {
-                    overriddenInfo.modeId = mode.getModeId();
+                if (mode.getRefreshRate() >= frameRateHz - THRESHOLD_FOR_REFRESH_RATES_DIVISORS
+                        && mode.getRefreshRate()
+                        <= frameRateHz + THRESHOLD_FOR_REFRESH_RATES_DIVISORS) {
+                    if (DEBUG) {
+                        Slog.d(TAG, "found matching modeId " + mode.getModeId());
+                    }
+                    overriddenInfo.refreshRateOverride = mode.getRefreshRate();
+
+                    if (!displayModeReturnsPhysicalRefreshRate) {
+                        overriddenInfo.modeId = mode.getModeId();
+                    }
+                    return overriddenInfo;
                 }
-                return overriddenInfo;
             }
         }
         overriddenInfo.refreshRateOverride = frameRateHz;
