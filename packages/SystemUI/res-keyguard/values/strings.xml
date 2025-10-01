@@ -102,6 +102,10 @@
     <string name="keyguard_accessibility_sim_pin_area">SIM PIN area</string>
     <!-- Accessibility description of the SIM PUK password view. [CHAR_LIMIT=none] -->
     <string name="keyguard_accessibility_sim_puk_area">SIM PUK area</string>
+    <!-- Accessibility description for long-click action on the delete button of the PIN security bouncer [CHAR_LIMIT=none] -->
+    <string name="keyguard_accessibility_pin_delete_long_click">Double-tap and hold to long press to delete all</string>
+    <!-- Accessibility description for long-click action on the delete button of the PIN security bouncer, without the initiating action mentioned [CHAR_LIMIT=none] -->
+    <string name="keyguard_accessibility_pin_delete_long_click_partial">long press to delete all</string>
 
     <!-- KeyguardPinView - accessibility support --><skip />
     <!-- Description of the Delete button in a KeyboardView. [CHAR LIMIT=NONE] -->
