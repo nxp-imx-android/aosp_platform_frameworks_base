@@ -42,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCaptureUiComponent
@@ -120,6 +121,7 @@ constructor(
         }
         // Wait until parameters are passed down to Compose
         val parameters = parametersState ?: return
+        val isLargeScreen = viewModel.isLargeScreen ?: false
 
         if (!visibleState.targetState && visibleState.isIdle) {
             SideEffect { dialog.dismissWithoutAnimation() }
@@ -138,13 +140,16 @@ constructor(
                 }
             Box(
                 modifier =
-                    Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
-                        .clickable(
+                    Modifier.windowInsetsPadding(WindowInsets.safeDrawing).focusable().thenIf(
+                        !isLargeScreen
+                    ) {
+                        // On small screens, follow the design pattern of a dialog
+                        Modifier.clickable(
                             onClick = { hide() },
                             indication = null,
                             interactionSource = null,
                         )
-                        .focusable()
+                    }
             ) {
                 component.screenCaptureContent.Content()
             }
