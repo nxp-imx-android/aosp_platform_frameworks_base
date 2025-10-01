@@ -98,7 +98,6 @@ import static android.media.AudioAttributes.USAGE_MEDIA;
 import static android.media.AudioAttributes.USAGE_NOTIFICATION;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
-import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.PowerManager.PARTIAL_WAKE_LOCK;
 import static android.os.PowerWhitelistManager.REASON_NOTIFICATION_SERVICE;
 import static android.os.PowerWhitelistManager.TEMPORARY_ALLOWLIST_TYPE_FOREGROUND_SERVICE_ALLOWED;
@@ -7480,8 +7479,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testReadPolicyXml_doesNotRestoreManagedServicesForPrivateUser() throws Exception {
-        mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         final String policyXml = "<notification-policy version=\"1\">"
                 + "<ranking></ranking>"
                 + "<enabled_listeners>"
@@ -17642,19 +17639,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     public void testProfileUnavailableIntent() throws RemoteException {
-        mSetFlagsRule.enableFlags(FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         simulateProfileAvailabilityActions(Intent.ACTION_PROFILE_UNAVAILABLE);
-        verify(mWorkerHandler).post(any(Runnable.class));
-        verify(mSnoozeHelper).clearData(anyInt());
-    }
-
-
-    @Test
-    public void testManagedProfileUnavailableIntent() throws RemoteException {
-        mSetFlagsRule.disableFlags(FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
-        simulateProfileAvailabilityActions(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
         verify(mWorkerHandler).post(any(Runnable.class));
         verify(mSnoozeHelper).clearData(anyInt());
     }
