@@ -19600,6 +19600,26 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
+        public void onOomAdjUpdated(int adjSeq) {
+            if (mAlwaysFinishActivities) {
+                // Need to do this on its own message because the stack may not
+                // be in a consistent state at this point.
+                mAtmInternal.scheduleDestroyAllActivities("always-finish");
+            }
+
+            synchronized (mProcessStats.mLock) {
+                final long nowUptime = SystemClock.uptimeMillis();
+                if (mProcessStats.shouldWriteNowLocked(nowUptime)) {
+                    mHandler.post(new ActivityManagerService.ProcStatsRunnable(
+                            ActivityManagerService.this, mProcessStats));
+                }
+
+                // Run this after making sure all procstates are updated.
+                mProcessStats.updateTrackingAssociationsLocked(adjSeq, nowUptime);
+            }
+        }
+
+        @Override
         public void onProcessBackgroundRestricted(ProcessRecordInternal app) {
             mHandler.post(() -> {
                 synchronized (ActivityManagerService.this) {

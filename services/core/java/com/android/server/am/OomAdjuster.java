@@ -435,6 +435,14 @@ public abstract class OomAdjuster {
         void onUidLastBackgroundTimeUpdated(UidRecordInternal uidRec, long nowElapsed,
                 OomAdjusterDebugLogger logger);
 
+        /**
+         * Notifies after the OOM adjustment values for all processes have been updated.
+         *
+         * @param adjSeq The sequence number of the adjustment pass that has been completed.
+         *               See {@link OomAdjuster#mAdjSeq}.
+         */
+        void onOomAdjUpdated(int adjSeq);
+
         /** Notifies when a process becomes effectively background restricted. */
         void onProcessBackgroundRestricted(ProcessRecordInternal app);
 
@@ -953,24 +961,9 @@ public abstract class OomAdjuster {
         updateAndTrimProcessLSP(now, nowElapsed, oldTime, oomAdjReason, doingAll);
         mNumServiceProcs = mNewNumServiceProcs;
 
-        if (mService.mAlwaysFinishActivities) {
-            // Need to do this on its own message because the stack may not
-            // be in a consistent state at this point.
-            mService.mAtmInternal.scheduleDestroyAllActivities("always-finish");
-        }
-
         updateUidsLSP(activeUids, nowElapsed);
 
-        synchronized (mService.mProcessStats.mLock) {
-            final long nowUptime = mInjector.getUptimeMillis();
-            if (mService.mProcessStats.shouldWriteNowLocked(nowUptime)) {
-                mService.mHandler.post(new ActivityManagerService.ProcStatsRunnable(mService,
-                        mService.mProcessStats));
-            }
-
-            // Run this after making sure all procstates are updated.
-            mService.mProcessStats.updateTrackingAssociationsLocked(mAdjSeq, nowUptime);
-        }
+        mCallback.onOomAdjUpdated(mAdjSeq);
 
         if (DEBUG_OOM_ADJ) {
             final long duration = mInjector.getUptimeMillis() - now;
