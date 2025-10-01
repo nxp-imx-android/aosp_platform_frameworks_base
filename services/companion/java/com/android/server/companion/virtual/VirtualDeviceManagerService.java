@@ -198,12 +198,7 @@ public class VirtualDeviceManagerService extends SystemService {
         mNativeImpl = new VirtualDeviceManagerNativeImpl();
         mLocalService = new LocalService();
         mComputerControlSessionProcessor =
-                new ComputerControlSessionProcessor(context,
-                        (token, attributionSource, params, activityListener) ->
-                                new VirtualDeviceManager.VirtualDevice(context,
-                                        mImpl.createLocalVirtualDevice(
-                                                token, attributionSource, params,
-                                                activityListener)));
+                new ComputerControlSessionProcessor(context, mImpl::createLocalVirtualDevice);
         mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
     }
 

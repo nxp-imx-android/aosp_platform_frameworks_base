@@ -22,8 +22,6 @@ android_test {
     name: "FrameworksServicesTests",
     defaults: [
         "FrameworksServicesTests-jni-defaults",
-        // For ExtendedMockito dependencies.
-        "modules-utils-testable-device-config-defaults",
     ],
 
     // Include all test java files.
@@ -66,7 +64,7 @@ android_test {
         "junit",
         "junit-params",
         "mockito-kotlin2",
-        "mockito-target-extended-minus-junit4",
+        "mockito-target-minus-junit4",
         "net-tests-utils",
         "net_flags_lib",
         "platform-compat-test-rules",
@@ -91,7 +89,7 @@ android_test {
         "services.people",
         "services.supervision",
         "services.usage",
-        "servicestests-utils-mockito-extended",
+        "servicestests-utils",
         "testables",
         // TODO: remove once Android migrates to JUnit 4.12,
         // which provides assertThrows

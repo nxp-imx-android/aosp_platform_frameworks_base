@@ -36,10 +36,7 @@ import static org.testng.Assert.assertTrue;
 import android.app.Activity;
 import android.app.AppOpsManager;
 import android.app.KeyguardManager;
-import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
-import android.companion.virtual.audio.AudioCapture;
-import android.companion.virtual.audio.AudioInjection;
-import android.companion.virtual.audio.VirtualAudioDevice;
+import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
@@ -51,7 +48,6 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
-import android.hardware.display.VirtualDisplay;
 import android.os.Binder;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
@@ -59,7 +55,6 @@ import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -88,8 +83,6 @@ public class ComputerControlSessionProcessorTest {
     private static final String PACKAGE_NAME_PERMISSION_CONTROLLER = "permission.controller";
     private static final String TARGET_PACKAGE = "com.android.foo";
     private static final int CALLING_USER_ID = UserHandle.USER_SYSTEM;
-    private static final int VIRTUAL_DISPLAY_ID = 123;
-
     private static final AttributionSource ATTRIBUTION_SOURCE = new AttributionSource(
             UserHandle.getUid(CALLING_USER_ID, 0), "com.package", "tag");
     private static final ComputerControlSessionParams PARAMS =
@@ -117,17 +110,7 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private ComputerControlSessionProcessor.PendingIntentFactory mPendingIntentFactory;
     @Mock
-    private VirtualDevice mVirtualDevice;
-    @Mock
-    private VirtualDisplay mVirtualDisplay;
-    @Mock
-    private Display mDisplay;
-    @Mock
-    private VirtualAudioDevice mVirtualAudioDevice;
-    @Mock
-    private AudioInjection mAudioInjection;
-    @Mock
-    private AudioCapture mAudioCapture;
+    private IVirtualDevice mVirtualDevice;
     @Mock
     private IComputerControlSessionCallback mComputerControlSessionCallback;
     @Captor
@@ -170,15 +153,6 @@ public class ComputerControlSessionProcessorTest {
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
-
-        when(mVirtualDevice.createVirtualDisplay(any(), any(), any())).thenReturn(mVirtualDisplay);
-        when(mVirtualDisplay.getDisplay()).thenReturn(mDisplay);
-        when(mDisplay.getDisplayId()).thenReturn(VIRTUAL_DISPLAY_ID);
-
-        when(mVirtualDevice.createVirtualAudioDevice(any(), any(), any())).thenReturn(
-                mVirtualAudioDevice);
-        when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
-        when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
         mProcessor = new ComputerControlSessionProcessor(
                 context, mVirtualDeviceFactory, mPendingIntentFactory);
@@ -251,8 +225,7 @@ public class ComputerControlSessionProcessorTest {
                 Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
         resultReceiver.send(Activity.RESULT_OK, null);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
-        mSessionArgumentCaptor.getValue().close();
+                .onSessionCreated(anyInt(), any(), any());
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_CONSENT)
@@ -278,11 +251,10 @@ public class ComputerControlSessionProcessorTest {
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), any(), any());
         assertThrows(IllegalArgumentException.class,
                 () -> mProcessor.processNewSessionRequest(
                         ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
-        mSessionArgumentCaptor.getValue().close();
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
@@ -292,8 +264,7 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
-        mSessionArgumentCaptor.getValue().close();
+                .onSessionCreated(anyInt(), any(), any());
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
@@ -348,16 +319,17 @@ public class ComputerControlSessionProcessorTest {
     @Test
     public void isComputerControlDisplay_returnsTrueForDisplaysWithActiveSession()
             throws Exception {
+        when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(123);
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback,
                 timeout(CALLBACK_TIMEOUT_MS).times(1))
                 .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
 
-        assertTrue(mProcessor.isComputerControlDisplay(VIRTUAL_DISPLAY_ID));
+        assertTrue(mProcessor.isComputerControlDisplay(123));
 
         mSessionArgumentCaptor.getValue().close();
-        assertFalse(mProcessor.isComputerControlDisplay(VIRTUAL_DISPLAY_ID));
+        assertFalse(mProcessor.isComputerControlDisplay(123));
     }
 
     private ComputerControlSessionParams validParams() {

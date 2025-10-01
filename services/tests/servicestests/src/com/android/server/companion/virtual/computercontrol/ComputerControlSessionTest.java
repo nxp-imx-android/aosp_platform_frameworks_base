@@ -23,11 +23,11 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.LONG_PRESS_TIMEOUT_MULTIPLIER;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.SWIPE_STEPS;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.TOUCH_EVENT_DELAY_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_DPAD;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_KEYBOARD;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_TOUCHSCREEN;
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.SWIPE_STEPS;
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.TOUCH_EVENT_DELAY_MS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -46,11 +46,8 @@ import static org.testng.Assert.assertThrows;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
-import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
+import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
-import android.companion.virtual.audio.AudioCapture;
-import android.companion.virtual.audio.AudioInjection;
-import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
@@ -66,15 +63,12 @@ import android.gui.DropInputMode;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
-import android.hardware.display.VirtualDisplay;
 import android.hardware.display.VirtualDisplayConfig;
-import android.hardware.input.VirtualDpad;
+import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyEvent;
-import android.hardware.input.VirtualKeyboard;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchEvent;
-import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.Bundle;
@@ -85,7 +79,6 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.KeyEvent;
 import android.view.SurfaceControl;
@@ -167,25 +160,15 @@ public class ComputerControlSessionTest {
     @Mock
     private ComputerControlSessionImpl.OnClosedListener mOnClosedListener;
     @Mock
-    private VirtualDevice mVirtualDevice;
-    @Mock
-    private VirtualDisplay mVirtualDisplay;
-    @Mock
-    private Display mDisplay;
+    private IVirtualDevice mVirtualDevice;
     @Mock
     private IRemoteComputerControlInputConnection mRemoteComputerControlInputConnection;
     @Mock
-    private VirtualDpad mVirtualDpad;
+    private IVirtualInputDevice mVirtualDpad;
     @Mock
-    private VirtualKeyboard mVirtualKeyboard;
+    private IVirtualInputDevice mVirtualKeyboard;
     @Mock
-    private VirtualTouchscreen mVirtualTouchscreen;
-    @Mock
-    private VirtualAudioDevice mVirtualAudioDevice;
-    @Mock
-    private AudioInjection mAudioInjection;
-    @Mock
-    private AudioCapture mAudioCapture;
+    private IVirtualInputDevice mVirtualTouchscreen;
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
     @Captor
@@ -244,27 +227,15 @@ public class ComputerControlSessionTest {
                 .thenReturn(PERMISSION_CONTROLLER_PACKAGE);
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
                 .thenReturn(mVirtualDevice);
-
-        when(mVirtualDevice.createVirtualDisplay(any(), any(), any())).thenReturn(mVirtualDisplay);
-        when(mVirtualDisplay.getDisplay()).thenReturn(mDisplay);
-        when(mDisplay.getDisplayId()).thenReturn(VIRTUAL_DISPLAY_ID);
-
-        when(mVirtualDevice.createVirtualTouchscreen(any())).thenReturn(mVirtualTouchscreen);
-        when(mVirtualDevice.createVirtualKeyboard(any())).thenReturn(mVirtualKeyboard);
-        when(mVirtualDevice.createVirtualDpad(any())).thenReturn(mVirtualDpad);
+        when(mVirtualDevice.createVirtualDisplay(any(), any())).thenReturn(VIRTUAL_DISPLAY_ID);
+        when(mVirtualDevice.createVirtualTouchscreen(any(), any())).thenReturn(mVirtualTouchscreen);
+        when(mVirtualDevice.createVirtualKeyboard(any(), any())).thenReturn(mVirtualKeyboard);
+        when(mVirtualDevice.createVirtualDpad(any(), any())).thenReturn(mVirtualDpad);
         when(mViewConfiguration.getLongPressTimeoutMillis()).thenReturn(1000);
-        when(mVirtualDevice.createVirtualAudioDevice(any(), any(), any())).thenReturn(
-                mVirtualAudioDevice);
-        when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
-        when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
     }
 
     @After
     public void tearDown() throws Exception {
-        if (mSession != null) {
-            mSession.close();
-            mSession = null;
-        }
         mMockitoSession.close();
     }
 
@@ -283,7 +254,7 @@ public class ComputerControlSessionTest {
                 .getAllowedUsers()).isEqualTo(ALLOWED_USERS);
 
         verify(mVirtualDevice).createVirtualDisplay(
-                mVirtualDisplayConfigArgumentCaptor.capture(), any(), any());
+                mVirtualDisplayConfigArgumentCaptor.capture(), any());
         VirtualDisplayConfig virtualDisplayConfig = mVirtualDisplayConfigArgumentCaptor.getValue();
         assertThat(virtualDisplayConfig.getName()).contains(mDefaultParams.getName());
 
@@ -300,14 +271,15 @@ public class ComputerControlSessionTest {
         verify(mVirtualDevice).setDisplayImePolicy(
                 VIRTUAL_DISPLAY_ID, WindowManager.DISPLAY_IME_POLICY_HIDE);
 
-        verify(mVirtualDevice).createVirtualDpad(mVirtualDpadConfigArgumentCaptor.capture());
+        verify(mVirtualDevice).createVirtualDpad(
+                mVirtualDpadConfigArgumentCaptor.capture(), any());
         VirtualDpadConfig virtualDpadConfig = mVirtualDpadConfigArgumentCaptor.getValue();
         assertThat(virtualDpadConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
         assertThat(virtualDpadConfig.getInputDeviceName()).contains(mDefaultParams.getName());
         assertThat(virtualDpadConfig.getProductId()).isEqualTo(PRODUCT_ID_DPAD);
 
         verify(mVirtualDevice).createVirtualKeyboard(
-                mVirtualKeyboardConfigArgumentCaptor.capture());
+                mVirtualKeyboardConfigArgumentCaptor.capture(), any());
         VirtualKeyboardConfig virtualKeyboardConfig =
                 mVirtualKeyboardConfigArgumentCaptor.getValue();
         assertThat(virtualKeyboardConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
@@ -315,7 +287,7 @@ public class ComputerControlSessionTest {
         assertThat(virtualKeyboardConfig.getProductId()).isEqualTo(PRODUCT_ID_KEYBOARD);
 
         verify(mVirtualDevice).createVirtualTouchscreen(
-                mVirtualTouchscreenConfigArgumentCaptor.capture());
+                mVirtualTouchscreenConfigArgumentCaptor.capture(), any());
         VirtualTouchscreenConfig virtualTouchscreenConfig =
                 mVirtualTouchscreenConfigArgumentCaptor.getValue();
         assertThat(virtualTouchscreenConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
