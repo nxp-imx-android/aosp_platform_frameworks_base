@@ -32,6 +32,7 @@ import static android.service.notification.NotificationListenerService.HINT_HOST
 import android.Manifest.permission;
 import android.annotation.IntDef;
 import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -166,6 +167,7 @@ public final class NotificationAttentionHelper {
     private AudioManager mAudioManager;
     private final NotificationUsageStats mUsageStats;
     private final ZenModeHelper mZenModeHelper;
+    private final ActivityTaskManager mActivityTaskManager;
 
     private VibratorHelper mVibratorHelper;
     private VibrationStatsWriter mVibrationStatsWriter;
@@ -224,6 +226,7 @@ public final class NotificationAttentionHelper {
         mUsageStats = usageStats;
         mZenModeHelper = zenModeHelper;
         mFlagResolver = flagResolver;
+        mActivityTaskManager = context.getSystemService(ActivityTaskManager.class);
 
         mVibratorHelper = new VibratorHelper(context);
         mVibrationStatsWriter = vibrationStatsWriter;
@@ -462,8 +465,7 @@ public final class NotificationAttentionHelper {
                 && record.getImportance() > IMPORTANCE_MIN
                 && !suppressedByDnd
                 && isNotificationForCurrentUser(record, signals)) {
-            sendAccessibilityEvent(record);
-            sentAccessibilityEvent = true;
+            sentAccessibilityEvent = sendAccessibilityEvent(record);
         }
 
         if (aboveThreshold && isNotificationForCurrentUser(record, signals)) {
@@ -489,8 +491,7 @@ public final class NotificationAttentionHelper {
                 shouldMuteReason = shouldMuteNotificationLocked(record, signals, hasAudibleAlert);
                 if (shouldMuteReason == MUTE_REASON_NOT_MUTED) {
                     if (!sentAccessibilityEvent) {
-                        sendAccessibilityEvent(record);
-                        sentAccessibilityEvent = true;
+                        sentAccessibilityEvent = sendAccessibilityEvent(record);
                     }
                     if (DEBUG) Slog.v(TAG, "Interrupting!");
                     boolean isInsistentUpdate = isInsistentUpdate(record);
@@ -1123,9 +1124,10 @@ public final class NotificationAttentionHelper {
         return UserHandle.USER_NULL;
     }
 
-    void sendAccessibilityEvent(NotificationRecord record) {
-        if (!mAccessibilityManager.isEnabled() || !mEnableNotificationAccessibilityEvents) {
-            return;
+    boolean sendAccessibilityEvent(NotificationRecord record) {
+        if (!mAccessibilityManager.isEnabled() || !mEnableNotificationAccessibilityEvents
+                || (mActivityTaskManager != null && mActivityTaskManager.isInLockTaskMode())) {
+            return false;
         }
 
         final Notification notification = record.getNotification();
@@ -1152,6 +1154,7 @@ public final class NotificationAttentionHelper {
         }
 
         mAccessibilityManager.sendAccessibilityEvent(event);
+        return true;
     }
 
     /**
