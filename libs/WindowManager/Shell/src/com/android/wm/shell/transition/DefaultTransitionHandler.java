@@ -392,7 +392,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         // within the transition to interact with, so a background is unnecessary.
         final boolean allowBackground =
                 !com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange()
-                        || info.getChanges().size() > 1;
+                        || (info.getChanges().size() > 1
+                        && (wallpaperTransit != WALLPAPER_TRANSITION_INTRA_OPEN
+                        && wallpaperTransit != WALLPAPER_TRANSITION_INTRA_CLOSE));
 
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
