@@ -4812,7 +4812,6 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
         public boolean appCanBePromoted(String pkg, int uid) {
             checkCallerIsSystemOrSystemUiOrShell();
             return checkPostPromotedNotificationPermission(
@@ -4820,7 +4819,6 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
         public boolean canBePromoted(String callingPkg) {
             checkCallerIsSameApp(callingPkg);
             return checkPostPromotedNotificationPermission(
@@ -4836,7 +4834,6 @@ public class NotificationManagerService extends SystemService {
          *
          */
         @Override
-        @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
         public void setCanBePromoted(
                 String pkg, int uid, boolean promote, boolean fromUser) {
             // Only the OS is allowed to change this permission
