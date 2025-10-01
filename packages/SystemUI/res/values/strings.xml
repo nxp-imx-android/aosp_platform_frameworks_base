@@ -848,6 +848,9 @@
     <!-- Content description of the clear button in the notification panel for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_clear_all">Clear all notifications.</string>
 
+    <!-- Accessibility text describing the notification bell. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_notification_bell">Notifications</string>
+
     <!-- The overflow indicator shown when a group has more notification inside the group than the visible ones. An example is "+ 3" [CHAR LIMIT=5] -->
     <string name="notification_group_overflow_indicator">+ <xliff:g id="number" example="3">%s</xliff:g></string>
 

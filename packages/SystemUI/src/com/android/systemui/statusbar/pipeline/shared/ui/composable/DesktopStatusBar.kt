@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.systemui.clock.ui.composable.ClockLegacy
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
@@ -185,9 +187,14 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
                         tint.copy(alpha = ChipHighlightModel.Companion.Alpha.TRANSPARENT_RIPPLE)
                 else -> chipHighlightModel.hoverBackgroundColor to chipHighlightModel.rippleColor
             }
+        val contentDescription =
+            LocalContext.current.getString(R.string.accessibility_notification_bell)
 
         ShadeHighlightChip(
-            modifier = modifier.height(DesktopStatusBar.Dimensions.ChipHeight),
+            modifier =
+                modifier.height(DesktopStatusBar.Dimensions.ChipHeight).semantics {
+                    this.contentDescription = contentDescription
+                },
             onClick = { viewModel.onNotificationIconChipClicked() },
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,
