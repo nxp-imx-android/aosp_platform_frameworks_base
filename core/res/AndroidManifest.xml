@@ -7045,6 +7045,14 @@
     <permission android:name="android.permission.MEDIA_CONTENT_CONTROL"
         android:protectionLevel="signature|privileged" />
 
+    <!-- Allows an application to override the owner of a MediaSession.
+         <p> Not for use by third-party applications due to privacy of media applications.<p>
+         @FlaggedApi(com.android.media.mediasession.flags.Flags.FLAG_OVERRIDE_MEDIA_SESSION_OWNER)
+         -->
+    <permission android:name="android.permission.OVERRIDE_MEDIA_SESSION_OWNER"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="com.android.media.mediasession.flags.override_media_session_owner"/>
+
     <!-- Allows an application to control the routing of media apps.
          <p>Only for use by role COMPANION_DEVICE_WATCH</p>
          @FlaggedApi("com.android.media.flags.enable_privileged_routing_for_media_routing_control")

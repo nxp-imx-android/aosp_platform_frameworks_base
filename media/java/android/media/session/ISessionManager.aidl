@@ -36,8 +36,10 @@ import android.view.KeyEvent;
  * @hide
  */
 interface ISessionManager {
-    ISession createSession(String packageName, in ISessionCallback sessionCb, String tag,
-            in Bundle sessionInfo, int userId);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+                + "android.Manifest.permission.OVERRIDE_MEDIA_SESSION_OWNER, conditional = true)")
+    ISession createSession(String packageName, String overridePackageName,
+            in ISessionCallback sessionCb, String tag, in Bundle sessionInfo, int userId);
     List<MediaSession.Token> getSessions(in ComponentName compName, int userId);
     MediaSession.Token getMediaKeyEventSession(String packageName);
     String getMediaKeyEventSessionPackageName(String packageName);

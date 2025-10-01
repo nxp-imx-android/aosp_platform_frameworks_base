@@ -970,6 +970,18 @@ public class MediaSessionService extends SystemService implements Monitor {
         return false;
     }
 
+    private boolean hasPermissionToRegisterSessionForOthers(int pid, int uid) {
+        if (uid == Process.SYSTEM_UID
+                || mContext.checkPermission(
+                                android.Manifest.permission.OVERRIDE_MEDIA_SESSION_OWNER, pid, uid)
+                        == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else if (DEBUG) {
+            Log.d(TAG, "uid(" + uid + ") is not granted OVERRIDE_MEDIA_SESSION_OWNER");
+        }
+        return false;
+    }
+
     /**
      * This checks if the given package has an enabled notification listener for the
      * specified user. Enabled components may only operate on behalf of the user
@@ -1000,8 +1012,15 @@ public class MediaSessionService extends SystemService implements Monitor {
      * 3. It needs to be added to the priority stack.
      * 4. It needs to be added to the relevant user record.
      */
-    private MediaSessionRecord createSessionInternal(int callerPid, int callerUid, int userId,
-            String callerPackageName, ISessionCallback cb, String tag, Bundle sessionInfo) {
+    private MediaSessionRecord createSessionInternal(
+            int callerPid,
+            int callerUid,
+            int userId,
+            String callerPackageName,
+            String overridePackageName,
+            ISessionCallback cb,
+            String tag,
+            Bundle sessionInfo) {
         synchronized (mLock) {
             int policies = 0;
             if (mCustomMediaSessionPolicyProvider != null) {
@@ -1030,6 +1049,7 @@ public class MediaSessionService extends SystemService implements Monitor {
                                 callerUid,
                                 userId,
                                 callerPackageName,
+                                overridePackageName,
                                 cb,
                                 tag,
                                 sessionInfo,
@@ -1553,8 +1573,14 @@ public class MediaSessionService extends SystemService implements Monitor {
         }
 
         @Override
-        public ISession createSession(String packageName, ISessionCallback cb, String tag,
-                Bundle sessionInfo, int userId) throws RemoteException {
+        public ISession createSession(
+                String packageName,
+                String overridePackageName,
+                ISessionCallback cb,
+                String tag,
+                Bundle sessionInfo,
+                int userId)
+                throws RemoteException {
             final int pid = Binder.getCallingPid();
             final int uid = Binder.getCallingUid();
             final long token = Binder.clearCallingIdentity();
@@ -1564,8 +1590,23 @@ public class MediaSessionService extends SystemService implements Monitor {
                 if (cb == null) {
                     throw new IllegalArgumentException("Controller callback cannot be null");
                 }
-                MediaSessionRecord session = createSessionInternal(
-                        pid, uid, resolvedUserId, packageName, cb, tag, sessionInfo);
+                if (overridePackageName != null
+                        && !packageName.equals(overridePackageName)
+                        && !hasPermissionToRegisterSessionForOthers(pid, uid)) {
+                    throw new SecurityException(
+                            "OVERRIDE_MEDIA_SESSION_OWNER is required for "
+                                    + "registering media session for other applications");
+                }
+                MediaSessionRecord session =
+                        createSessionInternal(
+                                pid,
+                                uid,
+                                resolvedUserId,
+                                packageName,
+                                overridePackageName,
+                                cb,
+                                tag,
+                                sessionInfo);
                 if (session == null) {
                     throw new IllegalStateException("Failed to create a new session record");
                 }

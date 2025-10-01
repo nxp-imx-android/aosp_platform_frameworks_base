@@ -177,6 +177,7 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
     private final int mOwnerUid;
     private final int mUserId;
     private final String mPackageName;
+    @Nullable private final String mOverridePackageName;
     private final String mTag;
     private final Bundle mSessionInfo;
     private final ControllerStub mController;
@@ -285,6 +286,7 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
             int ownerUid,
             int userId,
             String ownerPackageName,
+            String overridePackageName,
             ISessionCallback cb,
             String tag,
             Bundle sessionInfo,
@@ -296,9 +298,15 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
         mOwnerUid = ownerUid;
         mUserId = userId;
         mPackageName = ownerPackageName;
+        mOverridePackageName = overridePackageName;
         mTag = tag;
         mSessionInfo = sessionInfo;
-        mController = new ControllerStub(this, ownerPackageName);
+        mController =
+                new ControllerStub(
+                        this,
+                        TextUtils.isEmpty(mOverridePackageName)
+                                ? mPackageName
+                                : mOverridePackageName);
         mSessionToken = new MediaSession.Token(ownerUid, mController);
         mSession = new SessionStub(this);
         mSessionCb = new SessionCb(cb);
@@ -694,6 +702,9 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
         pw.println(indent + "ownerPid=" + mOwnerPid + ", ownerUid=" + mOwnerUid
                 + ", userId=" + mUserId);
         pw.println(indent + "package=" + mPackageName);
+        if (!TextUtils.isEmpty(mOverridePackageName)) {
+            pw.println(indent + "overridePackageName=" + mOverridePackageName);
+        }
         pw.println(indent + "launchIntent=" + mLaunchIntent);
         pw.println(indent + "mediaButtonReceiver=" + mMediaButtonReceiverHolder);
         pw.println(indent + "active=" + mIsActive);
@@ -2197,9 +2208,8 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
             MediaSessionRecord record = mRecord.get();
             if (record == null) {
                 Log.w(TAG, IGNORE_CALL_TO_DESTROYED_SESSION_MESSAGE);
-                return mPackageName;
             }
-            return record.getPackageName();
+            return mPackageName;
         }
 
         @Override

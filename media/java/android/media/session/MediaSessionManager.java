@@ -137,22 +137,39 @@ public final class MediaSessionManager {
 
     /**
      * Create a new session in the system and get the binder for it.
+     * <p>
+     * Requires {@link android.Manifest.permission#OVERRIDE_MEDIA_SESSION_OWNER} if the
+     * {@code overridePackageName} is non-null and is different from
+     * {@link Context#getPackageName()}.
+     * </p>
      *
      * @param tag A short name for debugging purposes.
      * @param sessionInfo A bundle for additional information about this session.
+     * @param overridePackageName The package name override for the session.
      * @return The binder object from the system
      * @hide
      */
     @NonNull
-    public ISession createSession(@NonNull MediaSession.CallbackStub cbStub, @NonNull String tag,
-            @Nullable Bundle sessionInfo) {
+    @RequiresPermission(
+            value = android.Manifest.permission.OVERRIDE_MEDIA_SESSION_OWNER,
+            conditional = true)
+    public ISession createSession(
+            @NonNull MediaSession.CallbackStub cbStub,
+            @NonNull String tag,
+            @Nullable Bundle sessionInfo,
+            @Nullable String overridePackageName) {
         Objects.requireNonNull(cbStub, "cbStub shouldn't be null");
         Objects.requireNonNull(tag, "tag shouldn't be null");
         try {
-            return mService.createSession(mContext.getPackageName(), cbStub, tag, sessionInfo,
+            return mService.createSession(
+                    mContext.getPackageName(),
+                    overridePackageName,
+                    cbStub,
+                    tag,
+                    sessionInfo,
                     UserHandle.myUserId());
         } catch (RemoteException e) {
-            throw new RuntimeException(e);
+            throw e.rethrowFromSystemServer();
         }
     }
 

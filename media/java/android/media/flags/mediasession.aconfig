@@ -30,3 +30,10 @@ flag {
   description: "Remove the static memoization from AudioPlayerStateMonitor.getInstance(Context)."
   bug: "438917725"
 }
+
+flag {
+  name: "override_media_session_owner"
+  namespace: "media_solutions"
+  description: "Allow applications with permission to register media session on behalf of other apps."
+  bug: "422078108"
+}
