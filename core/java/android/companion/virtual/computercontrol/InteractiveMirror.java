@@ -21,6 +21,8 @@ import android.annotation.RequiresNoPermission;
 import android.os.RemoteException;
 import android.view.SurfaceControl;
 
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.util.Objects;
 
 /**
@@ -37,7 +39,8 @@ public final class InteractiveMirror implements AutoCloseable {
     private final SurfaceControl mMirrorSurface;
 
     /** @hide */
-    InteractiveMirror(@NonNull IInteractiveMirror mirror,
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public InteractiveMirror(@NonNull IInteractiveMirror mirror,
             @NonNull SurfaceControl mirrorSurface) {
         mMirror = Objects.requireNonNull(mirror);
         mMirrorSurface = Objects.requireNonNull(mirrorSurface);
