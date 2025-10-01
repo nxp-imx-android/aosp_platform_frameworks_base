@@ -16,14 +16,14 @@
 
 package com.android.systemui.kairos.internal
 
+import androidx.collection.MutableScatterMap
 import com.android.systemui.kairos.CoalescingPolicy
 import com.android.systemui.kairos.internal.util.LogIndent
 import com.android.systemui.kairos.internal.util.fastForEach
-import com.android.systemui.kairos.internal.util.logDuration
 import com.android.systemui.kairos.internal.util.logDurationCoroutine
 import com.android.systemui.kairos.util.Maybe
-import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.maybeOf
+import com.android.systemui.kairos.util.whenPresent
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.ContinuationInterceptor
 import kotlinx.coroutines.CompletableDeferred
@@ -60,6 +60,7 @@ internal class Network(
             true
         }
     }
+
     override val scheduler = SchedulerImpl {
         if (it.markedForEvaluation) false
         else {
@@ -67,12 +68,13 @@ internal class Network(
             true
         }
     }
+
     override val transactionStore = TransactionStore()
 
     private val deferScopeImpl = DeferScopeImpl()
-    //    private val stateWrites = ArrayDeque<StateSource<*>>()
     private val fastOutputs = ArrayDeque<Output<*>>()
-    private val outputsByDispatcher = HashMap<ContinuationInterceptor, ArrayDeque<() -> Unit>>()
+    private val outputsByDispatcher =
+        MutableScatterMap<ContinuationInterceptor, ArrayDeque<() -> Unit>>()
     private val muxMovers = ArrayDeque<MuxDeferredNode<*, *, *>>()
     private val deactivations = ArrayDeque<PushNode<*>>()
     private val outputDeactivations = ArrayDeque<Output<*>>()
@@ -87,7 +89,7 @@ internal class Network(
         block: () -> Unit,
     ) {
         outputsByDispatcher
-            .computeIfAbsent(interceptor ?: Dispatchers.Unconfined) { ArrayDeque() }
+            .getOrPut(interceptor ?: Dispatchers.Unconfined) { ArrayDeque() }
             .add(block)
     }
 
@@ -107,7 +109,7 @@ internal class Network(
     suspend fun runInputScheduler() {
         val actions = mutableListOf<ScheduledAction<*>>()
         for (first in inputScheduleChan) {
-            // Drain and conflate all transaction requests into a single transaction
+            // Drain and coalesce all transaction requests into a single transaction
             actions.add(first)
             when (coalescingPolicy) {
                 CoalescingPolicy.None -> {}
@@ -159,13 +161,13 @@ internal class Network(
     /** Evaluates [block] inside of a new transaction when the network is ready. */
     fun <R> transaction(reason: String, block: EvalScope.() -> R): Deferred<R> =
         CompletableDeferred<R>(parent = coroutineScope.coroutineContext.job).also { onResult ->
-            if (!coroutineScope.isActive) {
+            if (coroutineScope.isActive) {
+                inputScheduleChan.trySend(
+                    ScheduledAction(reason, onStartTransaction = block, onResult = onResult)
+                )
+            } else {
                 onResult.cancel()
-                return@also
             }
-            inputScheduleChan.trySend(
-                ScheduledAction(reason, onStartTransaction = block, onResult = onResult)
-            )
         }
 
     inline fun <R> runThenDrainDeferrals(block: () -> R): R =
@@ -259,7 +261,7 @@ internal class Network(
     }
 }
 
-internal class ScheduledAction<T>(
+private class ScheduledAction<T>(
     val reason: String,
     private val onResult: CompletableDeferred<T>? = null,
     private val onStartTransaction: EvalScope.() -> T,
@@ -277,10 +279,7 @@ internal class ScheduledAction<T>(
 
     fun completed() {
         if (onResult != null) {
-            when (val result = result) {
-                is Present -> onResult.complete(result.value)
-                else -> {}
-            }
+            result.whenPresent { onResult.complete(it) }
         }
         result = maybeOf()
     }
