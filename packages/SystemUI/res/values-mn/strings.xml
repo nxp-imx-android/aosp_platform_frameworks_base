@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Бичих"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Хуваалцах"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Хуваалцах апп сонгох"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Цонхны аудиог хуваалцах"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Цонхны дэлгэцийн агшныг авах"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Цонхыг бичих"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Сонгосон хэсгийн дэлгэцийн агшныг авах"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Таны хувийн аппууд <xliff:g id="VPN_APP">%1$s</xliff:g>-р интернэтэд холбогдсон байна. Таны имэйл болон интернэтээр үзсэн өгөгдөл зэрэг сүлжээний үйл ажиллагаа таны VPN-н үйлчилгээ үзүүлэгчид харагдана."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN тохиргоог нээх"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Энэ төхөөрөмжийг таны эцэг эх удирддаг. Таны эцэг эх таны хэрэглэдэг апп, байршил, дэлгэцийн цаг зэрэг мэдээллийг харж, удирдах боломжтой."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Таны төхөөрөмж дээрх өдөр тутмын хязгаар, сул зогсолт зэрэг зарим тохиргоог зөвхөн ПИН ашиглан өөрчилж болно."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent-р түгжээгүй байлгасан"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Дэлгэцийг түгжсэн. Хэт олон удаа баталгаажуулахаар оролдсон."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Баруун түлхүүрийн код"</string>
     <string name="left_icon" msgid="5036278531966897006">"Зүүн дүрс тэмдэг"</string>
     <string name="right_icon" msgid="1103955040645237425">"Баруун дүрс тэмдэг"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Хавтан нэмэхийн тулд дараад чирэх"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Хавтангуудыг дахин цэгцлэхийн тулд дараад чирнэ үү"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Дахин эмхлэх, хэмжээг нь өөрчлөх хавтангуудыг сонгох"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Хавтан хасахын тулд товших"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Бүдүүвчийн хэмжээг өөрчлөх, дахин эрэмбэлэх"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Засах"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Бүдүүвч"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Хавтанг байрлуулахын тулд товших"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Устгахын тулд энд зөөнө үү"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Танд хамгийн багадаа <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> хавтан шаардлагатай"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Засах"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Хавтанг засах"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Шуурхай тохиргооны хавтангийн хэмжээг өөрчилнө үү"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Тохиргоо"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Хавтанг байрлуулах"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"байрлуулах горимыг асаах/унтраах"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"сонголтыг асаах/унтраах"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Хавтанг сүүлийн байрлалд нэмэх"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g>-г сүүлийн байрлалд нэмэх"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Хавтанг зөөх"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Хавтанг хүссэн байрлалд нэмэх"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g> руу зөөнө үү"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"<xliff:g id="POSITION">%1$d</xliff:g> байрлалд нэмнэ үү"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Байрлал буруу байна."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"<xliff:g id="POSITION">%1$d</xliff:g> байрлал"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Хавтан аль хэдийн нэмсэн"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Хавтан нэмсэн"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>-н <xliff:g id="ID_1">%1$d</xliff:g>-р хуудас"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>-г асаах уу?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g>-г ашиглах товчлуурын шууд холбоос нь үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> юм. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> нь танд зүйлийг чангаар уншихыг сонсох боломжийг олгодог дэлгэц уншигч юм. Энэ нь дэлгэц харахад хүндрэлтэй хүмүүст тустай байж болно."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Асаах"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> товчлуурын шууд холбоосыг асаах уу?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Бүү асаа"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Товчлолыг асаах"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> нь хялбар ашиглалтын онцлог болох <xliff:g id="ID_3">^3</xliff:g>-г ашиглах товчлуурын шууд холбоос юм. Та үүнийг ашиглан контентыг томруулахын тулд дэлгэц дээр хурдан томруулж болно. Томруулахыг ассаны дараа томруулалтыг тохируулахын тулд Үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_4">^1</xliff:g>, \"+\" эсвэл \"-\" дээр дарна уу."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Товчлолыг унтраах"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Асаалттай хэвээр байлгах"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Үйлдлийн "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> дээр дарах нь хандалтын онцлог <xliff:g id="ID_3">^3</xliff:g>-г асаадаг. Энэ нь танд төхөөрөмжөө гараас хамаарахгүй хянахад тусална."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Түгжээтэй дэлгэц"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Унтрааж байна…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Аудио хуваалцаж байна"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Аудио хуваалцах"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Хийцийн дугаар"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Хийцийн дугаарыг түр санах ойд хуулсан."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"түр санах ойд хуулна уу."</string>
     <string name="basic_status" msgid="2315371112182658176">"Харилцан яриаг нээх"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Харилцан ярианы виджетүүд"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Буцах"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Өмнөх"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Дараах"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"дараагийн хуудас руу шилжих"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"автоматаар бөглөх"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"дэлгэх"</string>
 </resources>

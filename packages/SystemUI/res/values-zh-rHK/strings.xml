@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"錄影"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"分享"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"選取要分享的應用程式"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"分享視窗音訊"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"擷取視窗的螢幕截圖"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"錄影視窗"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"擷取所選範圍的螢幕截圖"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"你的個人應用程式已透過「<xliff:g id="VPN_APP">%1$s</xliff:g>」連接至互聯網。你的 VPN 供應商可以看到你的網絡活動，包括電郵和瀏覽資料。"</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"開啟 VPN 設定"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"此裝置由你的家長管理。家長可以查看及管理裝置上的資料，例如你使用的應用程式、位置和裝置使用時間。"</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"部分裝置控制項 (例如每日時限和休息時間) 只可透過 PIN 變更。"</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"由信任的代理保持解鎖狀態"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"螢幕已鎖定，因為嘗試驗證次數太多。"</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"向右按鍵碼"</string>
     <string name="left_icon" msgid="5036278531966897006">"向左圖示"</string>
     <string name="right_icon" msgid="1103955040645237425">"向右圖示"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"按住並拖曳即可新增圖塊"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"按住並拖曳即可重新排列圖塊"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"選取圖塊以重新排列和調整大小"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"輕按即可移除圖塊"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"為版面配置調整大小和重新排序"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"編輯"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"版面配置"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"輕按即可調整圖塊位置"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"拖曳這裡即可移除"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"你需要有至少 <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> 個資訊方塊"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"編輯"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"編輯圖塊"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"調整「快速設定」圖塊大小"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"設定"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"放置圖塊"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"切換位置模式"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"切換選取項目"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"加圖塊去上一個位置"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"將「<xliff:g id="NAME">%1$s</xliff:g>」加去最後位置"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"移動圖塊"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"加圖塊去目標位置"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"移去 <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"加去位置 <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"位置冇效。"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"位置 <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"已新增資訊方塊"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"加咗圖塊"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"第 <xliff:g id="ID_1">%1$d</xliff:g> 頁 (共 <xliff:g id="ID_2">%2$d</xliff:g> 頁)"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要啟用「<xliff:g id="ID_1">%1$s</xliff:g>」嗎？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"快捷操作鍵 "<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用「<xliff:g id="ID_3">^3</xliff:g>」的鍵盤快速鍵。<xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款螢幕閱讀器，會朗讀畫面項目給你聽，讓無法看清楚螢幕的使用者瞭解螢幕內容。"</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"啟用"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"要啟用「<xliff:g id="ID_1">%1$s</xliff:g>」的鍵盤快速鍵嗎？"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"不要啟用"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"啟用捷徑"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"快捷操作鍵"<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 鍵盤快速鍵，即可使用無障礙功能「<xliff:g id="ID_3">^3</xliff:g>」，此功能可讓你快速放大畫面內容。放大功能啟用後，按下「快捷操作鍵」圖示"<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g>，以及「+」或「-」，即可調整縮放程度。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"關閉快速鍵"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"保持開啟"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"按下快捷操作鍵"<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>，即可啟用無障礙功能「<xliff:g id="ID_3">^3</xliff:g>」，讓你開句聲就能控制裝置。"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"螢幕鎖定"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在關機…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"正在分享音訊"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"分享音訊"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"版本號碼"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"版本號碼已複製到剪貼簿。"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"複製去剪貼簿"</string>
     <string name="basic_status" msgid="2315371112182658176">"開啟對話"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"對話小工具"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"返回"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"上一頁"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"下一頁"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"前往下一頁"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"自動填入"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"展開"</string>
 </resources>

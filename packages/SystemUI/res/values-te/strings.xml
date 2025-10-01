@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"రికార్డ్ చేయండి"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"షేర్ చేయండి"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">" షేర్ చేయడానికి యాప్‌ను ఎంచుకోండి"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"విండో ఆడియోను షేర్ చేయండి"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"విండో స్క్రీన్‌షాట్‌ను తీయండి"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"విండోను రికార్డ్ చేయండి"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ఎంచుకున్న ఏరియా తాలూకు స్క్రీన్‌షాట్‌ను తీయండి"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"మీ వ్యక్తిగత యాప్‌లు <xliff:g id="VPN_APP">%1$s</xliff:g> ద్వారా ఇంటర్నెట్‌కు కనెక్ట్ చేయబడ్డాయి. ఈమెయిళ్లు, బ్రౌజింగ్ డేటాతో సహా మీ నెట్‌వర్క్ యాక్టివిటీ మీ VPN ప్రొవైడర్‌కు కనిపిస్తుంది."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN సెట్టింగ్‌లను తెరవండి"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"ఈ పరికరాన్ని మీ తల్లి/తండ్రి మేనేజ్ చేస్తున్నారు. మీ తల్లి/తండ్రి, మీరు ఉపయోగించే యాప్‌లు, మీ లొకేషన్, అలాగే మీ పరికర వినియోగ వ్యవధి వంటి సమాచారాన్ని చూడగలరు, మేనేజ్ చేయగలరు."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"మీ డివైజ్‌లో, రోజువారీ పరిమితులు, బిజీగా ఉండే సమయం వంటి వాటికి సంబంధించిన కొన్ని కంట్రోల్స్‌ను PIN ద్వారా మాత్రమే మార్చడానికి వీలవుతుంది."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ద్వారా అన్‌లాక్ చేయబడింది"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"స్క్రీన్ లాక్ అయింది. చాలా ఎక్కువ ప్రామాణీకరణ ప్రయత్నాలు."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"కుడివైపు ఉన్న కీకోడ్"</string>
     <string name="left_icon" msgid="5036278531966897006">"ఎడమ వైపు చిహ్నం"</string>
     <string name="right_icon" msgid="1103955040645237425">"కుడివైపు ఉన్న చిహ్నం"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"టైల్స్‌ను జోడించడానికి పట్టుకుని, లాగండి"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"టైల్స్‌ను వేరే క్రమంలో అమర్చడానికి వాటిని పట్టుకుని, లాగండి"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"టైల్స్ కనబడే క్రమాన్ని, సైజ్‌ను మార్చడానికి వాటిని ఎంచుకోండి"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"టైల్స్‌ను తీసివేయడానికి ట్యాప్ చేయండి"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"లేఅవుట్ సైజ్‌ను మార్చి, మళ్లీ ఆర్డర్‌లో ఉంచండి"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"ఎడిట్ చేయండి"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"లేఅవుట్"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"పొజిషన్ టైల్‌ను ట్యాప్ చేయండి"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"తీసివేయడానికి ఇక్కడికి లాగండి"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"మీ వద్ద కనీసం <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> టైల్‌లు ఉండాలి"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"ఎడిట్ చేయండి"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"టైల్స్‌ను ఎడిట్ చేయండి"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"క్విక్ సెట్టింగ్‌ల టైల్స్ సైజ్ మార్చండి"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"సెట్టింగ్‌లు"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"టైల్‌ను ఇన్‌సర్ట్ చేయండి"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"ప్లేస్‌మెంట్ మోడ్‌ను టోగుల్ చేయండి"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"టోగుల్ ఎంపిక"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"చివరి పొజిషన్‌కు టైల్‌ను జోడించండి"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"<xliff:g id="NAME">%1$s</xliff:g>‌ను చివరి స్థానంలో జోడించండి"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"టైల్‌ను తరలించండి"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"కావలసిన పొజిషన్‌కు టైల్‌ను జోడించండి"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"<xliff:g id="POSITION">%1$d</xliff:g>కు తరలించండి"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"<xliff:g id="POSITION">%1$d</xliff:g> స్థానానికి జోడించండి"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"ప్రస్తుత పొజిషన్ చెల్లదు."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"స్థానం <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"టైల్‌ను ఇప్పటికే జోడించారు"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"టైల్ జోడించబడింది"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>లో <xliff:g id="ID_1">%1$d</xliff:g>వ పేజీ"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>‌ను ఆన్ చేయాలా?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g>‌ను ఉపయోగించడానికి సంబంధించిన కీబోర్డ్ షార్ట్‌కట్: యాక్షన్ "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> అనేది, స్క్రీన్‌పై ఉన్న ఐటెమ్‌ల గురించి మీకు బిగ్గరగా చదివి వినిపించే స్క్రీన్ రీడర్. స్క్రీన్‌ను చూడటంలో ఇబ్బంది ఉన్న వారికి ఇది ఉపయోగకరం కాగలదు."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ఆన్ చేయండి"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> కీబోర్డ్ షార్ట్‌కట్‌ను ఆన్ చేయాలా?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ఆన్ చేయవద్దు"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"షార్ట్‌కట్‌ను ఆన్ చేయండి"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"చర్య "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> అనేది ఉపయోగించడానికి కీబోర్డ్ షార్ట్‌కట్ <xliff:g id="ID_3">^3</xliff:g>, ఇది ఒక యాక్సెసిబిలిటీ ఫీచర్. కంటెంట్‌ను మరింత పెద్దగా డిస్‌ప్లే చేయడానికి, స్క్రీన్‌ను క్విక్‌గా జూమ్ - ఇన్ చేసే వీలును ఇది మీకు కల్పిస్తుంది. మ్యాగ్నిఫికేషన్ ఆన్ అయిన తర్వాత, జూమ్‌ను సర్దుబాటు చేయడానికి చర్య "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_4">^1</xliff:g>, \"+\" లేదా \"-\" నొక్కండి."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"షార్ట్‌కట్‌ను ఆఫ్ చేయండి"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ఆన్‌లోనే ఉంచండి"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"యాక్షన్ "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>‌ను నొక్కితే, యాక్సెసిబిలిటీ ఫీచర్ అయిన <xliff:g id="ID_3">^3</xliff:g> ఆన్ అవుతుంది. మీ డివైజ్‌ను హ్యాండ్స్-ఫ్రీగా కంట్రోల్ చేసే వీలును ఇది మీకు కల్పిస్తుంది."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"లాక్ స్క్రీన్"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"షట్ డౌన్ చేయబడుతోంది…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ఆడియో షేర్ అవుతోంది"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ఆడియోను షేర్ చేయండి"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"బిల్డ్ నంబర్"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"బిల్డ్ నంబర్, క్లిప్‌బోర్డ్‌కు కాపీ చేయబడింది."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"క్లిప్‌బోర్డ్‌కు కాపీ చేయండి."</string>
     <string name="basic_status" msgid="2315371112182658176">"సంభాషణను తెరవండి"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"సంభాషణ విడ్జెట్‌లు"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"వెనుకకు"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"మునుపటి"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"తర్వాత"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"తర్వాతి పేజీకి నావిగేట్ చేయండి"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ఆటోఫిల్ చేయండి"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"విస్తరించండి"</string>
 </resources>

@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Записать видео"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Поделиться"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Выберите, какое приложение показать"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Предоставить доступ к аудио в окне"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Сделать скриншот окна"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Записать видео окна"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Сделать скриншот выбранной области"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Личные приложения подключены к интернету через сервис \"<xliff:g id="VPN_APP">%1$s</xliff:g>\". Ваши действия в сети, включая данные о работе с электронной почтой и в браузере, видны вашему поставщику услуг VPN."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Открыть настройки VPN"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Этим устройством управляет один из твоих родителей. Он может видеть, например, какими приложениями ты пользуешься и где находишься, а также задавать определенные настройки (например, ограничивать время использования устройства)."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Чтобы изменить некоторые настройки устройства, например дневные ограничения и доступ по расписанию, необходим PIN-код."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"Сеть VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Разблокировано агентом доверия"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Экран заблокирован. Слишком много попыток аутентификации."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Код клавиши \"Вправо\""</string>
     <string name="left_icon" msgid="5036278531966897006">"Значок \"Влево\""</string>
     <string name="right_icon" msgid="1103955040645237425">"Значок \"Вправо\""</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Чтобы добавить элементы, перетащите их."</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Чтобы изменить порядок элементов, перетащите их."</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Выберите плитки, чтобы изменить их порядок или размер"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Нажмите, чтобы удалить параметр"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Изменение размера и порядка элементов"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Изменить"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Расположение"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Чтобы разместить параметр, нажмите здесь."</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Чтобы удалить, перетащите сюда"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Должно остаться не менее <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> элементов"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Изменить"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Изменить параметры"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Изменить размер параметров быстрых настроек"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Настройки"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Разместить параметр"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"включить или выключить режим размещения"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"выбрать или отменить выбор"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Добавить параметр в конец"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Добавить параметр \"<xliff:g id="NAME">%1$s</xliff:g>\" в конец"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Переместить панель"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Выбрать, куда добавить параметр"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Переместить на позицию <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Добавить на позицию <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Недопустимое расположение."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Позиция <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Параметр уже добавлен"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Панель добавлена"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Страница <xliff:g id="ID_1">%1$d</xliff:g> из <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Включить быстрый доступ к функции \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Клавиша действия "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – это сочетание клавиш для запуска функции \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> – это программа чтения с экрана, которая озвучивает описание элементов. Она полезна для людей с нарушениями зрения."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Включить"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Включить сочетание клавиш для функции \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не включать"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Включить сочетание клавиш"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Клавиша действия "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – это сочетание клавиш для запуска функции \"<xliff:g id="ID_3">^3</xliff:g>\", которая позволяет быстро увеличить масштаб контента на экране. Чтобы изменить масштаб, нажмите клавишу действия "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> + Плюс (+) или Минус (-)."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Отключить сочетание клавиш"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не отключать"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Используя сочетание \"Клавиша действия "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>\", можно включить <xliff:g id="ID_3">^3</xliff:g> – функцию специальных возможностей, которая позволяет управлять устройством с помощью голосовых команд."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заблокированный экран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Выключение…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Отправка аудио"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Отправить аудио"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Номер сборки"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Номер сборки скопирован в буфер обмена."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"скопировать в буфер обмена."</string>
     <string name="basic_status" msgid="2315371112182658176">"Открытый чат"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Виджеты разговоров"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Назад"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Далее"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"перейти к следующей странице"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"автозаполнение"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"развернуть"</string>
 </resources>

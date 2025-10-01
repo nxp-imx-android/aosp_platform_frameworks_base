@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Записване"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Споделяне"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Изберете приложение, което да споделите"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"Споделяне на звука в прозореца"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Създаване на екранна снимка на прозореца"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Прозорец за записване"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Създаване на екранна снимка на избраната област"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Личните ви приложения са свързани с интернет чрез <xliff:g id="VPN_APP">%1$s</xliff:g>. Активността ви в мрежата, включително имейлите и данните за сърфирането, е видима от доставчика ви на VPN."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Отваряне на настройките за VPN"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Това устройство се управлява от родителя ви. Той може да вижда и управлява информация, като например приложенията, които използвате, местоположението ви и времето на ползване."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Някои контроли на устройството ви, като например дневните лимити и времето на неактивност, могат да се променят само с ПИН код."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Поддържа се отключено от надежден агент"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Екранът е заключен. Твърде много опити за удостоверяване."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Десен бутон за клавишен код"</string>
     <string name="left_icon" msgid="5036278531966897006">"Лява икона"</string>
     <string name="right_icon" msgid="1103955040645237425">"Дясна икона"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Задръжте и плъзнете, за да добавите плочки"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Задръжте и плъзнете, за да пренаредите плочките"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Изберете панелите, които да пренаредите и преоразмерите"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Докоснете панел, за да го премахнете"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Преоразмеряване и пренареждане на оформлението"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Редактиране"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Оформление"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Докоснете, за да позиционирате панела"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Преместете тук с плъзгане за премахване"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Трябва да останат поне <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> плочки"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"Редактиране"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Редактиране на панелите"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Преоразмеряване на панелите с бързи настройки"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Настройки"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Поставяне на плочката"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"превключване на режима за поставяне"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"превключване на избраното"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Добавяне на панела на последната позиция"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Добавяне на <xliff:g id="NAME">%1$s</xliff:g> на последната позиция"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Преместване на панел"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Добавяне на панела на желаната позиция"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Преместване към позиция <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Добавяне към позиция <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Невалидна позиция."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Позиция <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Панелът вече е добавен"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Панелът е добавен"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Страница <xliff:g id="ID_1">%1$d</xliff:g> от <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Да се включи ли <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Иконата за действие"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> е екранен четец, който ви дава възможност да чувате елементите, изговаряни на глас. Той може да е полезен за хора, които трудно виждат екрана."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Включване"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Искате ли да включите клавишната комбинация за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Без включване"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Включване на клавишната комбинация"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на „<xliff:g id="ID_3">^3</xliff:g>“ – функция за достъпност. Това ви дава възможност бързо да приближавате екрана, за да уголемите съдържанието. След като функцията за увеличаване бъде включена, натиснете "<annotation id="action_key_icon">"иконата"</annotation>" за действие + <xliff:g id="ID_4">^1</xliff:g> и „+“ или „-“, за да коригирате мащаба."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Изключване на прекия път"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Без изключване"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Натискането на "<annotation id="action_key_icon">"иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> включва <xliff:g id="ID_3">^3</xliff:g> – функция за достъпност. Това ви дава възможност да контролирате устройството си в режим „свободни ръце“."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заключен екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Изключва се…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Звукът се споделя"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Споделяне на звука"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Номер на компилацията"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Номерът на компилацията е копиран в буферната памет."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"копиране в буферната памет."</string>
     <string name="basic_status" msgid="2315371112182658176">"Отворен разговор"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Приспособления за разговор"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Назад"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Напред"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"придвижване до следващата страница"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"автоматично попълване"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"разгъване"</string>
 </resources>

@@ -167,7 +167,12 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"I-record"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"I-share"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Pumili ng app na ise-share"</string>
-    <string name="screen_share_app_audio_sharing" msgid="7201172218924898712">"I-share ang audio ng window"</string>
+    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
+    <skip />
+    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Kunan ng screenshot ang window"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"I-record ang window"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Kunan ng screenshot ang napiling bahagi"</string>
@@ -750,8 +755,11 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Nakakonekta ang iyong mga personal na app sa internet sa pamamagitan ng <xliff:g id="VPN_APP">%1$s</xliff:g>. Nakikita ng iyong VPN provider ang aktibidad ng network, kasama ang mga email at data mula sa pag-browse."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Buksan ang mga setting ng VPN"</string>
-    <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Pinapamahalaan ng iyong magulang ang device na ito. Makikita at mapapamahalaan ng iyong magulang ang impormasyon tulad ng mga app na ginagamit mo, iyong lokasyon, at tagal ng paggamit mo sa device."</string>
+    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
+    <skip />
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Puwede lang baguhin gamit ang PIN ang ilang kontrol sa iyong device, tulad ng pang-araw-araw na limitasyon at downtime."</string>
+    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Pinanatiling naka-unlock ng TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Naka-lock ang screen. Masyadong maraming pagsubok na mag-authenticate."</string>
@@ -1089,17 +1097,12 @@
     <string name="right_keycode" msgid="2480715509844798438">"Kanang keycode"</string>
     <string name="left_icon" msgid="5036278531966897006">"Icon ng kaliwa"</string>
     <string name="right_icon" msgid="1103955040645237425">"Icon ng kanan"</string>
-    <string name="drag_to_add_tiles" msgid="8933270127508303672">"Pindutin nang matagal at i-drag para magdagdag ng mga tile"</string>
-    <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Pindutin nang matagal at i-drag para ayusin ulit ang tile"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Pumili ng mga tile na aayusin ulit at ire-resize"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"I-tap para alisin ang mga tile"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"I-resize at baguhin ang pagkakaayos ng layout"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"I-edit"</string>
     <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Layout"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"I-tap para iposisyon ang tile"</string>
-    <string name="drag_to_remove_tiles" msgid="4682194717573850385">"I-drag dito upang alisin"</string>
-    <string name="drag_to_remove_disabled" msgid="933046987838658850">"Kailangan mo ng kahit <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> (na) tile"</string>
-    <string name="qs_edit" msgid="5583565172803472437">"I-edit"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"I-edit ang mga tile"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"I-resize ang mga tile ng Mga Mabilisang Setting"</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"Mga Setting"</string>
@@ -1122,13 +1125,7 @@
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"Ilagay ang tile"</string>
     <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"i-toggle ang placement mode"</string>
     <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"i-toggle ang pagpili"</string>
-    <string name="accessibility_qs_edit_tile_add_action" msgid="7188303979684400620">"Magdagdag ng tile sa huling posisyon"</string>
     <string name="accessibility_qs_edit_named_tile_add_action" msgid="7929752125913967625">"Idagdag ang <xliff:g id="NAME">%1$s</xliff:g> sa huling posisyon"</string>
-    <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Ilipat ang tile"</string>
-    <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Magdagdag ng tile sa gustong posisyon"</string>
-    <string name="accessibility_qs_edit_tile_move_to_position" msgid="5198161544045930556">"Ilipat sa <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Idagdag sa posisyong <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Invalid ang posisyon."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Posisyon <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Naidagdag na ang tile"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Idinagdag ang tile"</string>
@@ -1147,8 +1144,6 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> ng <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"I-on ang <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Icon"</annotation>" ng Action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ay ang keyboard shortcut na gagamitin sa <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"Isang screen reader ang <xliff:g id="ID_1">%1$s</xliff:g> na nagbibigay-daan sa iyong marinig ang mga item na binibigkas nang malakas. Makakatulong ito sa mga taong nahihirapang makita ang screen."</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"I-on"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"I-on ang keyboard shortcut ng <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Huwag i-on"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"I-on ang shortcut"</string>
@@ -1156,6 +1151,8 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ang keyboard shortcut para gamitin ang <xliff:g id="ID_3">^3</xliff:g>, isang feature ng accessibilty. Nagbibigay-daan ito sa iyo na mabilis na mag-zoom in sa screen para palakihin ang content. Kapag naka-on na ang pag-magnify, pindutin ang Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> at \"+\" o \"-\" para i-adjust ang zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"I-off ang shortcut"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Panatilihing naka-on"</string>
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
+    <skip />
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kapag pinindot ang "<annotation id="action_key_icon">"icon"</annotation>" na Aksyon + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, mao-on ang <xliff:g id="ID_3">^3</xliff:g>, na isang feature ng accessibility. Nagbibigay-daan ito sa iyo na kontrolin ang device mo nang hands-free."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lock screen"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Nagsa-shut down…"</string>
@@ -1397,7 +1394,6 @@
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Sine-share ang audio"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"I-share ang audio"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Numero ng build"</string>
-    <string name="build_number_copy_toast" msgid="877720921605503046">"Nakopya sa clipboard ang numero ng build."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopyahin sa clipboard."</string>
     <string name="basic_status" msgid="2315371112182658176">"Buksan ang pag-uusap"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Mga widget ng pag-uusap"</string>
@@ -1716,8 +1712,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Bumalik"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Nakaraan"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Susunod"</string>
-    <!-- no translation found for accessibility_pager_dots_navigate_to_next_page_action (7662720613169169465) -->
-    <skip />
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"mag-navigate sa susunod na page"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofill"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"i-expand"</string>
 </resources>
