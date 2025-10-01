@@ -63,10 +63,10 @@ public final class HsuAllowlistsMediatorTest extends ExpectableTestCase {
         var ham = createHam();
 
         expectWithMessage("ActivityStarterTests(null)").that(ham.isActivityAllowed(null))
-                .isFalse();
+                .isTrue();
 
         expectWithMessage("ActivityStarterTests(whatever)").that(ham.isActivityAllowed("whatever"))
-                .isFalse();
+                .isTrue();
     }
 
     @Test

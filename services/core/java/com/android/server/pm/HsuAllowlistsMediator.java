@@ -43,7 +43,8 @@ final class HsuAllowlistsMediator implements Dumpable {
 
     /** Returns whether the given activity is allowed. */
     public boolean isActivityAllowed(String componentName) {
-        return ArrayUtils.contains(mPermanentActivitiesAllowlist, componentName);
+        return mPermanentActivitiesAllowlist.length == 0
+                || ArrayUtils.contains(mPermanentActivitiesAllowlist, componentName);
     }
 
     @Override
