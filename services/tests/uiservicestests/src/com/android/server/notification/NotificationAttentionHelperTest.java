@@ -64,6 +64,7 @@ import static org.mockito.Mockito.when;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.Notification.Builder;
@@ -163,6 +164,8 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     NotificationRecordLoggerFake mNotificationRecordLogger = new NotificationRecordLoggerFake();
     private InstanceIdSequence mNotificationInstanceIdSequence = new InstanceIdSequenceFake(
         1 << 30);
+    @Mock
+    private ActivityTaskManager mActivityTaskManager;
 
     private NotificationManagerService mService;
     private String mPkg = "com.android.server.notification";
@@ -206,6 +209,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
         MockitoAnnotations.initMocks(this);
         getContext().addMockSystemService(Vibrator.class, mVibrator);
         getContext().addMockSystemService(PackageManager.class, mPackageManager);
+        getContext().addMockSystemService(ActivityTaskManager.class, mActivityTaskManager);
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)).thenReturn(false);
         when(mPackageManager.checkPermission(eq(permission.RECEIVE_EMERGENCY_BROADCAST),
                 anyString())).thenReturn(PERMISSION_DENIED);
@@ -713,6 +717,17 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
         verify(mAccessibilityService, times(1)).sendAccessibilityEvent(any(), anyInt());
         assertTrue(r.isInterruptive());
         assertNotEquals(-1, r.getLastAudiblyAlertedMs());
+    }
+
+    @Test
+    public void testMuteAccessibilityWhenInLockTaskMode() throws Exception {
+        when(mActivityTaskManager.isInLockTaskMode()).thenReturn(true);
+        NotificationRecord r = getBeepyNotification();
+
+        mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
+
+        verifyBeepUnlooped();
+        verify(mAccessibilityService, never()).sendAccessibilityEvent(any(), anyInt());
     }
 
     @Test
