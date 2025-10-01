@@ -6,8 +6,7 @@
 # Currently, we're focused on frame drops, so we don't count Buffer Stuffing
 # issues.
 
-# For basic diagnostics, we also grab the total_frames, and frame duration
-# at the P50, P90, P99, and maximum.
+# For basic diagnostics, we also grab the total_frames.
 
 metric_spec: {
   id: "total_frames_bouncyball"
@@ -23,34 +22,6 @@ metric_spec: {
     inner_query_id: "frame_timeline_summary_bouncyball"
   }
 }
-metric_spec: {
-  id: "frame_dur_max_bouncyball"
-  value: "frame_dur_max"
-  query: {
-    inner_query_id: "frame_timeline_summary_bouncyball"
-  }
-}
-metric_spec: {
-  id: "frame_dur_p99_bouncyball"
-  value: "frame_dur_p99"
-  query: {
-    inner_query_id: "frame_timeline_summary_bouncyball"
-  }
-}
-metric_spec: {
-  id: "frame_dur_p90_bouncyball"
-  value: "frame_dur_p90"
-  query: {
-    inner_query_id: "frame_timeline_summary_bouncyball"
-  }
-}
-metric_spec: {
-  id: "frame_dur_p50_bouncyball"
-  value: "frame_dur_p50"
-  query: {
-    inner_query_id: "frame_timeline_summary_bouncyball"
-  }
-}
 
 query: {
   id: "frame_timeline_summary_bouncyball"
@@ -61,12 +32,10 @@ query: {
         SELECT
           process.upid,
           process.name AS process_name,
-          timeline.name AS vsync,
           jank_type GLOB '*App Deadline Missed*'
             OR jank_type GLOB '*SurfaceFlinger CPU Deadline Missed*'
             OR jank_type GLOB '*SurfaceFlinger GPU Deadline Missed*'
             OR jank_type GLOB '*Dropped Frame*' AS missed_frame,
-          IIF(jank_type GLOB '*Dropped Frame*', NULL, timeline.dur) AS dur,
           timeline.ts AS frame_ts,
           timeline.dur AS frame_slice_dur
         FROM actual_frame_timeline_slice AS timeline
@@ -75,10 +44,6 @@ query: {
       SELECT
         f.process_name,
         COUNT(*) AS total_frames,
-        CAST(PERCENTILE(f.dur, 50) AS INTEGER) AS frame_dur_p50,
-        CAST(PERCENTILE(f.dur, 90) AS INTEGER) AS frame_dur_p90,
-        CAST(PERCENTILE(f.dur, 99) AS INTEGER) AS frame_dur_p99,
-        MAX(f.dur) AS frame_dur_max,
         SUM(f.missed_frame) AS missed_frames
       FROM frames AS f
       WHERE
@@ -105,10 +70,6 @@ query: {
     "
     column_names: "process_name"
     column_names: "total_frames"
-    column_names: "frame_dur_p50"
-    column_names: "frame_dur_p90"
-    column_names: "frame_dur_p99"
-    column_names: "frame_dur_max"
     column_names: "missed_frames"
   }
   filters: {
