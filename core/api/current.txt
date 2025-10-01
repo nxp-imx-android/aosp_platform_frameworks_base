@@ -6528,6 +6528,7 @@ package android.app {
     ctor @Deprecated public Notification(int, CharSequence, long);
     ctor public Notification(android.os.Parcel);
     method public android.app.Notification clone();
+    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public static android.text.Annotation createSemanticStyleAnnotation(int);
     method public int describeContents();
     method @Nullable public android.util.Pair<android.app.RemoteInput,android.app.Notification.Action> findRemoteInputActionPair(boolean);
     method public boolean getAllowSystemGeneratedContextualActions();
@@ -6658,6 +6659,11 @@ package android.app {
     field @Deprecated public static final int PRIORITY_LOW = -1; // 0xffffffff
     field @Deprecated public static final int PRIORITY_MAX = 2; // 0x2
     field @Deprecated public static final int PRIORITY_MIN = -2; // 0xfffffffe
+    field @FlaggedApi("android.app.api_notification_semantic_style") public static final int SEMANTIC_STYLE_CAUTION = 3; // 0x3
+    field @FlaggedApi("android.app.api_notification_semantic_style") public static final int SEMANTIC_STYLE_DANGER = 4; // 0x4
+    field @FlaggedApi("android.app.api_notification_semantic_style") public static final int SEMANTIC_STYLE_INFO = 1; // 0x1
+    field @FlaggedApi("android.app.api_notification_semantic_style") public static final int SEMANTIC_STYLE_SAFE = 2; // 0x2
+    field @FlaggedApi("android.app.api_notification_semantic_style") public static final int SEMANTIC_STYLE_UNSPECIFIED = 0; // 0x0
     field @Deprecated public static final int STREAM_DEFAULT = -1; // 0xffffffff
     field public static final int VISIBILITY_PRIVATE = 0; // 0x0
     field public static final int VISIBILITY_PUBLIC = 1; // 0x1
@@ -7013,7 +7019,9 @@ package android.app {
 
   @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric {
     ctor public Notification.Metric(@NonNull android.app.Notification.Metric.MetricValue, @NonNull CharSequence);
+    ctor @FlaggedApi("android.app.api_notification_semantic_style") public Notification.Metric(@NonNull android.app.Notification.Metric.MetricValue, @NonNull CharSequence, int);
     method @NonNull public CharSequence getLabel();
+    method @FlaggedApi("android.app.api_notification_semantic_style") public int getSemanticStyle();
     method @NonNull public android.app.Notification.Metric.MetricValue getValue();
   }
 
@@ -7111,8 +7119,10 @@ package android.app {
     method @ColorInt public int getColor();
     method public int getId();
     method @IntRange(from=1) public int getPosition();
+    method @FlaggedApi("android.app.api_notification_semantic_style") public int getSemanticStyle();
     method @NonNull public android.app.Notification.ProgressStyle.Point setColor(@ColorInt int);
     method @NonNull public android.app.Notification.ProgressStyle.Point setId(int);
+    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.ProgressStyle.Point setSemanticStyle(int);
   }
 
   public static final class Notification.ProgressStyle.Segment {
@@ -7120,8 +7130,10 @@ package android.app {
     method @ColorInt public int getColor();
     method public int getId();
     method @IntRange(from=1) public int getLength();
+    method @FlaggedApi("android.app.api_notification_semantic_style") public int getSemanticStyle();
     method @NonNull public android.app.Notification.ProgressStyle.Segment setColor(@ColorInt int);
     method @NonNull public android.app.Notification.ProgressStyle.Segment setId(int);
+    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.ProgressStyle.Segment setSemanticStyle(int);
   }
 
   public abstract static class Notification.Style {

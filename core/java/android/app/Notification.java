@@ -98,6 +98,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.text.Annotation;
 import android.text.BidiFormatter;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -960,6 +961,84 @@ public class Notification implements Parcelable
     @Priority
     @Deprecated
     public int priority;
+
+    /**
+     * This is the default value for semantic style, signaling no particular semantics. An
+     * {@link Annotation} with this style has no effect.
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public static final int SEMANTIC_STYLE_UNSPECIFIED = 0;
+
+    /**
+     * This value is used to annotate an element as indicating information that should stand out
+     * from other content, but which doesn’t fall on a scale or hierarchy. This can be thought of
+     * as a more neutral value that may be used in cases where the element is intended to stand
+     * out against elements with the other semantic styles -- for example if a {@link ProgressStyle}
+     * bar uses semantic style to color segments, this style would be appropriate for segments where
+     * the semantic hierarchy is unhelpful to the user.
+     *
+     * <p>Info is generally represented to users by styling the element with a color (like blue)
+     * that is clearly distinct from the colors used for other styles.
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public static final int SEMANTIC_STYLE_INFO = 1;
+
+    /**
+     * This value is used to annotate an element as indicating safety, non-urgency, timeliness,
+     * or another “mild” value on the semantic hierarchy.
+     *
+     * <p>Safety is generally represented to users by styling the element with a green color.
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public static final int SEMANTIC_STYLE_SAFE = 2;
+
+    /**
+     * This value is used to annotate an element as indicating caution, moderate urgency, tardiness,
+     * or another “intermediate” value on the semantic hierarchy.
+     *
+     * <p>Caution is generally represented to users by styling the element with a yellow or
+     * orange color.
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public static final int SEMANTIC_STYLE_CAUTION = 3;
+
+    /**
+     * This value is used to annotate an element as indicating danger, extreme urgency or
+     * lateness, or another “extreme” value on the semantic hierarchy.
+     *
+     * <p>Danger is generally represented to users by styling the element with a red color.
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public static final int SEMANTIC_STYLE_DANGER = 4;
+
+    /** @hide */
+    @IntDef(prefix = { "SEMANTIC_STYLE_" }, value = {
+            SEMANTIC_STYLE_UNSPECIFIED,
+            SEMANTIC_STYLE_INFO,
+            SEMANTIC_STYLE_SAFE,
+            SEMANTIC_STYLE_CAUTION,
+            SEMANTIC_STYLE_DANGER
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SemanticStyle {}
+
+    private static final String ANNOTATION_SEMANTIC_STYLE_KEY =
+            "android.app.notification.semanticStyle";
+
+    /**
+     * Constructs an {@link Annotation} that can be used to span text in a {@link Spanned}
+     * {@link CharSequence} in some Notification text fields, and which may then be converted into
+     * styling of that section of text in order to indicate the semantic style. Since Notifications
+     * may strip styling, even for semantic styles, it’s important that stripping these styles
+     * should not distort the meaning of the text.
+     *
+     * @see android.text.Spannable#setSpan(Object, int, int, int)
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    @NonNull
+    public static Annotation createSemanticStyleAnnotation(@SemanticStyle int semanticStyle) {
+        return new Annotation(ANNOTATION_SEMANTIC_STYLE_KEY, String.valueOf(semanticStyle));
+    }
 
     /**
      * Accent color (an ARGB integer like the constants in {@link android.graphics.Color})
@@ -12082,9 +12161,11 @@ public class Notification implements Parcelable
 
         private static final String KEY_VALUE = "value";
         private static final String KEY_LABEL = "label";
+        private static final String KEY_SEMANTIC_STYLE = "semanticStyle";
 
         private final MetricValue mValue;
         private final String mLabel;
+        private final @SemanticStyle int mSemanticStyle;
 
         /**
          * Creates a Metric with the specified value and label.
@@ -12093,9 +12174,25 @@ public class Notification implements Parcelable
          * @param label metric label -- should be 10 characters or fewer
          */
         public Metric(@NonNull MetricValue value, @NonNull CharSequence label) {
+            this(value, label, SEMANTIC_STYLE_UNSPECIFIED);
+        }
+
+        /**
+         * Creates a Metric with the specified value, label, and semantic style.
+         *
+         * @param value one of the subclasses of {@link MetricValue}, such as {@link FixedInt}
+         * @param label metric label -- should be 10 characters or fewer
+         * @param semanticStyle semantic style applied to the metric. When the notification
+         *                      {@link #FLAG_PROMOTED_ONGOING is promoted} the metric value will be
+         *                      displayed (e.g. colored) according to this style.
+         */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        public Metric(@NonNull MetricValue value, @NonNull CharSequence label,
+                @SemanticStyle int semanticStyle) {
             mValue = requireNonNull(value);
             mLabel = safeCharSequenceToString(requireNonNull(label));
             checkArgument(!mLabel.isBlank(), "Metric label is required");
+            mSemanticStyle = semanticStyle;
         }
 
         @Nullable
@@ -12109,7 +12206,12 @@ public class Notification implements Parcelable
                 return null;
             }
             String label = bundle.getString(KEY_LABEL);
-            return new Metric(value, label);
+            if (Flags.apiNotificationSemanticStyle()) {
+                int semanticStyle = bundle.getInt(KEY_SEMANTIC_STYLE, SEMANTIC_STYLE_UNSPECIFIED);
+                return new Metric(value, label, semanticStyle);
+            } else {
+                return new Metric(value, label);
+            }
         }
 
         @NonNull
@@ -12117,6 +12219,9 @@ public class Notification implements Parcelable
             Bundle bundle = new Bundle();
             bundle.putBundle(KEY_VALUE, MetricValue.toBundle(metric.mValue));
             bundle.putString(KEY_LABEL, metric.mLabel);
+            if (Flags.apiNotificationSemanticStyle()) {
+                bundle.putInt(KEY_SEMANTIC_STYLE, metric.mSemanticStyle);
+            }
             return bundle;
         }
 
@@ -12125,12 +12230,13 @@ public class Notification implements Parcelable
             if (!(obj instanceof Metric that)) return false;
             if (this == that) return true;
             return Objects.equals(this.mValue, that.mValue)
-                    && Objects.equals(this.mLabel, that.mLabel);
+                    && Objects.equals(this.mLabel, that.mLabel)
+                    && this.mSemanticStyle == that.mSemanticStyle;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(mValue, mLabel);
+            return Objects.hash(mValue, mLabel, mSemanticStyle);
         }
 
         @Override
@@ -12138,6 +12244,7 @@ public class Notification implements Parcelable
             return "Metric{"
                     + "mValue=" + mValue
                     + ", mLabel=" + mLabel
+                    + ", mSemanticStyle=" + mSemanticStyle
                     + "}";
         }
 
@@ -12156,6 +12263,16 @@ public class Notification implements Parcelable
         @NonNull
         public CharSequence getLabel() {
             return mLabel;
+        }
+
+        /**
+         * Applies semantics to the metric. When the notification {@link #FLAG_PROMOTED_ONGOING
+         * is promoted} the metric value will be displayed (e.g. colored) according to this style.
+         */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @SemanticStyle
+        public int getSemanticStyle() {
+            return mSemanticStyle;
         }
 
         /** A superclass for the various value types used by the {@link Metric} class. */
@@ -13136,6 +13253,7 @@ public class Notification implements Parcelable
         private static final String KEY_ELEMENT_COLOR = "colorInt";
         private static final String KEY_SEGMENT_LENGTH = "length";
         private static final String KEY_POINT_POSITION = "position";
+        private static final String KEY_ELEMENT_SEMANTIC_STYLE = "semanticStyle";
 
         private static final int MAX_PROGRESS_SEGMENT_LIMIT = 10;
         private static final int MAX_PROGRESS_POINT_LIMIT = 4;
@@ -13655,6 +13773,9 @@ public class Notification implements Parcelable
                     bundle.putInt(KEY_SEGMENT_LENGTH, segment.getLength());
                     bundle.putInt(KEY_ELEMENT_ID, segment.getId());
                     bundle.putInt(KEY_ELEMENT_COLOR, segment.getColor());
+                    if (Flags.apiNotificationSemanticStyle()) {
+                        bundle.putInt(KEY_ELEMENT_SEMANTIC_STYLE, segment.getSemanticStyle());
+                    }
 
                     segments.add(bundle);
                 }
@@ -13682,6 +13803,11 @@ public class Notification implements Parcelable
                             Notification.COLOR_DEFAULT);
                     final Segment segment = new Segment(length)
                             .setId(id).setColor(color);
+                    if (Flags.apiNotificationSemanticStyle()) {
+                        segment.setSemanticStyle(
+                                segmentBundle.getInt(KEY_ELEMENT_SEMANTIC_STYLE,
+                                        SEMANTIC_STYLE_UNSPECIFIED));
+                    }
 
                     segments.add(segment);
                 }
@@ -13689,6 +13815,7 @@ public class Notification implements Parcelable
 
             return segments;
         }
+
         /**
          * @hide
          */
@@ -13706,6 +13833,9 @@ public class Notification implements Parcelable
                     bundle.putInt(KEY_POINT_POSITION, point.getPosition());
                     bundle.putInt(KEY_ELEMENT_ID, point.getId());
                     bundle.putInt(KEY_ELEMENT_COLOR, point.getColor());
+                    if (Flags.apiNotificationSemanticStyle()) {
+                        bundle.putInt(KEY_ELEMENT_SEMANTIC_STYLE, point.getSemanticStyle());
+                    }
 
                     points.add(bundle);
                 }
@@ -13732,6 +13862,11 @@ public class Notification implements Parcelable
                     final int color = pointBundle.getInt(KEY_ELEMENT_COLOR,
                             Notification.COLOR_DEFAULT);
                     final Point point = new Point(position).setId(id).setColor(color);
+                    if (Flags.apiNotificationSemanticStyle()) {
+                        point.setSemanticStyle(
+                                pointBundle.getInt(KEY_ELEMENT_SEMANTIC_STYLE,
+                                        SEMANTIC_STYLE_UNSPECIFIED));
+                    }
                     points.add(point);
                 }
             }
@@ -13887,10 +14022,10 @@ public class Notification implements Parcelable
          * For example, Traffic conditions along a navigation journey.
          */
         public static final class Segment {
-            private int mLength;
+            private final int mLength;
             private int mId = 0;
-            @ColorInt
-            private int mColor = Notification.COLOR_DEFAULT;
+            private @ColorInt int mColor = Notification.COLOR_DEFAULT;
+            private @SemanticStyle int mSemanticStyle = SEMANTIC_STYLE_UNSPECIFIED;
 
             /**
              * Create a segment with a non-zero length.
@@ -13948,20 +14083,44 @@ public class Notification implements Parcelable
             }
 
             /**
-             * Needed for {@link Notification.Style#areNotificationsVisiblyDifferent}
+             * Returns the semantics applied to the Segment. When the notification
+             * {@link #FLAG_PROMOTED_ONGOING is promoted} this value is used to style (e.g.
+             * color) the segment.
              */
+            @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+            @SemanticStyle
+            public int getSemanticStyle() {
+                return mSemanticStyle;
+            }
+
+            /**
+             * Applies semantics to the Segment. When the notification
+             * {@link #FLAG_PROMOTED_ONGOING is promoted} this value is used to style (e.g.
+             * color) the segment.
+             *
+             * <p>If an app specifies <em>both</em> color and semantic style, the style overrides
+             * the color. This allows apps to provide a color as a fallback on platforms that do not
+             * support style.
+             */
+            @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+            public @NonNull Segment setSemanticStyle(@SemanticStyle int semanticStyle) {
+                mSemanticStyle = semanticStyle;
+                return this;
+            }
+
+            // Needed for Notification.Style.areNotificationsVisiblyDifferent()
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
                 final Segment segment = (Segment) o;
                 return mLength == segment.mLength && mId == segment.mId
-                        && mColor == segment.mColor;
+                        && mColor == segment.mColor && mSemanticStyle == segment.mSemanticStyle;
             }
 
             @Override
             public int hashCode() {
-                return Objects.hash(mLength, mId, mColor);
+                return Objects.hash(mLength, mId, mColor, mSemanticStyle);
             }
         }
 
@@ -13972,11 +14131,10 @@ public class Notification implements Parcelable
          * navigation journey, where each point represents a destination.
          */
         public static final class Point {
-
             private int mPosition;
             private int mId = 0;
-            @ColorInt
-            private int mColor = Notification.COLOR_DEFAULT;
+            private @ColorInt int mColor = Notification.COLOR_DEFAULT;
+            private @SemanticStyle int mSemanticStyle = SEMANTIC_STYLE_UNSPECIFIED;
 
             /**
              * Create a point element.
@@ -14017,7 +14175,7 @@ public class Notification implements Parcelable
             }
 
             /**
-             * Returns the color of this Segment.
+             * Returns the color of this Point.
              *
              * @see #setColor
              */
@@ -14027,7 +14185,7 @@ public class Notification implements Parcelable
             }
 
             /**
-             * Optional color of this Segment
+             * Optional color of this Point
              */
             public @NonNull Point setColor(@ColorInt int color) {
                 mColor = color;
@@ -14035,20 +14193,44 @@ public class Notification implements Parcelable
             }
 
             /**
-             * Needed for {@link Notification.Style#areNotificationsVisiblyDifferent}
+             * Returns the semantics applied to the Point. When the notification
+             * {@link #FLAG_PROMOTED_ONGOING is promoted} this value is used to style (e.g.
+             * color) the point.
              */
+            @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+            @SemanticStyle
+            public int getSemanticStyle() {
+                return mSemanticStyle;
+            }
+
+            /**
+             * Applies semantics to the Point. When the notification
+             * {@link #FLAG_PROMOTED_ONGOING is promoted} this value is used to style (e.g.
+             * color) the point.
+             *
+             * <p>If an app specifies <em>both</em> color and semantic style, the style overrides
+             * the color. This allows apps to provide a color as a fallback on platforms that do not
+             * support style.
+             */
+            @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+            public @NonNull Point setSemanticStyle(@SemanticStyle int semanticStyle) {
+                mSemanticStyle = semanticStyle;
+                return this;
+            }
+
+            // Needed for Notification.Style.areNotificationsVisiblyDifferent()
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
                 final Point point = (Point) o;
                 return mPosition == point.mPosition && mId == point.mId
-                        && mColor == point.mColor;
+                        && mColor == point.mColor && mSemanticStyle == point.mSemanticStyle;
             }
 
             @Override
             public int hashCode() {
-                return Objects.hash(mPosition, mId, mColor);
+                return Objects.hash(mPosition, mId, mColor, mSemanticStyle);
             }
         }
     }
