@@ -81,14 +81,13 @@ public class InboundHandoffRequestControllerTest {
         MockitoAnnotations.initMocks(this);
 
         LocalServices.addService(
-            ActivityTaskManagerInternal.class,
-            mMockActivityTaskManagerInternal);
+                ActivityTaskManagerInternal.class, mMockActivityTaskManagerInternal);
 
-        mInboundHandoffRequestController = new InboundHandoffRequestController(
-            mMockTaskContinuityMessenger);
+        mInboundHandoffRequestController =
+                new InboundHandoffRequestController(mMockTaskContinuityMessenger);
     }
 
-     @After
+    @After
     public void unregisterLocalServices() throws Exception {
         LocalServices.removeServiceForTest(ActivityTaskManagerInternal.class);
     }
@@ -104,19 +103,17 @@ public class InboundHandoffRequestControllerTest {
         verify(mMockActivityTaskManagerInternal, times(1))
                 .requestHandoffTaskData(eq(taskId), eq(mInboundHandoffRequestController));
 
-        HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
-                new ComponentName("testPackage", "testActivity"))
-            .build();
+        HandoffActivityData handoffActivityData =
+                new HandoffActivityData.Builder(new ComponentName("testPackage", "testActivity"))
+                        .build();
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
         mInboundHandoffRequestController.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
-        HandoffRequestResultMessage expectedMessage = new HandoffRequestResultMessage(
-                taskId,
-                HANDOFF_REQUEST_RESULT_SUCCESS,
-                List.of(handoffActivityData));
-        verify(mMockTaskContinuityMessenger).sendMessage(
-                aryEq(new int[]{associationId}),
-                eq(expectedMessage));
+        HandoffRequestResultMessage expectedMessage =
+                new HandoffRequestResultMessage(
+                        taskId, HANDOFF_REQUEST_RESULT_SUCCESS, List.of(handoffActivityData));
+        verify(mMockTaskContinuityMessenger)
+                .sendMessage(aryEq(new int[] {associationId}), eq(expectedMessage));
     }
 
     @Test
@@ -135,26 +132,25 @@ public class InboundHandoffRequestControllerTest {
         verify(mMockActivityTaskManagerInternal, times(1))
                 .requestHandoffTaskData(eq(taskId), any());
 
-        HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
-            new ComponentName("testPackage", "testActivity"))
-        .build();
+        HandoffActivityData handoffActivityData =
+                new HandoffActivityData.Builder(new ComponentName("testPackage", "testActivity"))
+                        .build();
 
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
         mInboundHandoffRequestController.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
-        HandoffRequestResultMessage expectedMessage = new HandoffRequestResultMessage(
-            taskId,
-            HANDOFF_REQUEST_RESULT_SUCCESS,
-            List.of(handoffActivityData));
-        verify(mMockTaskContinuityMessenger).sendMessage(
-                aryEq(new int[]{firstAssociationId, secondAssociationId}),
-                eq(expectedMessage));
+        HandoffRequestResultMessage expectedMessage =
+                new HandoffRequestResultMessage(
+                        taskId, HANDOFF_REQUEST_RESULT_SUCCESS, List.of(handoffActivityData));
+        verify(mMockTaskContinuityMessenger)
+                .sendMessage(
+                        aryEq(new int[] {firstAssociationId, secondAssociationId}),
+                        eq(expectedMessage));
     }
 
     @Test
     public void onHandoffTaskDataRequestFailed_sendsFailureMessage_timeout() {
-        testHandoffFailure(
-                HANDOFF_FAILURE_TIMEOUT, HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT);
+        testHandoffFailure(HANDOFF_FAILURE_TIMEOUT, HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT);
     }
 
     @Test
@@ -191,7 +187,6 @@ public class InboundHandoffRequestControllerTest {
                 HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
     }
 
-
     private void testHandoffFailure(int receiverErrorCode, int expectedStatusCode) {
         int associationId = 1;
         int taskId = 1;
@@ -204,9 +199,9 @@ public class InboundHandoffRequestControllerTest {
 
         mInboundHandoffRequestController.onHandoffTaskDataRequestFailed(taskId, receiverErrorCode);
 
-        HandoffRequestResultMessage expectedMessage = new HandoffRequestResultMessage(
-                taskId, expectedStatusCode, List.of());
+        HandoffRequestResultMessage expectedMessage =
+                new HandoffRequestResultMessage(taskId, expectedStatusCode, List.of());
         verify(mMockTaskContinuityMessenger)
-            .sendMessage(aryEq(new int[]{associationId}),eq(expectedMessage));
+                .sendMessage(aryEq(new int[] {associationId}), eq(expectedMessage));
     }
 }

@@ -44,8 +44,8 @@ import java.util.Objects;
 /**
  * Controller for outbound handoff requests.
  *
- * This class is responsible for sending handoff request messages to the remote device and handling
- * the results, either launching the task locally or falling back to a web URL if provided.
+ * <p>This class is responsible for sending handoff request messages to the remote device and
+ * handling the results, either launching the task locally or falling back to a web URL if provided.
  */
 public class OutboundHandoffRequestController {
 
@@ -56,14 +56,14 @@ public class OutboundHandoffRequestController {
     private final Context mContext;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final RemoteTaskStore mRemoteTaskStore;
-    private final HandoffRequestCallbackHolder mHandoffRequestCallbackHolder
-        = new HandoffRequestCallbackHolder();
+    private final HandoffRequestCallbackHolder mHandoffRequestCallbackHolder =
+            new HandoffRequestCallbackHolder();
     private final Set<PendingHandoffRequest> mPendingHandoffRequests = new HashSet<>();
 
     public OutboundHandoffRequestController(
-        @NonNull Context context,
-        @NonNull TaskContinuityMessenger taskContinuityMessenger,
-        @NonNull RemoteTaskStore remoteTaskStore) {
+            @NonNull Context context,
+            @NonNull TaskContinuityMessenger taskContinuityMessenger,
+            @NonNull RemoteTaskStore remoteTaskStore) {
 
         Objects.requireNonNull(context);
         Objects.requireNonNull(taskContinuityMessenger);
@@ -84,10 +84,9 @@ public class OutboundHandoffRequestController {
             }
 
             mPendingHandoffRequests.add(request);
-            TaskContinuityMessenger.SendMessageResult result
-                = mTaskContinuityMessenger.sendMessage(
-                    associationId,
-                    new HandoffRequestMessage(taskId));
+            TaskContinuityMessenger.SendMessageResult result =
+                    mTaskContinuityMessenger.sendMessage(
+                            associationId, new HandoffRequestMessage(taskId));
 
             switch (result) {
                 case TaskContinuityMessenger.SendMessageResult.SUCCESS:
@@ -96,58 +95,55 @@ public class OutboundHandoffRequestController {
                 case TaskContinuityMessenger.SendMessageResult.FAILURE_MESSAGE_SERIALIZATION_FAILED:
                     Slog.e(TAG, "Failed to serialize handoff request message.");
                     finishHandoffRequest(
-                        associationId,
-                        taskId,
-                        HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
+                            associationId,
+                            taskId,
+                            HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
                     break;
                 case TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND:
                     Slog.w(TAG, "Association " + associationId + " is not connected.");
                     finishHandoffRequest(
-                        associationId,
-                        taskId,
-                        HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND);
+                            associationId, taskId, HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND);
                     break;
                 case TaskContinuityMessenger.SendMessageResult.FAILURE_INTERNAL_ERROR:
                     Slog.e(TAG, "Failed to send handoff request message - internal error.");
                     finishHandoffRequest(
-                        associationId,
-                        taskId,
-                        HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
+                            associationId,
+                            taskId,
+                            HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
                     break;
             }
         }
     }
 
     public void onHandoffRequestResultMessageReceived(
-        int associationId,
-        HandoffRequestResultMessage handoffRequestResultMessage) {
+            int associationId, HandoffRequestResultMessage handoffRequestResultMessage) {
 
         synchronized (mPendingHandoffRequests) {
-            PendingHandoffRequest request
-                = new PendingHandoffRequest(associationId, handoffRequestResultMessage.taskId());
+            PendingHandoffRequest request =
+                    new PendingHandoffRequest(associationId, handoffRequestResultMessage.taskId());
             if (!mPendingHandoffRequests.contains(request)) {
                 return;
             }
 
             if (handoffRequestResultMessage.statusCode() != HANDOFF_REQUEST_RESULT_SUCCESS) {
                 finishHandoffRequest(
-                    associationId,
-                    handoffRequestResultMessage.taskId(),
-                    handoffRequestResultMessage.statusCode());
+                        associationId,
+                        handoffRequestResultMessage.taskId(),
+                        handoffRequestResultMessage.statusCode());
                 return;
             }
 
             if (!HandoffActivityStarter.start(mContext, handoffRequestResultMessage.activities())) {
                 finishHandoffRequest(
-                    associationId,
-                    handoffRequestResultMessage.taskId(),
-                    HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
+                        associationId,
+                        handoffRequestResultMessage.taskId(),
+                        HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
                 return;
             } else {
                 finishHandoffRequest(
-                    associationId,
-                    handoffRequestResultMessage.taskId(),
-                    HANDOFF_REQUEST_RESULT_SUCCESS);
+                        associationId,
+                        handoffRequestResultMessage.taskId(),
+                        HANDOFF_REQUEST_RESULT_SUCCESS);
             }
         }
     }
@@ -160,8 +156,8 @@ public class OutboundHandoffRequestController {
             }
 
             mPendingHandoffRequests.remove(request);
-            mHandoffRequestCallbackHolder
-                .notifyAndRemoveCallbacks(associationId, taskId, statusCode);
+            mHandoffRequestCallbackHolder.notifyAndRemoveCallbacks(
+                    associationId, taskId, statusCode);
             mRemoteTaskStore.removeTask(associationId, taskId);
         }
     }

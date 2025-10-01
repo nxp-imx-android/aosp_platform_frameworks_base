@@ -42,12 +42,11 @@ final class HandoffActivityStarter {
      *
      * @param context the context to use for starting the activities.
      * @param handoffActivityData the list of activities to start.
-     * @return {@code true} if an activity was started (including web fallback),
-     * {@code false} otherwise.
+     * @return {@code true} if an activity was started (including web fallback), {@code false}
+     *     otherwise.
      */
     public static boolean start(
-        @NonNull Context context,
-        @NonNull List<HandoffActivityData> handoffActivityData) {
+            @NonNull Context context, @NonNull List<HandoffActivityData> handoffActivityData) {
 
         Objects.requireNonNull(context);
         Objects.requireNonNull(handoffActivityData);
@@ -68,8 +67,7 @@ final class HandoffActivityStarter {
     }
 
     private static boolean startNativeActivities(
-        @NonNull Context context,
-        @NonNull List<HandoffActivityData> handoffActivityData) {
+            @NonNull Context context, @NonNull List<HandoffActivityData> handoffActivityData) {
 
         Objects.requireNonNull(context);
         Objects.requireNonNull(handoffActivityData);
@@ -81,8 +79,8 @@ final class HandoffActivityStarter {
 
         // Try to build an intent for the top activity handed off. This will be used as a fallback
         // if any of the lower activities cannot be launched.
-        Intent topActivityIntent = createIntent(context,
-            handoffActivityData.get(handoffActivityData.size() - 1));
+        Intent topActivityIntent =
+                createIntent(context, handoffActivityData.get(handoffActivityData.size() - 1));
 
         // If the top activity cannot launch, we don't have anything to fall back to and should
         // return false.
@@ -98,8 +96,9 @@ final class HandoffActivityStarter {
                 intentsToLaunch[i] = intent;
             } else {
                 Slog.w(
-                    TAG,
-                    "Failed to create intent for activity, falling back to launch top activity.");
+                        TAG,
+                        "Failed to create intent for activity, falling back to launch top"
+                            + " activity.");
                 return startIntents(context, new Intent[] {topActivityIntent});
             }
         }
@@ -134,10 +133,9 @@ final class HandoffActivityStarter {
 
         intents[intents.length - 1].addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
-            int result = context.startActivitiesAsUser(
-                intents,
-                ActivityOptions.makeBasic().toBundle(),
-                UserHandle.CURRENT);
+            int result =
+                    context.startActivitiesAsUser(
+                            intents, ActivityOptions.makeBasic().toBundle(), UserHandle.CURRENT);
             Slog.i(TAG, "Launched activities: " + result);
             return result == ActivityManager.START_SUCCESS;
         } catch (ActivityNotFoundException e) {
@@ -148,8 +146,7 @@ final class HandoffActivityStarter {
 
     @Nullable
     private static Intent createIntent(
-        @NonNull Context context,
-        @NonNull HandoffActivityData handoffActivityData) {
+            @NonNull Context context, @NonNull HandoffActivityData handoffActivityData) {
 
         Objects.requireNonNull(context);
         Objects.requireNonNull(handoffActivityData);
@@ -158,11 +155,12 @@ final class HandoffActivityStarter {
         PackageManager packageManager = context.getPackageManager();
         try {
             packageManager.getActivityInfo(
-                handoffActivityData.getComponentName(),
-                PackageManager.MATCH_DEFAULT_ONLY);
+                    handoffActivityData.getComponentName(), PackageManager.MATCH_DEFAULT_ONLY);
         } catch (PackageManager.NameNotFoundException e) {
-            Slog.w(TAG, "Package not installed on device: "
-                + handoffActivityData.getComponentName().getPackageName());
+            Slog.w(
+                    TAG,
+                    "Package not installed on device: "
+                            + handoffActivityData.getComponentName().getPackageName());
             return null;
         }
 

@@ -54,9 +54,8 @@ public class PackageMetadataCache {
 
             PackageInfo packageInfo;
             try {
-                packageInfo = mPackageManager.getPackageInfo(
-                    packageName,
-                    PackageManager.GET_META_DATA);
+                packageInfo =
+                        mPackageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA);
             } catch (PackageManager.NameNotFoundException e) {
                 Slog.e(TAG, "Failed to get package info for package: " + packageName, e);
                 return null;

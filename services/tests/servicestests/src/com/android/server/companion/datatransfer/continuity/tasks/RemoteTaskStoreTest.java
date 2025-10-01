@@ -58,7 +58,7 @@ public class RemoteTaskStoreTest {
             assertThat(remoteTasksReportedToListener).hasSize(expectedTasks.size());
             for (int i = 0; i < expectedTasks.size(); i++) {
                 assertThat(remoteTasksReportedToListener.get(i))
-                    .containsExactlyElementsIn(expectedTasks.get(i));
+                        .containsExactlyElementsIn(expectedTasks.get(i));
             }
         }
     }
@@ -128,23 +128,21 @@ public class RemoteTaskStoreTest {
         // Add two tasks
         RemoteTaskInfo mostRecentTaskInfo = new RemoteTaskInfo(1, "task1", 200, new byte[0], true);
         RemoteTask mostRecentTask = mostRecentTaskInfo.toRemoteTask(deviceId, deviceName);
-        RemoteTaskInfo secondMostRecentTaskInfo
-            = new RemoteTaskInfo(2, "task2", 100,  new byte[0], true);
-        RemoteTask secondMostRecentTask
-            = secondMostRecentTaskInfo.toRemoteTask(deviceId, deviceName);
-        taskStore.setTasks(
-            deviceId,
-            Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
+        RemoteTaskInfo secondMostRecentTaskInfo =
+                new RemoteTaskInfo(2, "task2", 100, new byte[0], true);
+        RemoteTask secondMostRecentTask =
+                secondMostRecentTaskInfo.toRemoteTask(deviceId, deviceName);
+        taskStore.setTasks(deviceId, Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
 
         assertThat(taskStore.getMostRecentTasks()).containsExactly(mostRecentTask);
         listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(mostRecentTask)));
 
         taskStore.removeTask(deviceId, mostRecentTaskInfo.id());
         listener.verifyReportedTasks(
-            List.of(
-                Collections.emptyList(),
-                List.of(mostRecentTask),
-                List.of(secondMostRecentTask)));
+                List.of(
+                        Collections.emptyList(),
+                        List.of(mostRecentTask),
+                        List.of(secondMostRecentTask)));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(secondMostRecentTask);
     }
 
@@ -171,7 +169,7 @@ public class RemoteTaskStoreTest {
         // Verify the most recent task is added to the task store.
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
         listener.verifyReportedTasks(
-            List.of(Collections.emptyList(), List.of(remoteTask), Collections.emptyList()));
+                List.of(Collections.emptyList(), List.of(remoteTask), Collections.emptyList()));
     }
 
     @Test
@@ -198,10 +196,7 @@ public class RemoteTaskStoreTest {
         // Verify the most recent tasks are added to the task store.
         assertThat(taskStore.getMostRecentTasks()).containsExactly(newRemoteTask);
         listener.verifyReportedTasks(
-            List.of(
-                Collections.emptyList(),
-                List.of(remoteTask),
-                List.of(newRemoteTask)));
+                List.of(Collections.emptyList(), List.of(remoteTask), List.of(newRemoteTask)));
     }
 
     @Test
@@ -227,17 +222,13 @@ public class RemoteTaskStoreTest {
         assertThat(taskStore.getMostRecentTasks()).containsExactly(initialTask);
         listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(initialTask)));
 
-        RemoteTaskInfo updatedTaskInfo = new RemoteTaskInfo(
-            initialTaskInfo.id(),
-            "task1",
-            200L,
-            new byte[0],
-            true);
+        RemoteTaskInfo updatedTaskInfo =
+                new RemoteTaskInfo(initialTaskInfo.id(), "task1", 200L, new byte[0], true);
 
         RemoteTask updatedTask = updatedTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.updateTask(deviceId, updatedTaskInfo);
         assertThat(taskStore.getMostRecentTasks()).containsExactly(updatedTask);
         listener.verifyReportedTasks(
-            List.of(Collections.emptyList(), List.of(initialTask), List.of(updatedTask)));
+                List.of(Collections.emptyList(), List.of(initialTask), List.of(updatedTask)));
     }
 }
