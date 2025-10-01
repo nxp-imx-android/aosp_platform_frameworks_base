@@ -232,6 +232,7 @@ python_test_host {
     ],
     data: [
         "golden-output/*.txt",
+        ":hoststubgen-build-flags",
         ":hoststubgen-test-tiny-framework-pta-output-normalized",
         ":hoststubgen-test-tiny-framework-mm-output-normalized",
     ],

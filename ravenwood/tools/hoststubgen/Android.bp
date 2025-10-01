@@ -102,3 +102,17 @@ java_test_host {
     test_suites: ["general-tests"],
     visibility: ["//visibility:private"],
 }
+
+// Emit build flags that affect javac output into a text file.
+genrule {
+    name: "hoststubgen-build-flags",
+    cmd: "echo " +
+        "RELEASE_BUILD_WITH_JDK_25=" + select(release_flag("RELEASE_BUILD_WITH_JDK_25"), {
+            true: "true",
+            default: "",
+        }) +
+        " | tr ' ' '\n' > $(out)",
+    out: [
+        "00-hoststubgen-build-flags.txt",
+    ],
+}
