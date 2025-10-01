@@ -575,19 +575,23 @@ public class AssociationStore {
             }
         }
         synchronized (mRemoteListeners) {
-            final int userId = association.getUserId();
-            final List<AssociationInfo> updatedAssociations = getActiveAssociationsByUser(userId);
             // Notify listeners if ADDED, REMOVED or UPDATED_ADDRESS_CHANGED.
             // Do NOT notify when UPDATED_ADDRESS_UNCHANGED, which means a minor tweak in
             // association's configs, which "listeners" won't (and shouldn't) be able to see.
             if (changeType != CHANGE_TYPE_UPDATED_ADDRESS_UNCHANGED) {
+                final int userId = association.getUserId();
+                List<AssociationInfo> associationsForCurrentUser =
+                        getActiveAssociationsByUser(userId);
+                List<AssociationInfo> allAssociations = getActiveAssociations();
                 mRemoteListeners.broadcast((listener, callbackUserId) -> {
                     int listenerUserId = (int) callbackUserId;
-                    if (listenerUserId == userId || listenerUserId == UserHandle.USER_ALL) {
-                        try {
-                            listener.onAssociationsChanged(updatedAssociations);
-                        } catch (RemoteException ignored) {
+                    try {
+                        if (listenerUserId == userId) {
+                            listener.onAssociationsChanged(associationsForCurrentUser);
+                        } else if (listenerUserId == UserHandle.USER_ALL) {
+                            listener.onAssociationsChanged(allAssociations);
                         }
+                    } catch (RemoteException ignored) {
                     }
                 });
             }
