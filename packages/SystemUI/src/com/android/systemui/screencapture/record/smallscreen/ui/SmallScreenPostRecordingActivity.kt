@@ -44,7 +44,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -184,16 +183,6 @@ constructor(
                                 .height(56.dp),
                     )
                 }
-            }
-            TextButton(
-                onClick = { finish() },
-                modifier = Modifier.padding(horizontal = 12.dp).size(48.dp).align(Alignment.TopEnd),
-            ) {
-                LoadingIcon(
-                    icon = loadIcon(viewModel, R.drawable.ic_close, null).value,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(24.dp),
-                )
             }
         }
     }
