@@ -53038,7 +53038,7 @@ package android.view {
     field public static final int CHANGE_FRAME_RATE_ALWAYS = 1; // 0x1
     field public static final int CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS = 0; // 0x0
     field @NonNull public static final android.os.Parcelable.Creator<android.view.Surface> CREATOR;
-    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_gte_enum") public static final int FRAME_RATE_COMPATIBILITY_AT_LEAST = 2; // 0x2
+    field public static final int FRAME_RATE_COMPATIBILITY_AT_LEAST = 2; // 0x2
     field public static final int FRAME_RATE_COMPATIBILITY_DEFAULT = 0; // 0x0
     field public static final int FRAME_RATE_COMPATIBILITY_FIXED_SOURCE = 1; // 0x1
     field public static final int ROTATION_0 = 0; // 0x0
