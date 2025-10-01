@@ -1624,7 +1624,7 @@ public class MediaQualityService extends SystemService {
 
         @Override
         public boolean isSupported(int userId) {
-            return false;
+            return mMediaQuality != null;
         }
 
         @GuardedBy("mPictureProfileLock")
