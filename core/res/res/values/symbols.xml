@@ -2703,6 +2703,7 @@
   <java-symbol type="string" name="websearch" />
   <java-symbol type="drawable" name="ic_media_video_poster" />
   <java-symbol type="xml" name="config_webview_packages" />
+  <java-symbol type="string" name="config_webViewSelectionActionMenuClientPackage"/>
 
   <!-- From SubtitleView -->
   <java-symbol type="dimen" name="subtitle_corner_radius" />

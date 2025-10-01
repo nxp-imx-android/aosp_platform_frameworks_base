@@ -28,6 +28,14 @@ flag {
 }
 
 flag {
+    name: "selection_action_menu_client"
+    is_exported: true
+    namespace: "webview"
+    description: "New API: platform specific selection menu modification client"
+    bug: "413195996"
+}
+
+flag {
     name: "user_agent_reduction"
     is_exported: true
     namespace: "webview"
