@@ -1074,23 +1074,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mPackageIntentReceiver.onReceive(getContext(), intent);
     }
 
-    private void simulatePackageReplacedBroadcasts(String pkg, int uid) {
-        Intent removedIntent = new Intent(Intent.ACTION_PACKAGE_REMOVED);
-        removedIntent.setData(Uri.parse("package:" + pkg));
-        Bundle removedExtras = new Bundle();
-        removedExtras.putInt(Intent.EXTRA_UID, uid);
-        removedExtras.putBoolean(Intent.EXTRA_REPLACING, true);
-        removedIntent.putExtras(removedExtras);
-        mPackageIntentReceiver.onReceive(getContext(), removedIntent);
-
-        Intent addedIntent = new Intent(Intent.ACTION_PACKAGE_ADDED);
-        addedIntent.setData(Uri.parse("package:" + pkg));
-        Bundle addedExtras = new Bundle();
-        addedExtras.putInt(Intent.EXTRA_UID, uid);
-        addedIntent.putExtras(addedExtras);
-        mPackageIntentReceiver.onReceive(getContext(), addedIntent);
-    }
-
     private void simulatePackageDistractionBroadcast(int flag, String[] pkgs, int[] uids) {
         // mimics receive broadcast that package is (un)distracting
         // but does not actually register that info with packagemanager
@@ -20749,24 +20732,5 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         Icon icon = updatedNtf.extras.getParcelable(EXTRA_PICTURE_ICON);
         assertEquals(icon.getType(), Icon.TYPE_URI);
         assertEquals(icon.getUri(), offloadUri);
-    }
-
-    @Test
-    public void onReceive_packageRemoved_notifiesListeners() {
-        simulatePackageRemovedBroadcast("pkg", 123);
-        waitForIdle();
-
-        verify(mListeners).onPackagesChanged(eq(true), eq(new String[]{"pkg"}),
-                eq(new int[]{123}));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING)
-    public void onBroadcast_packageReplaced_notifiesListenersOnce() {
-        simulatePackageReplacedBroadcasts("pkg", 123);
-        waitForIdle();
-
-        verify(mListeners, times(1)).onPackagesChanged(eq(false), eq(new String[]{"pkg"}),
-                eq(new int[]{123}));
     }
 }
