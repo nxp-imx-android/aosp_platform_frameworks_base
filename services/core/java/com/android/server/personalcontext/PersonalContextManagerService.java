@@ -16,7 +16,7 @@
 
 package com.android.server.personalcontext;
 
-import android.annotation.RequiresNoPermission;
+import android.annotation.PermissionManuallyEnforced;
 import android.content.ComponentName;
 import android.content.Context;
 import android.service.personalcontext.IPersonalContextManager;
@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.internal.R;
+import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 
 import java.io.FileDescriptor;
@@ -39,6 +40,7 @@ import java.util.List;
  */
 public class PersonalContextManagerService extends SystemService {
     private static final String TAG = "PersonalContext";
+    private final Context mContext;
 
     private boolean mRegisteredComponents = false;
 
@@ -50,6 +52,7 @@ public class PersonalContextManagerService extends SystemService {
 
     public PersonalContextManagerService(Context context) {
         super(context);
+        mContext = context;
     }
 
     @Override
@@ -102,12 +105,16 @@ public class PersonalContextManagerService extends SystemService {
     }
 
     private final class BinderService extends IPersonalContextManager.Stub {
+        @PermissionManuallyEnforced
         @Override
-        @RequiresNoPermission
         protected void dump(
                 @NonNull FileDescriptor fd,
                 @NonNull PrintWriter fout,
                 @Nullable String[] args) {
+            if (!DumpUtils.checkDumpPermission(mContext, TAG, fout)) {
+                return;
+            }
+
             fout.write("Triggers\n");
             fout.write("========\n");
             dumpComponentList(fout, mTriggerComponents);
