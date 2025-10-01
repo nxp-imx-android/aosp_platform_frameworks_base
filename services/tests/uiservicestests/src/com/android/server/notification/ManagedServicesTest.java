@@ -16,6 +16,7 @@
 package com.android.server.notification;
 
 import static android.content.Context.DEVICE_POLICY_SERVICE;
+import static android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_CURRENT;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
@@ -1969,6 +1970,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
                 APPROVAL_BY_COMPONENT);
         ComponentName cn = ComponentName.unflattenFromString("a/a");
 
+        service.registerSystemService(cn, 0);
         when(context.bindServiceAsUser(any(), any(), any(), any())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             ServiceConnection sc = (ServiceConnection) args[1];
@@ -1998,6 +2000,7 @@ public class ManagedServicesTest extends UiServiceTestCase {
                 APPROVAL_BY_COMPONENT);
         ComponentName cn = ComponentName.unflattenFromString("a/a");
 
+        service.registerSystemService(cn, 0);
         when(context.bindServiceAsUser(any(), any(), any(), any())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             ServiceConnection sc = (ServiceConnection) args[1];
@@ -2664,34 +2667,6 @@ public class ManagedServicesTest extends UiServiceTestCase {
         assertThat(service.setPackageOrComponentEnabled("onemore", userId, true, true)).isTrue();
         assertThat(service.setPackageOrComponentEnabled("onemore", userId, true, false)).isTrue();
         assertThat(service.isPackageOrComponentUserSet("onemore", userId)).isTrue();
-    }
-
-    @Test
-    public void registerSystemService_linksToDeath() throws Exception {
-        IInterface service = mock(IInterface.class);
-        IBinder binder = mock(IBinder.class);
-        when(service.asBinder()).thenReturn(binder);
-
-        mService.registerSystemService(service, ComponentName.unflattenFromString("a/a"), 0, 15);
-
-        verify(binder).linkToDeath(any(), anyInt());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_FIX_MANAGED_SERVICES_DOUBLE_BINDING)
-    public void registerGuestService_doesNotLinkToDeath() throws Exception {
-        ManagedServices ownerService = new TestManagedServices(getContext(), mLock, mUserProfiles,
-                mIpm, APPROVAL_BY_PACKAGE);
-        IInterface service = mock(IInterface.class);
-        IBinder binder = mock(IBinder.class);
-        when(service.asBinder()).thenReturn(binder);
-        ManagedServices.ManagedServiceInfo guest = ownerService.new ManagedServiceInfo(service,
-                ComponentName.unflattenFromString("a/a"), 0, false, mock(ServiceConnection.class),
-                26, 34);
-
-        mService.registerGuestService(guest);
-
-        verify(binder, never()).linkToDeath(any(), anyInt());
     }
 
     private void mockServiceInfoWithMetaData(List<ComponentName> componentNames,

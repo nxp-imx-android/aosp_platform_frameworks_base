@@ -207,13 +207,6 @@ flag {
 }
 
 flag {
-  name: "fix_managed_services_double_binding"
-  namespace: "notifications"
-  description: "Couple of tweaks to fix b/434679743"
-  bug: "434679743"
-}
-
-flag {
   name: "limit_managed_services_count"
   namespace: "systemui"
   description: "Enforce a maximum number of allowed components in ManagedServices"
