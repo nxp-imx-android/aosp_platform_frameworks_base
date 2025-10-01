@@ -27,6 +27,7 @@ public class SmartReplyLogger {
             0,
             null,
             0,
+            ""
         )
     }
 
@@ -37,6 +38,7 @@ public class SmartReplyLogger {
             0,
             null,
             0,
+            ""
         )
     }
 }
