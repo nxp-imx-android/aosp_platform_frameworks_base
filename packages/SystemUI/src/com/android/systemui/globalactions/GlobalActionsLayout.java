@@ -19,7 +19,10 @@ package com.android.systemui.globalactions;
 import static com.android.systemui.Flags.blurOnMoreSurfaces;
 
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -30,6 +33,7 @@ import com.android.internal.graphics.drawable.BackgroundBlurDrawable;
 import com.android.settingslib.Utils;
 import com.android.systemui.HardwareBgDrawable;
 import com.android.systemui.MultiListLayout;
+import com.android.systemui.common.shared.colors.SurfaceEffectColors;
 import com.android.systemui.res.R;
 import com.android.systemui.util.leak.RotationUtils;
 
@@ -59,7 +63,10 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
             blurDrawable.setCornerRadius(dialogCornerRadius);
             blurDrawable.setBlurRadius(getResources().getDimensionPixelSize(
                     R.dimen.global_actions_blur_radius));
-            listBackground = blurDrawable;
+            GradientDrawable surfaceEffect = new GradientDrawable();
+            surfaceEffect.setColor(SurfaceEffectColors.surfaceEffect0(mContext));
+            surfaceEffect.setCornerRadius(dialogCornerRadius);
+            listBackground = new LayerDrawable(new Drawable[]{blurDrawable, surfaceEffect});
         } else {
             int listBgColor = getResources().getColor(
                     R.color.global_actions_grid_background, null);
