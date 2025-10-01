@@ -25,7 +25,7 @@ import android.os.UserManager;
 import com.android.internal.R;
 import com.android.settingslib.devicestate.AndroidSecureSettings;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
-import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerProvider;
+import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerImpl;
 import com.android.settingslib.devicestate.PostureDeviceStateConverter;
 import com.android.settingslib.devicestate.SecureSettings;
 import com.android.settingslib.notification.modes.ZenIconLoader;
@@ -276,8 +276,7 @@ public interface StatusBarPolicyModule {
         return new PostureDeviceStateConverter(context, deviceStateManager);
     }
 
-    /** Returns a singleton instance of DeviceStateAutoRotateSettingManager based on auto-rotate
-     * refactor flag. */
+    /** Returns a singleton instance of DeviceStateAutoRotateSettingManager. */
     @SysUISingleton
     @Provides
     static DeviceStateAutoRotateSettingManager provideAutoRotateSettingsManager(
@@ -287,8 +286,8 @@ public interface StatusBarPolicyModule {
             @Main Handler mainHandler,
             PostureDeviceStateConverter postureDeviceStateConverter
     ) {
-        return DeviceStateAutoRotateSettingManagerProvider.createInstance(context, bgExecutor,
-                secureSettings, mainHandler, postureDeviceStateConverter);
+        return new DeviceStateAutoRotateSettingManagerImpl(context, bgExecutor, secureSettings,
+                mainHandler, postureDeviceStateConverter);
     }
 
     /**
