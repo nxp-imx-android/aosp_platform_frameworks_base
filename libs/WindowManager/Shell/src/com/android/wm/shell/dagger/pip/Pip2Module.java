@@ -246,10 +246,11 @@ public abstract class Pip2Module {
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
             PipTransitionState pipTransitionState,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipDesktopState pipDesktopState,
             PipUiEventLogger pipUiEventLogger, PipDisplayLayoutState pipDisplayLayoutState) {
         return new PipMotionHelper(context, pipBoundsState, menuController, pipSnapAlgorithm,
                 floatingContentCoordinator, pipScheduler, pipPerfHintControllerOptional,
-                pipTransitionState, pipSurfaceTransactionHelper, pipUiEventLogger,
+                pipTransitionState, pipSurfaceTransactionHelper, pipDesktopState, pipUiEventLogger,
                 pipDisplayLayoutState);
     }
 

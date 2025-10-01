@@ -20,6 +20,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -118,6 +119,25 @@ class PipDesktopState(
     /** Returns whether the display with the given id is a Desktop-first display. */
     fun isDisplayDesktopFirst(displayId: Int) =
         rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+
+    /**
+     * Returns whether PiP is allowed to free-float (can be placed anywhere on the screen, but will
+     * snap to edge if dragged past display bounds, and doesn't stash) by checking the following:
+     * - ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP flag is enabled
+     * - The PiP is in an active Desktop Mode session
+     * - The display that PiP is active in is a Desktop-first display
+     */
+    fun isFreeFloatingPipEnabled(): Boolean {
+        val isPipInDesktopMode = isPipInDesktopMode()
+        val displayId = pipDisplayLayoutState.displayId
+        logD(
+            "isFreeFloatingPipEnabled flag=%b isPipInDesktopMode=%b isDisplayDesktopFirst=%b",
+            Flags.enableDesktopWindowingFreeFloatingPip(),
+            isPipInDesktopMode, rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId),
+        )
+        return Flags.enableDesktopWindowingFreeFloatingPip() &&
+                isPipInDesktopMode && rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+    }
 
     /** Returns whether Recents is in the middle of animating. */
     fun isRecentsAnimating(): Boolean =

@@ -311,6 +311,10 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         return false;
     }
 
+    @VisibleForTesting void setPipInputConsumer(PipInputConsumer consumer) {
+        mPipInputConsumer = consumer;
+    }
+
     void setTouchGesture(PipTouchGesture gesture) {
         mGesture = gesture;
     }
@@ -333,6 +337,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     }
 
     void onActivityPinned() {
+        // If free-floating PiP is enabled, we don't stash and always snap-to-edge if PiP is dragged
+        // past display bounds
+        mEnableStash = !mPipDesktopState.isFreeFloatingPipEnabled();
         mPipDismissTargetHandler.createOrUpdateDismissTarget();
         mPipResizeGestureHandler.onActivityPinned();
         mFloatingContentCoordinator.onContentAdded(mMotionHelper);

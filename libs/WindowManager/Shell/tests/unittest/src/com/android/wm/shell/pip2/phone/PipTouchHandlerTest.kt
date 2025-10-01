@@ -95,6 +95,7 @@ class PipTouchHandlerTest : ShellTestCase() {
     private val mockMotionEvent = mock<MotionEvent>()
     private val mockPipDismissTargetHandler = mock<PipDismissTargetHandler>()
     private val mockPipResizeGestureHandler = mock<PipResizeGestureHandler>()
+    private val mockPipInputConsumer = mock<PipInputConsumer>()
 
     private lateinit var pipTouchHandler: PipTouchHandler
     private lateinit var pipTouchGesture: PipTouchGesture
@@ -120,6 +121,7 @@ class PipTouchHandlerTest : ShellTestCase() {
         pipTouchHandler.setPipTouchState(pipTouchState)
         pipTouchHandler.setPipDismissTargetHandler(mockPipDismissTargetHandler)
         pipTouchHandler.pipResizeGestureHandler = mockPipResizeGestureHandler
+        pipTouchHandler.setPipInputConsumer(mockPipInputConsumer)
 
         whenever(pipTouchState.downTouchPosition).thenReturn(mockTouchPosition)
         whenever(pipTouchState.velocity).thenReturn(mockTouchPosition)
@@ -323,6 +325,42 @@ class PipTouchHandlerTest : ShellTestCase() {
         PIP_BOUNDS.offset(-500, 0)
         whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
         whenever(pipTouchState.lastTouchDisplayId).thenReturn(TARGET_DISPLAY_ID)
+        pipTouchGesture.onUp(pipTouchState)
+
+        verify(mockPipMotionHelper, never()).stashToEdge(
+            any(), any(), anyOrNull()
+        )
+    }
+
+    @Test
+    fun pipTouchGesture_onUpFreeFloatingDisabled_pipStashedToEdge() {
+        whenever(mockPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(false)
+        pipTouchHandler.mEnableStash = true
+
+        // This is called when PiP is entered, which updates mEnableStash
+        pipTouchHandler.onActivityPinned()
+        pipTouchGesture.onDown(pipTouchState)
+        whenever(pipTouchState.isDragging).thenReturn(true)
+        PIP_BOUNDS.offset(-500, 0)
+        whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
+        pipTouchGesture.onUp(pipTouchState)
+
+        verify(mockPipMotionHelper).stashToEdge(
+            any(), any(), anyOrNull()
+        )
+    }
+
+    @Test
+    fun pipTouchGesture_onUpFreeFloatingEnabled_disallowsStashing() {
+        whenever(mockPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true)
+        pipTouchHandler.mEnableStash = true
+
+        // This is called when PiP is entered, which updates mEnableStash
+        pipTouchHandler.onActivityPinned()
+        pipTouchGesture.onDown(pipTouchState)
+        whenever(pipTouchState.isDragging).thenReturn(true)
+        PIP_BOUNDS.offset(-500, 0)
+        whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
         pipTouchGesture.onUp(pipTouchState)
 
         verify(mockPipMotionHelper, never()).stashToEdge(
