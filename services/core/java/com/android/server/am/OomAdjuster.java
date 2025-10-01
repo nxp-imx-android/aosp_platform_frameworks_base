@@ -448,6 +448,29 @@ public abstract class OomAdjuster {
          */
         void onProcessUpdatedAndTrimmed(int numCached, int numEmpty, long now);
 
+        /** Notifies at the start of the UIDs update process. */
+        void onUpdateUidsStarted();
+
+        /**
+         * Notifies at the end of the UIDs update process.
+         *
+         * @param activeUids The set of all UIDs that were active during this update cycle.
+         * @param nowElapsed The timestamp (in elapsed realtime) at which the update occurred.
+         * @param becameIdle A list of UIDs that became idle during this update cycle.
+         */
+        void onUpdateUidsFinished(ActiveUidsInternal activeUids, long nowElapsed,
+                ArrayList<UidRecordInternal> becameIdle);
+
+        /**
+         * Notifies when a UID's state has been updated.
+         *
+         * @param uidRec The UidRecordInternal that was updated.
+         * @param uidChange A bitmask of flags indicating what specific parts of the UID's state
+         *                  have changed, such as {@link UidRecord#CHANGE_PROCSTATE} or
+         *                  {@link UidRecord#CHANGE_CAPABILITY}.
+         */
+        void onUidUpdated(UidRecordInternal uidRec, int uidChange);
+
         /** Notifies when a process becomes effectively background restricted. */
         void onProcessBackgroundRestricted(ProcessRecordInternal app);
 
@@ -1375,9 +1398,7 @@ public abstract class OomAdjuster {
         becameIdle.clear();
 
         // Update from any uid changes.
-        if (mService.mLocalPowerManager != null) {
-            mService.mLocalPowerManager.startUidChanges();
-        }
+        mCallback.onUpdateUidsStarted();
         for (int i = activeUids.size() - 1; i >= 0; i--) {
             final UidRecordInternal uidRec = activeUids.valueAt(i);
             if (uidRec.getCurProcState() != PROCESS_STATE_NONEXISTENT) {
@@ -1465,44 +1486,11 @@ public abstract class OomAdjuster {
                                 uidRec.getSetCapability(), oldCapability,
                                 flags);
                     }
-                    if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0
-                            || (uidChange & UidRecord.CHANGE_CAPABILITY) != 0) {
-                        mService.mAtmInternal.onUidProcStateChanged(
-                                uidRec.getUid(), uidRec.getSetProcState());
-                    }
-                    if (uidChange != 0) {
-                        // TODO: b/441408003 - Convert to Callback and move the casting at AMS side.
-                        mService.enqueueUidChangeLocked((UidRecord) uidRec, -1, uidChange);
-                    }
-                    if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0
-                            || (uidChange & UidRecord.CHANGE_CAPABILITY) != 0) {
-                        mService.noteUidProcessStateAndCapability(uidRec.getUid(),
-                                uidRec.getCurProcState(), uidRec.getCurCapability());
-                    }
-                    if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0) {
-                        mService.noteUidProcessState(uidRec.getUid(), uidRec.getCurProcState());
-                    }
-                    if (uidRec.getHasForegroundServices()) {
-                        // TODO: b/441408003 - Convert to Callback and move the casting at AMS side.
-                        mService.mServices.foregroundServiceProcStateChangedLocked(
-                                (UidRecord) uidRec);
-                    }
+                    mCallback.onUidUpdated(uidRec, uidChange);
                 }
             }
-            mService.mInternal.deletePendingTopUid(uidRec.getUid(), nowElapsed);
         }
-        if (mService.mLocalPowerManager != null) {
-            mService.mLocalPowerManager.finishUidChanges();
-        }
-
-        int size = becameIdle.size();
-        if (size > 0) {
-            // If we have any new uids that became idle this time, we need to make sure
-            // they aren't left with running services.
-            for (int i = size - 1; i >= 0; i--) {
-                mService.mServices.stopInBackgroundLocked(becameIdle.get(i).getUid());
-            }
-        }
+        mCallback.onUpdateUidsFinished(activeUids, nowElapsed, becameIdle);
     }
 
     /**
