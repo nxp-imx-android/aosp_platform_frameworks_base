@@ -448,21 +448,29 @@ private fun addStartSideComposable(
 
                 if (ClockModernization.isEnabled) {
                     clockView.visibility = View.GONE
-                    Clock(
-                        clockViewModel = checkNotNull(clockViewModel),
-                        modifier =
-                            Modifier.onGloballyPositioned { coordinates ->
-                                val boundsInWindow = coordinates.boundsInWindow()
-                                val bounds =
-                                    Rect(
-                                        boundsInWindow.left.toInt(),
-                                        boundsInWindow.top.toInt(),
-                                        boundsInWindow.right.toInt(),
-                                        boundsInWindow.bottom.toInt(),
-                                    )
-                                statusBarBoundsViewModel.updateComposeClockBounds(bounds)
-                            },
-                    )
+                    WithAdaptiveTint(
+                        isDarkProvider = { bounds ->
+                            statusBarViewModel.areaDark.isDarkTheme(bounds)
+                        },
+                        isHighlighted = false,
+                    ) { tint ->
+                        Clock(
+                            clockViewModel = checkNotNull(clockViewModel),
+                            textColor = tint,
+                            modifier =
+                                Modifier.onGloballyPositioned { coordinates ->
+                                    val boundsInWindow = coordinates.boundsInWindow()
+                                    val bounds =
+                                        Rect(
+                                            boundsInWindow.left.toInt(),
+                                            boundsInWindow.top.toInt(),
+                                            boundsInWindow.right.toInt(),
+                                            boundsInWindow.bottom.toInt(),
+                                        )
+                                    statusBarBoundsViewModel.updateComposeClockBounds(bounds)
+                                },
+                        )
+                    }
                 }
 
                 if (showDate) {

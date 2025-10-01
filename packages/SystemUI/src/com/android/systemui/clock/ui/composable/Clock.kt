@@ -19,15 +19,17 @@ package com.android.systemui.clock.ui.composable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 
 /** Composable for the clock UI that is shown on the top left of the status bar and the shade. */
 @Composable
-fun Clock(clockViewModel: ClockViewModel, modifier: Modifier = Modifier) {
+fun Clock(clockViewModel: ClockViewModel, textColor: Color, modifier: Modifier = Modifier) {
     Text(
         text = clockViewModel.clockText,
+        color = textColor,
         modifier = modifier.semantics { contentDescription = clockViewModel.contentDescriptionText },
     )
 }
