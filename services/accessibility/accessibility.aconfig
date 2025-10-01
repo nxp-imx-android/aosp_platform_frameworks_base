@@ -11,6 +11,16 @@ flag {
 }
 
 flag {
+    name: "enable_autoclick_for_connected_displays"
+    namespace: "accessibility"
+    description: "Fix autoclick to work with connected displays."
+    bug: "407807880"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_autoclick_indicator"
     namespace: "accessibility"
     description: "Whether to show autoclick indicator when autoclick feature is enabled."
