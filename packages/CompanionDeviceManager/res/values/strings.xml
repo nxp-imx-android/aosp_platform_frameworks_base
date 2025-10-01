@@ -197,6 +197,9 @@
     <!-- Notification permission will be granted of corresponding profile [CHAR LIMIT=30] -->
     <string name="permission_notifications">Notifications</string>
 
+    <!-- Permission(s) for application, screen, and sensor streaming given to the APP_STREAMING profile [CHAR LIMIT=30] -->
+    <string name="permission_app_streaming">Mirror screen and stream apps</string>
+
     <!-- Virtual device permission will be granted of corresponding profile [CHAR LIMIT=30] -->
     <string name="permission_create_virtual_device">Stream data to your <xliff:g id="device_type" example="phone">%1$s</xliff:g></string>
 
@@ -240,10 +243,13 @@
     <string name="permission_notifications_summary">\u2022 Read all notifications, including info like contacts, messages, and photos&lt;br/>\u2022 Send you notifications&lt;br/>&lt;br/>You can manage this app\'s ability to read and send notifications anytime in Settings > Notifications.</string>
 
     <!-- Description of storage permission of corresponding profile [CHAR LIMIT=NONE] -->
-    <string name="permission_storage_summary"></string>
+    <string name="permission_storage_summary">Share your phone\'s photos and media with your other devices.</string>
 
     <!-- Description of post notifications permission of corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_post_notifications_summary">Send you notifications</string>
+
+    <!-- Description of application, screen, and sensor streaming permission of the APP_STREAMING profile [CHAR LIMIT=NONE] -->
+    <string name="permission_app_streaming_summary">Share your phone\'s screen, including apps, to your devices. Your devices will have access to anything that\'s visible on your phone, including audio, photos, payment info, passwords and messages, even when your phone is locked.&lt;br/>&lt;br/>Provide microphone, camera and other sensor data from your devices back to your phone, including interactions like touch gestures and mouse clicks.</string>
 
     <!-- Description of virtual device permission of corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_create_virtual_device_summary">Stream microphone, camera and other sensor data from &lt;strong&gt;<xliff:g id="device_name" example="Chromebook">%3$s</xliff:g>&lt;/strong&gt; to your <xliff:g id="device_type" example="phone">%2$s</xliff:g>.</string>
