@@ -1752,6 +1752,12 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
+cc_aconfig_library {
+    name: "android.hardware.usb.flags-aconfig-cc-lib",
+    aconfig_declarations: "android.hardware.usb.flags-aconfig",
+    vendor_available: true,
+}
+
 // WindowingTools
 aconfig_declarations {
     name: "android.tracing.flags-aconfig",
