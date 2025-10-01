@@ -289,7 +289,6 @@ public class DisplayModeDirectorTest {
         mHandler = new Handler(Looper.getMainLooper());
         mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_INTERNAL,
                 DISPLAY_ID_2, Display.TYPE_INTERNAL));
-        when(mDisplayManagerFlags.isOnDisplayAddedInObserverEnabled()).thenReturn(true);
     }
 
     private Resources mockResources() {

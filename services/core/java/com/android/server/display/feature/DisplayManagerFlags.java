@@ -209,11 +209,6 @@ public class DisplayManagerFlags {
             Flags::ensureColorFadeWhenTurningOn
     );
 
-    private final FlagState mIsOnDisplayAddedInObserverEnabled = new FlagState(
-            Flags.FLAG_ENABLE_ON_DISPLAY_ADDED_IN_OBSERVER,
-            Flags::enableOnDisplayAddedInObserver
-    );
-
     private final FlagState mIsLoggingForDisplayEventsEnabled = new FlagState(
             Flags.FLAG_ENABLE_LOGGING_FOR_DISPLAY_EVENTS,
             Flags::enableLoggingForDisplayEvents
@@ -441,10 +436,6 @@ public class DisplayManagerFlags {
         return mEnsureColorFadeWhenTurningOn.isEnabled();
     }
 
-    public boolean isOnDisplayAddedInObserverEnabled() {
-        return mIsOnDisplayAddedInObserverEnabled.isEnabled();
-    }
-
     public boolean isDisplayEventsLoggingEnabled() {
         return mIsLoggingForDisplayEventsEnabled.isEnabled();
     }
@@ -510,7 +501,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
-        pw.println(" " + mIsOnDisplayAddedInObserverEnabled);
         pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);

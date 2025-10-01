@@ -1412,41 +1412,14 @@ public class DisplayModeDirector {
 
         public void observe() {
             mInjector.registerDisplayListener(this, mHandler);
-            if (mDisplayManagerFlags.isOnDisplayAddedInObserverEnabled()) {
-                final var enabledDisplays = mInjector.getEnabledDisplays();
-                // Populate existing displays
-                if (enabledDisplays != null && enabledDisplays.length > 0) {
-                    mHandler.post(() -> {
-                        for (Display d : enabledDisplays) {
-                            onDisplayAdded(d.getDisplayId());
-                        }
-                    });
-                }
-            } else {
-                // Populate existing displays
-                SparseArray<Display.Mode[]> modes = new SparseArray<>();
-                SparseArray<Display.Mode[]> appModes = new SparseArray<>();
-                SparseArray<Display.Mode> defaultModes = new SparseArray<>();
-                Display[] displays = mInjector.getDisplays();
-                for (Display d : displays) {
-                    final int displayId = d.getDisplayId();
-                    DisplayInfo info = getDisplayInfo(displayId);
-                    modes.put(displayId, info.supportedModes);
-                    appModes.put(displayId, info.appsSupportedModes);
-                    defaultModes.put(displayId, info.getDefaultMode());
-                }
-                DisplayDeviceConfig defaultDisplayConfig = mDisplayDeviceConfigProvider
-                        .getDisplayDeviceConfig(Display.DEFAULT_DISPLAY);
-                synchronized (mLock) {
-                    final int size = modes.size();
-                    for (int i = 0; i < size; i++) {
-                        mSupportedModesByDisplay.put(modes.keyAt(i), modes.valueAt(i));
-                        mAppSupportedModesByDisplay.put(appModes.keyAt(i), appModes.valueAt(i));
-                        mDefaultModeByDisplay.put(defaultModes.keyAt(i), defaultModes.valueAt(i));
+            final var enabledDisplays = mInjector.getEnabledDisplays();
+            // Populate existing displays
+            if (enabledDisplays != null && enabledDisplays.length > 0) {
+                mHandler.post(() -> {
+                    for (Display d : enabledDisplays) {
+                        onDisplayAdded(d.getDisplayId());
                     }
-                    mDisplayDeviceConfigByDisplay.put(Display.DEFAULT_DISPLAY,
-                            defaultDisplayConfig);
-                }
+                });
             }
         }
 
