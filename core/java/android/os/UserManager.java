@@ -5524,6 +5524,25 @@ public class UserManager {
     }
 
     /**
+     * @deprecated use {@link #isUserTypeSupported(String)} instead.
+     * @hide
+     */
+    @TestApi
+    @Deprecated
+    @FlaggedApi(android.multiuser.Flags.FLAG_QUERY_USER_TYPE_SUPPORTED)
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MANAGE_USERS,
+            android.Manifest.permission.CREATE_USERS
+    })
+    public boolean isUserTypeEnabled(@NonNull String userType) {
+        if (android.multiuser.Flags.queryUserTypeSupported()) {
+            // TODO(b/444731367): Delete this method entirely when cleaning up the flag!
+            Log.w(TAG, "Calling deprecated isUserTypeEnabled; instead use isUserTypeSupported");
+        }
+        return isUserTypeSupported(userType);
+    }
+
+    /**
      * Returns a list of the users that are associated with userId, including userId itself. This
      * includes the user, its profiles, its parent, and its parent's other profiles, as applicable.
      *
