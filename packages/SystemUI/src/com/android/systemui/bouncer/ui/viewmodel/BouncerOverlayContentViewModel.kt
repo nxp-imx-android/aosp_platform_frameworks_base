@@ -151,7 +151,7 @@ constructor(
      * these typically don't rely on touch gestures to go back.
      */
     val showBackButton =
-        Flags.backButtonOnBouncer() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
+        Flags.backButtonOnBouncerFix() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
 
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()
