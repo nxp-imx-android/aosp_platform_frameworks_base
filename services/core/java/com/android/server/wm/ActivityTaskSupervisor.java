@@ -2583,6 +2583,12 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         scheduleTopResumedActivityStateIfNeeded();
     }
 
+    /** Returns {@code true} if there will be a RESUMED state change of top app. */
+    boolean hasPendingTopResumedSwitch() {
+        return mTopResumedActivity == null
+                && (mWaitingTopResumedLostActivity != null || mTopResumedActivityWaitingForPrev);
+    }
+
     void removeIdleTimeoutForActivity(ActivityRecord r) {
         if (DEBUG_IDLE) Slog.d(TAG_IDLE, "removeTimeoutsForActivity: Callers="
                 + Debug.getCallers(4));
