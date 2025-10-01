@@ -19,6 +19,7 @@ package com.android.server.pm;
 import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.content.Context;
+import android.util.ArraySet;
 import android.util.Dumpable;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
@@ -34,7 +35,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
+// TODO(b/412177078): rename to UserAllowlistsMediator or UserTypesAllowlistsMediator
 /**
  * Class responsible for managing allowlists associated with the HSU (Headless System User).
  *
@@ -67,6 +70,24 @@ final class HsuAllowlistsMediator implements Dumpable {
     HsuAllowlistsMediator(Context context) {
         mPermanentActivitiesAllowlist = getValidComponentNames(context.getResources()
                 .getStringArray(com.android.internal.R.array.config_hsu_allowlist_activitivies));
+    }
+
+    // Called by 'cmd user', which needs to "build" the temporary allowlist based on incremental
+    // actions (like add or remove an activity)
+    Set<ComponentName> getEffectiveActivitiesAllowlist() {
+        ArraySet<ComponentName> allowlist = new ArraySet<>();
+        String[] normalizedNames;
+        synchronized (mLock) {
+            if (mTemporaryActivitiesAllowlist != null) {
+                normalizedNames = mTemporaryActivitiesAllowlist;
+            } else {
+                normalizedNames = mPermanentActivitiesAllowlist;
+            }
+            for (String name : normalizedNames) {
+                allowlist.add(ComponentName.unflattenFromString(name));
+            }
+        }
+        return allowlist;
     }
 
     /**
@@ -212,17 +233,21 @@ final class HsuAllowlistsMediator implements Dumpable {
         for (String componentName : componentNames) {
             var validComponentName = ComponentName.unflattenFromString(componentName);
             if (validComponentName == null) {
-                Slogf.w(TAG, "Invalid component from config: %s", componentName);
+                Slogf.w(TAG, "Invalid activity from config: %s", componentName);
                 continue;
             }
             // Must "normalize" the component into the flattened format, as the class part could
             // have been expressed as FQCN (Fully-Qualified Class Name).
-            set.add(validComponentName.flattenToShortString());
+            String normalizedName = validComponentName.flattenToShortString();
+            if (set.contains(normalizedName)) {
+                Slogf.w(TAG, "Activity %s already added (as %s)", componentName, normalizedName);
+            }
+            set.add(normalizedName);
         }
         String[] valid = new String[set.size()];
         set.toArray(valid);
         if (DEBUG) {
-            Slogf.d(TAG, "valid activity component names from config: %s", Arrays.toString(valid));
+            Slogf.d(TAG, "Valid activities from config: %s", Arrays.toString(valid));
         }
         return valid;
     }
