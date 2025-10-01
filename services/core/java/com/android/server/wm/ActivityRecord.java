@@ -3173,8 +3173,7 @@ final class ActivityRecord extends WindowToken {
             return true;
         }
         return !AppCompatResizeOverrides.allowRestrictedResizability(
-                wms.mContext.getPackageManager(), appInfo.packageName,
-                UserHandle.getUserId(appInfo.uid));
+                wms.mContext.getPackageManager(), appInfo, false /* hasCheckedDisableOptOut */);
     }
 
     boolean isResizeable() {

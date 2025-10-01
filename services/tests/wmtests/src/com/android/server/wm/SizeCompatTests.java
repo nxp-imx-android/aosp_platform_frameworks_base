@@ -5451,7 +5451,17 @@ public class SizeCompatTests extends WindowTestsBase {
         assertEquals(maxAspect, aspectRatioPolicy.getMaxAspectRatio(), 0 /* delta */);
         assertNotEquals(SCREEN_ORIENTATION_UNSPECIFIED, mActivity.getOverrideOrientation());
 
-        // Activity can opt-out the resizability by component level property.
+        declareOptOutUniversalResizeable();
+        final ActivityRecord optOutAppActivity = new ActivityBuilder(mAtm)
+                .setComponent(getUniqueComponentName(mContext.getPackageName()))
+                .setTask(mTask).build();
+        assertFalse(optOutAppActivity.isUniversalResizeable());
+        assertFalse(ActivityRecord.canBeUniversalResizeable(mActivity.info.applicationInfo,
+                mWm, true /* isLargeScreen */, false /* forActivity */));
+    }
+
+    private void declareOptOutUniversalResizeable() {
+        // Activity can opt out the resizability by component level property.
         final ComponentName name = getUniqueComponentName(mContext.getPackageName());
         final PackageManager pm = mContext.getPackageManager();
         spyOn(pm);
@@ -5477,14 +5487,7 @@ public class SizeCompatTests extends WindowTestsBase {
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }
-        final ActivityRecord optOutAppActivity = new ActivityBuilder(mAtm)
-                .setComponent(getUniqueComponentName(mContext.getPackageName()))
-                .setTask(mTask).build();
-        assertFalse(optOutAppActivity.isUniversalResizeable());
-        assertFalse(ActivityRecord.canBeUniversalResizeable(mActivity.info.applicationInfo,
-                mWm, true /* isLargeScreen */, false /* forActivity */));
     }
-
 
     @Test
     @EnableCompatChanges({ActivityInfo.UNIVERSAL_RESIZABLE_BY_DEFAULT})
@@ -5516,6 +5519,21 @@ public class SizeCompatTests extends WindowTestsBase {
         resizeBounds.scale(0.8f);
         mActivity.getTask().setBounds(resizeBounds);
         assertFitted();
+    }
+
+    @Test
+    @EnableCompatChanges({ActivityInfo.UNIVERSAL_RESIZABLE_BY_DEFAULT,
+            AppCompatResizeOverrides.DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT})
+    @EnableFlags(Flags.FLAG_DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)
+    public void testDisableOptOutUniversalResizeableByDefault() {
+        makeDisplayLargeScreen(mDisplayContent);
+        declareOptOutUniversalResizeable();
+        final ActivityRecord optOutApp = new ActivityBuilder(mAtm).setCreateTask(true)
+                .setComponent(getUniqueComponentName(mContext.getPackageName())).build();
+
+        assertTrue(optOutApp.isUniversalResizeable());
+        assertTrue(ActivityRecord.canBeUniversalResizeable(optOutApp.info.applicationInfo,
+                mWm, true /* isLargeScreen */, false /* forActivity */));
     }
 
     @Test
