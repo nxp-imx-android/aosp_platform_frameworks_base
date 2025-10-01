@@ -58,6 +58,7 @@ import com.android.compose.theme.PlatformTheme
 import com.android.compose.theme.colorAttr
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.Flags
+import com.android.systemui.clock.ClockModernization
 import com.android.systemui.clock.ui.composable.Clock
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
@@ -438,14 +439,14 @@ private fun addStartSideComposable(
                     }
 
                 var clockViewModel: ClockViewModel? = null
-                if (showDate || Flags.clockModernization()) {
+                if (showDate || ClockModernization.isEnabled) {
                     clockViewModel =
                         rememberViewModel("HomeStatusBar.Clock") {
                             clockViewModelFactory.create(AmPmStyle.Gone)
                         }
                 }
 
-                if (Flags.clockModernization()) {
+                if (ClockModernization.isEnabled) {
                     clockView.visibility = View.GONE
                     Clock(
                         clockViewModel = checkNotNull(clockViewModel),

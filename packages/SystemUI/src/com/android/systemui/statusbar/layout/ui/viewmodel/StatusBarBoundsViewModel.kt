@@ -19,9 +19,8 @@ package com.android.systemui.statusbar.layout.ui.viewmodel
 import android.graphics.Rect
 import android.view.View
 import androidx.compose.runtime.getValue
-import com.android.systemui.Flags
+import com.android.systemui.clock.ClockModernization
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.flags.RefactorFlagUtils
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.policy.Clock
@@ -108,7 +107,7 @@ constructor(
             traceName = "StatusBar.clockBounds",
             initialValue = Rect(),
             source =
-                if (Flags.clockModernization()) {
+                if (ClockModernization.isEnabled) {
                     _composeClockBounds
                 } else {
                     _clockBounds
@@ -124,10 +123,7 @@ constructor(
     }
 
     fun updateComposeClockBounds(bounds: Rect) {
-        RefactorFlagUtils.isUnexpectedlyInLegacyMode(
-            Flags.clockModernization(),
-            Flags.FLAG_CLOCK_MODERNIZATION,
-        )
+        ClockModernization.isUnexpectedlyInLegacyMode()
         _composeClockBounds.value = bounds
     }
 

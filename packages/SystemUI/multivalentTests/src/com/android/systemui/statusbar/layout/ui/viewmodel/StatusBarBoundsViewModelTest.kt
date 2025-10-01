@@ -21,8 +21,8 @@ import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.clock.ClockModernization
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -157,7 +157,7 @@ class StatusBarBoundsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOCK_MODERNIZATION)
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun composeClockBounds_getsUpdatedWhenUpdateComposeClockBoundsCalled() =
         kosmos.runTest {
             val firstRect = Rect(1, 2, 3, 4)

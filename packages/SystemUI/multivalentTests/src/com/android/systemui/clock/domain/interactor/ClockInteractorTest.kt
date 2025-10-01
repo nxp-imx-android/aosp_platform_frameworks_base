@@ -22,9 +22,9 @@ import android.platform.test.annotations.EnableFlags
 import android.provider.AlarmClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.clock.ClockModernization
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
@@ -156,7 +156,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOCK_MODERNIZATION)
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun showSeconds_tunerChanges_flowEmits() =
         kosmos.runTest {
             val showSeconds by collectLastValue(underTest.showSeconds)
@@ -188,7 +188,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOCK_MODERNIZATION)
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun currentTime_showSecondsTrue_changesEverySecond() =
         kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)
@@ -212,7 +212,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOCK_MODERNIZATION)
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun currentTime_showSecondsTrueToFalse_notChangesEverySecond() =
         kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)
@@ -242,7 +242,7 @@ class ClockInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOCK_MODERNIZATION)
+    @EnableFlags(ClockModernization.FLAG_NAME)
     fun currentTime_showSecondsFalseToTrue_changesEverySecond() =
         kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)
