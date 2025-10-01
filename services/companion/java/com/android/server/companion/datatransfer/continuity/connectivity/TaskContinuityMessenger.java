@@ -34,9 +34,8 @@ import java.util.concurrent.Executor;
 import java.util.Objects;
 
 /**
- * Facilitates communication between devices, including sending and receiving messages
- * between devices. Internally, it uses the {@link CompanionDeviceManager} to send and receive
- * messages.
+ * Facilitates communication between devices, including sending and receiving messages between
+ * devices. Internally, it uses the {@link CompanionDeviceManager} to send and receive messages.
  */
 public class TaskContinuityMessenger implements ConnectedAssociationStore.Listener {
 
@@ -52,9 +51,10 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
     public interface Listener {
         void onAssociationConnected(@NonNull AssociationInfo associationInfo);
+
         void onAssociationDisconnected(
-            int associationId,
-            @NonNull Collection<AssociationInfo> connectedAssociations);
+                int associationId, @NonNull Collection<AssociationInfo> connectedAssociations);
+
         void onMessageReceived(int associationId, @NonNull TaskContinuityMessage message);
     }
 
@@ -67,10 +67,8 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         mExecutor = context.getMainExecutor();
         mListener = listener;
         mCompanionDeviceManager = context.getSystemService(CompanionDeviceManager.class);
-        mConnectedAssociationStore = new ConnectedAssociationStore(
-            mCompanionDeviceManager,
-            mExecutor,
-            this);
+        mConnectedAssociationStore =
+                new ConnectedAssociationStore(mCompanionDeviceManager, mExecutor, this);
     }
 
     public void enable() {
@@ -81,9 +79,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
             }
             mIncomingMessageConsumer = this::onMessageReceived;
             mCompanionDeviceManager.addOnMessageReceivedListener(
-                mExecutor,
-                MESSAGE_ONEWAY_TASK_CONTINUITY,
-                mIncomingMessageConsumer);
+                    mExecutor, MESSAGE_ONEWAY_TASK_CONTINUITY, mIncomingMessageConsumer);
         }
 
         mConnectedAssociationStore.enable();
@@ -96,8 +92,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
                 return;
             }
             mCompanionDeviceManager.removeOnMessageReceivedListener(
-                MESSAGE_ONEWAY_TASK_CONTINUITY,
-                mIncomingMessageConsumer);
+                    MESSAGE_ONEWAY_TASK_CONTINUITY, mIncomingMessageConsumer);
             mIncomingMessageConsumer = null;
         }
 
@@ -117,8 +112,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     }
 
     public SendMessageResult sendMessage(
-        int associationId,
-        @NonNull TaskContinuityMessage message) {
+            int associationId, @NonNull TaskContinuityMessage message) {
 
         Objects.requireNonNull(message);
 
@@ -126,8 +120,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     }
 
     public SendMessageResult sendMessage(
-        @NonNull int[] associationIds,
-        @NonNull TaskContinuityMessage message) {
+            @NonNull int[] associationIds, @NonNull TaskContinuityMessage message) {
 
         Objects.requireNonNull(associationIds);
         Objects.requireNonNull(message);
@@ -150,9 +143,9 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
         try {
             mCompanionDeviceManager.sendMessage(
-                CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
-                serializedMessage,
-                associationIds);
+                    CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
+                    serializedMessage,
+                    associationIds);
             Slog.i(TAG, "Sending message to " + associationIds.length + " associations.");
             return SendMessageResult.SUCCESS;
         } catch (Exception e) {
@@ -164,11 +157,10 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     public SendMessageResult sendMessage(@NonNull TaskContinuityMessage message) {
         Objects.requireNonNull(message);
 
-        int[] connectedAssociations = mConnectedAssociationStore
-            .getConnectedAssociations()
-            .stream()
-            .mapToInt(AssociationInfo::getId)
-            .toArray();
+        int[] connectedAssociations =
+                mConnectedAssociationStore.getConnectedAssociations().stream()
+                        .mapToInt(AssociationInfo::getId)
+                        .toArray();
 
         return sendMessage(connectedAssociations, message);
     }
@@ -182,8 +174,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
     @Override
     public void onTransportDisconnected(
-        int associationId,
-        @NonNull Collection<AssociationInfo> connectedAssociations) {
+            int associationId, @NonNull Collection<AssociationInfo> connectedAssociations) {
 
         Objects.requireNonNull(connectedAssociations);
 
@@ -192,12 +183,12 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
     private void onMessageReceived(int associationId, byte[] data) {
         Slog.v(TAG, "Received message from association id: " + associationId);
-      try {
-            TaskContinuityMessage taskContinuityMessage
-                = TaskContinuityMessageSerializer.deserialize(data);
+        try {
+            TaskContinuityMessage taskContinuityMessage =
+                    TaskContinuityMessageSerializer.deserialize(data);
             mListener.onMessageReceived(associationId, taskContinuityMessage);
-      } catch (IOException e) {
-        Slog.e(TAG, "Failed to parse task continuity message", e);
-      }
+        } catch (IOException e) {
+            Slog.e(TAG, "Failed to parse task continuity message", e);
+        }
     }
 }

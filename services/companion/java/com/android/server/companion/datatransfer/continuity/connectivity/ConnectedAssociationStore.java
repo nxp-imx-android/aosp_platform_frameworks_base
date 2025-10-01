@@ -105,8 +105,9 @@ class ConnectedAssociationStore {
     void onTransportsChanged(List<AssociationInfo> associationInfos) {
         List<AssociationInfo> newTaskContinuityAssociations = new ArrayList<>();
         for (AssociationInfo associationInfo : associationInfos) {
-            int taskContinuityFlag = associationInfo.getSystemDataSyncFlags()
-                    & CompanionDeviceManager.FLAG_TASK_CONTINUITY;
+            int taskContinuityFlag =
+                    associationInfo.getSystemDataSyncFlags()
+                            & CompanionDeviceManager.FLAG_TASK_CONTINUITY;
             if (taskContinuityFlag != 0) {
                 newTaskContinuityAssociations.add(associationInfo);
             }

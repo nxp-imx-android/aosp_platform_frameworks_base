@@ -23,9 +23,7 @@ import android.util.proto.ProtoOutputStream;
 
 import java.io.IOException;
 
-/**
- * Deserialized version of the {@link RemoteTaskAdded} proto.
- */
+/** Deserialized version of the {@link RemoteTaskAdded} proto. */
 public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinuityMessage {
 
     static RemoteTaskAddedMessage readFromProto(ProtoInputStream pis) throws IOException {
@@ -33,8 +31,7 @@ public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinu
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.RemoteTaskAddedMessage.TASK:
-                    final long taskToken = pis.start(
-                        android.companion.RemoteTaskAddedMessage.TASK);
+                    final long taskToken = pis.start(android.companion.RemoteTaskAddedMessage.TASK);
                     task = RemoteTaskInfo.fromProto(pis);
                     pis.end(taskToken);
                     break;
@@ -55,8 +52,7 @@ public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinu
 
     @Override
     public void writeToProto(ProtoOutputStream pos) throws IOException {
-        long taskToken = pos.start(
-            android.companion.RemoteTaskAddedMessage.TASK);
+        long taskToken = pos.start(android.companion.RemoteTaskAddedMessage.TASK);
 
         task().writeToProto(pos);
         pos.end(taskToken);

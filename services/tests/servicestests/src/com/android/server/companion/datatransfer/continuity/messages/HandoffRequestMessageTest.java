@@ -79,6 +79,6 @@ public class HandoffRequestMessageTest {
     public void testGetFieldNumber_returnsCorrectValue() {
         HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(1);
         assertThat(handoffRequestMessage.getFieldNumber())
-            .isEqualTo(android.companion.TaskContinuityMessage.HANDOFF_REQUEST);
+                .isEqualTo(android.companion.TaskContinuityMessage.HANDOFF_REQUEST);
     }
 }

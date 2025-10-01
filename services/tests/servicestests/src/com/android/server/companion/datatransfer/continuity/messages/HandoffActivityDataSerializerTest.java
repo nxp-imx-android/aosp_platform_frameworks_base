@@ -16,7 +16,6 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.testng.Assert.expectThrows;
@@ -50,25 +49,26 @@ public class HandoffActivityDataSerializerTest {
     @Test
     public void testRoundTripSerializationWorks() throws IOException {
         HandoffActivityData onlyComponentName =
-            new HandoffActivityData.Builder(COMPONENT_NAME).build();
+                new HandoffActivityData.Builder(COMPONENT_NAME).build();
         confirmRoundTripSerializationDoesNotModifyData(onlyComponentName);
 
-        HandoffActivityData withFallbackUri = new HandoffActivityData.Builder(COMPONENT_NAME)
-            .setFallbackUri(FALLBACK_URI)
-            .build();
+        HandoffActivityData withFallbackUri =
+                new HandoffActivityData.Builder(COMPONENT_NAME)
+                        .setFallbackUri(FALLBACK_URI)
+                        .build();
         confirmRoundTripSerializationDoesNotModifyData(withFallbackUri);
 
         PersistableBundle extras = new PersistableBundle();
         extras.putString("key", "value");
-        HandoffActivityData withExtras = new HandoffActivityData.Builder(COMPONENT_NAME)
-            .setExtras(extras)
-            .build();
+        HandoffActivityData withExtras =
+                new HandoffActivityData.Builder(COMPONENT_NAME).setExtras(extras).build();
         confirmRoundTripSerializationDoesNotModifyData(withExtras);
 
-        HandoffActivityData withAllFields = new HandoffActivityData.Builder(COMPONENT_NAME)
-            .setFallbackUri(FALLBACK_URI)
-            .setExtras(extras)
-            .build();
+        HandoffActivityData withAllFields =
+                new HandoffActivityData.Builder(COMPONENT_NAME)
+                        .setFallbackUri(FALLBACK_URI)
+                        .setExtras(extras)
+                        .build();
         confirmRoundTripSerializationDoesNotModifyData(withAllFields);
     }
 
@@ -77,8 +77,11 @@ public class HandoffActivityDataSerializerTest {
         ProtoOutputStream pos = new ProtoOutputStream();
         pos.flush();
 
-        assertThrows(IOException.class, () -> HandoffActivityDataSerializer.readFromProto(
-                new ProtoInputStream(pos.getBytes())));
+        assertThrows(
+                IOException.class,
+                () ->
+                        HandoffActivityDataSerializer.readFromProto(
+                                new ProtoInputStream(pos.getBytes())));
     }
 
     @Test
@@ -87,12 +90,15 @@ public class HandoffActivityDataSerializerTest {
         pos.writeString(android.companion.HandoffActivityData.COMPONENT_NAME, "invalid");
         pos.flush();
 
-        assertThrows(IOException.class, () -> HandoffActivityDataSerializer.readFromProto(
-                new ProtoInputStream(pos.getBytes())));
+        assertThrows(
+                IOException.class,
+                () ->
+                        HandoffActivityDataSerializer.readFromProto(
+                                new ProtoInputStream(pos.getBytes())));
     }
 
     private void confirmRoundTripSerializationDoesNotModifyData(HandoffActivityData expected)
-        throws IOException {
+            throws IOException {
 
         // Write to a ProtoOutputStream.
         ProtoOutputStream pos = new ProtoOutputStream();
@@ -109,7 +115,7 @@ public class HandoffActivityDataSerializerTest {
             assertThat(actual.getExtras().size()).isEqualTo(expected.getExtras().size());
             for (String key : expected.getExtras().keySet()) {
                 assertThat(actual.getExtras().getString(key))
-                    .isEqualTo(expected.getExtras().getString(key));
+                        .isEqualTo(expected.getExtras().getString(key));
             }
         } else {
             assertThat(actual.getExtras()).isNull();
