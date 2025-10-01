@@ -1,0 +1,144 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2025-09-29T07:23:42Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.20"
+  },
+  "name": "aosp_platform_frameworks_base-automotive-15.0.0_2.1.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/81625e13-bc63-4678-8b77-c45719d7c62e",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-81625e13-bc63-4678-8b77-c45719d7c62e",
+      "name": "aosp_platform_frameworks_base",
+      "versionInfo": "automotive-15.0.0_2.1.0",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "https://github.com/nxp-imx-android/aosp_platform_frameworks_base",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2a1fdd31-6386-4cc5-b13b-7a1874119c32",
+      "name": "android-tools-fastboot",
+      "versionInfo": "35.0.1",
+      "licenseConcluded": "(Apache-2.0 AND MIT)",
+      "licenseDeclared": "(Apache-2.0 AND MIT)",
+      "homepage": "http://developer.android.com/guide/developing/tools/adb.html",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: centos",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:rpm/centos/android-tools@35.0.1-2.el10iv?arch=x86_64&epoch=1",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "b8c69093-3909-4ee5-9492-8cd7ab1816e6",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-b18dd502-4d8e-4271-983d-b7c55e0a96c2",
+      "name": "Layoutlib resources",
+      "versionInfo": "15.2.3",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "https://maven.google.com/com/android/tools/layoutlib/layoutlib-resources/15.2.3/",
+      "originator": "Organization: com.android.tools.layoutlib",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.android.tools.layoutlib/layoutlib-resources@15.2.3",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "ae317447-60ff-4a89-9c09-1d63609d3572",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-03229395-ab12-48dc-8534-35824b5db3a7",
+      "name": "platform_frameworks_base",
+      "versionInfo": "android-16.0.0_r2",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://github.com/android/platform_frameworks_base",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: android",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "2fe67617-f18a-4f7e-ab5a-c8b15662ed09",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/android/platform_frameworks_base@android-16.0.0_r2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-26ea1127-e037-4c11-91d0-27a88a19702c",
+      "name": "platform-packages-modules-CrashRecovery",
+      "versionInfo": "android-16.0.0_r2",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: android",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "ddd8a2c6-f51b-4040-909c-18dc3ee2bc4d",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        }
+      ],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-81625e13-bc63-4678-8b77-c45719d7c62e"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-81625e13-bc63-4678-8b77-c45719d7c62e",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-b18dd502-4d8e-4271-983d-b7c55e0a96c2"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-81625e13-bc63-4678-8b77-c45719d7c62e",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-26ea1127-e037-4c11-91d0-27a88a19702c"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-81625e13-bc63-4678-8b77-c45719d7c62e",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-2a1fdd31-6386-4cc5-b13b-7a1874119c32"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-81625e13-bc63-4678-8b77-c45719d7c62e",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-03229395-ab12-48dc-8534-35824b5db3a7"
+    }
+  ]
+}
