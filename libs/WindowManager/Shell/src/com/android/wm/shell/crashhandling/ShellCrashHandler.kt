@@ -17,6 +17,7 @@
 package com.android.wm.shell.crashhandling
 
 import android.app.WindowConfiguration
+import android.app.WindowConfiguration.WINDOWING_MODE_PINNED
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags
@@ -77,6 +78,7 @@ class ShellCrashHandler(
         if (Flags.enableShellRestartBubbleCleanup()) {
             bubbleController.ifPresent { handleBubbleTaskCleanup(it) }
         }
+        handlePipTaskCleanup()
     }
 
     private fun addLaunchHomePendingIntent(
@@ -106,6 +108,18 @@ class ShellCrashHandler(
             // Make sure we end up on the home screen
             addLaunchHomePendingIntent(wct, DEFAULT_DISPLAY)
             transitions.startTransition(WindowManager.TRANSIT_CHANGE, wct, NoOpTransitionHandler())
+        }
+    }
+
+    private fun handlePipTaskCleanup() {
+        for (task in shellTaskOrganizer.getRunningTasks()) {
+            if (task.windowingMode == WINDOWING_MODE_PINNED) {
+                // Any PiP task should be removed as previous session state is cleared in Shell.
+                val wct = WindowContainerTransaction()
+                wct.removeTask(task.token)
+                transitions.startTransition(WindowManager.TRANSIT_CLOSE, wct, null)
+                return
+            }
         }
     }
 }
