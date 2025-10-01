@@ -1549,8 +1549,13 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         }
 
         protected boolean isUsbDataTransferActive(long functions) {
+            boolean isUvcActive =
+                    Flags.considerUvcAsDataTransferActive()
+                            && (functions & UsbManager.FUNCTION_UVC) != 0;
+
             return (functions & UsbManager.FUNCTION_MTP) != 0
-                    || (functions & UsbManager.FUNCTION_PTP) != 0;
+                    || (functions & UsbManager.FUNCTION_PTP) != 0
+                    || isUvcActive;
         }
 
         public UsbAccessory getCurrentAccessory() {
@@ -2183,11 +2188,9 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                 setUsbConfig(oemFunctions);
 
                 if (mBootCompleted
-                        && (containsFunction(functions, UsbManager.USB_FUNCTION_MTP)
-                        || containsFunction(functions, UsbManager.USB_FUNCTION_PTP))) {
-                    /**
-                     * Start up dependent services.
-                     */
+                        && (isUsbDataTransferActive(
+                                UsbManager.usbFunctionsFromString(functions)))) {
+                    // Start up dependent services.
                     updateUsbStateBroadcastIfNeeded(getAppliedFunctions(mCurrentFunctions));
                 }
 
