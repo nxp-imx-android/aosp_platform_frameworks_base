@@ -5543,6 +5543,7 @@ package android.app {
     field public static final int TYPE_SCHEDULE_CALENDAR = 2; // 0x2
     field public static final int TYPE_SCHEDULE_TIME = 1; // 0x1
     field public static final int TYPE_THEATER = 6; // 0x6
+    field @FlaggedApi("android.app.modes_ui_transit") public static final int TYPE_TRANSIT = 8; // 0x8
     field public static final int TYPE_UNKNOWN = -1; // 0xffffffff
   }
 
