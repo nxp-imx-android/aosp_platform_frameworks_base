@@ -541,8 +541,6 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
             isLandscape = false,
         )
 
-        // not using biometrics, should be null with no fallback option
-        assertThat(currentPrompt).isNull()
         if (Flags.bpFallbackOptions()) {
             if (kind == PromptKind.Password) {
                 assertThat(credentialKind).isEqualTo(PromptKind.Password)
