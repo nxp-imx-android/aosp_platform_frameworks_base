@@ -224,6 +224,7 @@ constructor(
                 )
             }
             SnoozableHeadsUpNotificationPlaceholder(
+                tag = "QSShadeOverlay",
                 useDrawBounds = {
                     with(layoutState.transitionState) {
                         // When overlaid on top of the lock screen, drawBounds updates are already

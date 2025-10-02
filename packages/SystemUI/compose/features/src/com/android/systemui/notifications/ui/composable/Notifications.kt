@@ -164,6 +164,7 @@ fun ContentScope.ConstrainedNotificationStack(
                     },
         )
         HeadsUpNotificationPlaceholder(
+            tag = "Constrained",
             stackScrollView = stackScrollView,
             viewModel = viewModel,
             useHunBounds = {
@@ -177,6 +178,7 @@ fun ContentScope.ConstrainedNotificationStack(
 /** Standalone version of the Scrolling Notification Stack. */
 @Composable
 fun ContentScope.ScrollingNotificationPanel(
+    tag: String,
     shadeSession: SaveableSession,
     stackScrollView: NotificationScrollView,
     viewModel: NotificationsPlaceholderViewModel,
@@ -244,6 +246,7 @@ fun ContentScope.ScrollingNotificationPanel(
     LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
 
     NestedScrollingNotificationPanel(
+        tag = "$tag.Scrolling",
         shadeSession = shadeSession,
         stackScrollView = stackScrollView,
         viewModel = viewModel,
@@ -262,11 +265,16 @@ fun ContentScope.ScrollingNotificationPanel(
     )
 }
 
-@Composable
-@OptIn(ExperimentalLayoutApi::class)
+@Composable @OptIn(ExperimentalLayoutApi::class)
+
 fun ContentScope.NestedScrollingNotificationPanel(
+
+    tag: String,
+
     shadeSession: SaveableSession,
+
     stackScrollView: NotificationScrollView,
+
     viewModel: NotificationsPlaceholderViewModel,
     shouldPunchHoleBehindScrim: Boolean,
     isTransparencyEnabled: Boolean,
@@ -528,7 +536,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 )
                 if (viewModel.isVisualDebuggingEnabled) {
                     Text(
-                        text = "NotificationScrollingStack",
+                        text = "$tag.Nested",
                         color = DEBUG_BOX_COLOR.copy(alpha = 0.7f),
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                     )
@@ -537,6 +545,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
         }
         if (shouldIncludeHeadsUpSpace) {
             HeadsUpNotificationPlaceholder(
+                tag = "$tag.Nested",
                 stackScrollView = stackScrollView,
                 viewModel = viewModel,
                 useHunBounds = {

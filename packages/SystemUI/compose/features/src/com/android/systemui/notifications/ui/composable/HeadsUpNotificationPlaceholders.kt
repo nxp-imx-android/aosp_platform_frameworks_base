@@ -74,6 +74,7 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun ContentScope.HeadsUpNotificationPlaceholder(
+    tag: String,
     stackScrollView: NotificationScrollView,
     useHunBounds: () -> Boolean,
     viewModel: NotificationsPlaceholderViewModel,
@@ -110,7 +111,7 @@ fun ContentScope.HeadsUpNotificationPlaceholder(
     ) {
         if (viewModel.isVisualDebuggingEnabled) {
             Text(
-                text = "HeadsUpNotificationPlaceholder",
+                text = "$tag.HUNPlaceholder",
                 color = DEBUG_HUN_COLOR.copy(alpha = 0.7f),
                 modifier = Modifier.align(Alignment.TopCenter),
             )
@@ -131,6 +132,7 @@ fun ContentScope.HeadsUpNotificationPlaceholder(
  */
 @Composable
 fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
+    tag: String,
     stackScrollView: NotificationScrollView,
     useDrawBounds: () -> Boolean,
     viewModel: NotificationsPlaceholderViewModel,
@@ -195,6 +197,7 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
     }
 
     HeadsUpNotificationPlaceholder(
+        tag = "$tag.Snoozable",
         stackScrollView = stackScrollView,
         useHunBounds = { true },
         viewModel = viewModel,

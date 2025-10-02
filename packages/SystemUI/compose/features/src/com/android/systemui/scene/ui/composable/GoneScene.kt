@@ -70,6 +70,7 @@ constructor(
         )
         Spacer(modifier.fillMaxSize())
         SnoozableHeadsUpNotificationPlaceholder(
+            tag = "GoneScene",
             useDrawBounds = {
                 with(layoutState.transitionState) {
                     isIdle(key) &&

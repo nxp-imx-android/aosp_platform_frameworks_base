@@ -185,6 +185,7 @@ constructor(
 
                 val stackScrollView = stackScrollView.get()
                 ScrollingNotificationPanel(
+                    tag = "NotifShadeOverlay",
                     shadeSession = shadeSession,
                     stackScrollView = stackScrollView,
                     viewModel = placeholderViewModel,
