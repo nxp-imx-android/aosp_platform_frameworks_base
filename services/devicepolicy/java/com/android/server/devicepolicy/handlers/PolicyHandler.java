@@ -25,6 +25,8 @@ import android.annotation.Nullable;
 import android.app.admin.DevicePolicyManager.PolicyScope;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
+import android.app.admin.metadata.GeneratedPolicyMetadata;
+import android.app.admin.metadata.PolicyMetadata;
 
 import com.android.server.devicepolicy.CallerIdentity;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
@@ -102,6 +104,7 @@ public class PolicyHandler<T> {
 
     private final PolicyIdentifier<T> mKey;
     private final PolicyInformation<T> mPolicyInformation;
+    private final PolicyMetadata<T> mPolicyMetadata;
 
     /**
      * Helper class that provides access to methods used while processing policies. Must be
@@ -110,22 +113,29 @@ public class PolicyHandler<T> {
     private Delegate mDelegate = null;
 
     public PolicyHandler(
-            @NonNull PolicyIdentifier<T> key, @NonNull PolicyInformation<T> policyInformation) {
+            @NonNull PolicyIdentifier<T> key,
+            @NonNull PolicyInformation<T> policyInformation,
+            @NonNull PolicyMetadata<T> policyMetadata) {
         mKey = key;
         mPolicyInformation = policyInformation;
+        mPolicyMetadata = policyMetadata;
     }
 
-    /** Constructor that uses the generated {@link PolicyInformation} */
+    /** Constructor that uses the generated {@link PolicyInformation} and {@link PolicyMetadata} */
     public PolicyHandler(@NonNull PolicyIdentifier<T> key) {
-        this(key, getGeneratedPolicyInformation(key));
+        this(
+                key,
+                getGeneratedPolicyInformation(key),
+                GeneratedPolicyMetadata.getPolicyMetadata(key));
     }
 
     /** Convenience constructor used by unittests */
     public PolicyHandler(
             @NonNull PolicyIdentifier<T> key,
             @NonNull PolicyInformation<T> policyInformation,
+            @NonNull PolicyMetadata<T> policyMetadata,
             @NonNull Delegate delegate) {
-        this(key, policyInformation);
+        this(key, policyInformation, policyMetadata);
         setDelegate(delegate);
     }
 
@@ -146,6 +156,11 @@ public class PolicyHandler<T> {
     @NonNull
     protected PolicyInformation<T> getPolicyInformation() {
         return mPolicyInformation;
+    }
+
+    @NonNull
+    protected PolicyMetadata<T> getPolicyMetadata() {
+        return mPolicyMetadata;
     }
 
     @NonNull
@@ -181,12 +196,12 @@ public class PolicyHandler<T> {
      * @throws IllegalArgumentException if the scope can not be used.
      */
     protected void validateScope(@PolicyScope int scope) {
-        if (!getPolicyInformation().getAcceptedScopes().contains(scope)) {
+        if (!getPolicyMetadata().getAllowedScopes().contains(scope)) {
             throw new IllegalArgumentException(
                     "Policy "
                             + getKey().getId()
                             + " only supports scopes "
-                            + scopesToString(getPolicyInformation().getAcceptedScopes())
+                            + scopesToString(getPolicyMetadata().getAllowedScopes())
                             + ", but got scope "
                             + scopeToString(scope));
         }

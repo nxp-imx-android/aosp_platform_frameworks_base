@@ -21,22 +21,17 @@ import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
 
-import java.util.Set;
-
 public abstract class PolicyInformation<T> {
     private final PolicyIdentifier<T> mKey;
     // TODO(443666602): Support multiple permissions and modeling of DO/PO.
     private final String mRequiredPermission;
     private final String mRequiredCrossUserPermission;
-    private final Set<Integer> mAcceptedScopes;
 
     public PolicyInformation(
             @NonNull PolicyIdentifier<T> key,
-            @NonNull Set<Integer> acceptedScopes,
             @NonNull String requiredPermission,
             @NonNull String requiredCrossUserPermission) {
         mKey = key;
-        mAcceptedScopes = Set.copyOf(acceptedScopes);
         mRequiredPermission = requiredPermission;
         mRequiredCrossUserPermission = requiredCrossUserPermission;
     }
@@ -44,11 +39,6 @@ public abstract class PolicyInformation<T> {
     @NonNull
     public PolicyIdentifier<T> getKey() {
         return mKey;
-    }
-
-    @NonNull
-    public Set<Integer> getAcceptedScopes() {
-        return mAcceptedScopes;
     }
 
     @NonNull
