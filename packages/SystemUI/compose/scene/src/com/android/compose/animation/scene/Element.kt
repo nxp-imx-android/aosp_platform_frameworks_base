@@ -640,7 +640,7 @@ internal class ElementNode(
         val transition =
             elementState(layoutImpl, element, currentTransitionStates)
                 as? TransitionState.Transition
-        val drawScale = getDrawScale(layoutImpl, element, transition, stateInContent)
+        val drawScale = getDrawScale(layoutImpl, element, transition, stateInContent, center)
         if (drawScale == Scale.Default) {
             drawContent()
         } else {
@@ -1261,11 +1261,12 @@ private fun measure(
 
 private fun Placeable.size(): IntSize = IntSize(width, height)
 
-private fun ContentDrawScope.getDrawScale(
+internal fun getDrawScale(
     layoutImpl: SceneTransitionLayoutImpl,
     element: Element,
     transition: TransitionState.Transition?,
     stateInContent: Element.State,
+    center: Offset,
 ): Scale {
     val scale =
         computeValue(
@@ -1281,6 +1282,10 @@ private fun ContentDrawScope.getDrawScale(
         )
 
     fun Offset.specifiedOrCenter(): Offset {
+        check(isSpecified || center.isSpecified) {
+            "Calling currentScale() on an element transformed with a drawScale that has a pivot " +
+                "is not supported yet."
+        }
         return this.takeIf { isSpecified } ?: center
     }
 

@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ApproachLayoutModifierNode
 import androidx.compose.ui.layout.ApproachMeasureScope
 import androidx.compose.ui.layout.LookaheadScope
@@ -67,6 +68,7 @@ import com.android.compose.animation.scene.MovableElement
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
 import com.android.compose.animation.scene.NestedSceneTransitionLayoutState
+import com.android.compose.animation.scene.Scale
 import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
 import com.android.compose.animation.scene.SceneTransitionLayoutScope
@@ -82,6 +84,7 @@ import com.android.compose.animation.scene.element
 import com.android.compose.animation.scene.elementAlpha
 import com.android.compose.animation.scene.elementState
 import com.android.compose.animation.scene.getAllNestedTransitionStates
+import com.android.compose.animation.scene.getDrawScale
 import com.android.compose.animation.scene.modifiers.noResizeDuringTransitions
 import com.android.compose.gesture.NestedScrollControlState
 import com.android.compose.gesture.NestedScrollableBound
@@ -435,6 +438,16 @@ internal class ContentScopeImpl(
                 ?: return null
         val transition = elementState as? TransitionState.Transition
         return elementAlpha(layoutImpl, element, transition, stateInContent)
+    }
+
+    override fun ElementKey.currentScale(): Scale? {
+        val element = layoutImpl.elements[this] ?: return null
+        val stateInContent = element.stateByContent[contentKey] ?: return null
+        val elementState =
+            elementState(layoutImpl, element, getAllNestedTransitionStates(layoutImpl))
+                ?: return null
+        val transition = elementState as? TransitionState.Transition
+        return getDrawScale(layoutImpl, element, transition, stateInContent, Offset.Unspecified)
     }
 }
 
