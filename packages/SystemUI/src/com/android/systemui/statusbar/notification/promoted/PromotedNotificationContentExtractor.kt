@@ -294,7 +294,6 @@ constructor(
             when (style) {
                 Style.Base -> R.layout.notification_2025_template_expanded_base
                 Style.CollapsedBase -> R.layout.notification_2025_template_collapsed_base
-                Style.BigPicture -> R.layout.notification_2025_template_expanded_big_picture
                 Style.BigText -> R.layout.notification_2025_template_expanded_big_text
                 Style.Call -> R.layout.notification_2025_template_expanded_call
                 Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
@@ -305,7 +304,6 @@ constructor(
             when (style) {
                 Style.Base -> R.layout.notification_template_material_big_base
                 Style.CollapsedBase -> R.layout.notification_template_material_base
-                Style.BigPicture -> R.layout.notification_template_material_big_picture
                 Style.BigText -> R.layout.notification_template_material_big_text
                 Style.Call -> R.layout.notification_template_material_big_call
                 Style.CollapsedCall -> R.layout.notification_template_material_call
@@ -436,10 +434,6 @@ constructor(
         contentBuilder.style =
             when (style) {
                 null -> Style.Base
-
-                is BigPictureStyle -> {
-                    Style.BigPicture
-                }
 
                 is BigTextStyle -> {
                     Style.BigText

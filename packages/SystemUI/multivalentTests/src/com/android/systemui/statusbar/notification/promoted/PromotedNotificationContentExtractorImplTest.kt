@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Notification
-import android.app.Notification.BigPictureStyle
 import android.app.Notification.BigTextStyle
 import android.app.Notification.CallStyle
 import android.app.Notification.FLAG_PROMOTED_ONGOING
@@ -439,18 +438,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             val content = requireContent(entry)
 
             assertThat(content.privateVersion.style).isEqualTo(Style.Base)
-            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-        }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun extractContent_fromBigPictureStyle() =
-        kosmos.runTest {
-            val entry = createEntry { setStyle(BigPictureStyle()) }
-
-            val content = requireContent(entry)
-
-            assertThat(content.privateVersion.style).isEqualTo(Style.BigPicture)
             assertThat(content.publicVersion.style).isEqualTo(Style.Base)
         }
 

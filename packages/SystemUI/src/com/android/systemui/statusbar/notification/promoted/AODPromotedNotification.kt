@@ -63,7 +63,6 @@ import androidx.core.view.isVisible
 import androidx.tracing.trace
 import com.android.app.tracing.traceSection
 import com.android.internal.R
-import com.android.internal.widget.BigPictureNotificationImageView
 import com.android.internal.widget.CachingIconView
 import com.android.internal.widget.ImageFloatingTextView
 import com.android.internal.widget.NotificationExpandButton
@@ -234,7 +233,6 @@ private val PromotedNotificationContentModel.layoutResource: Int?
             when (style) {
                 Style.Base -> R.layout.notification_2025_template_expanded_base
                 Style.CollapsedBase -> R.layout.notification_2025_template_collapsed_base
-                Style.BigPicture -> R.layout.notification_2025_template_expanded_big_picture
                 Style.BigText -> R.layout.notification_2025_template_expanded_big_text
                 Style.Call -> R.layout.notification_2025_template_expanded_call
                 Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
@@ -245,7 +243,6 @@ private val PromotedNotificationContentModel.layoutResource: Int?
             when (style) {
                 Style.Base -> R.layout.notification_template_material_big_base
                 Style.CollapsedBase -> R.layout.notification_template_material_base
-                Style.BigPicture -> R.layout.notification_template_material_big_picture
                 Style.BigText -> R.layout.notification_template_material_big_text
                 Style.Call -> R.layout.notification_template_material_big_call
                 Style.CollapsedCall -> R.layout.notification_template_material_call
@@ -260,7 +257,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val alternateExpandTarget: View? = root.findViewById(R.id.alternate_expand_target)
     private val appNameDivider: TextView? = root.findViewById(R.id.app_name_divider)
     private val appNameText: TextView? = root.findViewById(R.id.app_name_text)
-    private val bigPicture: BigPictureNotificationImageView? = root.findViewById(R.id.big_picture)
     private val bigText: ImageFloatingTextView? = root.findViewById(R.id.big_text)
     private var chronometerStub: ViewStub? = null
     private var chronometer: Chronometer? = null
@@ -336,7 +332,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
         // Hide views that are never visible in the skeleton promoted notification.
         alternateExpandTarget?.visibility = GONE
-        bigPicture?.visibility = GONE
         closeButton?.visibility = GONE
         conversationIconBadge?.visibility = GONE
         expandButton?.visibility = GONE
@@ -373,7 +368,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         when (content.style) {
             Style.Base -> updateBase(content, collapsed = false)
             Style.CollapsedBase -> updateBase(content, collapsed = true)
-            Style.BigPicture -> updateBigPictureStyle(content)
             Style.BigText -> updateBigTextStyle(content)
             Style.Call -> updateCallStyle(content, collapsed = false)
             Style.CollapsedCall -> updateCallStyle(content, collapsed = true)
@@ -399,10 +393,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
         updateRightIconAndSpacing(content.skeletonLargeIcon)
         updateOldProgressBar(content)
-    }
-
-    private fun updateBigPictureStyle(content: PromotedNotificationContentModel) {
-        updateBase(content, collapsed = false)
     }
 
     private fun updateBigTextStyle(content: PromotedNotificationContentModel) {

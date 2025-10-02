@@ -176,7 +176,6 @@ data class PromotedNotificationContentModel(
     enum class Style {
         Base, // style == null
         CollapsedBase, // style == null
-        BigPicture,
         BigText,
         Call,
         CollapsedCall,
