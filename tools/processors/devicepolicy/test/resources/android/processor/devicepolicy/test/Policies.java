@@ -35,7 +35,9 @@ public class Policies {
                 1,
                 2
             ),
-            /* affectedResource= */ 2
+            /* affectedResource= */ 2,
+            /* requiredPermission= */ "android.permission.MANAGE_POLICY_SIMPLE_BOOLEAN",
+            /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
         ));
         policies.add(new EnumPolicyMetadata(
             /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY,
@@ -44,6 +46,8 @@ public class Policies {
                 3
             ),
             /* affectedResource= */ 1,
+            /* requiredPermission= */ "android.permission.MANAGE_POLICY_SIMPLE_ENUM",
+            /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
             /* allowedValues= */ Set.of(
                 0,
                 1,
@@ -55,7 +59,9 @@ public class Policies {
             /* allowedScopes= */ Set.of(
                 1
             ),
-            /* affectedResource= */ 1
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null
         ));
         return policies;
     }

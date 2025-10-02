@@ -104,7 +104,9 @@ class PolicyMetadataCodeGeneratorTest {
                         1,
                         3
                     ),
-                    /* affectedResource= */ 1
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null
                 ));
                 """
             )
@@ -147,7 +149,9 @@ class PolicyMetadataCodeGeneratorTest {
                         1,
                         3
                     ),
-                    /* affectedResource= */ 1
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null
                 ));
                 policies.add(new BooleanPolicyMetadata(
                     /* id= */ test.package.MY_SECOND_TEST_BOOL_POLICY,
@@ -155,7 +159,9 @@ class PolicyMetadataCodeGeneratorTest {
                         2,
                         3
                     ),
-                    /* affectedResource= */ 2
+                    /* affectedResource= */ 2,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null
                 ));
                 """
             )
@@ -196,7 +202,9 @@ class PolicyMetadataCodeGeneratorTest {
                     /* allowedScopes= */ Set.of(
                         2
                     ),
-                    /* affectedResource= */ 1
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null
                 ));
                 """
             )
@@ -245,11 +253,50 @@ class PolicyMetadataCodeGeneratorTest {
                         2
                     ),
                     /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null,
                     /* allowedValues= */ Set.of(
                         1,
                         5,
                         7
                     )
+                ));
+                """
+            )
+        )
+    }
+
+    @Test
+    fun test_permissions_outputMatches() {
+        val policyList = PolicyMetadataList.newBuilder()
+            .addPolicyMetadata(
+                boolTestPolicy("test.package.MY_TEST_BOOL_POLICY")
+                    .addAllAllowedScopes(listOf(
+                        PolicyMetadata.PolicyScope.POLICY_SCOPE_USER,
+                        PolicyMetadata.PolicyScope.POLICY_SCOPE_PARENT_USER
+                    ))
+                    .setAffectedResource(
+                        PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
+                    )
+                    .setRequiredPermission("test_permission")
+                    .setRequiredCrossUserPermission("test_cross_permission")
+            )
+            .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile)).isEqualTo(
+            fillInFile(
+                """
+                policies.add(new BooleanPolicyMetadata(
+                    /* id= */ test.package.MY_TEST_BOOL_POLICY,
+                    /* allowedScopes= */ Set.of(
+                        1,
+                        3
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ "test_permission",
+                    /* requiredCrossUserPermission= */ "test_cross_permission"
                 ));
                 """
             )

@@ -32,8 +32,8 @@ message PolicyMetadata {
     // LINT.ThenChange(/core/java/android/app/admin/DevicePolicyManager.java:resource_type)
     ResourceType affected_resource = 6;
 
-    string required_permission = 7;
-    string required_cross_user_permission = 8;
+    optional string required_permission = 7;
+    optional string required_cross_user_permission = 8;
 }
 
 message TypeSpecificPolicyMetadata {

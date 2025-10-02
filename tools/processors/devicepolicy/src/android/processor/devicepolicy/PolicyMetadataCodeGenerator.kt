@@ -155,13 +155,28 @@ object PolicyMetadataCodeGenerator {
         return builder.build()
     }
 
-    private fun CodeBlock.Builder.addPolicyArguments(policy: PolicyMetadata) =
-        this
-            .add("/* id= */ \$L,\n", policy.name)
-            .add("/* allowedScopes= */ \$L,\n",
-                generateSetBuilder(policy.allowedScopesList.map { it.number })
-            )
-            .add("/* affectedResource= */ \$L", policy.affectedResource.number)
+    private fun CodeBlock.Builder.addPolicyArguments(policy: PolicyMetadata): CodeBlock.Builder {
+        add("/* id= */ \$L,\n", policy.name)
+        add(
+            "/* allowedScopes= */ \$L,\n",
+            generateSetBuilder(policy.allowedScopesList.map { it.number })
+        )
+        add("/* affectedResource= */ \$L,\n", policy.affectedResource.number)
+
+        if (policy.requiredPermission.isEmpty()) {
+            add("/* requiredPermission= */ null,\n")
+        } else {
+            add("/* requiredPermission= */ \$S,\n", policy.requiredPermission)
+        }
+
+        if (policy.requiredCrossUserPermission.isEmpty()) {
+            add("/* requiredCrossUserPermission= */ null")
+        } else {
+            add("/* requiredCrossUserPermission= */ \$S", policy.requiredCrossUserPermission)
+        }
+
+        return this
+    }
 
     private fun genericPolicyAdder(policy: PolicyMetadata, type: ClassName) =
         CodeBlock.builder()

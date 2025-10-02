@@ -16,6 +16,8 @@
 
 package android.app.admin.metadata;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
 
 import java.util.Set;
@@ -27,23 +29,31 @@ import java.util.Set;
  * @hide
  */
 public abstract class PolicyMetadata<T> {
-    private final PolicyIdentifier<T> mId;
-    private final Set<Integer> mAllowedScopes;
+    @NonNull private final PolicyIdentifier<T> mId;
+    @NonNull private final Set<Integer> mAllowedScopes;
     private final int mAffectedResource;
+    @Nullable private final String mRequiredPermission;
+    @Nullable private final String mRequiredCrossUserPermission;
 
     public PolicyMetadata(
-            PolicyIdentifier<T> id,
-            Set<Integer> allowedScopes,
-            int affectedResource) {
+            @NonNull PolicyIdentifier<T> id,
+            @NonNull Set<Integer> allowedScopes,
+            int affectedResource,
+            @Nullable String requiredPermission,
+            @Nullable String requiredCrossUserPermission) {
         this.mId = id;
         this.mAllowedScopes = allowedScopes;
         this.mAffectedResource = affectedResource;
+        this.mRequiredPermission = requiredPermission;
+        this.mRequiredCrossUserPermission = requiredCrossUserPermission;
     }
 
+    @NonNull
     public PolicyIdentifier<T> getId() {
         return mId;
     }
 
+    @NonNull
     public Set<Integer> getAllowedScopes() {
         return mAllowedScopes;
     }
@@ -52,10 +62,22 @@ public abstract class PolicyMetadata<T> {
         return mAffectedResource;
     }
 
+    @Nullable
+    public String getRequiredCrossUserPermission() {
+        return mRequiredCrossUserPermission;
+    }
+
+    @Nullable
+    public String getRequiredPermission() {
+        return mRequiredPermission;
+    }
+
     protected String toAttributes() {
         return "mId=" + mId
                 + ", mAllowedScopes=" + mAllowedScopes
-                + ", mAffectedResource=" + mAffectedResource;
+                + ", mAffectedResource=" + mAffectedResource
+                + ", mRequiredPermission=" + mRequiredPermission
+                + ", mRequiredCrossUserPermission=" + mRequiredCrossUserPermission;
     }
 
     @Override

@@ -16,6 +16,8 @@
 
 package android.app.admin.metadata;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
 
 import java.util.Set;
@@ -26,14 +28,23 @@ import java.util.Set;
  * @hide
  */
 public class EnumPolicyMetadata extends PolicyMetadata<Integer> {
-    private final Set<Integer> mAllowedValues;
+    @NonNull private final Set<Integer> mAllowedValues;
 
     public EnumPolicyMetadata(
-            PolicyIdentifier<Integer> id,
-            Set<Integer> allowedScopes,
+            @NonNull PolicyIdentifier<Integer> id,
+            @NonNull Set<Integer> allowedScopes,
             int affectedResource,
-            Set<Integer> allowedValues) {
-        super(id, allowedScopes, affectedResource);
+            @Nullable String requiredPermission,
+            @Nullable String requiredCrossUserPermission,
+            @NonNull Set<Integer> allowedValues
+    ) {
+        super(
+                id,
+                allowedScopes,
+                affectedResource,
+                requiredPermission,
+                requiredCrossUserPermission
+        );
         mAllowedValues = allowedValues;
     }
 
@@ -45,6 +56,7 @@ public class EnumPolicyMetadata extends PolicyMetadata<Integer> {
                 + "} ";
     }
 
+    @NonNull
     public Set<Integer> getAllowedValues() {
         return mAllowedValues;
     }

@@ -16,6 +16,8 @@
 
 package android.app.admin.metadata;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
 
 import java.util.Set;
@@ -27,9 +29,17 @@ import java.util.Set;
  */
 public class BooleanPolicyMetadata extends PolicyMetadata<Boolean> {
     public BooleanPolicyMetadata(
-            PolicyIdentifier<Boolean> id,
-            Set<Integer> allowedScopes,
-            int affectedResource) {
-        super(id, allowedScopes, affectedResource);
+            @NonNull PolicyIdentifier<Boolean> id,
+            @NonNull Set<Integer> allowedScopes,
+            int affectedResource,
+            @Nullable String requiredPermission,
+            @Nullable String requiredCrossUserPermission) {
+        super(
+                id,
+                allowedScopes,
+                affectedResource,
+                requiredPermission,
+                requiredCrossUserPermission
+        );
     }
 }
