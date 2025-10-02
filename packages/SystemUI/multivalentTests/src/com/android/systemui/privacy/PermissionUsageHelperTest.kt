@@ -4,8 +4,10 @@ import android.app.ActivityManager
 import android.app.AppOpsManager
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.location.flags.Flags
 import android.os.UserHandle
 import android.permission.PermissionUsageHelper
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -132,6 +134,7 @@ class PermissionUsageHelperTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
     fun listDoesNotContainBackgroundApp_outsideHoldingPeriod() {
         val attributedOpEntry = mock(AppOpsManager.AttributedOpEntry::class.java)
         // Last fg access is outside holding period (10s) but inside recent period (20s).
@@ -178,6 +181,7 @@ class PermissionUsageHelperTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
     fun listContainsForegroundAppRecentlyUsed() {
         val attributedOpEntry = mock(AppOpsManager.AttributedOpEntry::class.java)
         // Access is outside running period (10s) but inside recent period (20s).
@@ -218,6 +222,7 @@ class PermissionUsageHelperTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
     fun listContainsRecentLocationAndActiveMic() {
         // App 1 using location, used recently in the foreground, now in the background
         val locationAttributedOpEntry = mock(AppOpsManager.AttributedOpEntry::class.java)
