@@ -398,9 +398,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         }
         Intent intent = getAssistantFeedbackIntent(
                 mINotificationManager, mPm, mSbn.getKey(), mRanking);
-        if ((!android.app.Flags.notificationClassificationUi() &&
-                !com.android.systemui.Flags.notificationAnimatedActionsTreatment())
-                 || intent == null) {
+        if (intent == null) {
             feedbackButton.setVisibility(GONE);
         } else {
             feedbackButton.setVisibility(VISIBLE);
