@@ -6933,6 +6933,16 @@ public final class Settings {
         public static final String CLOCKWORK_BLUETOOTH_SETTINGS_PREF = "cw_bt_settings_pref";
 
         /**
+         * Controls whether alerting notifications should be displayed without a tap or tilt.
+         *
+         * <p>The valid values for this key are: 0 (disabled) or 1 (enabled).
+         *
+         * @hide
+         */
+        public static final String ENABLE_NOTIFICATION_WITHOUT_TAP_OR_TILT =
+                "enable_notification_without_tap_or_tilt";
+
+        /**
          * Controls whether the unread notification dot indicator is shown on wearable devices.
          *
          * <p>The valid values for this key are: 0 (disabled) or 1 (enabled).
