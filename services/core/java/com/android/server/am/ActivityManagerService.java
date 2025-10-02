@@ -463,6 +463,7 @@ import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
 import com.android.server.am.MemoryUsageStats;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.ProcessListInternal.ProcessChangeItem;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.appop.AppOpsService;
 import com.android.server.compat.PlatformCompat;
@@ -1434,17 +1435,6 @@ public class ActivityManagerService extends IActivityManager.Stub
     String mNativeDebuggingApp = null;
 
     final Injector mInjector;
-
-    static final class ProcessChangeItem {
-        static final int CHANGE_ACTIVITIES = 1<<0;
-        static final int CHANGE_FOREGROUND_SERVICES = 1<<1;
-        int changes;
-        int uid;
-        int pid;
-        int processState;
-        boolean foregroundActivities;
-        int foregroundServiceTypes;
-    }
 
     @GuardedBy("mOomAdjObserverLock")
     OomAdjObserver mCurOomAdjObserver;
