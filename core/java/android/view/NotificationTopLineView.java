@@ -46,6 +46,7 @@ public class NotificationTopLineView extends ViewGroup {
     private final int mChildHideWidth;
     @Nullable private View mAppName;
     @Nullable private View mTitle;
+    @Nullable private View mAppNameDivider;
     private View mHeaderText;
     private View mHeaderTextDivider;
     private View mSecondaryHeaderText;
@@ -101,6 +102,14 @@ public class NotificationTopLineView extends ViewGroup {
         super.onFinishInflate();
         mAppName = findViewById(R.id.app_name_text);
         mTitle = findViewById(R.id.title);
+        if (mTitle == null) {
+            final View altTitle = findViewById(R.id.alt_title);
+            // use altTitle when it is visible.
+            if (altTitle != null && altTitle.getVisibility() == VISIBLE) {
+                mTitle = altTitle;
+                mAppNameDivider = findViewById(R.id.app_name_text_divider);
+            }
+        }
         mHeaderText = findViewById(R.id.header_text);
         mHeaderTextDivider = findViewById(R.id.header_text_divider);
         mSecondaryHeaderText = findViewById(R.id.header_text_secondary);
@@ -153,7 +162,7 @@ public class NotificationTopLineView extends ViewGroup {
 
             mOverflowAdjuster.resetForOverflow(overFlow, heightSpec)
                     // First shrink the app name, down to a minimum size
-                    .adjust(mAppName, null, mChildMinWidth)
+                    .adjust(mAppName, mAppNameDivider, mChildMinWidth)
                     // Next, shrink the header text (this usually has subText)
                     //   This shrinks the subtext first, but not all the way (yet!)
                     .adjust(mHeaderText, mHeaderTextDivider, mChildMinWidth)
