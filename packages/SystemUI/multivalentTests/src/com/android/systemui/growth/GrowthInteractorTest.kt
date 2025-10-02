@@ -40,6 +40,7 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.milliseconds
@@ -73,6 +74,7 @@ class GrowthInteractorTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
         kosmos.sceneContainerStartable.start()
+        kosmos.fakeDeviceProvisioningRepository.setDeviceProvisioned(true)
     }
 
     @Test
@@ -88,7 +90,7 @@ class GrowthInteractorTest : SysuiTestCase() {
             verify(broadcastSender, times(1))
                 .sendBroadcastAsUser(
                     capture(intentArgumentCaptor),
-                    capture(userHandleArgumentCaptor)
+                    capture(userHandleArgumentCaptor),
                 )
             assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
@@ -113,7 +115,7 @@ class GrowthInteractorTest : SysuiTestCase() {
             verify(broadcastSender, times(1))
                 .sendBroadcastAsUser(
                     capture(intentArgumentCaptor),
-                    capture(userHandleArgumentCaptor)
+                    capture(userHandleArgumentCaptor),
                 )
             assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
@@ -135,7 +137,7 @@ class GrowthInteractorTest : SysuiTestCase() {
             verify(broadcastSender, times(1))
                 .sendBroadcastAsUser(
                     capture(intentArgumentCaptor),
-                    capture(userHandleArgumentCaptor)
+                    capture(userHandleArgumentCaptor),
                 )
             assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
@@ -157,13 +159,27 @@ class GrowthInteractorTest : SysuiTestCase() {
             verify(broadcastSender, times(1))
                 .sendBroadcastAsUser(
                     capture(intentArgumentCaptor),
-                    capture(userHandleArgumentCaptor)
+                    capture(userHandleArgumentCaptor),
                 )
             assertThat(userHandleArgumentCaptor.value).isEqualTo(UserHandle.CURRENT)
             assertThat(intentArgumentCaptor.value.action)
                 .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
             assertThat(intentArgumentCaptor.value.`package`).isNull()
             assertThat(intentArgumentCaptor.value.component).isNull()
+        }
+
+    @Test
+    fun onDeviceEnteredDirectly_doNotSendBroadcast_deviceNotProvisioned() =
+        kosmos.runTest {
+            overrideResources(GROWTH_APP_PACKAGE_NAME, GROWTH_RECEIVER_CLASS_NAME)
+            underTest = kosmos.growthInteractor
+            underTest.activateIn(kosmos.testScope)
+            fakeDeviceProvisioningRepository.setDeviceProvisioned(false)
+            setDeviceEntered()
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
+            runCurrent()
+
+            verify(broadcastSender, never()).sendBroadcastAsUser(any(), any())
         }
 
     @Test
