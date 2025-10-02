@@ -374,6 +374,10 @@ public class ServiceInfo extends ComponentInfo
      * {@link android.health.connect.HealthPermissions#READ_HEART_RATE},
      * {@link android.health.connect.HealthPermissions#READ_SKIN_TEMPERATURE},
      * {@link android.health.connect.HealthPermissions#READ_OXYGEN_SATURATION},
+     * {@link android.health.connect.HealthPermissions#READ_BLOOD_PRESSURE},
+     * {@link android.health.connect.HealthPermissions#READ_HEART_RATE_VARIABILITY},
+     * {@link android.health.connect.HealthPermissions#READ_RESPIRATORY_RATE},
+     * {@link android.health.connect.HealthPermissions#READ_VO2_MAX},
      */
     @RequiresPermission(
             allOf = {
@@ -385,6 +389,10 @@ public class ServiceInfo extends ComponentInfo
                 HealthPermissions.READ_HEART_RATE,
                 HealthPermissions.READ_SKIN_TEMPERATURE,
                 HealthPermissions.READ_OXYGEN_SATURATION,
+                HealthPermissions.READ_BLOOD_PRESSURE,
+                HealthPermissions.READ_HEART_RATE_VARIABILITY,
+                HealthPermissions.READ_RESPIRATORY_RATE,
+                HealthPermissions.READ_VO2_MAX,
             }
     )
     public static final int FOREGROUND_SERVICE_TYPE_HEALTH = 1 << 8;

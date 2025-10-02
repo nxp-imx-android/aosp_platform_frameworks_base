@@ -1751,9 +1751,38 @@ public class AppOpsManager {
     /** @hide Access local network devices. */
     public static final int OP_ACCESS_LOCAL_NETWORK = AppOpEnums.APP_OP_ACCESS_LOCAL_NETWORK;
 
+    /**
+     * Access to read blood pressure.
+     *
+     * @hide
+     */
+    public static final int OP_READ_BLOOD_PRESSURE = AppOpEnums.APP_OP_READ_BLOOD_PRESSURE;
+
+    /**
+     * Access to read heart rate variability.
+     *
+     * @hide
+     */
+    public static final int OP_READ_HEART_RATE_VARIABILITY =
+            AppOpEnums.APP_OP_READ_HEART_RATE_VARIABILITY;
+
+    /**
+     * Access to read respiratory rate.
+     *
+     * @hide
+     */
+    public static final int OP_READ_RESPIRATORY_RATE = AppOpEnums.APP_OP_READ_RESPIRATORY_RATE;
+
+    /**
+     * Access to read VO2 max.
+     *
+     * @hide
+     */
+    public static final int OP_READ_VO2_MAX = AppOpEnums.APP_OP_READ_VO2_MAX;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 170;
+    public static final int _NUM_OP = 174;
 
     /**
      * All app ops represented as strings.
@@ -1927,6 +1956,10 @@ public class AppOpsManager {
             OPSTR_COMPUTER_CONTROL,
             OPSTR_READ_OTP_SMS,
             OPSTR_ACCESS_LOCAL_NETWORK,
+            OPSTR_READ_BLOOD_PRESSURE,
+            OPSTR_READ_HEART_RATE_VARIABILITY,
+            OPSTR_READ_RESPIRATORY_RATE,
+            OPSTR_READ_VO2_MAX,
     })
     public @interface AppOpString {}
 
@@ -2748,6 +2781,43 @@ public class AppOpsManager {
     /** @hide */
     public static final String OPSTR_ACCESS_LOCAL_NETWORK = "android:access_local_network";
 
+    /**
+     * Access to read blood pressure.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_GRANULAR_HEALTH_PERMISSIONS_PHASE_TWO_ENABLED)
+    public static final String OPSTR_READ_BLOOD_PRESSURE = "android:read_blood_pressure";
+
+    /**
+     * Access to read heart rate variability.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_GRANULAR_HEALTH_PERMISSIONS_PHASE_TWO_ENABLED)
+    public static final String OPSTR_READ_HEART_RATE_VARIABILITY =
+            "android:read_heart_rate_variability";
+
+    /**
+     * Access to read respiratory rate.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_GRANULAR_HEALTH_PERMISSIONS_PHASE_TWO_ENABLED)
+    public static final String OPSTR_READ_RESPIRATORY_RATE = "android:read_respiratory_rate";
+
+    /**
+     * Access to read VO2 max.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_GRANULAR_HEALTH_PERMISSIONS_PHASE_TWO_ENABLED)
+    public static final String OPSTR_READ_VO2_MAX = "android:read_vo2_max";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -2827,6 +2897,11 @@ public class AppOpsManager {
             OP_READ_HEART_RATE,
             OP_READ_SKIN_TEMPERATURE,
             OP_READ_OXYGEN_SATURATION,
+            Flags.granularHealthPermissionsPhaseTwoEnabled() ? OP_READ_BLOOD_PRESSURE : OP_NONE,
+            Flags.granularHealthPermissionsPhaseTwoEnabled()
+            ? OP_READ_HEART_RATE_VARIABILITY : OP_NONE,
+            Flags.granularHealthPermissionsPhaseTwoEnabled() ? OP_READ_RESPIRATORY_RATE : OP_NONE,
+            Flags.granularHealthPermissionsPhaseTwoEnabled() ? OP_READ_VO2_MAX : OP_NONE,
             // Android XR
             android.xr.Flags.xrManifestEntries() ? OP_EYE_TRACKING_COARSE : OP_NONE,
             android.xr.Flags.xrManifestEntries() ? OP_EYE_TRACKING_FINE : OP_NONE,
@@ -3435,6 +3510,26 @@ public class AppOpsManager {
                 "ACCESS_LOCAL_NETWORK")
                 .setPermission(Flags.accessLocalNetworkPermissionEnabled()
                         ? Manifest.permission.ACCESS_LOCAL_NETWORK : null)
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+        new AppOpInfo.Builder(OP_READ_BLOOD_PRESSURE, OPSTR_READ_BLOOD_PRESSURE,
+                "READ_BLOOD_PRESSURE").setPermission(
+                        Flags.granularHealthPermissionsPhaseTwoEnabled()
+                                ? HealthPermissions.READ_BLOOD_PRESSURE : null)
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+        new AppOpInfo.Builder(OP_READ_HEART_RATE_VARIABILITY, OPSTR_READ_HEART_RATE_VARIABILITY,
+                "READ_HEART_RATE_VARIABILITY").setPermission(
+                        Flags.granularHealthPermissionsPhaseTwoEnabled()
+                                ? HealthPermissions.READ_HEART_RATE_VARIABILITY : null)
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+        new AppOpInfo.Builder(OP_READ_RESPIRATORY_RATE, OPSTR_READ_RESPIRATORY_RATE,
+                "READ_RESPIRATORY_RATE").setPermission(
+                        Flags.granularHealthPermissionsPhaseTwoEnabled()
+                                ? HealthPermissions.READ_RESPIRATORY_RATE : null)
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+        new AppOpInfo.Builder(OP_READ_VO2_MAX, OPSTR_READ_VO2_MAX,
+                "READ_VO2_MAX").setPermission(
+                        Flags.granularHealthPermissionsPhaseTwoEnabled()
+                                ? HealthPermissions.READ_VO2_MAX : null)
                 .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
     };
 

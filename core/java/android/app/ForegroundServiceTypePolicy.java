@@ -518,6 +518,13 @@ public abstract class ForegroundServiceTypePolicy {
         permissions.add(new RegularPermission(HealthPermissions.READ_SKIN_TEMPERATURE));
         permissions.add(new RegularPermission(HealthPermissions.READ_OXYGEN_SATURATION));
 
+        if (android.permission.flags.Flags.granularHealthPermissionsPhaseTwoEnabled()) {
+            permissions.add(new RegularPermission(HealthPermissions.READ_BLOOD_PRESSURE));
+            permissions.add(new RegularPermission(HealthPermissions.READ_HEART_RATE_VARIABILITY));
+            permissions.add(new RegularPermission(HealthPermissions.READ_RESPIRATORY_RATE));
+            permissions.add(new RegularPermission(HealthPermissions.READ_VO2_MAX));
+        }
+
         return permissions.toArray(new ForegroundServiceTypePermission[permissions.size()]);
     }
 
