@@ -1378,7 +1378,7 @@ public class ParsingPackageUtils {
 
             final Set<String> purposes = new ArraySet<>();
             final boolean isPurposesEnabled =
-                    android.permission.flags.Flags.purposeDeclarationEnabled();
+                    android.permission.flags.Flags.ppdInstallTimeEnabled();
 
             final int outerDepth = parser.getDepth();
             int type;

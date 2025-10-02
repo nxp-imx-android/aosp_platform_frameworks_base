@@ -553,10 +553,9 @@ flag {
 }
 
 flag {
-    name: "purpose_declaration_enabled"
-    is_fixed_read_only: true
+    name: "ppd_install_time_enabled"
     namespace: "permissions"
-    description: "This flag is used to enable the enforcement of purpose guarded permissions. Specifically, this flag is related to enabling parsing of the specific purpose for install-time PPD enforcement."
+    description: "This flag is used to enable the enforcement of install-time purpose guarded permissions and parsing of the specific purpose."
     bug: "418113890"
 }
 

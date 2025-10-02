@@ -49,15 +49,16 @@ import com.android.internal.pm.pkg.component.ParsedUsesPermissionImpl
 import com.android.server.pm.pkg.AndroidPackage
 import com.android.server.testutils.mockThrowOnUnmocked
 import com.android.server.testutils.whenever
-import org.junit.Rule
 import java.security.KeyPairGenerator
 import java.security.PublicKey
 import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
+import org.junit.Rule
 
 @ExperimentalContracts
 @EnableFlags(android.content.pm.Flags.FLAG_INCLUDE_FEATURE_FLAGS_IN_PACKAGE_CACHER,
-        android.permission.flags.Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    android.permission.flags.Flags.FLAG_PPD_INSTALL_TIME_ENABLED
+)
 class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, PackageImpl::class) {
 
     @get:Rule

@@ -63,7 +63,7 @@ public class ComponentParseUtils {
         // purposes are only processed for enforcement if the permission is defined within the
         // Android platform manifest. This limitation might be lifted in future versions.
         final boolean shouldParseValidPurposes =
-                Flags.purposeDeclarationEnabled()
+                Flags.ppdInstallTimeEnabled()
                         && component instanceof ParsedPermissionImpl
                         && "android".equals(pkg.getPackageName());
         final List<ParsedValidPurpose> validPurposes = new ArrayList<>();
