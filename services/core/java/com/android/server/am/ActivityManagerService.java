@@ -19640,6 +19640,11 @@ public class ActivityManagerService extends IActivityManager.Stub
                         mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
             }
         }
+
+        @Override
+        public void onReportOomAdjMessage(String msg) {
+            reportOomAdjMessageLocked(msg);
+        }
     }
 
     static void setProcessGroup(int pid, int group, String processName) {

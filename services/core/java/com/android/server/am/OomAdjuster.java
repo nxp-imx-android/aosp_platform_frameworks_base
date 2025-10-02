@@ -448,6 +448,9 @@ public abstract class OomAdjuster {
 
         /** Notifies when a process transitions to a cached state. */
         void onProcessCached(ProcessRecordInternal app, OomAdjusterDebugLogger logger);
+
+        /** Notifies when a debugging message related to OOM adjustments is reported. */
+        void onReportOomAdjMessage(String msg);
     }
 
     @VisibleForTesting
@@ -2055,7 +2058,7 @@ public abstract class OomAdjuster {
     @GuardedBy("mService")
     protected void reportOomAdjMessageLocked(String tag, String msg) {
         Slog.d(tag, msg);
-        mService.reportOomAdjMessageLocked(msg);
+        mCallback.onReportOomAdjMessage(msg);
     }
 
     /** Applies the computed oomadj, procstate and sched group values and freezes them in set* */
