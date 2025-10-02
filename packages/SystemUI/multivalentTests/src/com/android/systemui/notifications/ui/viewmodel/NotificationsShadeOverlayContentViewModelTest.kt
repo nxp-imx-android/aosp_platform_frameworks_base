@@ -26,6 +26,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
@@ -70,6 +71,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
+@EnableFlags(FLAG_DUAL_SHADE)
 class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
