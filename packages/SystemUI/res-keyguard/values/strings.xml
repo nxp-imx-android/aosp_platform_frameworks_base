@@ -254,6 +254,36 @@
         other {Try again in # seconds.}
     }
     </string>
+    <!-- Countdown message shown after too many failed unlock attempts, in seconds. [CHAR LIMIT=48]-->
+    <string name="kg_too_many_failed_attempts_countdown_seconds">{count, plural,
+        =1 {Try again in # second}
+        other {Try again in # seconds}
+    }
+    </string>
+    <!-- Countdown message shown after too many failed unlock attempts, in minutes. [CHAR LIMIT=48]-->
+    <string name="kg_too_many_failed_attempts_countdown_minutes">{count, plural,
+        =1 {Try again in # minute}
+        other {Try again in # minutes}
+    }
+    </string>
+    <!-- Countdown message shown after too many failed unlock attempts, in hours. [CHAR LIMIT=48]-->
+    <string name="kg_too_many_failed_attempts_countdown_hours">{count, plural,
+        =1 {Try again in # hour}
+        other {Try again in # hours}
+    }
+    </string>
+    <!-- Countdown message shown after too many failed unlock attempts, in days. [CHAR LIMIT=48]-->
+    <string name="kg_too_many_failed_attempts_countdown_days">{count, plural,
+        =1 {Try again in # day}
+        other {Try again in # days}
+    }
+    </string>
+    <!-- Countdown message shown after too many failed unlock attempts, in years. [CHAR LIMIT=48]-->
+    <string name="kg_too_many_failed_attempts_countdown_years">{count, plural,
+        =1 {Try again in # year}
+        other {Try again in # years}
+    }
+    </string>
     <!-- Instructions for using the SIM PIN unlock screen -->
     <string name="kg_sim_pin_instructions">Enter SIM PIN.</string>
     <!-- Instructions for using the SIM PIN unlock screen when there's more than one SIM -->
