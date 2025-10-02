@@ -18,6 +18,7 @@ package com.android.systemui.qs.tiles.dialog
 
 import android.view.LayoutInflater
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -57,7 +60,7 @@ fun AudioDetailsContent(audioDetailsViewModel: AudioDetailsViewModel) {
                     Modifier.fillMaxWidth()
                         .height(600.dp)
                         .semantics { paneTitle = accessibilityTitle }
-                        .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 20.dp)
+                        .padding(horizontal = 14.dp, vertical = 18.dp)
             ) {
                 if (volumePanelState != null) {
                     with(
@@ -91,6 +94,8 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         volumeComponentsFactory?.let { factory ->
+            SectionTitle(R.string.quick_settings_audio_output_section_title)
+
             val outputComponent = factory.createComponent(VolumePanelComponents.MEDIA_OUTPUT)
             with(outputComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
 
@@ -98,9 +103,20 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
             val sliderComponent = factory.createComponent(VolumePanelComponents.VOLUME_SLIDERS)
             with(sliderComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
 
+            SectionTitle(R.string.quick_settings_audio_input_section_title)
+
             val inputComponent = factory.createComponent(VolumePanelComponents.MEDIA_INPUT)
             with(inputComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
         }
+
+        Text(
+            modifier = modifier.basicMarquee().padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+            text = stringResource(R.string.quick_settings_audio_input_disclaimer_text),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+
+        SectionTitle(R.string.quick_settings_audio_effects_section_title)
 
         AnimatedContent(
             targetState = viewModel.footerComponents,
@@ -134,4 +150,14 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
             }
         }
     }
+}
+
+@Composable
+private fun SectionTitle(textId: Int, modifier: Modifier = Modifier) {
+    Text(
+        modifier = modifier.basicMarquee().padding(horizontal = 18.dp),
+        text = stringResource(textId),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
 }

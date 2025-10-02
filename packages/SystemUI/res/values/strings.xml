@@ -1025,6 +1025,14 @@
     <string name="quick_settings_cast_disconnect">Disconnect</string>
     <!-- QuickSettings: Audio details, text on the input device indicating what the current input device is [CHAR LIMIT=NONE] -->
     <string name="quick_settings_audio_current_input">Current mic is</string>
+    <!-- QuickSettings: Audio details, text on top of the output device, indicating this is the output section [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_audio_output_section_title">Output</string>
+    <!-- QuickSettings: Audio details, text on top of the input device, indicating this is the input section [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_audio_input_section_title">Input</string>
+    <!-- QuickSettings: Audio details, text within the input section, indicating that volume of the device's mic will be automatically adjusted [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_audio_input_disclaimer_text">Mic volume will be automatically adjusted</string>
+    <!-- QuickSettings: Audio details, text on top of all the audio effect buttons, indicating this is the effects section [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_audio_effects_section_title">Effects</string>
     <!-- QuickSettings: Brightness dialog title [CHAR LIMIT=NONE] -->
     <string name="quick_settings_brightness_dialog_title">Brightness</string>
     <!-- QuickSettings: Label for the toggle that controls whether display inversion is enabled. [CHAR LIMIT=NONE] -->
