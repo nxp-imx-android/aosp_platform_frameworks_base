@@ -8,9 +8,9 @@ package android.security {
     method public boolean isCleartextTrafficPermitted();
     method public boolean isCleartextTrafficPermitted(@Nullable String);
     field @FlaggedApi("android.security.encrypted_client_hello_configuration") public static final int DOMAIN_ENCRYPTION_MODE_DISABLED = 1; // 0x1
-    field @FlaggedApi("android.security.encrypted_client_hello_configuration") public static final int DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED = 4; // 0x4
+    field @FlaggedApi("android.security.encrypted_client_hello_configuration") public static final int DOMAIN_ENCRYPTION_MODE_ENABLED = 3; // 0x3
     field @FlaggedApi("android.security.encrypted_client_hello_configuration") public static final int DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC = 2; // 0x2
-    field @FlaggedApi("android.security.encrypted_client_hello_configuration") public static final int DOMAIN_ENCRYPTION_MODE_STRICT = 3; // 0x3
+    field @FlaggedApi("android.security.encrypted_client_hello_configuration") public static final int DOMAIN_ENCRYPTION_MODE_REQUIRED = 4; // 0x4
     field @FlaggedApi("android.security.encrypted_client_hello_configuration") public static final int DOMAIN_ENCRYPTION_MODE_UNKNOWN = 0; // 0x0
   }
 

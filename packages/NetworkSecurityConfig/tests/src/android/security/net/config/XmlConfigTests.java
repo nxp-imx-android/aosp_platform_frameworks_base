@@ -18,9 +18,9 @@ package android.security.net.config;
 
 import static android.security.Flags.FLAG_ENCRYPTED_CLIENT_HELLO_CONFIGURATION;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_DISABLED;
-import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_ENABLED;
+import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_REQUIRED;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
-import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_STRICT;
 import static android.security.net.config.NetworkSecurityConfig.DEFAULT_DOMAIN_ENCRYPTION_MODE;
 
 import static com.android.org.conscrypt.net.flags.Flags.FLAG_CERTIFICATE_TRANSPARENCY_DEFAULT_ENABLED;
@@ -652,7 +652,7 @@ public class XmlConfigTests {
         NetworkSecurityConfig config = appConfig.getConfigForHostname(/* hostname= */ "");
         assertNotNull(config);
 
-        assertEquals(DOMAIN_ENCRYPTION_MODE_STRICT, config.getDomainEncryptionMode());
+        assertEquals(DOMAIN_ENCRYPTION_MODE_ENABLED, config.getDomainEncryptionMode());
     }
 
     @Test
@@ -672,11 +672,11 @@ public class XmlConfigTests {
         config = appConfig.getConfigForHostname("android.com");
         assertEquals(DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC, config.getDomainEncryptionMode());
 
-        config = appConfig.getConfigForHostname("strict.android.com");
-        assertEquals(DOMAIN_ENCRYPTION_MODE_STRICT, config.getDomainEncryptionMode());
+        config = appConfig.getConfigForHostname("enabled.android.com");
+        assertEquals(DOMAIN_ENCRYPTION_MODE_ENABLED, config.getDomainEncryptionMode());
 
-        config = appConfig.getConfigForHostname("closed.android.com");
-        assertEquals(DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED, config.getDomainEncryptionMode());
+        config = appConfig.getConfigForHostname("required.android.com");
+        assertEquals(DOMAIN_ENCRYPTION_MODE_REQUIRED, config.getDomainEncryptionMode());
     }
 
     @Test
