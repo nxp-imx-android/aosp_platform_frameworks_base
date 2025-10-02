@@ -331,8 +331,6 @@ constructor(
                         R.dimen.hover_system_icons_container_padding_bottom
                     ),
                 )
-                Trace.instantForTrack(Trace.TRACE_TAG_APP, TRACK_NAME, "onConfigChanged refreshIconGroup")
-                statusBarIconController.refreshIconGroup(iconManager)
             }
 
             override fun onDensityOrFontScaleChanged() {
