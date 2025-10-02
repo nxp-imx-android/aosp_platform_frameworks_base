@@ -111,6 +111,15 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    fun isVisible_communal_true() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.isVisible)
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Communal)
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
     fun isVisible_dozing_false() =
         testScope.runTest {
             val latest by collectLastValue(underTest.isVisible)

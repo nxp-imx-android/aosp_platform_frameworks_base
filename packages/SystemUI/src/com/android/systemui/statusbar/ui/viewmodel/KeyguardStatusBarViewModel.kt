@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.ui.viewmodel
 
 import com.android.systemui.Flags
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -47,7 +46,6 @@ import kotlinx.coroutines.flow.stateIn
  * [com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel.WifiViewModel] or
  * [com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel].
  */
-@SysUISingleton
 class KeyguardStatusBarViewModel
 @Inject
 constructor(
@@ -68,7 +66,7 @@ constructor(
                 keyguardInteractor.isDozing,
             ) { useDesktopStatusBar, currentScene, currentOverlays, isDozing ->
                 !useDesktopStatusBar &&
-                    currentScene == Scenes.Lockscreen &&
+                    (currentScene == Scenes.Lockscreen || currentScene == Scenes.Communal) &&
                     Overlays.NotificationsShade !in currentOverlays &&
                     Overlays.QuickSettingsShade !in currentOverlays &&
                     Overlays.Bouncer !in currentOverlays &&
