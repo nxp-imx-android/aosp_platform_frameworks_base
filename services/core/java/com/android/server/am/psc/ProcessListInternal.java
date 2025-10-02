@@ -18,14 +18,43 @@ package com.android.server.am.psc;
 
 import android.annotation.Nullable;
 
+import com.android.internal.annotations.CompositeRWLock;
+import com.android.internal.annotations.GuardedBy;
+
 import java.util.ArrayList;
 import java.util.List;
 
-/** Interface providing common process list operations primarily used by the OomAdjuster. */
-public interface ProcessListInternal {
+/** The base class providing common process list operations primarily used by the OomAdjuster. */
+public abstract class ProcessListInternal {
+    /** The ActivityManagerService object, which can only be used as a lock object. */
+    private Object mServiceLock;
+    /** The ActivityManagerGlobalLock object, which can only be used as a lock object. */
+    private Object mProcLock;
+
+    /** Current sequence id for process LRU updating. */
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    private int mLruSeq = 0;
+
+    protected void init(Object serviceLock, Object procLock) {
+        mServiceLock = serviceLock;
+        mProcLock = procLock;
+    }
+
     /** Returns a reference to the Least Recently Used (LRU) process list. */
-    ArrayList<? extends ProcessRecordInternal> getLruProcessesLOSP();
+    public abstract ArrayList<? extends ProcessRecordInternal> getLruProcessesLOSP();
 
     /** Returns the associated SDK sandbox processes for a UID. */
-    @Nullable List<? extends ProcessRecordInternal> getSdkSandboxProcessesForAppLocked(int uid);
+    public abstract @Nullable List<? extends ProcessRecordInternal>
+            getSdkSandboxProcessesForAppLocked(int uid);
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public int getLruSeqLOSP() {
+        return mLruSeq;
+    }
+
+    /** Increments the sequence id for LRU updating. */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    protected void incrementLruSeq() {
+        mLruSeq++;
+    }
 }

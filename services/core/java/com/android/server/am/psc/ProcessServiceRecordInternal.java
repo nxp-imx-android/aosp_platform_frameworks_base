@@ -245,6 +245,38 @@ public abstract class ProcessServiceRecordInternal {
                 < mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs);
     }
 
+    /**
+     * @return if this process:
+     * - has at least one short-FGS
+     * - has no other types of FGS
+     * - and all the short-FGSes are procstate-timed out.
+     */
+    public boolean areAllShortForegroundServicesProcstateTimedOut(long nowUptime) {
+        if (!hasForegroundServices()) { // Process has no FGS?
+            return false;
+        }
+        if (hasNonShortForegroundServices()) {  // Any non-short FGS running?
+            return false;
+        }
+        // Now we need to look at all short-FGS within the process and see if all of them are
+        // procstate-timed-out or not.
+        return !hasUndemotedShortForegroundService(nowUptime);
+    }
+
+    private boolean hasUndemotedShortForegroundService(long nowUptime) {
+        for (int i = numberOfRunningServices() - 1; i >= 0; i--) {
+            final ServiceRecordInternal sr = getRunningServiceAt(i);
+            if (!sr.isShortFgs() || !sr.hasShortFgsStartTime()) {
+                continue;
+            }
+            if (sr.getShortFgsDemoteTime() >= nowUptime) {
+                // This short fgs has not timed out yet.
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Returns the number of services currently running in this process. */
     public abstract int numberOfRunningServices();
 

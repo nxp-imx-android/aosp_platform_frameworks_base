@@ -182,8 +182,8 @@ import java.util.function.Function;
 /**
  * Activity manager code dealing with processes.
  */
-public final class ProcessList implements ProcessListInternal,
-        ProcessStateController.ProcessLruUpdater {
+public final class ProcessList extends ProcessListInternal
+        implements ProcessStateController.ProcessLruUpdater {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ProcessList" : TAG_AM;
 
     static final String TAG_PROCESS_OBSERVERS = TAG + POSTFIX_PROCESS_OBSERVERS;
@@ -496,12 +496,6 @@ public final class ProcessList implements ProcessListInternal,
      */
     @CompositeRWLock({"mService", "mProcLock"})
     private int mLruProcessServiceStart = 0;
-
-    /**
-     * Current sequence id for process LRU updating.
-     */
-    @CompositeRWLock({"mService", "mProcLock"})
-    private int mLruSeq = 0;
 
     @CompositeRWLock({"mService", "mProcLock"})
     ActiveUids mActiveUids;
@@ -896,6 +890,8 @@ public final class ProcessList implements ProcessListInternal,
 
     void init(ActivityManagerService service, ActiveUids activeUids,
             PlatformCompat platformCompat) {
+        super.init(service, service.mProcLock);
+
         mService = service;
         mActiveUids = activeUids;
         mPlatformCompat = platformCompat;
@@ -3769,7 +3765,7 @@ public final class ProcessList implements ProcessListInternal,
             if (DEBUG_LRU) Slog.d(TAG_LRU, "Moving dep from " + lrui + " to " + index
                     + " in LRU list: " + app);
             mLruProcesses.add(index, app);
-            app.setLruSeq(mLruSeq);
+            app.setLruSeq(getLruSeqLOSP());
 
             if (isActivity) {
                 nextActivityIndex = index;
@@ -4012,7 +4008,7 @@ public final class ProcessList implements ProcessListInternal,
     @GuardedBy({"mService", "mProcLock"})
     private void updateLruProcessLSP(ProcessRecord app, ProcessRecord client,
             boolean hasActivity, boolean hasService) {
-        mLruSeq++;
+        incrementLruSeq();
         final long now = SystemClock.uptimeMillis();
         final ProcessServiceRecord psr = app.mServices;
         app.setLastActivityTime(now);
@@ -4177,7 +4173,7 @@ public final class ProcessList implements ProcessListInternal,
             }
         }
 
-        app.setLruSeq(mLruSeq);
+        app.setLruSeq(getLruSeqLOSP());
 
         // Key of the indices array holds the current index of the process in the LRU list and the
         // value is a boolean indicating whether the process is an activity process or not.
@@ -4194,7 +4190,7 @@ public final class ProcessList implements ProcessListInternal,
             ConnectionRecord cr = psr.getConnectionAt(j);
             if (cr.binding != null && !cr.serviceDead && cr.binding.service != null
                     && cr.binding.service.app != null
-                    && cr.binding.service.app.getLruSeq() != mLruSeq
+                    && cr.binding.service.app.getLruSeq() != getLruSeqLOSP()
                     && cr.notHasFlag(Context.BIND_REDUCTION_FLAGS)
                     && !cr.binding.service.app.isPersistent()) {
                 if (cr.binding.service.app.mServices.hasClientActivities()) {
@@ -4211,7 +4207,7 @@ public final class ProcessList implements ProcessListInternal,
         final ProcessProviderRecord ppr = app.getProviders();
         for (int j = ppr.numberOfProviderConnections() - 1; j >= 0; j--) {
             ContentProviderRecord cpr = ppr.getProviderConnectionAt(j).provider;
-            if (cpr.proc != null && cpr.proc.getLruSeq() != mLruSeq
+            if (cpr.proc != null && cpr.proc.getLruSeq() != getLruSeqLOSP()
                     && !cpr.proc.isPersistent()) {
                 indices.append(offerLruProcessInternalLSP(cpr.proc, now,
                         "provider reference", cpr, app), false);
@@ -4419,11 +4415,6 @@ public final class ProcessList implements ProcessListInternal,
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     boolean isInLruListLOSP(ProcessRecord app) {
         return mLruProcesses.contains(app);
-    }
-
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getLruSeqLOSP() {
-        return mLruSeq;
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})

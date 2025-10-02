@@ -1156,8 +1156,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         final boolean reportDebugMsgs =
                 DEBUG_OOM_ADJ_REASON || mService.mCurOomAdjUid == app.getApplicationUid();
 
-        // TODO: b/425766486 - Use ProcessServiceRecordInternal directly.
-        final ProcessServiceRecord psr = (ProcessServiceRecord) app.getServices();
+        final ProcessServiceRecordInternal psr = app.getServices();
 
         if (app.getMaxAdj() <= FOREGROUND_APP_ADJ) {
             // The max adjustment doesn't allow this app to be anything
