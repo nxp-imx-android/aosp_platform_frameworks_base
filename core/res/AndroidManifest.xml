@@ -9477,18 +9477,6 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.media.tv.flags.enable_tv_watchdog_emmc_protection" />
 
-    <!-- Permission required to set or update the anomaly detector configuration via
-         {@see android.os.AnomalyDetectorManager}.
-         Only one app per device is permitted to hold this permission and set or update the config.
-         <p>Protection level: signature|privileged
-         @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
-         @SystemApi
-         @hide
-    -->
-    <permission android:name="android.permission.CONFIGURE_ANOMALY_DETECTOR"
-        android:protectionLevel="signature|privileged"
-        android:featureFlag="android.os.profiling.anomaly.flags.anomaly_detector_core" />
-
     <!-- @FlaggedApi(android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS)
     Purpose guarded permission to query volume-related APIs.
     {@see android.media.AudioManager}
