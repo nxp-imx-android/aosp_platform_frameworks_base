@@ -43,7 +43,7 @@ fun StyledTooltip(tooltipText: String, content: @Composable () -> Unit) {
             positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
             tooltip = {
                 PlainTooltip(
-                    caretSize = TooltipDefaults.caretSize,
+                    caretShape = TooltipDefaults.caretShape(),
                     shape = RoundedCornerShape(size = 360.dp),
                     containerColor = tertiaryColor,
                     contentColor = onTertiaryColor,
