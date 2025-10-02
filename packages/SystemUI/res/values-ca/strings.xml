@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grava"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Comparteix"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecciona una aplicació per compartir"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Comparteix l\'àudio"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Comparteix la finestra de l\'aplicació"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"El contingut de la pantalla és visible quan la comparteixes"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fes una captura de pantalla de la finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grava la finestra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fes una captura de pantalla de l\'àrea seleccionada"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Les tecles de drecera "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> serveixen per utilitzar <xliff:g id="ID_3">^3</xliff:g>, una funció d\'accessibilitat. Això et permet ampliar ràpidament la pantalla per fer el contingut més gran. Un cop activada l\'ampliació, prem la "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_4">^1</xliff:g> i \"+\" o \"-\" per ajustar el zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactiva la drecera"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantén activada"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Les tecles de drecera "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> serveixen per utilitzar <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> és un lector de pantalla que et permet escoltar els elements en veu alta. Pot ser útil per a persones amb dificultats per veure la pantalla. Això podria canviar el funcionament del dispositiu."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Si prems la "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>, s\'activarà <xliff:g id="ID_3">^3</xliff:g>, una funció d\'accessibilitat. Et permet controlar el dispositiu amb mans lliures."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueig"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"S\'està apagant…"</string>

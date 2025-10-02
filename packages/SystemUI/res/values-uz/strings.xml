@@ -169,7 +169,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Ulashish uchun ilovani tanlang"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Audioni ulashish"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Ilova oynasini ulashish"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Ulashuv paytida ekrandagi kontent ochiqlanadi"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Ulashuv paytida ekrandagi kontent koʻrinadi"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Oynadan skrinshot olish"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Oynani yozib olish"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Tanlangan hududdan skrinshot olish"</string>
@@ -752,11 +752,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Shaxsiy ilovalaringiz Internetga <xliff:g id="VPN_APP">%1$s</xliff:g> orqali ulangan. Emaillar va brauzer tarixi kabi tarmoqdagi xatti-harakatlaringiz VPN provayderiga koʻrinadi."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN sozlamalarini ochish"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"Bu – ota-onangiz tomonidan boshqariladigan qurilma. Ota-onangiz siz foydalangan ilovalar, joylashuvingiz va qurilmadan foydalanish vaqti kabi axborotlarni koʻrishi va boshqarishi mumkin."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Kunlik limit va tanaffuslar kabi qurilmangizdagi ayrim boshqaruv elementlarini faqat PIN kod yordamida oʻzgartirish mumkin."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"Ayrim boshqaruv sozlamalarini faqat ota-ona oʻzgartirishi mumkin"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent tomonidan ochilgan"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Ekran qulflangan. Juda koʻp marta autentifikatsiya qilishga urinildi."</string>

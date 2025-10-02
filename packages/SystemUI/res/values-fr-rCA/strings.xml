@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partager"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Sélectionner une appli à partager"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Partager l\'audio"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Partager la fenêtre de l\'appli"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Le contenu de votre écran est visible lors du partage"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Prendre une capture d\'écran de la fenêtre"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Enregistrer la fenêtre"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Prendre une capture d\'écran de la zone sélectionnée"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"L’"<annotation id="action_key_icon">"icône"</annotation>" d\'action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> est le raccourci-clavier à utiliser pour <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cette action vous permet de zoomer rapidement sur l\'écran pour agrandir le contenu. Une fois l\'agrandissement activé, appuyez sur l’"<annotation id="action_key_icon">"icône"</annotation>" d\'action + <xliff:g id="ID_4">^1</xliff:g> et « + » ou « - » pour ajuster le zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ne pas désactiver"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"L\'icône"</annotation>" d\'action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> est le raccourci-clavier à utiliser pour <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre les éléments lus à voix haute. Cela peut être utile aux personnes qui ont du mal à voir l\'écran. Cet élément peut modifier le fonctionnement de votre appareil."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"En appuyant sur "<annotation id="action_key_icon">"l\'icône"</annotation>" Action+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>, vous activez <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cela vous permet de contrôler votre appareil en mode Mains libres."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt en cours…"</string>

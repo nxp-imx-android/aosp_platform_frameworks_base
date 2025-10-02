@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Înregistrează"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Trimite"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selectează aplicația pentru a trimite"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Trimite audio"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Trimite fereastra aplicației"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Când permiți accesul, conținutul ecranului tău este vizibil"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fă o captură de ecran a ferestrei"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Înregistrează fereastra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fă o captură de ecran a zonei selectate"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Acțiunea "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> este comanda rapidă de la tastatură pentru a folosi <xliff:g id="ID_3">^3</xliff:g>, o funcție de accesibilitate. Astfel, poți să mărești rapid imaginea de pe ecran pentru a mări conținutul. După ce ai activat mărirea, apasă pe Acțiunea "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> și pe + sau – pentru a ajusta zoomul."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Dezactivează comanda rapidă"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Menține activată"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Acțiunea "<annotation id="action_key_icon">"pictogramă"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> este comanda rapidă de la tastatură pentru a folosi <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> este un cititor de ecran cu ajutorul căruia poți să auzi elementele rostite cu voce tare. Le poate fi util persoanelor cu dificultăți în a vedea ecranul. Acesta poate modifica funcționarea dispozitivului."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Dacă apeși pe pictograma "<annotation id="action_key_icon">"Acțiune"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, se activează <xliff:g id="ID_3">^3</xliff:g>, o funcție de accesibilitate. Astfel, poți controla dispozitivul hands-free."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ecran de blocare"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Se închide…"</string>

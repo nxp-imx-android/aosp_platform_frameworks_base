@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Taka upp"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deila"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Veldu forrit til að deila"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Deila hljóði"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Deila forritsglugga"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Efnið á skjánum þínum verður sýnilegt þegar þú deilir honum"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Taka skjámynd af glugga"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Upptökugluggi"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Taka skjámynd af völdu svæði"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Aðgerðartáknið"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er flýtilykill aðgengiseiginleikans „<xliff:g id="ID_3">^3</xliff:g>“. Hann gerir þér kleift að stækka skjáinn í fljótu bragði til að sjá efni betur. Ýttu á "<annotation id="action_key_icon">"aðgerðartáknið"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> og „+“ eða „-“ til að stækka eða minnka skjáinn þegar kveikt er á stækkun."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Slökkva á flýtileið"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Hafa kveikt"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Aðgerðartáknið"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er flýtilykillinn fyrir „<xliff:g id="ID_3">^3</xliff:g>“. <xliff:g id="ID_4">^3</xliff:g> er skjálesari sem gerir þér kleift að hlusta á atriði lesin upphátt. Þetta getur gagnast fólki sem á erfitt með að sjá á skjáinn. Eiginleikinn gæti breytt því hvernig tækið þitt virkar."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Ef ýtt er á "<annotation id="action_key_icon">"Aðgerðartáknið"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> kviknar á <xliff:g id="ID_3">^3</xliff:g>, sem er aðgengiseiginleiki. Það gerir þér kleift að stjórna tækinu þínu handfrjálst."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lásskjár"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Slekkur…"</string>

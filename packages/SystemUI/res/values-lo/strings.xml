@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ບັນທຶກ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ແບ່ງປັນ"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ເລືອກແອັບທີ່ຈະແບ່ງປັນ"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ແບ່ງປັນສຽງ"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ແບ່ງປັນໜ້າຈໍແອັບ"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"ເມື່ອແບ່ງປັນ, ເນື້ອຫາຢູ່ໜ້າຈໍຂອງທ່ານຈະເບິ່ງເຫັນໄດ້"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ຖ່າຍຮູບໜ້າຈໍ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ບັນທຶກໜ້າຈໍ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ຖ່າຍຮູບໜ້າຈໍຂອງພື້ນທີ່ທີ່ເລືອກ"</string>
@@ -755,11 +752,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"ແອັບສ່ວນຕົວຂອງທ່ານເຊື່ອມຕໍ່ອິນເຕີເນັດຜ່ານ <xliff:g id="VPN_APP">%1$s</xliff:g>. ການເຄື່ອນໄຫວເຄືອຂ່າຍຂອງທ່ານ, ຮວມທັງອີເມວ ແລະ ຂໍ້ມູນການນຳໃຊ້, ແມ່ນສະແດງໃຫ້ຜູ້ໃຫ້ບໍລິການ VPN ຂອງທ່ານເຫັນໄດ້."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"ເປີດການຕັ້ງຄ່າ VPN"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"ອຸປະກອນນີ້ແມ່ນຈັດການໂດຍພໍ່ແມ່ຂອງທ່ານ. ພໍ່ແມ່ຂອງທ່ານສາມາດເບິ່ງ ແລະ ຈັດການຂໍ້ມູນໄດ້ ເຊັ່ນ: ແອັບທີ່ທ່ານໃຊ້, ສະຖານທີ່ ແລະ ເວລາໜ້າຈໍຂອງທ່ານ."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ການຄວບຄຸມບາງຢ່າງໃນອຸປະກອນຂອງທ່ານ ເຊັ່ນ: ຂີດຈຳກັດປະຈຳວັນ ແລະ ເວລາປິດເຮັດວຽກ, ຈະສາມາດປ່ຽນໄດ້ດ້ວຍ PIN ເທົ່ານັ້ນ."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"ການຄວບຄຸມບາງຢ່າງສາມາດຖືກປ່ຽນແປງໄດ້ໂດຍພໍ່ແມ່ຂອງທ່ານເທົ່ານັ້ນ"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"ປັອດລັອກປະໄວ້ໂດຍ TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ລັອກໜ້າຈໍແລ້ວ. ພະຍາຍາມພິສູດຢືນຢັນຫຼາຍເທື່ອເກີນໄປ."</string>
@@ -1151,8 +1146,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ແມ່ນຄີລັດເພື່ອໃຊ້ <xliff:g id="ID_3">^3</xliff:g>, ເຊິ່ງເປັນຄຸນສົມບັດການຊ່ວຍເຂົ້າເຖິງ. ເຊິ່ງຈະຊ່ວຍໃຫ້ທ່ານຊູມເຂົ້າຢູ່ໜ້າຈໍໄດ້ຢ່າງວ່ອງໄວເພື່ອປັບເນື້ອຫາໃຫ້ມີຂະໜາດໃຫຍ່ຂຶ້ນ. ເມື່ອເປີດການຂະຫຍາຍແລ້ວ, ໃຫ້ກົດ "<annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_4">^1</xliff:g> ແລະ \"+\" ຫຼື \"-\" ເພື່ອປັບການຊູມ."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ປິດທາງລັດ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ເປີດໄວ້"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ແມ່ນຄີລັດເພື່ອໃຊ້ <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> ເປັນໂປຣແກຣມອ່ານໜ້າຈໍທີ່ຊ່ວຍໃຫ້ທ່ານຟັງສຽງອ່ານຂອງລາຍການຕ່າງໆໄດ້. ເຊິ່ງຈະເປັນປະໂຫຍດສຳລັບບຸກຄົນທີ່ປະສົບບັນຫາໃນການເບິ່ງເຫັນໜ້າຈໍ. ການດຳເນີນການນີ້ອາດປ່ຽນແປງລັກສະນະການເຮັດວຽກຂອງອຸປະກອນຂອງທ່ານ."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"ກດ "<annotation id="action_key_icon">"ໄອຄອນ"</annotation>" ຄຳສັ່ງ + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ເປີດໃຊ້ <xliff:g id="ID_3">^3</xliff:g>, ເຊິ່ງເປັນຄຸນສົມບັດການຊ່ວຍເຂົ້າເຖິງ. ນີ້ຈະຊ່ວຍໃຫ້ທ່ານຄວບຄຸມອຸປະກອນໄດ້ແບບແຮນຟຣີ."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ໜ້າຈໍລັອກ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ກຳລັງປິດເຄື່ອງ…"</string>

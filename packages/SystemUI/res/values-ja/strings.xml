@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"録画"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"共有"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"共有するアプリを選択"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"音声を共有"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"アプリ ウィンドウを共有"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"共有すると、画面の内容が表示されます"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ウィンドウのスクリーンショットを撮影"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ウィンドウを録画"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"選択した領域のスクリーンショットを撮影"</string>
@@ -757,11 +754,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"個人用アプリは <xliff:g id="VPN_APP">%1$s</xliff:g>を介してインターネットに接続しています。メールや閲覧データなど、ネットワーク アクティビティは、VPN プロバイダに公開されます。"</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN 設定を開く"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"このデバイスは保護者によって管理されています。保護者は、あなたが使用するアプリ、あなたの現在地、デバイスの利用時間などの情報を確認したり、管理したりできます。"</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"デバイスのコントロールの一部（1 日の利用時間の上限や休息時間など）は PIN を使用しないと変更できません。"</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"一部の設定は保護者の方のみが変更できます"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"信頼エージェントがロック解除を管理"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"認証の試行回数が上限を超えたため、画面がロックされました。"</string>
@@ -1153,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"アクション "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> は、ユーザー補助機能の<xliff:g id="ID_3">^3</xliff:g>を使用するためのキーボード ショートカットです。画面をすばやくズームインして、コンテンツを拡大できます。拡大機能が ON になったら、アクション "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_4">^1</xliff:g> と「+」または「-」を押して、ズームを調整できます。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ショートカットを OFF にする"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ON のままにする"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"アクション "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> は、<xliff:g id="ID_3">^3</xliff:g>機能を使用するためのキーボード ショートカットです。<xliff:g id="ID_4">^3</xliff:g> は、画面上の項目を読み上げるスクリーン リーダーです。目の不自由な方に役立つ機能です。この機能が ON になると、デバイスの動作が変わることがあります。"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"アクション "<annotation id="action_key_icon">"アイコン"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> を押すと、ユーザー補助機能の <xliff:g id="ID_3">^3</xliff:g> が有効になります。これを使用すると、デバイスをハンズフリーで操作できます。"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ロック画面"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"シャットダウン中…"</string>

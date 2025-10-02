@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ta opp"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Del"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Velg en app du vil dele fra"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Del lyd"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Del appvinduet"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Når du deler, er innholdet på skjermen synlig"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ta skjermbilde av vinduet"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ta opp vinduet"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ta skjermbilde av det valgte området"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Handling "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er hurtigtasten for å bruke <xliff:g id="ID_3">^3</xliff:g>, som er en tilgjengelighetsfunksjon. Dette gjør at du raskt kan zoome inn på skjermen for å gjøre innhold større. Når forstørrelse er på, trykker du på Handling "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> og «+» eller «-» for å justere zoomnivået."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Slå av hurtigtasten"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Behold på"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Handling "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er hurtigtasten for å bruke <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> er en skjermleser du kan bruke for å få lest opp elementer. Dette kan være nyttig for personer som har vanskeligheter med å se skjermen. Dette kan endre hvordan enheten din fungerer."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Hvis du trykker på Handling-"<annotation id="action_key_icon">"ikonet"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, slås <xliff:g id="ID_3">^3</xliff:g> på. Dette er en tilgjengelighetsfunksjon. Dette gjør at du kan kontrollere enheten håndfritt."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Låseskjerm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Slår av …"</string>
@@ -1712,7 +1708,7 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Tilbake"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Forrige"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Neste"</string>
-    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"naviger til neste side"</string>
+    <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"gå til neste side"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofyll"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"vis"</string>
 </resources>

@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Снимај"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Сподели"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Изберете апликација за споделување"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Споделувајте аудио"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Прозорец за споделување апликација"</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"При споделување, содржините на вашиот екран се видливи"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Снимање слика од екранот на прозорецот"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Снимање прозорец"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Снимање слика од екранот на избраната област"</string>
@@ -1151,8 +1148,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Икона"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_3">^3</xliff:g>, функција за пристапност. Ова ви овозможува брзо да зумирате на екранот за да го зголемите приказот на содржините. Откако ќе се вклучи зголемувањето, притиснете ја "<annotation id="action_key_icon">"иконата"</annotation>" за дејство + <xliff:g id="ID_4">^1</xliff:g> и „+“ или „–“ за да го приспособите зумот."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Исклучи ја кратенката"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не исклучувај"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Икона"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> е читач на екран што ви овозможува да слушате ставки изговорени на глас. Ова може да биде корисно за лица што имаат проблем да го видат екранот. Ова може да го промени начинот на функционирање на уредот."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Ако ја притиснете "<annotation id="action_key_icon">"иконата"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> се вклучува <xliff:g id="ID_3">^3</xliff:g>, функција за пристапност. Ова ви овозможува да го контролирате вашиот уред без користење раце."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заклучен екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Се исклучува…"</string>

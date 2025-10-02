@@ -167,12 +167,9 @@
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"تسجيل"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"مشاركة"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"يُرجى اختيار تطبيق لمشاركته"</string>
-    <!-- no translation found for screen_share_audio_sharing_text (7829391478284315787) -->
-    <skip />
-    <!-- no translation found for screen_share_app_window_sharing_title (2063554880747318383) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer (3953761426122528262) -->
-    <skip />
+    <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"مشاركة الصوت"</string>
+    <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"نافذة \"مشاركة التطبيق\""</string>
+    <string name="screen_share_disclaimer" msgid="3953761426122528262">"يكون محتوى شاشتك أثناء المشاركة مرئيًا"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"أخْذ لقطة شاشة للنافذة"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"تسجيل النافذة"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"أخْذ لقطة شاشة للمنطقة المحدّدة"</string>
@@ -755,11 +752,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"‏تطبيقاتك الشخصية متّصلة بالإنترنت من خلال <xliff:g id="VPN_APP">%1$s</xliff:g>. تظهر أنشطة الشبكة، بما في ذلك الرسائل الإلكترونية وبيانات التصفُّح، لمزوّد خدمة شبكة VPN."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"‏فتح إعدادات شبكة VPN"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"يتولّى أحد والدَيك إدارة هذا الجهاز. ويمكنه الاطّلاع على معلوماتك وإدارتها، مثل التطبيقات المُستخدَمة وموقعك الجغرافي ومدة النظر إلى الشاشة."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"لا يمكن تغيير بعض عناصر التحكّم على جهازك، مثل الحدود اليومية ووقت الاستراحة، إلا باستخدام رقم تعريف شخصي."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"لا يمكن تغيير بعض عناصر التحكّم إلا من قِبل والدَيك"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"‏شبكة VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"‏فتح القفل باستمرار بواسطة TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"تم قفل الشاشة بسبب إجراء العديد من محاولات المصادقة."</string>
@@ -1151,8 +1146,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"‏الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> هو اختصار لوحة المفاتيح لاستخدام \"<xliff:g id="ID_3">^3</xliff:g>\"، وهي إحدى ميزات تسهيل الاستخدام. يتيح لك هذا الإجراء تكبير الشاشة بسرعة لعرض المحتوى بحجم أكبر. بعد تفعيل تكبير الشاشة، يمكنك الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> والرمز \"+\" أو \"-\" لضبط التكبير أو التصغير."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"إيقاف الاختصار"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"عدم الإيقاف"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (389338862762665003) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"‏الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> هو اختصار لوحة المفاتيح لاستخدام <xliff:g id="ID_3">^3</xliff:g>. ‫<xliff:g id="ID_4">^3</xliff:g> هو قارئ شاشة يقرأ العناصر المعروضة عليها بصوتٍ عالٍ، ما يجعله مفيدًا للأشخاص الذين يجدون صعوبة في النظر إلى الشاشة. وقد يؤدي ذلك إلى تغيير طريقة عمل جهازك."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"‏يؤدي الضغط على الإجراء "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g>‏ + <xliff:g id="ID_2">^2</xliff:g> إلى تفعيل \"<xliff:g id="ID_3">^3</xliff:g>\"، وهي إحدى ميزات تسهيل الاستخدام التي تتيح لك التحكّم في جهازك بدون لمسه."</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"شاشة القفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"جارٍ إيقاف التشغيل…"</string>
