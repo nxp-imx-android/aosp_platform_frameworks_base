@@ -64,8 +64,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.server.LocalServices;
 import com.android.server.devicestate.DeviceStateProvider;
 import com.android.server.devicestate.DeviceStateProvider.Listener;
-import com.android.server.policy.feature.flags.FakeFeatureFlagsImpl;
-import com.android.server.policy.feature.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -112,8 +110,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Mock
     private Display mDisplay;
 
-    private final FakeFeatureFlagsImpl mFakeFeatureFlags = new FakeFeatureFlagsImpl();
-
     private final Configuration mConfiguration = new Configuration();
 
     private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
@@ -135,7 +131,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
 
         when(mInputSensorInfo.getName()).thenReturn("hall-effect");
         mHallSensor = new Sensor(mInputSensorInfo);
@@ -614,7 +609,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_screenWakeLockExists_forceTentModeWithWakeLockEnabled()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -637,7 +631,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_noScreenWakelock_forceTentModeWithWakeLockEnabled()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -659,7 +652,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_afterScreenWakeLockBecomesActive_keepsClosedDeviceState()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -679,7 +671,6 @@ public final class BookStyleDeviceStatePolicyTest {
     @Test
     public void test_unfoldTo85Degrees_screenWakeLockPresentAndThenRemoved_movesToHalfOpenedState()
             throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, true);
         mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
         mPolicy.getDeviceStateProvider().onSystemReady();
         sendHingeAngle(0f);
@@ -695,17 +686,6 @@ public final class BookStyleDeviceStatePolicyTest {
 
         sendHingeAngle(85f);
         assertLatestReportedState(DEVICE_STATE_HALF_OPENED);
-    }
-
-    @Test
-    public void test_unfoldTo85Degrees_notSubscribedToWakeLocks_forceTentModeWithWakeLockDisabled()
-            throws Exception {
-        mFakeFeatureFlags.setFlag(Flags.FLAG_FORCE_FOLDABLES_TENT_MODE_WITH_SCREEN_WAKELOCK, false);
-        mInstrumentation.runOnMainSync(() -> mProvider = createProvider());
-
-        mPolicy.getDeviceStateProvider().onSystemReady();
-
-        verify(mPowerManager, never()).addScreenTimeoutPolicyListener(anyInt(), any(), any());
     }
 
     @Test
@@ -896,7 +876,7 @@ public final class BookStyleDeviceStatePolicyTest {
     }
 
     private DeviceStateProvider createProvider() {
-        mPolicy = new BookStyleDeviceStatePolicy(mFakeFeatureFlags, mContext, mHingeAngleSensor,
+        mPolicy = new BookStyleDeviceStatePolicy(mContext, mHingeAngleSensor,
                 mLeftAccelerometer, mRightAccelerometer, /* closeAngleDegrees= */ null);
         return mPolicy.getDeviceStateProvider();
     }

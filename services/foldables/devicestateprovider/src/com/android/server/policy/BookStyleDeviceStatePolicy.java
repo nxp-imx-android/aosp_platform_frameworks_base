@@ -50,7 +50,6 @@ import com.android.server.LocalServices;
 import com.android.server.devicestate.DeviceStatePolicy;
 import com.android.server.devicestate.DeviceStateProvider;
 import com.android.server.policy.FoldableDeviceStateProvider.DeviceStatePredicateWrapper;
-import com.android.server.policy.feature.flags.FeatureFlags;
 
 import java.io.PrintWriter;
 import java.util.HashSet;
@@ -93,9 +92,9 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
      *                          between folded and unfolded modes, otherwise when folding the
      *                          display switch will happen at 0 degrees
      */
-    public BookStyleDeviceStatePolicy(@NonNull FeatureFlags featureFlags, @NonNull Context context,
-            @NonNull Sensor hingeAngleSensor, @Nullable Sensor leftAccelerometerSensor,
-            @Nullable Sensor rightAccelerometerSensor, Integer closeAngleDegrees) {
+    public BookStyleDeviceStatePolicy(@NonNull Context context, @NonNull Sensor hingeAngleSensor,
+            @Nullable Sensor leftAccelerometerSensor, @Nullable Sensor rightAccelerometerSensor,
+            Integer closeAngleDegrees) {
         super(context);
 
         final SensorManager sensorManager = mContext.getSystemService(SensorManager.class);
@@ -105,7 +104,7 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
                 PowerManagerInternal.class);
 
         final DeviceStatePredicateWrapper[] configuration = createConfiguration(
-                leftAccelerometerSensor, rightAccelerometerSensor, closeAngleDegrees, featureFlags);
+                leftAccelerometerSensor, rightAccelerometerSensor, closeAngleDegrees);
 
         mProvider = new FoldableDeviceStateProvider(mContext, sensorManager, hingeAngleSensor,
             displayManager, powerManager, powerManagerInternal, configuration);
@@ -113,10 +112,10 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
 
     private DeviceStatePredicateWrapper[] createConfiguration(
             @Nullable Sensor leftAccelerometerSensor, @Nullable Sensor rightAccelerometerSensor,
-            Integer closeAngleDegrees, @NonNull FeatureFlags featureFlags) {
+            Integer closeAngleDegrees) {
         return new DeviceStatePredicateWrapper[]{
                 createClosedConfiguration(leftAccelerometerSensor, rightAccelerometerSensor,
-                        closeAngleDegrees, featureFlags),
+                        closeAngleDegrees),
                 createConfig(getHalfOpenedDeviceState(), /* activeStatePredicate= */
                         (provider) -> {
                             final float hingeAngle = provider.getHingeAngle();
@@ -140,7 +139,7 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
 
     private DeviceStatePredicateWrapper createClosedConfiguration(
             @Nullable Sensor leftAccelerometerSensor, @Nullable Sensor rightAccelerometerSensor,
-            @Nullable Integer closeAngleDegrees, @NonNull FeatureFlags featureFlags) {
+            @Nullable Integer closeAngleDegrees) {
 
         if (closeAngleDegrees != null) {
             // Switch displays at closeAngleDegrees in both ways (folding and unfolding)
@@ -155,7 +154,7 @@ public class BookStyleDeviceStatePolicy extends DeviceStatePolicy implements
         // based on the device posture (e.g. wedge mode, tent mode, reverse wedge mode)
         final BookStyleClosedStatePredicate predicate = new BookStyleClosedStatePredicate(
                 mContext, this, leftAccelerometerSensor, rightAccelerometerSensor,
-                DEFAULT_STATE_TRANSITIONS, featureFlags);
+                DEFAULT_STATE_TRANSITIONS);
         return createConfig(getClosedDeviceState(),
                 /* activeStatePredicate= */ predicate,
                 /* initializer= */ predicate::init);

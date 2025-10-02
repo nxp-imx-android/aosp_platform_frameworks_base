@@ -73,8 +73,6 @@ import androidx.annotation.NonNull;
 
 import com.android.server.devicestate.DeviceStateProvider.Listener;
 import com.android.server.policy.FoldableDeviceStateProvider.DeviceStatePredicateWrapper;
-import com.android.server.policy.feature.flags.FakeFeatureFlagsImpl;
-import com.android.server.policy.feature.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -128,8 +126,6 @@ public final class FoldableDeviceStateProviderTest {
     private Display mDefaultDisplay;
     @Mock
     private Display mExternalDisplay;
-
-    private final FakeFeatureFlagsImpl mFakeFeatureFlags = new FakeFeatureFlagsImpl();
 
     @Mock
     private PowerManager mPowerManager;
@@ -662,8 +658,8 @@ public final class FoldableDeviceStateProviderTest {
     }
 
     private void createProvider(DeviceStatePredicateWrapper... configurations) {
-        mProvider = new FoldableDeviceStateProvider(mFakeFeatureFlags, mContext, mSensorManager,
-                mHingeAngleSensor, mDisplayManager, mPowerManager, mPowerManagerInternal,
+        mProvider = new FoldableDeviceStateProvider(mContext, mSensorManager, mHingeAngleSensor,
+                mDisplayManager, mPowerManager, mPowerManagerInternal,
                 configurations);
         verify(mDisplayManager)
                 .registerDisplayListener(
