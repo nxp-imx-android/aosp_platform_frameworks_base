@@ -127,6 +127,8 @@ import javax.inject.Inject;
 public class ThemeOverlayController implements CoreStartable, Dumpable {
     protected static final String TAG = "ThemeOverlayController";
     private static final boolean DEBUG = false;
+    // The wallpaper colors source is always the home wallpaper.
+    private static final int WALLPAPER_COLORS_SOURCE = WallpaperManager.FLAG_SYSTEM;
 
     private final ThemeOverlayApplier mThemeManager;
     private final UserManager mUserManager;
@@ -209,6 +211,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
 
         @Override
         public void onColorsChanged(WallpaperColors wallpaperColors, int which, int userId) {
+            if (!wallpaperColorsNeedUpdate(which)) {
+                return;
+            }
             WallpaperColors currentColors = mCurrentColors.get(userId);
             if (wallpaperColors != null && wallpaperColors.equals(currentColors)) {
                 return;
@@ -266,11 +271,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         reevaluateSystemTheme(true /* forceReload */);
     };
 
-    private int getDefaultWallpaperColorsSource() {
-        // The wallpaper colors source is always the home wallpaper.
-        return WallpaperManager.FLAG_SYSTEM;
-    }
-
     private boolean isSeedColorSet(JSONObject jsonObject, WallpaperColors newWallpaperColors) {
         if (newWallpaperColors == null) {
             return false;
@@ -302,8 +302,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private void handleWallpaperColors(WallpaperColors wallpaperColors, int flags, int userId) {
         final int currentUser = mUserTracker.getUserId();
         final boolean hadWallpaperColors = mCurrentColors.get(userId) != null;
-        int wallpaperColorsSource = getDefaultWallpaperColorsSource();
-        boolean wallpaperColorsNeedUpdate = (flags & wallpaperColorsSource) != 0;
+        boolean wallpaperColorsNeedUpdate = wallpaperColorsNeedUpdate(flags);
         if (wallpaperColorsNeedUpdate) {
             mCurrentColors.put(userId, wallpaperColors);
             if (DEBUG) Log.d(TAG, "got new colors: " + wallpaperColors + " where: " + flags);
@@ -575,8 +574,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             // now we have to update
 
         } else {
-            systemColor = mWallpaperManager.getWallpaperColors(
-                    getDefaultWallpaperColorsSource());
+            systemColor = getWallpaperColors();
         }
 
         // Upon boot, make sure we have the most up to date colors
@@ -948,8 +946,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         boolean isWallpaper = styleAndSource.second.equals(COLOR_SOURCE_HOME);
 
         if (isWallpaper) {
-            WallpaperColors wallpaperColors = mWallpaperManager.getWallpaperColors(
-                    getDefaultWallpaperColorsSource());
+            WallpaperColors wallpaperColors = getWallpaperColors();
 
             if (wallpaperColors != null) {
                 defaultSeedColor = wallpaperColors.getPrimaryColor();
@@ -970,6 +967,21 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
 
         return new HardwareDefaultSetting(defaultSeedColor, styleAndSource.first,
                 isWallpaper ? COLOR_SOURCE_HOME : COLOR_SOURCE_PRESET);
+    }
+
+    /**
+     * Returns whether the cached wallpaper colors need to be updated based on which screen was
+     * updated. Wallpaper colors only need update if the home wallpaper changes.
+     *
+     * @param which {@link WallpaperManager} flag representing which screen is updated
+     * @return true if the system's cached wallpaper colors need to be updated
+     */
+    private boolean wallpaperColorsNeedUpdate(int which) {
+        return (which & WALLPAPER_COLORS_SOURCE) != 0;
+    }
+
+    private WallpaperColors getWallpaperColors() {
+        return mWallpaperManager.getWallpaperColors(WALLPAPER_COLORS_SOURCE);
     }
 
     @Override
