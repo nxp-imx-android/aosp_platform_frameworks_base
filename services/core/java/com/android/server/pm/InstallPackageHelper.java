@@ -16,6 +16,7 @@
 
 package com.android.server.pm;
 
+import static android.content.pm.Flags.allowUpdatedVersionBetterThanApkInApex;
 import static android.content.pm.Flags.disallowSdkLibsToBeApps;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_APK;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_INSTALLER;
@@ -49,6 +50,7 @@ import static android.os.storage.StorageManager.FLAG_STORAGE_EXTERNAL;
 
 import static com.android.server.pm.InitAppsHelper.ScanParams;
 import static com.android.server.pm.PackageManagerException.INTERNAL_ERROR_ARCHIVE_NO_INSTALLER_TITLE;
+import static com.android.server.pm.PackageManagerException.INTERNAL_ERROR_UPDATED_VERSION_BETTER_THAN_SYSTEM;
 import static com.android.server.pm.PackageManagerService.APP_METADATA_FILE_NAME;
 import static com.android.server.pm.PackageManagerService.DEBUG_COMPRESSION;
 import static com.android.server.pm.PackageManagerService.DEBUG_INSTALL;
@@ -4357,6 +4359,7 @@ final class InstallPackageHelper {
         try {
             final boolean scanSystemPartition =
                 (parseFlags & ParsingPackageUtils.PARSE_IS_SYSTEM_DIR) != 0;
+            final boolean isApkInApex = (parseFlags & ParsingPackageUtils.PARSE_APK_IN_APEX) != 0;
             final ScanRequest initialScanRequest = prepareInitialScanRequest(parsedPackage,
                     parseFlags, scanFlags, user, null /*cpuAbiOverride*/, null /*installSource*/);
             final PackageSetting installedPkgSetting = initialScanRequest.mPkgSetting;
@@ -4471,19 +4474,30 @@ final class InstallPackageHelper {
                     disabledPkgSetting.setSigningDetails(result.getResult());
                 }
 
-                // In the case of a skipped package, commitReconciledScanResultLocked is not called
-                // to add the object to the "live" data structures, so this is the final mutation
-                // step for the package. Which means it needs to be finalized here to cache derived
-                // fields. This is relevant for cases where the disabled system package is used for
-                // flags or other metadata.
-                parsedPackage.hideAsFinal();
-                throw PackageManagerException.ofInternalError(
-                        "Package " + parsedPackage.getPackageName()
-                                + " at " + parsedPackage.getPath() + " ignored: updated version "
-                                + (pkgAlreadyExists
-                                        ? String.valueOf(pkgSetting.getVersionCode()) : "unknown")
-                                + " better than this " + parsedPackage.getLongVersionCode(),
-                        PackageManagerException.INTERNAL_ERROR_UPDATED_VERSION_BETTER_THAN_SYSTEM);
+                // Any Exception thrown here when scanning an APK-in-APEX will cause
+                // processParseResult() to fail installation of the APEX. Having a newer
+                // version of the APK-in-APEX on /data is no reason to fail an APEX instal,
+                // so we just won't throw the Exception in that case. Also, we want to fully
+                // scan the APK-in-APEX, so that we fail the APEX install if the APK-in-APEX
+                // has any problems that might make it unusable if the APK on /data is removed
+                // in the future, so we'll fall through to continue scanning below.
+                if (!allowUpdatedVersionBetterThanApkInApex() || !isApkInApex) {
+                    // In the case of a skipped package, commitReconciledScanResultLocked is
+                    // not called to add the object to the "live" data structures, so this is
+                    // the final mutation step for the package. Which means it needs to be
+                    // finalized here to cache derived fields. This is relevant for cases where
+                    // the disabled system package is used for flags or other metadata.
+                    parsedPackage.hideAsFinal();
+                    throw PackageManagerException.ofInternalError(
+                            "Package " + parsedPackage.getPackageName()
+                                    + " at " + parsedPackage.getPath()
+                                    + " ignored: updated version "
+                                    + (pkgAlreadyExists
+                                            ? String.valueOf(pkgSetting.getVersionCode())
+                                            : "unknown")
+                                    + " better than this " + parsedPackage.getLongVersionCode(),
+                            INTERNAL_ERROR_UPDATED_VERSION_BETTER_THAN_SYSTEM);
+                }
             }
 
             // Verify certificates against what was last scanned. Force re-collecting certificate in
@@ -4573,8 +4587,8 @@ final class InstallPackageHelper {
                 }
             }
 
-            // A new application appeared on /system, and we are seeing it for the first time.
-            // Its also not updated as we don't have a copy of it on /data. So, scan it in a
+            // If new application appeared on /system, and we are seeing it for the first time,
+            // and it's not updated as we don't have a copy of it on /data, scan it in a
             // STOPPED state.
             // We'll skip this step under the following conditions:
             //   - It's "android"
