@@ -904,6 +904,16 @@ flag {
 }
 
 flag {
+    name: "enable_display_disconnect_splitscreen"
+    namespace: "lse_desktop_experience"
+    description: "Enables splitscreen disconnect handling."
+    bug: "447672107"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_focus_in_shell_transitions"
     namespace: "lse_desktop_experience"
     description: "Creates a shell transition when display focus switches."
