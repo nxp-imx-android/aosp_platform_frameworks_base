@@ -13,35 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.wm.shell.desktopmode
 
+import android.graphics.Rect
 import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
-import android.window.DisplayAreaInfo
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
+import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
-import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_SPLITSCREEN
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.splitscreen.SplitMultiDisplayProvider
+import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import java.util.Optional
 import kotlin.test.Test
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.Before
+import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
 import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 
 /**
  * Test class for {@link DesktopTasksController}
@@ -53,22 +60,27 @@ import org.mockito.kotlin.never
 class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
     private val transitions = mock(Transitions::class.java)
     private val shellInit = mock(ShellInit::class.java)
+    private val splitScreenController = mock(SplitScreenController::class.java)
     private val desktopTasksController = mock(DesktopTasksController::class.java)
-    private val displayController = mock(DisplayController::class.java)
-    private val rootTaskDisplayAreaOrganizer = mock(RootTaskDisplayAreaOrganizer::class.java)
 
     private lateinit var disconnectTransitionHandler: DisplayDisconnectTransitionHandler
+    private lateinit var splitScreenControllerOptional: Optional<SplitScreenController>
+    private lateinit var desktopTasksControllerOptional: Optional<DesktopTasksController>
+    private val transition = Binder()
 
     @Before
     fun setUp() {
+        splitScreenControllerOptional = spy(Optional.of(splitScreenController))
+        desktopTasksControllerOptional = spy(Optional.of(desktopTasksController))
         disconnectTransitionHandler =
             DisplayDisconnectTransitionHandler(
                 transitions,
                 shellInit,
-                Optional.of(desktopTasksController),
-                displayController,
-                rootTaskDisplayAreaOrganizer,
+                splitScreenControllerOptional,
+                desktopTasksControllerOptional,
             )
+        whenever(splitScreenController.multiDisplayProvider)
+            .thenReturn(FakeSplitMultiDisplayProvider())
     }
 
     @Test
@@ -86,7 +98,16 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
                     /* remoteTransition= */ null,
                 )
                 .apply { setDisplayChange(displayChange) }
+
         val transition = Binder()
+        whenever(splitScreenControllerOptional.isPresent).thenReturn(false)
+        whenever(desktopTasksControllerOptional.isPresent).thenReturn(true)
+        val finalWct =
+            WindowContainerTransaction().apply {
+                setBounds(mock(WindowContainerToken::class.java), Rect())
+            }
+        whenever(desktopTasksController.onDisplayDisconnect(anyInt(), anyInt(), any()))
+            .thenReturn(finalWct)
 
         disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
 
@@ -110,6 +131,14 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
                 )
                 .apply { setDisplayChange(displayChange) }
         val transition = Binder()
+        whenever(splitScreenControllerOptional.isPresent).thenReturn(false)
+        whenever(desktopTasksControllerOptional.isPresent).thenReturn(true)
+        val finalWct =
+            WindowContainerTransaction().apply {
+                setBounds(mock(WindowContainerToken::class.java), Rect())
+            }
+        whenever(desktopTasksController.onDisplayDisconnect(anyInt(), anyInt(), any()))
+            .thenReturn(finalWct)
 
         disconnectTransitionHandler.handleRequest(transition, transitionRequestInfo)
 
@@ -123,8 +152,14 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         val finishCallback = mock(Transitions.TransitionFinishCallback::class.java)
         val info = mock(TransitionInfo::class.java)
         assertTrue(
-            disconnectTransitionHandler.startAnimation(transition, info, startT, finishT, finishCallback),
-            "Disconnect transition should be handled"
+            disconnectTransitionHandler.startAnimation(
+                transition,
+                info,
+                startT,
+                finishT,
+                finishCallback,
+            ),
+            "Disconnect transition should be handled",
         )
     }
 
@@ -135,9 +170,8 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
             DisplayDisconnectTransitionHandler(
                 transitions,
                 shellInit,
+                Optional.empty(), // No SplitScreenController
                 Optional.empty(), // No DesktopTasksController
-                displayController,
-                rootTaskDisplayAreaOrganizer,
             )
 
         val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
@@ -163,8 +197,14 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         val finishCallback = mock(Transitions.TransitionFinishCallback::class.java)
         val info = mock(TransitionInfo::class.java)
         assertTrue(
-            disconnectTransitionHandler.startAnimation(transition, info, startT, finishT, finishCallback),
-            "Disconnect transition should be handled even without DesktopTasksController"
+            disconnectTransitionHandler.startAnimation(
+                transition,
+                info,
+                startT,
+                finishT,
+                finishCallback,
+            ),
+            "Disconnect transition should be handled even without DesktopTasksController",
         )
     }
 
@@ -188,9 +228,98 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
         val finishCallback = mock(Transitions.TransitionFinishCallback::class.java)
         val info = mock(TransitionInfo::class.java)
         assertFalse(
-            disconnectTransitionHandler.startAnimation(transition, info, startT, finishT, finishCallback),
-            "Non-disconnect transition should not be handled"
+            disconnectTransitionHandler.startAnimation(
+                transition,
+                info,
+                startT,
+                finishT,
+                finishCallback,
+            ),
+            "Non-disconnect transition should not be handled",
         )
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION)
+    fun transitionHandler_NotHandle_doesFallback() {
+        val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
+        displayChange.disconnectReparentDisplay = DEFAULT_DISPLAY
+        val transitionRequestInfo =
+            TransitionRequestInfo(
+                    TRANSIT_CHANGE,
+                    /* triggerTask = */ null,
+                    /* remoteTransition= */ null,
+                )
+                .apply { setDisplayChange(displayChange) }
+
+        val spyHandler = spy(disconnectTransitionHandler)
+        whenever(splitScreenControllerOptional.isPresent).thenReturn(false)
+        whenever(desktopTasksControllerOptional.isPresent).thenReturn(false)
+        spyHandler.handleRequest(transition = transition, request = transitionRequestInfo)
+        verify(spyHandler).addPendingTransition((transition))
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION)
+    fun transitionHandler_handledbyDesktopTaskController_returnValidWCT() {
+        val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
+        displayChange.disconnectReparentDisplay = DEFAULT_DISPLAY
+        val transitionRequestInfo =
+            TransitionRequestInfo(
+                    TRANSIT_CHANGE,
+                    /* triggerTask = */ null,
+                    /* remoteTransition= */ null,
+                )
+                .apply { setDisplayChange(displayChange) }
+        val spyHandler = spy(disconnectTransitionHandler)
+        whenever(splitScreenControllerOptional.isPresent).thenReturn(false)
+        whenever(desktopTasksControllerOptional.isPresent).thenReturn(true)
+        whenever(desktopTasksController.onDisplayDisconnect(anyInt(), anyInt(), any()))
+            .thenReturn(WindowContainerTransaction())
+        val wct = spyHandler.handleRequest(transition = transition, request = transitionRequestInfo)
+        assertNotNull(wct, "wct should not be null if handled by desktop")
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        FLAG_ENABLE_DISPLAY_DISCONNECT_SPLITSCREEN,
+    )
+    fun transitionHandler_handledbySplitScreenController_returnValidWCT() {
+        val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
+        displayChange.disconnectReparentDisplay = DEFAULT_DISPLAY
+        val transitionRequestInfo =
+            TransitionRequestInfo(
+                    TRANSIT_CHANGE,
+                    /* triggerTask = */ null,
+                    /* remoteTransition= */ null,
+                )
+                .apply { setDisplayChange(displayChange) }
+        val spyHandler = spy(disconnectTransitionHandler)
+        whenever(splitScreenControllerOptional.isPresent).thenReturn(true)
+        whenever(desktopTasksControllerOptional.isPresent).thenReturn(false)
+        val wct = spyHandler.handleRequest(transition = transition, request = transitionRequestInfo)
+        assertNotNull(wct, "wct should not be null if handled by splitscreen")
+    }
+
+    private class FakeSplitMultiDisplayProvider : SplitMultiDisplayProvider {
+        override fun getDisplayRootForDisplayId(displayId: Int): WindowContainerToken? {
+            return mock(WindowContainerToken::class.java)
+        }
+
+        override fun prepareMovingSplitScreenRoot(
+            wct: WindowContainerTransaction?,
+            displayId: Int,
+        ) {}
+
+        override fun addMoveSplitPairToDisplayChanges(
+            oldDisplayId: Int,
+            destinationDisplayId: Int,
+            wct: WindowContainerTransaction,
+            toTop: Boolean,
+        ) {
+            wct.setBounds(mock(WindowContainerToken::class.java), Rect())
+        }
     }
 
     companion object {

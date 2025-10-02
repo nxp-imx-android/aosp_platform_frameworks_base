@@ -318,6 +318,28 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     }
 
     @Override
+    public void addMoveSplitPairToDisplayChanges(int oldDisplayId, int destinationDisplayId,
+            @NonNull WindowContainerTransaction wct, boolean onTop) {
+        if (!DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue()
+                || !DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue()) {
+            return;
+        }
+
+        DisplayAreaInfo newDisplayAreaInfo =
+                mRootTDAOrganizer.getDisplayAreaInfo(destinationDisplayId);
+        if (newDisplayAreaInfo == null) {
+            return;
+        }
+
+        WindowContainerToken stageCoordinatorRootTaskToken = mSplitRootTaskInfo.token;
+        if (stageCoordinatorRootTaskToken == null || mSplitRootTaskInfo.displayId != oldDisplayId) {
+            ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "No SplitScreen RootTask found");
+            return;
+        }
+        wct.reparent(stageCoordinatorRootTaskToken, newDisplayAreaInfo.token, onTop);
+    }
+
+    @Override
     public void prepareMovingSplitScreenRoot(WindowContainerTransaction wct, int displayId) {
         if (mSplitRootTaskInfo == null) {
             throw new IllegalStateException("Failed to find current split screen root task info.");
