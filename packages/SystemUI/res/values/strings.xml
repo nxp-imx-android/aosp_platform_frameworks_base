@@ -2940,7 +2940,11 @@
     <!-- Text for the dialog title. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_title">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
     <!-- Text for showing inside the dialog. [CHAR LIMIT=NONE] -->
+    <!-- TODO: b/447609974 Update "Action" to a param in case of translation the hardware key for all of key gesture dialogs. -->
     <string name="accessibility_key_gesture_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="TalkBack">^3</xliff:g>. <xliff:g name="feature_intro" example="TalkBack intro">^4</xliff:g></string>
+    <!-- The text for the TalkBack TextToSpeech announcement. [CHAR LIMIT=NONE] -->
+    <!-- TODO: b/447609974 Update the TTS announced string to final one. -->
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts">Press Action + <xliff:g name="secondary_key" example="Alt">%1$s</xliff:g> + <xliff:g name="key_code" example="T">%2$s</xliff:g> again to enable <xliff:g name="feature_name" example="TalkBack">%3$s</xliff:g></string>
 
     <!-- Text for the dialog title when keyboard shortcut has not yet been enabled. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title">Turn on <xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> keyboard shortcut?</string>

@@ -19,7 +19,9 @@ package com.android.systemui.accessibility.data.repository
 import android.content.Context
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
+import android.view.Display.DEFAULT_DISPLAY
 import com.android.internal.accessibility.util.TtsPrompt
+import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import org.mockito.Mockito.mock
@@ -41,28 +43,39 @@ class FakeAccessibilityShortcutsRepository(
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""
 
-    override suspend fun getTitleToContentForKeyGestureDialog(
+    override suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
         metaState: Int,
         keyCode: Int,
         targetName: String,
-    ): Pair<String, CharSequence>? =
+        displayId: Int,
+    ): KeyGestureConfirmInfo? =
         when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> {
                 val featureNameForTest = featureNameTestMap[keyGestureType] ?: ""
+                val ttsText =
+                    if (keyGestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER) {
+                        "Press Action + Alt + T again to enable Screen Reader"
+                    } else {
+                        null
+                    }
                 // return a fake data
-                "$featureNameForTest fakeTitle" to "$featureNameForTest fakeContentText"
+                KeyGestureConfirmInfo(
+                    keyGestureType,
+                    "$featureNameForTest fakeTitle",
+                    "$featureNameForTest fakeContentText",
+                    targetName,
+                    0,
+                    DEFAULT_DISPLAY,
+                    ttsText,
+                )
             }
 
             else -> null
         }
-
-    override fun getActionKeyIconResId(): Int {
-        return 0
-    }
 
     override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
         areShortcutsEnabled = enable

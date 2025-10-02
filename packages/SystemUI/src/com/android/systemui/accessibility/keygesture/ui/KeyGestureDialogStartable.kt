@@ -121,7 +121,16 @@ constructor(
         private var ttsPrompt: TtsPrompt? = null
 
         override fun onDialogCreated(info: KeyGestureConfirmInfo) {
-            ttsPrompt = interactor.createTtsPromptForText(info.contentText)
+            info.ttsText?.let { text -> ttsPrompt = interactor.createTtsPromptForText(text) }
+            interactor.enableShortcutsForTargets(enable = true, info.targetName)
+        }
+
+        override fun onPositiveButtonClick(info: KeyGestureConfirmInfo) {}
+
+        override fun onDialogCanceled(info: KeyGestureConfirmInfo) {
+            // We need to remove the shortcut target if the user clicks the negative
+            // button or clicks outside of the dialog.
+            interactor.enableShortcutsForTargets(enable = false, info.targetName)
         }
 
         override fun onDialogDismissed(info: KeyGestureConfirmInfo) {
@@ -179,9 +188,24 @@ constructor(
         }
 
         mainScope.launch {
-            interactor.keyGestureConfirmDialogRequest.collectLatest { keyGestureConfirmInfo ->
-                createDialog(keyGestureConfirmInfo)
+            interactor.keyGestureConfirmDialogRequest.collectLatest { requestPair ->
+                processDialogRequest(requestPair)
             }
+        }
+    }
+
+    private fun processDialogRequest(requestPair: Pair<Boolean, KeyGestureConfirmInfo?>) {
+        if (requestPair.first) {
+            createDialog(requestPair.second)
+            return
+        }
+
+        dismissDialog(requestPair.second)
+    }
+
+    private fun dismissDialog(keyGestureConfirmInfo: KeyGestureConfirmInfo?) {
+        if (dialogType == keyGestureConfirmInfo?.keyGestureType) {
+            currentDialog?.dismiss()
         }
     }
 
