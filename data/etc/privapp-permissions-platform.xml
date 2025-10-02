@@ -663,8 +663,6 @@ applications that come with the platform
         <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
         <!-- Permission required for CTS test - CtsRoleTestCases -->
         <permission name="android.permission.GET_ROLE_HOLDERS"/>
-        <!-- Permission required for CTS test - CtsAnomalyDetectorTests -->
-        <permission name="android.permission.CONFIGURE_ANOMALY_DETECTOR"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
