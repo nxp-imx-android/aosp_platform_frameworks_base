@@ -59,7 +59,6 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:textColor="?android:attr/textColorPrimary"
                 android:fontFamily="variable-title-medium-emphasized"
                 android:textSize="16sp"/>
             <TextView
@@ -69,7 +68,6 @@
                 android:gravity="center_vertical"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="?android:attr/textColorSecondary"
                 android:fontFamily="variable-title-small"
                 android:textSize="14sp"/>
         </LinearLayout>
