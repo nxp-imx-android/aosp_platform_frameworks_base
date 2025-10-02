@@ -6713,6 +6713,14 @@
     <permission android:name="android.permission.USE_COMPANION_TRANSPORTS"
         android:protectionLevel="signature" />
 
+    <!-- @SystemApi Allows an application to send and receive PCC messages via CDM transports.
+        @FlaggedApi(android.companion.Flags.FLAG_TRUSTED_DEVICES)
+         @hide -->
+    <permission android:name="android.permission.ACCESS_COMPANION_MESSAGE_PCC"
+        android:protectionLevel="signature|knownSigner"
+        android:knownCerts="@array/config_cdmKnownSignersPCC"
+        android:featureFlag="android.companion.trusted_devices" />
+
     <!-- Allows an application to create new companion device associations.
          @SystemApi
          @hide -->

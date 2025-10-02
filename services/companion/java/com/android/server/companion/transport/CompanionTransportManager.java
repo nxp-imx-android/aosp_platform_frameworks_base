@@ -90,16 +90,16 @@ public class CompanionTransportManager {
     /**
      * Add a listener to receive callbacks when a message is received for the message type
      */
-    public void addListener(int message, @NonNull IOnMessageReceivedListener listener) {
+    public void addListener(int messageType, @NonNull IOnMessageReceivedListener listener) {
         synchronized (mMessageListeners) {
-            if (!mMessageListeners.contains(message)) {
-                mMessageListeners.put(message, new HashSet<IOnMessageReceivedListener>());
+            if (!mMessageListeners.contains(messageType)) {
+                mMessageListeners.put(messageType, new HashSet<IOnMessageReceivedListener>());
             }
-            mMessageListeners.get(message).add(listener);
+            mMessageListeners.get(messageType).add(listener);
         }
         synchronized (mTransports) {
             for (int i = 0; i < mTransports.size(); i++) {
-                mTransports.valueAt(i).addListener(message, listener);
+                mTransports.valueAt(i).addListener(messageType, listener);
             }
         }
     }
@@ -193,8 +193,9 @@ public class CompanionTransportManager {
     /**
      * Send a message to remote devices through the transports
      */
-    public SparseArray<Future<byte[]>> sendMessage(int message, byte[] data, int[] associationIds) {
-        Slog.d(TAG, "Sending message 0x" + Integer.toHexString(message)
+    public SparseArray<Future<byte[]>> sendMessage(int messageType, byte[] data,
+            int[] associationIds) {
+        Slog.d(TAG, "Sending message 0x" + Integer.toHexString(messageType)
                 + " data length " + data.length);
         SparseArray<Future<byte[]>> futures = new SparseArray<>();
         synchronized (mTransports) {
@@ -202,7 +203,7 @@ public class CompanionTransportManager {
                 int associationId = associationIds[i];
                 if (mTransports.contains(associationId)) {
                     futures.put(associationId,
-                            mTransports.get(associationId).sendMessage(message, data));
+                            mTransports.get(associationId).sendMessage(messageType, data));
                 }
             }
         }

@@ -16,12 +16,13 @@
 
 package android.companion;
 
+import static android.Manifest.permission.ACCESS_COMPANION_MESSAGE_PCC;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_APP_STREAMING;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_AUTOMOTIVE_PROJECTION;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_MEDICAL;
 import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH;
-import static android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED;
+import static android.Manifest.permission.USE_COMPANION_TRANSPORTS;
 import static android.companion.AssociationInfo.METADATA_TIMESTAMP;
 import static android.graphics.drawable.Icon.TYPE_URI;
 import static android.graphics.drawable.Icon.TYPE_URI_ADAPTIVE_BITMAP;
@@ -300,41 +301,66 @@ public final class CompanionDeviceManager {
      */
     public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "MESSAGE_", value = {MESSAGE_ONEWAY_PCC, MESSAGE_REQUEST_PING,
+            MESSAGE_ONEWAY_PING, MESSAGE_REQUEST_REMOTE_AUTHENTICATION,
+            MESSAGE_REQUEST_CONTEXT_SYNC, MESSAGE_ONEWAY_TASK_CONTINUITY,
+            MESSAGE_REQUEST_PERMISSION_RESTORE, MESSAGE_REQUEST_METADATA_UPDATE,
+            MESSAGE_ONEWAY_TO_WEARABLE})
+    public @interface MessageType {}
+
+
+    /**
+     * Message header assigned to PCC messages.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
+    @RequiresPermission(ACCESS_COMPANION_MESSAGE_PCC)
+    public static final int MESSAGE_ONEWAY_PCC = 0x43806767; // +PCC
     /**
      * Test message type without a designated callback.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_PING = 0x63807378; // ?PIN
     /**
      * Test message type without a response.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_PING = 0x43807378; // +PIN
     /**
      * Message header assigned to the remote authentication handshakes.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_REMOTE_AUTHENTICATION = 0x63827765; // ?RMA
     /**
      * Message header assigned to the telecom context sync metadata.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_CONTEXT_SYNC = 0x63678883; // ?CXS
     /**
      * Message header assigned to task continuity messages.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_TASK_CONTINUITY = 0x43678884; // +TSK
     /**
      * Message header assigned to the permission restore request.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_PERMISSION_RESTORE = 0x63826983; // ?RES
     /**
      * Message header assigned to local metadata update broadcast message.
@@ -343,18 +369,21 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_REQUEST_METADATA_UPDATE = 0x63776885; // ?MDU
     /**
      * Message header assigned to the one-way message sent from the wearable device.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_FROM_WEARABLE = 0x43708287; // +FRW
     /**
      * Message header assigned to the one-way message sent to the wearable device.
      *
      * @hide
      */
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public static final int MESSAGE_ONEWAY_TO_WEARABLE = 0x43847987; // +TOW
 
     /**
@@ -1129,7 +1158,7 @@ public final class CompanionDeviceManager {
      * @see com.android.server.companion.transport.Transport
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void addOnTransportsChangedListener(
             @NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<List<AssociationInfo>> listener) {
@@ -1157,7 +1186,7 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void removeOnTransportsChangedListener(
             @NonNull Consumer<List<AssociationInfo>> listener) {
         if (mService == null) {
@@ -1188,7 +1217,7 @@ public final class CompanionDeviceManager {
      * @return the list of associations
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public List<AssociationInfo> getAllAssociationsWithTransports() {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
@@ -1210,8 +1239,10 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
-    public void sendMessage(int messageType, @NonNull byte[] data, @NonNull int[] associationIds) {
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
+    public void sendMessage(@MessageType int messageType, @NonNull byte[] data,
+            @NonNull int[] associationIds) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
@@ -1233,9 +1264,10 @@ public final class CompanionDeviceManager {
      *                 sender and the message payload as a byte array.
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
     public void addOnMessageReceivedListener(
-            @NonNull @CallbackExecutor Executor executor, int messageType,
+            @NonNull @CallbackExecutor Executor executor, @MessageType int messageType,
             @NonNull BiConsumer<Integer, byte[]> listener) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
@@ -1263,7 +1295,8 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @FlaggedApi(Flags.FLAG_TRUSTED_DEVICES)
+    @SystemApi
     public void removeOnMessageReceivedListener(int messageType,
             @NonNull BiConsumer<Integer, byte[]> listener) {
         if (mService == null) {
@@ -1302,7 +1335,7 @@ public final class CompanionDeviceManager {
      * @see com.android.server.companion.transport.Transport
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void addOnTransportEventListener(
             @NonNull @CallbackExecutor Executor executor,
             int associationId,
@@ -1332,7 +1365,7 @@ public final class CompanionDeviceManager {
      * @see com.android.server.companion.transport.Transport
      * @hide
      */
-    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    @RequiresPermission(USE_COMPANION_TRANSPORTS)
     public void removeOnTransportEventListener(int associationId,
             @NonNull Consumer<Integer> listener) {
         if (mService == null) {

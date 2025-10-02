@@ -134,3 +134,10 @@ flag {
     description: "Enables unified association extra permissions"
     bug: "440175468"
 }
+
+flag {
+    name: "trusted_devices"
+    namespace: "companion"
+    description: "Enable APIs to support trusted devices"
+    bug: "437224522"
+}

@@ -5067,6 +5067,11 @@
      -->
     <string-array name="config_companionPermSyncEnabledCerts" translatable="false"></string-array>
 
+    <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner
+         CompanionDeviceManager permissions to send PCC messages. The digest should be SHA-256 hash
+         of the signing certificate. -->
+    <string-array name="config_cdmKnownSignersPCC" translatable="false" />
+
     <!-- The package name for the default wellbeing app.
          This package must be trusted, as it has the permissions to control other applications
          on the device.
