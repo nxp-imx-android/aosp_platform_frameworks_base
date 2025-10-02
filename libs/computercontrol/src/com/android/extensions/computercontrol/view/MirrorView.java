@@ -146,6 +146,15 @@ public class MirrorView extends FrameLayout {
         });
     }
 
+    /**
+     * Sets the corner radius for all corners of the mirror view.
+     *
+     * @param cornerRadius The new radius of the corners in pixels.
+     */
+    public void setCornerRadius(int cornerRadius) {
+        mMirrorSurface.setCornerRadius(cornerRadius);
+    }
+
     private void init() {
         mHandlerThread.start();
 
