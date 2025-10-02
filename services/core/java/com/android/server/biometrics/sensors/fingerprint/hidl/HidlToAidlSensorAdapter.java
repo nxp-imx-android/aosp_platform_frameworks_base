@@ -31,6 +31,7 @@ import android.os.UserManager;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.biometrics.Flags;
 import com.android.server.biometrics.log.BiometricContext;
 import com.android.server.biometrics.log.BiometricLogger;
 import com.android.server.biometrics.sensors.AuthSessionCoordinator;
@@ -127,6 +128,10 @@ public class HidlToAidlSensorAdapter extends Sensor implements IHwBinder.DeathRe
         Slog.d(TAG, "Fingerprint HAL died.");
         mSession = null;
         mDaemon = null;
+        if (Flags.hidlServiceDiedFix()) {
+            mCurrentUserId = UserHandle.USER_NULL;
+            onBinderDied();
+        }
     }
 
     @Override
