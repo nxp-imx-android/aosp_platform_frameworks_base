@@ -699,6 +699,9 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
                                                              : UiFrameInfoBuilder::INVALID_VSYNC_ID,
                     .skippedFrameStartTimeNanos =
                             mSkippedFrameInfo ? mSkippedFrameInfo->startTime : 0,
+                    .vsyncResyncedJitterNanos =
+                            mCurrentFrameInfo->get(FrameInfoIndex::Vsync) -
+                            mCurrentFrameInfo->get(FrameInfoIndex::IntendedVsync),
             };
             native_window_set_frame_timeline_info(mNativeSurface->getNativeWindow(), ftl);
         }
