@@ -16563,6 +16563,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         @Override
+        public boolean isDeviceOrganizationManaged() {
+            return getDeviceStateCache().isDeviceManaged();
+        }
+
+        @Override
         public List<Bundle> getApplicationRestrictionsPerAdminForUser(
                 String packageName, @UserIdInt int userId) {
             if (UserHandle.getCallingUserId() != userId
