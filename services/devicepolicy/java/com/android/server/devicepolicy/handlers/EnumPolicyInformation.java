@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.devicepolicy;
+package com.android.server.devicepolicy.handlers;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

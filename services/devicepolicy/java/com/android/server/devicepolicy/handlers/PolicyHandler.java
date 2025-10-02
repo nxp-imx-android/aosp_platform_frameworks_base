@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.devicepolicy;
+package com.android.server.devicepolicy.handlers;
 
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER;
@@ -26,7 +26,10 @@ import android.app.admin.DevicePolicyManager.PolicyScope;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
 
+import com.android.server.devicepolicy.CallerIdentity;
+import com.android.server.devicepolicy.DevicePolicyManagerService;
 import com.android.server.devicepolicy.DevicePolicyManagerService.DpcType;
+import com.android.server.devicepolicy.IPermissionChecker;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -174,6 +177,7 @@ public class PolicyHandler<T> {
 
     /**
      * Validates if the {@link PolicyScope} can be used for this policy.
+     *
      * @throws IllegalArgumentException if the scope can not be used.
      */
     protected void validateScope(@PolicyScope int scope) {
@@ -235,7 +239,7 @@ public class PolicyHandler<T> {
     }
 
     /**
-     * Stores the policy value inside the {@link DevicePolicyEngine}.
+     * Stores the policy value inside the {@code DevicePolicyEngine}.
      *
      * <p>Can be overridden to store the value somewhere else instead.
      */
@@ -245,7 +249,7 @@ public class PolicyHandler<T> {
     }
 
     protected static String scopeToString(@PolicyScope int scope) {
-        return switch(scope) {
+        return switch (scope) {
             case POLICY_SCOPE_DEVICE -> "SCOPE_DEVICE";
             case POLICY_SCOPE_USER -> "SCOPE_USER";
             case POLICY_SCOPE_PARENT_USER -> "SCOPE_PARENT_USER";
@@ -255,9 +259,9 @@ public class PolicyHandler<T> {
 
     protected static String scopesToString(Collection<Integer> scopes) {
         return "["
-                + scopes.stream().map(s->scopeToString(s)).collect(Collectors.joining(", "))
+                + scopes.stream().map(s -> scopeToString(s)).collect(Collectors.joining(", "))
                 + "]";
-        }
+    }
 
     /** Helper class that provides access to helper methods used while processing policies. */
     public interface Delegate {

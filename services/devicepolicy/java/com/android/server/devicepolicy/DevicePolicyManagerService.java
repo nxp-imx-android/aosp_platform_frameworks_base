@@ -489,7 +489,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.LocalePicker;
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.logging.MetricsLogger;
-import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.net.NetworkUtilsInternal;
 import com.android.internal.notification.SystemNotificationChannels;
@@ -518,6 +517,7 @@ import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.devicepolicy.ActiveAdmin.TrustAgentInfo;
+import com.android.server.devicepolicy.handlers.PolicyHandler;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.net.NetworkPolicyManagerInternal;
@@ -23869,14 +23869,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     // DPC types
-    static final int NOT_A_DPC = -1;
-    static final int DEFAULT_DEVICE_OWNER = 0;
-    static final int FINANCED_DEVICE_OWNER = 1;
-    static final int PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE = 2;
-    static final int PROFILE_OWNER_ON_USER_0 = 3;
-    static final int PROFILE_OWNER = 4;
-    static final int PROFILE_OWNER_ON_USER = 5;
-    static final int AFFILIATED_PROFILE_OWNER_ON_USER = 6;
+    public static final int NOT_A_DPC = -1;
+    public static final int DEFAULT_DEVICE_OWNER = 0;
+    public static final int FINANCED_DEVICE_OWNER = 1;
+    public static final int PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE = 2;
+    public static final int PROFILE_OWNER_ON_USER_0 = 3;
+    public static final int PROFILE_OWNER = 4;
+    public static final int PROFILE_OWNER_ON_USER = 5;
+    public static final int AFFILIATED_PROFILE_OWNER_ON_USER = 6;
     // DPC types
     @IntDef(value = {
             NOT_A_DPC,
@@ -23888,7 +23888,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             PROFILE_OWNER_ON_USER,
             AFFILIATED_PROFILE_OWNER_ON_USER
     })
-    @interface DpcType {}
+    public @interface DpcType {}
 
     private final class PermissionCheckerDelegate implements PermissionChecker.Delegate {
         public PermissionCheckerDelegate() {
