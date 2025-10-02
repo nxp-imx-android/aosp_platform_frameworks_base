@@ -56,24 +56,31 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
+import android.app.ActivityManager;
 import android.app.Instrumentation;
 import android.app.UiModeManager;
 import android.compat.testing.PlatformCompatChangeRule;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.ForceDarkType;
+import android.graphics.Insets;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Binder;
-import android.os.Build;
 import android.os.VibrationAttributes;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -115,17 +122,16 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.rules.TestRule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import android.content.ContextWrapper;
-import android.content.pm.ApplicationInfo;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -2061,6 +2067,137 @@ public class ViewRootImplTest {
 
         assertTrue("OnBackInvokedCallback not called for IME back key event",
                 latch.await(5, TimeUnit.SECONDS));
+    }
+
+    @Test
+    @EnableCompatChanges({ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION})
+    @EnableFlags(Flags.FLAG_SYNCED_INSETS_ANIMATION)
+    public void testDispatchesApplyInsetsDuringAnimationProgress_conditions() {
+        assumeFalse("Synced Insets Animation is not supported on this device",
+                ActivityManager.isLowRamDeviceStatic());
+
+        // 1. Setup ViewRootImpl and InsetsController
+        mView = new View(sContext);
+        attachViewToWindow(mView);
+        mViewRootImpl = mView.getViewRootImpl();
+
+        // 1. All conditions met (no ongoing user animation etc)
+        assertTrue(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
+
+        // 2. User animation ongoing
+        sInstrumentation.runOnMainSync(() -> {
+            mViewRootImpl.dispatchWindowInsetsAnimationProgress(
+                    new WindowInsets.Builder().build(),
+                    new InsetsState(),
+                    Collections.emptyList(),
+                    true /* hasUserAnimation */,
+                    false /* hasResizeAnimation */,
+                    false /* hasAnimationCallback */,
+                    0 /* hidingTypes */);
+        });
+        assertFalse(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
+    }
+
+    @Test
+    @EnableCompatChanges({ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION})
+    @DisableFlags(Flags.FLAG_SYNCED_INSETS_ANIMATION)
+    public void testDispatchesApplyInsetsDuringAnimationProgress_flagDisabled() {
+        assumeFalse("Synced Insets Animation is not supported on this device",
+                ActivityManager.isLowRamDeviceStatic());
+        assertFalse(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
+    }
+
+    @Test
+    @DisableCompatChanges({ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION})
+    @EnableFlags(Flags.FLAG_SYNCED_INSETS_ANIMATION)
+    public void testDispatchesApplyInsetsDuringAnimationProgress_compatChangeRuleDisabled() {
+        assumeFalse("Synced Insets Animation is not supported on this device",
+                ActivityManager.isLowRamDeviceStatic());
+        assertFalse(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SYNCED_INSETS_ANIMATION)
+    @EnableCompatChanges({ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION})
+    public void testWindowInsetsDispatch_duringAnimation() {
+        assumeFalse("Synced Insets Animation is not supported on this device",
+                ActivityManager.isLowRamDeviceStatic());
+        mView = new View(sContext);
+        attachViewToWindow(mView);
+        mViewRootImpl = mView.getViewRootImpl();
+
+        final WindowInsets animatingInsets = new WindowInsets.Builder()
+                .setSystemWindowInsets(Insets.of(0, 0, 0, 50))
+                .build();
+
+        AtomicReference<WindowInsets> actualInsets = new AtomicReference<>();
+        mView.setOnApplyWindowInsetsListener((v, insets) -> {
+            actualInsets.set(insets);
+            return insets;
+        });
+
+        sInstrumentation.runOnMainSync(() -> {
+            mViewRootImpl.dispatchWindowInsetsAnimationProgress(
+                    animatingInsets,
+                    new InsetsState(),
+                    Collections.emptyList(),
+                    false /* hasUserAnimation */,
+                    false /* hasResizeAnimation */,
+                    false /* hasAnimationCallback */,
+                    0 /* hidingTypes */);
+            mViewRootImpl.dispatchApplyInsets(mView);
+        });
+
+        assertNotNull(actualInsets.get());
+        assertEquals(animatingInsets, actualInsets.get());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SYNCED_INSETS_ANIMATION)
+    @EnableCompatChanges({ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION})
+    public void testVisibleInsets_duringAnimation() {
+        assumeFalse("Synced Insets Animation is not supported on this device",
+                ActivityManager.isLowRamDeviceStatic());
+
+        final Insets expectedVisibleInsets = Insets.of(10, 20, 30, 40);
+
+        // 1. Setup ViewRootImpl and InsetsController
+        mView = new View(sContext);
+        attachViewToWindow(mView);
+        mViewRootImpl = mView.getViewRootImpl();
+
+        // 2. Mock the InsetsState object passed to the method
+        // InsetsController.calculateVisibleInsets delegates to state.calculateVisibleInsets
+        final InsetsState state = mock(InsetsState.class);
+        doReturn(expectedVisibleInsets).when(state).calculateVisibleInsets(
+                any(), any(), anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
+
+        Rect before = new Rect();
+        mView.getWindowVisibleDisplayFrame(before);
+
+        // 3. Trigger dispatchWindowInsetsAnimationProgress with the mocked state
+        sInstrumentation.runOnMainSync(() -> {
+            mViewRootImpl.dispatchWindowInsetsAnimationProgress(
+                    new WindowInsets.Builder().build(),
+                    state,
+                    Collections.emptyList(),
+                    false /* hasUserAnimation */,
+                    false /* hasResizeAnimation */,
+                    false /* hasAnimationCallback */,
+                    0 /* hidingTypes */);
+        });
+
+        Rect after = new Rect();
+        mView.getWindowVisibleDisplayFrame(after);
+
+        // 4. Verify mAttachInfo.mVisibleInsets was updated correctly
+        Rect visibleInsets = new Rect(
+                after.left - before.left,
+                after.top - before.top,
+                before.right - after.right,
+                before.bottom - after.bottom
+        );
+        assertEquals(expectedVisibleInsets.toRect(), visibleInsets);
     }
 
     private void setUpViewAndApplyFocusStates(boolean windowFocused, boolean viewFocused)
