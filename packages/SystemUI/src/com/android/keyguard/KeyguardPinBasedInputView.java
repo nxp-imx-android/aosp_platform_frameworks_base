@@ -38,6 +38,9 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.AccessibilityDelegate;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import androidx.annotation.CallSuper;
 
@@ -214,6 +217,19 @@ public abstract class KeyguardPinBasedInputView extends KeyguardAbsKeyInputView 
             mDeleteButton.setImageResource(R.drawable.pin_bouncer_delete_outline);
         }
         mDeleteButton.setVisibility(View.VISIBLE);
+        mDeleteButton.setAccessibilityDelegate(
+                new AccessibilityDelegate() {
+                    public void onInitializeAccessibilityNodeInfo(View host,
+                            AccessibilityNodeInfo info) {
+                        super.onInitializeAccessibilityNodeInfo(host, info);
+                        final AccessibilityAction longClick = new AccessibilityAction(
+                                AccessibilityAction.ACTION_LONG_CLICK.getId(),
+                                getContext().getResources().getString(
+                                        R.string.keyguard_accessibility_pin_delete_long_click));
+                        info.addAction(longClick);
+                        info.setTextEntryKey(true);
+                    }
+                });
 
         mButtons[0] = findViewById(R.id.key0);
         mButtons[1] = findViewById(R.id.key1);
