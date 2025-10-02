@@ -132,7 +132,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     final @NonNull Context mUserContext;
     final @NonNull DisplayController mDisplayController;
     final @NonNull DesktopModeEventLogger mDesktopModeEventLogger;
-    final ShellTaskOrganizer mTaskOrganizer;
+    final @NonNull ShellTaskOrganizer mTaskOrganizer;
 
     final Supplier<SurfaceControl> mSurfaceControlSupplier;
     final Supplier<SurfaceControl.Builder> mSurfaceControlBuilderSupplier;
@@ -483,8 +483,14 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 .setLayer(captionSurface, CAPTION_LAYER_Z_ORDER)
                 .show(captionSurface);
         SurfaceControl[] layers = {captionSurface};
-        mBgExecutor.execute(() ->
-                mTaskOrganizer.setExcludeLayersFromTaskSnapshot(mTaskInfo.token, layers));
+        mBgExecutor.execute(() -> {
+            synchronized (mTaskOrganizer) {
+                if (!layers[0].isValid()) {
+                    return;
+                }
+                mTaskOrganizer.setExcludeLayersFromTaskSnapshot(mTaskInfo.token, layers);
+            }
+        });
     }
 
     private void updateCaptionInsets(RelayoutParams params, WindowContainerTransaction wct,
@@ -670,7 +676,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         final SurfaceControl.Transaction t = mSurfaceControlTransactionSupplier.get();
         boolean released = false;
         if (mViewHost != null) {
-            mWindowDecorViewHostSupplier.release(mViewHost, t);
+            synchronized (mTaskOrganizer) {
+                mWindowDecorViewHostSupplier.release(mViewHost, t);
+            }
             mViewHost = null;
             released = true;
             mBgExecutor.execute(() ->
