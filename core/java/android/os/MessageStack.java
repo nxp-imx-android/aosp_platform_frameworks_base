@@ -133,11 +133,12 @@ public final class MessageStack {
      * Iterates through messages and creates a reverse-ordered chain of messages to remove.
      * @return true if any messages were removed, false otherwise
      */
-    public boolean moveMatchingToFreelist(Message.MessageCompare compare, Handler h, int what,
+    public int moveMatchingToFreelist(Message.MessageCompare compare, Handler h, int what,
             Object object, Runnable r, long when) {
         Message current = (Message) sTop.getAcquire(this);
         Message prev = null;
         Message firstRemoved = null;
+        int numRemoved = 0;
 
         while (current != null) {
             if (messageMatches(current, compare, h, what, object, r, when)
@@ -149,6 +150,7 @@ public final class MessageStack {
                 // nextFree links each to-be-removed message to the one processed before.
                 current.nextFree = prev;
                 prev = current;
+                numRemoved++;
             }
             current = current.next;
         }
@@ -160,11 +162,9 @@ public final class MessageStack {
                 firstRemoved.nextFree = freelist;
             // prev points to the last to-be-removed message that was processed.
             } while (!sFreelistHead.compareAndSet(this, freelist, prev));
-
-            return true;
         }
 
-        return false;
+        return numRemoved;
     }
 
     /**

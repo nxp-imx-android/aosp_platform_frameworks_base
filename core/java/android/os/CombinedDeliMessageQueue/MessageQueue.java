@@ -1263,13 +1263,14 @@ public final class MessageQueue {
     private void removeSyncBarrierDeliQueue(int token) {
         final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
 
-        final boolean removed = mStack.moveMatchingToFreelist(matchBarrierToken, null, -1, null,
+        final int removed = mStack.moveMatchingToFreelist(matchBarrierToken, null, -1, null,
                 null, 0);
-        if (!removed) {
+        if (removed == 0) {
             throw new IllegalStateException("The specified message queue synchronization "
                     + " barrier token has not been posted or has already been removed.");
         }
         maybeDrainFreelist();
+        decAndTraceMessageCount();
 
         boolean needWake;
         while (true) {
@@ -1569,7 +1570,9 @@ public final class MessageQueue {
     }
 
     private void removeMessagesDeliQueue(Handler h, int what, Object object) {
-        mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObject, h, what, object, null, 0);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObject, h, what,
+                object, null, 0);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
@@ -1630,7 +1633,9 @@ public final class MessageQueue {
     }
 
     private void removeEqualMessagesDeliQueue(Handler h, int what, Object object) {
-        mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObjectEquals, h, what, object, null, 0);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchHandlerWhatAndObjectEquals, h,
+                what, object, null, 0);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
@@ -1691,7 +1696,9 @@ public final class MessageQueue {
     }
 
     private void removeMessagesDeliQueue(Handler h, Runnable r, Object object) {
-        mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObject, h, -1, object, r, 0);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObject, h,
+                -1, object, r, 0);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
@@ -1752,7 +1759,9 @@ public final class MessageQueue {
     }
 
     private void removeEqualMessagesDeliQueue(Handler h, Runnable r, Object object) {
-        mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObjectEquals, h, -1, object, r, 0);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchHandlerRunnableAndObjectEquals,
+                h, -1, object, r, 0);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
@@ -1813,7 +1822,9 @@ public final class MessageQueue {
     }
 
     private void removeCallbacksAndMessagesDeliQueue(Handler h, Object object) {
-        mStack.moveMatchingToFreelist(sMatchHandlerAndObject, h, -1, object, null, 0);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchHandlerAndObject, h, -1, object,
+                null, 0);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
@@ -1873,7 +1884,9 @@ public final class MessageQueue {
     }
 
     private void removeCallbacksAndEqualMessagesDeliQueue(Handler h, Object object) {
-        mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, h, -1, object, null, 0);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchHandlerAndObjectEquals, h, -1,
+                object, null, 0);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
@@ -1970,12 +1983,16 @@ public final class MessageQueue {
     }
 
     private void removeAllMessages() {
-        mStack.moveMatchingToFreelist(sMatchAllMessages, null, -1, null, null, 0);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchAllMessages, null, -1, null,
+                null, 0);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
     private void removeAllFutureMessages(long when) {
-        mStack.moveMatchingToFreelist(sMatchAllFutureMessages, null, -1, null, null, when);
+        final int numRemoved = mStack.moveMatchingToFreelist(sMatchAllFutureMessages, null, -1,
+                null, null, when);
+        decAndTraceMessageCount(numRemoved);
         maybeDrainFreelist();
     }
 
@@ -2416,11 +2433,17 @@ public final class MessageQueue {
         proto.end(messageQueueToken);
     }
 
-    private void decAndTraceMessageCount() {
-        mMessageCount.decrementAndGet();
-        if (PerfettoTrace.isMQCategoryEnabled()) {
-            traceMessageCount();
+    private void decAndTraceMessageCount(int n) {
+        if (n != 0) {
+            mMessageCount.addAndGet(-1 * n);
+            if (PerfettoTrace.isMQCategoryEnabled()) {
+                traceMessageCount();
+            }
         }
+    }
+
+    private void decAndTraceMessageCount() {
+        decAndTraceMessageCount(1);
     }
 
     private void incAndTraceMessageCount(Message msg, long when) {
