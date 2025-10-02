@@ -1278,6 +1278,12 @@ public class Build {
          * Baklava.
          */
         public static final int BAKLAVA = 36;
+
+        /**
+         * Cinnamon Bun.
+         */
+        @FlaggedApi(android.sdk.Flags.FLAG_VERSION_CODES_CINNAMON_BUN)
+        public static final int CINNAMON_BUN = CUR_DEVELOPMENT;
     }
 
     /** @hide */
@@ -1300,6 +1306,14 @@ public class Build {
         // Use the last 5 digits for the minor version. This allows the
         // minor version to be set to CUR_DEVELOPMENT.
         private static final int SDK_INT_MULTIPLIER = 100000;
+
+        /**
+         * Magic version number for a current development build, which has
+         * not yet turned into an official release.
+         */
+        private static final int CUR_DEVELOPMENT =
+                VERSION_CODES.CUR_DEVELOPMENT * SDK_INT_MULTIPLIER;
+
 
         /**
          * Android 1.0.
@@ -1491,6 +1505,12 @@ public class Build {
          */
         @SuppressLint("UnflaggedApi")
         public static final int BAKLAVA_1 = VERSION_CODES.BAKLAVA * SDK_INT_MULTIPLIER + 1;
+
+        /**
+         * Android 17.
+         */
+        @FlaggedApi(android.sdk.Flags.FLAG_VERSION_CODES_CINNAMON_BUN)
+        public static final int CINNAMON_BUN = CUR_DEVELOPMENT;
     }
 
     /**
