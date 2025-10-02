@@ -34006,6 +34006,7 @@ package android.os {
     field public static final int BAKLAVA = 36; // 0x24
     field public static final int BASE = 1; // 0x1
     field public static final int BASE_1_1 = 2; // 0x2
+    field @FlaggedApi("android.sdk.version_codes_cinnamon_bun") public static final int CINNAMON_BUN = 10000; // 0x2710
     field public static final int CUPCAKE = 3; // 0x3
     field public static final int CUR_DEVELOPMENT = 10000; // 0x2710
     field public static final int DONUT = 4; // 0x4
@@ -34047,6 +34048,7 @@ package android.os {
     field public static final int BAKLAVA_1 = 3600001; // 0x36ee81
     field public static final int BASE = 100000; // 0x186a0
     field public static final int BASE_1_1 = 200000; // 0x30d40
+    field @FlaggedApi("android.sdk.version_codes_cinnamon_bun") public static final int CINNAMON_BUN = 1000000000; // 0x3b9aca00
     field public static final int CUPCAKE = 300000; // 0x493e0
     field public static final int DONUT = 400000; // 0x61a80
     field public static final int ECLAIR = 500000; // 0x7a120
