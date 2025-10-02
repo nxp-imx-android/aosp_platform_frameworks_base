@@ -9350,6 +9350,17 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     void handleApplicationCrashInner(String eventType, ProcessRecord r, String processName,
             ApplicationErrorReport.CrashInfo crashInfo) {
+        CountDownLatch profilingRunningLatch = null;
+        int profilingDelaySeconds = 0;
+        if (android.os.profiling.Flags.profilingTriggerOom()) {
+            profilingRunningLatch = new CountDownLatch(1);
+            profilingDelaySeconds = ProfilingServiceHelper.getInstance().profileApplicationCrash(
+                    r.uid,
+                    r.info.packageName,
+                    crashInfo,
+                    profilingRunningLatch);
+        }
+
         float loadingProgress = 1;
         IncrementalMetrics incrementalMetrics = null;
         // Obtain Incremental information if available
@@ -9457,6 +9468,15 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (recoverable) {
             mAppErrors.sendRecoverableCrashToAppExitInfo(r, crashInfo);
         } else {
+            if (profilingRunningLatch != null && profilingDelaySeconds > 0) {
+                // This will delay the crashing of the application while we wait for profiling to be
+                // collected in order to provide to the crashing app.
+                try {
+                    profilingRunningLatch.await(profilingDelaySeconds, TimeUnit.SECONDS);
+                } catch (InterruptedException ignored) {
+                    // Nothing else to do here, continue. Profiling result may be empty/useless.
+                }
+            }
             mAppErrors.crashApplication(r, crashInfo);
         }
     }
