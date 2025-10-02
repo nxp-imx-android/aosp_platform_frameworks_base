@@ -5399,8 +5399,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
         // Warning is not required if the service is preinstalled and in the
         // trustedAccessibilityServices allowlist.
-        if (android.view.accessibility.Flags.skipAccessibilityWarningDialogForTrustedServices()
-                && isAccessibilityServicePreinstalledAndTrusted(info)) {
+        if (isAccessibilityServicePreinstalledAndTrusted(info)) {
             return false;
         }
 
