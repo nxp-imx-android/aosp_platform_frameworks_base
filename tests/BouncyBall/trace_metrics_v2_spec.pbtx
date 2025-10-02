@@ -36,10 +36,13 @@ query: {
             OR jank_type GLOB '*SurfaceFlinger CPU Deadline Missed*'
             OR jank_type GLOB '*SurfaceFlinger GPU Deadline Missed*'
             OR jank_type GLOB '*Dropped Frame*' AS missed_frame,
-          timeline.ts AS frame_ts,
+          -- `actual_frame_timeline_slice` can have multiple rows per frame (one per layer) so make
+          -- sure to get the first to prevent duplicate rows per frame.
+          MIN(timeline.ts) AS frame_ts,
           timeline.dur AS frame_slice_dur
         FROM actual_frame_timeline_slice AS timeline
         JOIN process USING (upid)
+        GROUP BY timeline.upid, timeline.name
       )
       SELECT
         f.process_name,
