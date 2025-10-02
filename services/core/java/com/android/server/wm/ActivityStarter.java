@@ -2510,6 +2510,7 @@ class ActivityStarter {
         mSupervisor.handleNonResizableTaskIfNeeded(top.getTask(),
                 mLaunchParams.mWindowingMode, mPreferredTaskDisplayArea, topRootTask);
 
+        mLastStartActivityRecord = top;
         return START_DELIVERED_TO_TOP;
     }
 
