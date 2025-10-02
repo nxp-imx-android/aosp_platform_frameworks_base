@@ -390,6 +390,9 @@ class ExpandableNotificationRowBuilder(
                 NotificationManager.IMPORTANCE_DEFAULT,
             )
         channel.isBlockable = true
+
+        val promoted = notification.isOngoingEvent
+                && notification.isRequestPromotedOngoing
         val entry =
             NotificationEntryBuilder()
                 .setPkg(PKG)
@@ -401,6 +404,10 @@ class ExpandableNotificationRowBuilder(
                 .setUser(USER_HANDLE)
                 .setPostTime(System.currentTimeMillis())
                 .setChannel(channel)
+                .setFlag(
+                    context,
+                    Notification.FLAG_PROMOTED_ONGOING,
+                    promoted)
                 .build()
 
         // it is for mitigating Rank building process.
