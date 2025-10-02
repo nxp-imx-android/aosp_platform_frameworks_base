@@ -68,6 +68,7 @@ import static android.provider.Settings.Global.DEVELOPMENT_ENABLE_NON_RESIZABLE_
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_RESIZABLE_ACTIVITIES;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_RTL;
 import static android.provider.Settings.Global.HIDE_ERROR_DIALOGS;
+import static android.provider.Settings.System.DEFAULT_DEVICE_FONT_SCALE;
 import static android.provider.Settings.System.FONT_SCALE;
 import static android.service.controls.flags.Flags.homePanelDream;
 import static android.service.dreams.Flags.dreamsV2;
@@ -5662,8 +5663,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             return;
         }
 
+        final float defaultFontScale = Settings.System.getFloatForUser(
+                mContext.getContentResolver(), DEFAULT_DEVICE_FONT_SCALE, 1.0f, userId);
         final float scaleFactor = Settings.System.getFloatForUser(mContext.getContentResolver(),
-                FONT_SCALE, 1.0f, userId);
+                FONT_SCALE, defaultFontScale, userId);
 
         synchronized (mGlobalLock) {
             if (getGlobalConfiguration().fontScale == scaleFactor) {
