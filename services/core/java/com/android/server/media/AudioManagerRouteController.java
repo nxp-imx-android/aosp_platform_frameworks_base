@@ -269,8 +269,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
     }
 
     @Override
-    public synchronized @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
-        return mSessionReleaseType;
+    public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
+        synchronized (this) {
+            return mSessionReleaseType;
+        }
     }
 
     @Override
@@ -282,32 +284,40 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @Override
     @NonNull
-    public synchronized List<MediaRoute2Info> getSelectedRoutes() {
-        if (mSelectedRoutes.isEmpty()) {
-            // mSelectedRoutes should non-empty from initialization.
-            throw new IllegalStateException("Selected routes should not be empty");
+    public List<MediaRoute2Info> getSelectedRoutes() {
+        synchronized (this) {
+            if (mSelectedRoutes.isEmpty()) {
+                // mSelectedRoutes should non-empty from initialization.
+                throw new IllegalStateException("Selected routes should not be empty");
+            }
+            return mSelectedRoutes;
         }
-        return mSelectedRoutes;
     }
 
     @Override
     @NonNull
-    public synchronized List<MediaRoute2Info> getSelectableRoutes() {
-        return mSelectableRoutes;
+    public List<MediaRoute2Info> getSelectableRoutes() {
+        synchronized (this) {
+            return mSelectableRoutes;
+        }
     }
 
     @Override
     @NonNull
-    public synchronized List<MediaRoute2Info> getDeselectableRoutes() {
-        return mDeselectableRoutes;
+    public List<MediaRoute2Info> getDeselectableRoutes() {
+        synchronized (this) {
+            return mDeselectableRoutes;
+        }
     }
 
     @Override
     @NonNull
-    public synchronized List<MediaRoute2Info> getAvailableRoutes() {
-        return mRouteIdToAvailableDeviceRoutes.values().stream()
-                .map(it -> it.mMediaRoute2Info)
-                .toList();
+    public List<MediaRoute2Info> getAvailableRoutes() {
+        synchronized (this) {
+            return mRouteIdToAvailableDeviceRoutes.values().stream()
+                    .map(it -> it.mMediaRoute2Info)
+                    .toList();
+        }
     }
 
     @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
@@ -536,25 +546,31 @@ import java.util.concurrent.CopyOnWriteArrayList;
             bluetoothRoutesInBroadcast = mBluetoothRouteController.getBroadcastingDeviceRoutes();
         }
 
-        updateAvailableRoutes(
-                selectedDeviceAttributesType,
-                selectedDeviceAttributesAddr,
-                /* audioDeviceInfos= */ mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS),
-                /* availableBluetoothRoutes= */ mBluetoothRouteController
-                        .getAvailableBluetoothRoutes(),
-                /* musicVolume= */ mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC),
-                /* musicMaxVolume= */ mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
-                /* isVolumeFixed= */ mAudioManager.isVolumeFixed(),
-                /* isLEAudioBroadcastSupported= */ isLEAudioBroadcastSupported,
-                /* bluetoothRoutesInBroadcast= */ bluetoothRoutesInBroadcast);
+        var audioDeviceInfos = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        var availableBluetoothRoutes = mBluetoothRouteController.getAvailableBluetoothRoutes();
+        var musicVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        var musicMaxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        var isVolumeFixed = mAudioManager.isVolumeFixed();
+        synchronized (this) {
+            updateAvailableRoutesLocked(
+                    selectedDeviceAttributesType,
+                    selectedDeviceAttributesAddr,
+                    audioDeviceInfos,
+                    availableBluetoothRoutes,
+                    musicVolume,
+                    musicMaxVolume,
+                    isVolumeFixed,
+                    isLEAudioBroadcastSupported,
+                    bluetoothRoutesInBroadcast);
+        }
     }
 
     /**
      * Updates route and session info using the given information from {@link AudioManager}.
      *
-     * <p>Synchronization is limited to this method in order to avoid calling into {@link
-     * AudioManager} or {@link BluetoothDeviceRoutesManager} while holding a lock that may also be
-     * acquired by binder threads. See class javadoc for more details.
+     * <p>This method takes information as parameters (instead of querying it directly) in order to
+     * avoid calling into {@link AudioManager} or {@link BluetoothDeviceRoutesManager} while holding
+     * a lock that may also be acquired by binder threads. See class javadoc for more details.
      *
      * @param selectedDeviceAttributesType The {@link AudioDeviceInfo#getType() type} that
      *     corresponds to the currently selected route.
@@ -571,7 +587,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
      * @param isVolumeFixed Whether the volume is fixed as obtained from {@link
      *     AudioManager#isVolumeFixed()}.
      */
-    private synchronized void updateAvailableRoutes(
+    @GuardedBy("this")
+    private void updateAvailableRoutesLocked(
             int selectedDeviceAttributesType,
             String selectedDeviceAttributesAddr,
             AudioDeviceInfo[] audioDeviceInfos,
