@@ -17,6 +17,7 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.Context
+import android.security.Flags.lockscreenLargerTimeoutTimeUnits
 import android.security.Flags.secureLockDevice
 import android.util.PluralsMessageFormatter
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -479,7 +480,11 @@ constructor(
     private fun remainingLockoutSeconds(): Long {
         val endTime = authenticationInteractor.lockoutEndTime?.inWholeMilliseconds ?: 0
         val remainingMs = max(0, endTime - clock.elapsedRealtime())
-        return ceil(remainingMs / 1000f).toLong()
+        return if (lockscreenLargerTimeoutTimeUnits()) {
+            (remainingMs + 999L) / 1000L
+        } else {
+            ceil(remainingMs / 1000f).toLong()
+        }
     }
 
     private fun Int.toPluralString(formatterArgs: Map<String, Any>): String =

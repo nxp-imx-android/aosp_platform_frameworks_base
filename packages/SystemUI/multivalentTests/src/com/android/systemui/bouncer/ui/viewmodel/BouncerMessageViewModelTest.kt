@@ -21,6 +21,7 @@ import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricFaceConstants.FACE_ERROR_LOCKOUT
 import android.hardware.biometrics.BiometricFingerprintConstants.FINGERPRINT_ERROR_LOCKOUT
 import android.hardware.fingerprint.FingerprintManager
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -67,7 +68,11 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -730,7 +735,8 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun startLockdownCountdown_onActivated() =
+    @DisableFlags(android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS)
+    fun startLockdownCountdown_onActivatedShowsSeconds() =
         testScope.runTest {
             val bouncerMessage by collectLastValue(underTest.message)
             val lockoutSeconds = 200 * 1000 // 200 second lockout
@@ -743,6 +749,82 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             assertThat(bouncerMessage?.text).isEqualTo("Try again in 100 seconds.")
             advanceTimeBy(101.seconds)
             assertThat(bouncerMessage?.text).isEqualTo("Enter PIN")
+        }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS)
+    fun startLockdownCountdown_onActivatedShowsLargerUnits() =
+        testScope.runTest {
+            val bouncerMessage by collectLastValue(underTest.message)
+            val lockoutSeconds = 200 * 1000 // 200 second lockout
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            kosmos.fakeAuthenticationRepository.reportLockoutStarted(lockoutSeconds)
+            runCurrent()
+
+            assertThat(bouncerMessage?.text).isEqualTo("Try again in 4 minutes")
+            advanceTimeBy(100.seconds)
+            assertThat(bouncerMessage?.text).isEqualTo("Try again in 2 minutes")
+            advanceTimeBy(101.seconds)
+            assertThat(bouncerMessage?.text).isEqualTo("Enter PIN")
+        }
+
+    private val Int.years: Duration
+        get() = 365.days * this
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS)
+    fun startLockdownCountdown_onActivatedShowsAllLargerUnits() =
+        testScope.runTest {
+            val bouncerMessage by collectLastValue(underTest.message)
+
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+
+            fun assertTextFor(timeout: Duration, text: String) {
+                // set end time as plus one second so that when we tick one second, we end up
+                // at the target timeout.
+                val current = currentTime.milliseconds
+                val lockoutEndTime = current + timeout + 1.seconds
+                kosmos.fakeAuthenticationRepository.reportLockoutStarted(timeout + 1.seconds)
+                advanceTimeBy(1.seconds)
+                assertThat(bouncerMessage?.text).isEqualTo(text)
+            }
+
+            // Round up to the year above 364 days
+            assertTextFor(9.years, "Try again in 9 years")
+            assertTextFor(9.years - 1.days, "Try again in 9 years")
+            assertTextFor(8.years + 1.days, "Try again in 9 years")
+            assertTextFor(1.years + 1.days, "Try again in 2 years")
+            assertTextFor(1.years, "Try again in 1 year")
+            assertTextFor(364.days + 1.hours, "Try again in 1 year")
+
+            // Round up to the day above 36 hours
+            assertTextFor(364.days, "Try again in 364 days")
+            assertTextFor(364.days - 1.hours, "Try again in 364 days")
+            assertTextFor(363.days + 1.hours, "Try again in 364 days")
+            assertTextFor(363.days, "Try again in 363 days")
+            assertTextFor(2.days, "Try again in 2 days")
+            assertTextFor(47.hours, "Try again in 2 days")
+            assertTextFor(37.hours, "Try again in 2 days")
+
+            // Round up to the hour above 90 minutes
+            assertTextFor(36.hours, "Try again in 36 hours")
+            assertTextFor(36.hours - 1.minutes, "Try again in 36 hours")
+            assertTextFor(35.hours + 1.minutes, "Try again in 36 hours")
+            assertTextFor(35.hours, "Try again in 35 hours")
+            assertTextFor(2.hours, "Try again in 2 hours")
+            assertTextFor(90.minutes + 1.seconds, "Try again in 2 hours")
+
+            // Round up to the minute above 59 seconds
+            assertTextFor(90.minutes, "Try again in 90 minutes")
+            assertTextFor(90.minutes - 1.seconds, "Try again in 90 minutes")
+            assertTextFor(89.minutes + 1.seconds, "Try again in 90 minutes")
+            assertTextFor(89.minutes, "Try again in 89 minutes")
+            assertTextFor(1.minutes + 1.seconds, "Try again in 2 minutes")
+            assertTextFor(1.minutes, "Try again in 1 minute")
+
+            // Show seconds simply as seconds
+            assertTextFor(59.seconds, "Try again in 59 seconds")
+            assertTextFor(1.seconds, "Try again in 1 second")
         }
 
     private fun TestScope.verifyMessagesForAuthFlags(

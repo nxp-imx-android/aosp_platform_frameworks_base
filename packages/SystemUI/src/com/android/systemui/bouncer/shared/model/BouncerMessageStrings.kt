@@ -17,6 +17,7 @@
 package com.android.systemui.bouncer.shared.model
 
 import android.content.res.Resources
+import android.security.Flags.lockscreenLargerTimeoutTimeUnits
 import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -56,6 +57,10 @@ val BouncerMessagePair.secondaryMessage: Int
 
 object BouncerMessageStrings {
     private val EmptyMessage = Pair(0, 0)
+    private const val SECONDS_IN_MINUTE = 60L
+    private const val SECONDS_IN_HOUR = SECONDS_IN_MINUTE * 60L
+    private const val SECONDS_IN_DAY = SECONDS_IN_HOUR * 24L
+    private const val SECONDS_IN_YEAR = SECONDS_IN_DAY * 365L
 
     fun defaultMessage(
         securityMode: AuthenticationMethodModel,
@@ -393,8 +398,41 @@ object BouncerMessageStrings {
     }
 
     private fun determineTimeoutStringAndCount(totalSeconds: Long): Pair<Int, Long> {
-        return R.string.kg_too_many_failed_attempts_countdown to totalSeconds
+        return if (lockscreenLargerTimeoutTimeUnits()) {
+            when {
+                totalSeconds <= 59 ->
+                    Pair(R.string.kg_too_many_failed_attempts_countdown_seconds, totalSeconds)
+
+                totalSeconds <= 90 * SECONDS_IN_MINUTE ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_minutes,
+                        totalSeconds ceilDivide SECONDS_IN_MINUTE,
+                    )
+
+                totalSeconds <= 36 * SECONDS_IN_HOUR ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_hours,
+                        totalSeconds ceilDivide SECONDS_IN_HOUR,
+                    )
+
+                totalSeconds <= 364 * SECONDS_IN_DAY ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_days,
+                        totalSeconds ceilDivide SECONDS_IN_DAY,
+                    )
+
+                else ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_years,
+                        totalSeconds ceilDivide SECONDS_IN_YEAR,
+                    )
+            }
+        } else {
+            R.string.kg_too_many_failed_attempts_countdown to totalSeconds
+        }
     }
+
+    private infix fun Long.ceilDivide(divisor: Long): Long = (this + divisor - 1) / divisor
 
     private fun patternDefaultMessage(fingerprintAllowed: Boolean): Int {
         return if (fingerprintAllowed) R.string.kg_unlock_with_pattern_or_fp

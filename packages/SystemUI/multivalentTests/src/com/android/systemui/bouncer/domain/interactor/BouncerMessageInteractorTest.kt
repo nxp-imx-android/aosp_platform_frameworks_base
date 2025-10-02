@@ -19,9 +19,8 @@ package com.android.systemui.bouncer.domain.interactor
 import android.content.pm.UserInfo
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -56,6 +55,11 @@ import com.android.systemui.res.R
 import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pin
 import com.android.systemui.res.R.string.kg_primary_auth_locked_out_pin_shortlink
 import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown
+import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown_days
+import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown_hours
+import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown_minutes
+import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown_seconds
+import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown_years
 import com.android.systemui.res.R.string.kg_trust_agent_disabled
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
@@ -63,6 +67,11 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.KotlinArgumentCaptor
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -527,8 +536,11 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @RequiresFlagsDisabled(android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK)
-    fun onPrimaryAuthLockoutWithoutShortlink_startsTimerForSpecifiedNumberOfSeconds() =
+    @DisableFlags(
+        android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK,
+        android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS,
+    )
+    fun onPrimaryAuthLockoutWithoutShortlink_startsTimerForSpecifiedNumberOfSecondsNoLargeUnits() =
         testScope.runTest {
             init()
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
@@ -551,8 +563,9 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @RequiresFlagsEnabled(android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK)
-    fun onPrimaryAuthLockout_startsTimerForSpecifiedNumberOfSeconds() =
+    @EnableFlags(android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK)
+    @DisableFlags(android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS)
+    fun onPrimaryAuthLockout_startsTimerForSpecifiedNumberOfSecondsNoLargeUnits() =
         testScope.runTest {
             init()
             val bouncerMessage by collectLastValue(underTest.bouncerMessage)
@@ -577,6 +590,137 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             assertThat(expectedShortlink).isNotEmpty()
             assertThat(secondaryMessage.formatterArgs)
                 .isEqualTo(mapOf(Pair("shortlink", expectedShortlink)))
+        }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS)
+    @DisableFlags(android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK)
+    fun onPrimaryAuthLockoutWithoutShortlink_startsTimerForSpecifiedNumberOfSeconds() =
+        testScope.runTest {
+            init()
+            val bouncerMessage by collectLastValue(underTest.bouncerMessage)
+
+            underTest.onPrimaryAuthLockedOut(120L)
+
+            verify(countDownTimerUtil)
+                .startNewTimer(eq(120000L), eq(1000L), countDownTimerCallback.capture())
+
+            countDownTimerCallback.value.onTick(2000L)
+
+            val primaryMessage = bouncerMessage!!.message!!
+            assertThat(primaryMessage.messageResId!!)
+                .isEqualTo(kg_too_many_failed_attempts_countdown_seconds)
+            assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
+
+            val secondaryMessage = bouncerMessage!!.secondaryMessage!!
+            assertThat(secondaryMessage.messageResId!!).isEqualTo(kg_primary_auth_locked_out_pin)
+            assertThat(secondaryMessage.formatterArgs).isNull()
+        }
+
+    @Test
+    @EnableFlags(
+        android.security.Flags.FLAG_LOCKSCREEN_TIMEOUT_SHORTLINK,
+        android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS,
+    )
+    fun onPrimaryAuthLockout_startsTimerForSpecifiedNumberOfMinutes() =
+        testScope.runTest {
+            init()
+            val bouncerMessage by collectLastValue(underTest.bouncerMessage)
+
+            underTest.onPrimaryAuthLockedOut(3)
+
+            verify(countDownTimerUtil)
+                .startNewTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
+
+            countDownTimerCallback.value.onTick(2000L)
+
+            val primaryMessage = bouncerMessage!!.message!!
+            assertThat(primaryMessage.messageResId!!)
+                .isEqualTo(kg_too_many_failed_attempts_countdown_seconds)
+            assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
+
+            val secondaryMessage = bouncerMessage!!.secondaryMessage!!
+            assertThat(secondaryMessage.messageResId!!)
+                .isEqualTo(kg_primary_auth_locked_out_pin_shortlink)
+            val expectedShortlink =
+                resString(com.android.internal.R.string.config_lockscreenLockoutShortlink)
+            assertThat(expectedShortlink).isNotEmpty()
+            assertThat(secondaryMessage.formatterArgs)
+                .isEqualTo(mapOf(Pair("shortlink", expectedShortlink)))
+        }
+
+    private val Int.years: Duration
+        get() = 365.days * this
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_LOCKSCREEN_LARGER_TIMEOUT_TIME_UNITS)
+    fun onPrimaryAuthLockout_showsCorrectTimeUnits() =
+        testScope.runTest {
+            init()
+            val bouncerMessage by collectLastValue(underTest.bouncerMessage)
+
+            fun assertTextFor(timeout: Duration, expectedRes: Int, expectedCount: Long) {
+                underTest.onPrimaryAuthLockedOut(timeout.inWholeSeconds)
+
+                verify(countDownTimerUtil)
+                    .startNewTimer(
+                        eq(timeout.inWholeMilliseconds),
+                        eq(1000L),
+                        countDownTimerCallback.capture(),
+                    )
+
+                countDownTimerCallback.value.onTick(timeout.inWholeMilliseconds)
+
+                val primaryMessage = bouncerMessage!!.message!!
+                assertThat(primaryMessage.messageResId).isEqualTo(expectedRes)
+                assertThat(primaryMessage.formatterArgs)
+                    .isEqualTo(mapOf(Pair("count", expectedCount)))
+            }
+
+            assertTextFor(9.years, kg_too_many_failed_attempts_countdown_years, 9L)
+            assertTextFor(9.years - 1.days, kg_too_many_failed_attempts_countdown_years, 9L)
+            assertTextFor(8.years + 1.days, kg_too_many_failed_attempts_countdown_years, 9L)
+            assertTextFor(8.years, kg_too_many_failed_attempts_countdown_years, 8L)
+            assertTextFor(1.years + 1.days, kg_too_many_failed_attempts_countdown_years, 2L)
+            assertTextFor(1.years, kg_too_many_failed_attempts_countdown_years, 1L)
+            assertTextFor(364.days + 1.hours, kg_too_many_failed_attempts_countdown_years, 1L)
+
+            // Round up to the day above 36 hours
+            assertTextFor(364.days, kg_too_many_failed_attempts_countdown_days, 364L)
+            assertTextFor(364.days - 1.hours, kg_too_many_failed_attempts_countdown_days, 364L)
+            assertTextFor(363.days + 1.hours, kg_too_many_failed_attempts_countdown_days, 364L)
+            assertTextFor(363.days, kg_too_many_failed_attempts_countdown_days, 363L)
+            assertTextFor(2.days, kg_too_many_failed_attempts_countdown_days, 2L)
+            assertTextFor(47.hours, kg_too_many_failed_attempts_countdown_days, 2L)
+            assertTextFor(37.hours, kg_too_many_failed_attempts_countdown_days, 2L)
+
+            // Round up to the hour above 90 minutes
+            assertTextFor(36.hours, kg_too_many_failed_attempts_countdown_hours, 36L)
+            assertTextFor(36.hours - 1.minutes, kg_too_many_failed_attempts_countdown_hours, 36L)
+            assertTextFor(35.hours + 1.minutes, kg_too_many_failed_attempts_countdown_hours, 36L)
+            assertTextFor(35.hours, kg_too_many_failed_attempts_countdown_hours, 35L)
+            assertTextFor(2.hours, kg_too_many_failed_attempts_countdown_hours, 2L)
+            assertTextFor(90.minutes + 1.seconds, kg_too_many_failed_attempts_countdown_hours, 2L)
+
+            // Round up to the minute above 59 seconds
+            assertTextFor(90.minutes, kg_too_many_failed_attempts_countdown_minutes, 90L)
+            assertTextFor(
+                90.minutes - 1.seconds,
+                kg_too_many_failed_attempts_countdown_minutes,
+                90L,
+            )
+            assertTextFor(
+                89.minutes + 1.seconds,
+                kg_too_many_failed_attempts_countdown_minutes,
+                90L,
+            )
+            assertTextFor(89.minutes, kg_too_many_failed_attempts_countdown_minutes, 89L)
+            assertTextFor(1.minutes + 1.seconds, kg_too_many_failed_attempts_countdown_minutes, 2L)
+            assertTextFor(1.minutes, kg_too_many_failed_attempts_countdown_minutes, 1L)
+
+            // Show seconds simply as seconds
+            assertTextFor(59.seconds, kg_too_many_failed_attempts_countdown_seconds, 59L)
+            assertTextFor(1.seconds, kg_too_many_failed_attempts_countdown_seconds, 1L)
         }
 
     @Test
