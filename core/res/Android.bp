@@ -193,6 +193,7 @@ android_app {
         "surfaceflinger_flags",
         "power_flags",
         "display_flags",
+        "android.os.profiling.anomaly.flags-aconfig",
     ],
 }
 

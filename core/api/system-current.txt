@@ -130,6 +130,7 @@ package android {
     field public static final String CHECK_REMOTE_LOCKSCREEN = "android.permission.CHECK_REMOTE_LOCKSCREEN";
     field public static final String CLEAR_APP_USER_DATA = "android.permission.CLEAR_APP_USER_DATA";
     field public static final String COMPANION_APPROVE_WIFI_CONNECTIONS = "android.permission.COMPANION_APPROVE_WIFI_CONNECTIONS";
+    field @FlaggedApi("android.os.profiling.anomaly.flags.anomaly_detector_core") public static final String CONFIGURE_ANOMALY_DETECTOR = "android.permission.CONFIGURE_ANOMALY_DETECTOR";
     field public static final String CONFIGURE_DISPLAY_BRIGHTNESS = "android.permission.CONFIGURE_DISPLAY_BRIGHTNESS";
     field @FlaggedApi("android.security.frp_enforcement") public static final String CONFIGURE_FACTORY_RESET_PROTECTION = "android.permission.CONFIGURE_FACTORY_RESET_PROTECTION";
     field public static final String CONFIGURE_INTERACT_ACROSS_PROFILES = "android.permission.CONFIGURE_INTERACT_ACROSS_PROFILES";
