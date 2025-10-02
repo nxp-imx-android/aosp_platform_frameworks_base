@@ -754,6 +754,14 @@ public class BubbleExpandedView extends LinearLayout {
         }
     }
 
+    /**
+     * Returns whether the contents of the task view is visible or not (does not account for
+     * alpha or view visibility).
+     */
+    public boolean getContentVisibility() {
+        return mIsContentVisible;
+    }
+
     @Nullable
     TaskView getTaskView() {
         return mTaskView;
