@@ -18,6 +18,8 @@ package com.android.server.companion.datatransfer.continuity;
 
 import static android.Manifest.permission.READ_REMOTE_TASKS;
 import static android.Manifest.permission.REQUEST_TASK_HANDOFF;
+import static android.Manifest.permission.MODIFY_HANDOFF_SETTINGS;
+import static android.Manifest.permission.READ_HANDOFF_SETTINGS;
 
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
@@ -120,19 +122,28 @@ public final class TaskContinuityManagerService extends SystemService
         }
 
         @Override
+        @EnforcePermission(MODIFY_HANDOFF_SETTINGS)
         public void enableHandoffForDevice(boolean enabled) {
+            enableHandoffForDevice_enforcePermission();
+
             // TODO: Implement this method.
         }
 
         @Override
+        @EnforcePermission(READ_HANDOFF_SETTINGS)
         public void registerHandoffFeatureStateListener(
-            @NonNull IHandoffFeatureStateListener listener) {
+                @NonNull IHandoffFeatureStateListener listener) {
+            registerHandoffFeatureStateListener_enforcePermission();
+
             // TODO: Implement this method.
         }
 
         @Override
+        @EnforcePermission(READ_HANDOFF_SETTINGS)
         public void unregisterHandoffFeatureStateListener(
-            @NonNull IHandoffFeatureStateListener listener) {
+                @NonNull IHandoffFeatureStateListener listener) {
+            unregisterHandoffFeatureStateListener_enforcePermission();
+
             // TODO: Implement this method.
         }
     }
