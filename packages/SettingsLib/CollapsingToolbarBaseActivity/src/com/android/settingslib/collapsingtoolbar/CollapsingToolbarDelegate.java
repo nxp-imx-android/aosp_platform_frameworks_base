@@ -184,7 +184,7 @@ public class CollapsingToolbarDelegate {
             if (actionBar != null) {
                 actionBar.setDisplayHomeAsUpEnabled(true);
                 actionBar.setHomeButtonEnabled(true);
-                if (mIsExpressiveTheme) {
+                if (useCollapsingToolbar && mIsExpressiveTheme) {
                     actionBar.setHomeAsUpIndicator(R.drawable.settingslib_expressive_icon_back);
                 }
                 actionBar.setDisplayShowTitleEnabled(true);
