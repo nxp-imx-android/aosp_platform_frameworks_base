@@ -17,7 +17,6 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.Context
-import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import android.util.PluralsMessageFormatter
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -28,6 +27,7 @@ import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.SimBouncerInteractor
 import com.android.systemui.bouncer.shared.model.BouncerMessagePair
 import com.android.systemui.bouncer.shared.model.BouncerMessageStrings
+import com.android.systemui.bouncer.shared.model.LockoutMessageModel
 import com.android.systemui.bouncer.shared.model.primaryMessage
 import com.android.systemui.bouncer.shared.model.secondaryMessage
 import com.android.systemui.dagger.qualifiers.Application
@@ -42,7 +42,6 @@ import com.android.systemui.deviceentry.shared.model.FaceTimeoutMessage
 import com.android.systemui.deviceentry.shared.model.FingerprintFailureMessage
 import com.android.systemui.deviceentry.shared.model.FingerprintLockoutMessage
 import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.res.R.string.kg_too_many_failed_attempts_countdown
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
@@ -436,6 +435,21 @@ constructor(
         return MessageViewModel(primaryMsg, secondaryText = secondaryMsg, isUpdateAnimated = true)
     }
 
+    private fun LockoutMessageModel.toMessage(): MessageViewModel {
+        val resources = applicationContext.resources
+        val secondaryFormatterArgs = secondaryFormatterArgs(resources)
+        return MessageViewModel(
+            text = primaryMessage.toPluralString(primaryFormatterArgs()),
+            secondaryText =
+                if (secondaryFormatterArgs != null) {
+                    secondaryMessage.toPluralString(secondaryFormatterArgs)
+                } else {
+                    secondaryMessage.toResString()
+                },
+            isUpdateAnimated = false,
+        )
+    }
+
     /** Shows the countdown message and refreshes it every second. */
     private suspend fun startLockoutCountdown() {
         lockoutCountdownJob?.cancel()
@@ -444,32 +458,13 @@ constructor(
                 authenticationInteractor.authenticationMethod.collectLatest { authMethod ->
                     do {
                         val remainingSeconds = remainingLockoutSeconds()
-                        val authLockedOutMsg =
-                            BouncerMessageStrings.primaryAuthLockedOut(authMethod)
                         lockoutMessage.value =
                             if (remainingSeconds > 0) {
-                                val secondaryText =
-                                    if (lockscreenTimeoutShortlink()) {
-                                        val shortlink =
-                                            com.android.internal.R.string
-                                                .config_lockscreenLockoutShortlink
-                                                .toResString()
-                                        authLockedOutMsg.secondaryMessage.toPluralString(
-                                            mutableMapOf<String, Any>(Pair("shortlink", shortlink))
-                                        )
-                                    } else {
-                                        authLockedOutMsg.secondaryMessage.toResString()
-                                    }
-                                MessageViewModel(
-                                    text =
-                                        kg_too_many_failed_attempts_countdown.toPluralString(
-                                            mutableMapOf<String, Any>(
-                                                Pair("count", remainingSeconds)
-                                            )
-                                        ),
-                                    secondaryText,
-                                    isUpdateAnimated = false,
-                                )
+                                BouncerMessageStrings.primaryAuthLockedOut(
+                                        authMethod,
+                                        remainingSeconds,
+                                    )
+                                    .toMessage()
                             } else {
                                 null
                             }

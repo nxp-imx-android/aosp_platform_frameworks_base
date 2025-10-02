@@ -543,7 +543,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             val primaryMessage = bouncerMessage!!.message!!
             assertThat(primaryMessage.messageResId!!)
                 .isEqualTo(kg_too_many_failed_attempts_countdown)
-            assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2)))
+            assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
 
             val secondaryMessage = bouncerMessage!!.secondaryMessage!!
             assertThat(secondaryMessage.messageResId!!).isEqualTo(kg_primary_auth_locked_out_pin)
@@ -567,7 +567,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             val primaryMessage = bouncerMessage!!.message!!
             assertThat(primaryMessage.messageResId!!)
                 .isEqualTo(kg_too_many_failed_attempts_countdown)
-            assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2)))
+            assertThat(primaryMessage.formatterArgs).isEqualTo(mapOf(Pair("count", 2L)))
 
             val secondaryMessage = bouncerMessage!!.secondaryMessage!!
             assertThat(secondaryMessage.messageResId!!)

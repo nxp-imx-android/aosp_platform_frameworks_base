@@ -16,6 +16,7 @@
 
 package com.android.systemui.bouncer.shared.model
 
+import android.content.res.Resources
 import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -24,6 +25,26 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
 import com.android.systemui.res.R
+
+data class LockoutMessageModel(
+    val primaryMessage: Int,
+    val count: Long,
+    val secondaryMessage: Int,
+) {
+    fun primaryFormatterArgs(): Map<String, Any> = mapOf("count" to count)
+
+    fun secondaryFormatterArgs(resources: Resources): Map<String, Any>? =
+        if (lockscreenTimeoutShortlink()) {
+            mapOf(
+                "shortlink" to
+                    resources.getString(
+                        com.android.internal.R.string.config_lockscreenLockoutShortlink
+                    )
+            )
+        } else {
+            null
+        }
+}
 
 typealias BouncerMessagePair = Pair<Int, Int>
 
@@ -341,37 +362,38 @@ object BouncerMessageStrings {
         }
     }
 
-    fun primaryAuthLockedOut(securityMode: AuthenticationMethodModel): BouncerMessagePair {
-        return when (securityMode) {
-            Pattern ->
-                Pair(
-                    R.string.kg_too_many_failed_attempts_countdown,
+    fun primaryAuthLockedOut(
+        securityMode: AuthenticationMethodModel,
+        timeoutSeconds: Long,
+    ): LockoutMessageModel {
+        val secondaryId =
+            when (securityMode) {
+                Pattern ->
                     if (lockscreenTimeoutShortlink()) {
                         R.string.kg_primary_auth_locked_out_pattern_shortlink
                     } else {
                         R.string.kg_primary_auth_locked_out_pattern
-                    },
-                )
-            Password ->
-                Pair(
-                    R.string.kg_too_many_failed_attempts_countdown,
+                    }
+                Password ->
                     if (lockscreenTimeoutShortlink()) {
                         R.string.kg_primary_auth_locked_out_password_shortlink
                     } else {
                         R.string.kg_primary_auth_locked_out_password
-                    },
-                )
-            Pin ->
-                Pair(
-                    R.string.kg_too_many_failed_attempts_countdown,
+                    }
+                Pin ->
                     if (lockscreenTimeoutShortlink()) {
                         R.string.kg_primary_auth_locked_out_pin_shortlink
                     } else {
                         R.string.kg_primary_auth_locked_out_pin
-                    },
-                )
-            else -> EmptyMessage
-        }
+                    }
+                else -> 0
+            }
+        val (primaryId, count) = determineTimeoutStringAndCount(timeoutSeconds)
+        return LockoutMessageModel(primaryId, count, secondaryId)
+    }
+
+    private fun determineTimeoutStringAndCount(totalSeconds: Long): Pair<Int, Long> {
+        return R.string.kg_too_many_failed_attempts_countdown to totalSeconds
     }
 
     private fun patternDefaultMessage(fingerprintAllowed: Boolean): Int {
