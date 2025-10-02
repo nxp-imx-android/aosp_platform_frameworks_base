@@ -129,11 +129,11 @@ public final class MessageStackTest {
             stack.pushMessage(Message.obtain(h, keepWhat));
         }
         stack.heapSweep();
-        assertTrue(stack.moveMatchingToFreelist(new MatchHandlerWhatAndObject(),
+        assertEquals(5, stack.moveMatchingToFreelist(new MatchHandlerWhatAndObject(),
                 h, removeWhat, null, null, 0));
 
         // Try deleting a message we never pushed
-        assertFalse(stack.moveMatchingToFreelist(new MatchHandlerWhatAndObject(),
+        assertEquals(0, stack.moveMatchingToFreelist(new MatchHandlerWhatAndObject(),
                 h, neverPushedWhat, null, null, 0));
 
         assertEquals(5, stack.freelistSizeForTest());
