@@ -334,6 +334,10 @@ constructor(
         // or device starts going to sleep.
         merge(
                 powerInteractor.isAsleep,
+                keyguardTransitionInteractor.isFinishedIn(
+                    content = Scenes.Dream,
+                    stateWithoutSceneContainer = KeyguardState.DREAMING,
+                ),
                 combine(
                     keyguardTransitionInteractor.isFinishedIn(
                         content = Scenes.Gone,
