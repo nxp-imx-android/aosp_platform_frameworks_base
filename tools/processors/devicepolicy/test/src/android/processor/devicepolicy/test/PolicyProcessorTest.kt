@@ -49,6 +49,7 @@ class PolicyProcessorTest {
             "IntegerPolicyMetadata",
             "EnumPolicyMetadata",
             "StringPolicyMetadata",
+            "ListPolicyMetadata",
         )
             .map {
                 "android/app/admin/metadata/$it.java"
@@ -90,11 +91,13 @@ class PolicyProcessorTest {
                 import android.processor.devicepolicy.BooleanPolicyDefinition;
                 import android.processor.devicepolicy.EnumPolicyDefinition;
                 import android.processor.devicepolicy.IntegerPolicyDefinition;
+                import android.processor.devicepolicy.ListOfStringPolicyDefinition;
                 import android.processor.devicepolicy.PolicyDefinition;
                 import android.processor.devicepolicy.StringPolicyDefinition;
 
                 import java.lang.annotation.Retention;
                 import java.lang.annotation.RetentionPolicy;
+                import java.util.List;
 
                 public final class PolicyIdentifier<T> {
                     // Allow using the constants without having to build DevicePolicyManager

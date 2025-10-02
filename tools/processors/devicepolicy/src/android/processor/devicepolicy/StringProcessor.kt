@@ -58,7 +58,7 @@ class StringProcessor(processingEnv: ProcessingEnvironment) : Processor<StringPo
             TypeSpecificPolicyMetadata
                 .newBuilder()
                 .setStringMetadata(
-                    TypeSpecificPolicyMetadata.StringPolicyMetadata.getDefaultInstance()
+                    extractTypeSpecificMetadata(stringDefinition)
                 ).build()
 
         return Pair(typeSpecificMetadata, stringDefinition.base)
@@ -67,4 +67,8 @@ class StringProcessor(processingEnv: ProcessingEnvironment) : Processor<StringPo
     override fun annotationClass(): Class<StringPolicyDefinition> {
         return StringPolicyDefinition::class.java
     }
+
+    fun extractTypeSpecificMetadata(definition: StringPolicyDefinition):
+            TypeSpecificPolicyMetadata.StringPolicyMetadata =
+        TypeSpecificPolicyMetadata.StringPolicyMetadata.getDefaultInstance()
 }

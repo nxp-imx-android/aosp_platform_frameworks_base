@@ -20,6 +20,8 @@ import android.annotation.NonNull;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
 
+import java.util.List;
+
 /**
  * Helper to convert a plain policy value to and from a policy transport.
  * Use {@link PolicyTransportValueConvertor#getInstance} to obtain the correct type-safe converter
@@ -89,6 +91,26 @@ public abstract class PolicyTransportValueConvertor<T> {
                     return transport.getStringField();
                 }
             };
+    private static final PolicyTransportValueConvertor<List<String>> LIST_OF_STRING_CONVERTOR =
+            new PolicyTransportValueConvertor<>() {
+                @Override
+                @NonNull
+                public PolicyValueTransport toTransport(@NonNull List<String> value) {
+                    return PolicyValueTransport.listOfStringField(value);
+                }
+
+                @NonNull
+                @Override
+                public List<String> fromTransport(@NonNull PolicyValueTransport transport) {
+                    if (transport.getTag() != PolicyValueTransport.listOfStringField) {
+                        throw new IllegalArgumentException(
+                                "Policy value " + transport + " is not a list of string"
+                        );
+                    }
+
+                    return transport.getListOfStringField();
+                }
+            };
 
 
     protected PolicyTransportValueConvertor() {
@@ -101,7 +123,7 @@ public abstract class PolicyTransportValueConvertor<T> {
      * @param <T>      The type of the policy and the resulting convertor
      * @return A convertor that works for values of the policy described in metadata
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @NonNull
     public static <T> PolicyTransportValueConvertor<T> getInstance(PolicyMetadata<T> metadata) {
         // Cast is safe since metadata already checked the type when building.
@@ -110,8 +132,35 @@ public abstract class PolicyTransportValueConvertor<T> {
             case IntegerPolicyMetadata m -> INTEGER_CONVERTOR;
             case EnumPolicyMetadata m -> INTEGER_CONVERTOR;
             case StringPolicyMetadata m -> STRING_CONVERTOR;
+            // Need to use a raw type here since we can't extract the element E of T=List<E>.
+            case ListPolicyMetadata m -> getListInstance(m);
             default -> throw new UnsupportedOperationException(
                     "Unsupported policy conversion for "
+                            + metadata.getId()
+            );
+        };
+    }
+
+    /**
+     * Get a convertor from the list policy metadata.
+     *
+     * @param metadata The metadata for a policy
+     * @param <T>      The type of the elements
+     * @return A convertor that works for values of the policy described in metadata
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @NonNull
+    private static <T> PolicyTransportValueConvertor<List<T>> getListInstance(
+            ListPolicyMetadata<T> metadata
+    ) {
+        // Cast is safe since metadata already checked the type when building.
+        // Can't cast to PolicyTransportValueConvertor<List<T>> since List<T> is not a superclass
+        // of List<String> (and other list types at the same time), we need to use a raw class
+        // instead.
+        return (PolicyTransportValueConvertor) switch(metadata.getElementMetadata()) {
+            case StringPolicyMetadata m -> LIST_OF_STRING_CONVERTOR;
+            default -> throw new UnsupportedOperationException(
+                    "Unsupported list policy conversion for "
                             + metadata.getId()
             );
         };

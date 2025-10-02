@@ -20,11 +20,13 @@ import android.annotation.IntDef;
 import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.IntegerPolicyDefinition;
+import android.processor.devicepolicy.ListOfStringPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 public final class PolicyIdentifier<T> {
     private final String mId;
@@ -134,4 +136,22 @@ public final class PolicyIdentifier<T> {
     )
     public static final PolicyIdentifier<String> SIMPLE_STRING_POLICY =
             new PolicyIdentifier<>("SIMPLE_STRING_POLICY");
+
+    /**
+     * Test policy 5
+     */
+    @ListOfStringPolicyDefinition(
+            base = @StringPolicyDefinition(
+                    base = @PolicyDefinition(
+                            allowedScopes = {
+                                    1 // POLICY_SCOPE_USER
+                            },
+                            affectedResource = 1 // RESOURCE_DEVICE_WIDE
+                            // requiredPermission and requiredCrossUserPermission using the
+                            // default values.
+                    )
+            )
+    )
+    public static final PolicyIdentifier<List<String>> SIMPLE_STRING_LIST_POLICY =
+            new PolicyIdentifier<>("SIMPLE_STRING_LIST_POLICY");
 }

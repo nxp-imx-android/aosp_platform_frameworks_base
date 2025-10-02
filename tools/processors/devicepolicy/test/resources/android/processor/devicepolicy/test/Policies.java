@@ -16,6 +16,8 @@
 
 package android.app.admin.metadata;
 
+import android.app.admin.PolicyIdentifier;
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +73,18 @@ public class Policies {
             /* affectedResource= */ 1,
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null
+        ));
+        policies.add(new ListPolicyMetadata<String>(
+            /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY,
+            /* elementMetadata= */ new StringPolicyMetadata(
+                /* id= */ new PolicyIdentifier<String>(android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY.getId() + "#elements"),
+                /* allowedScopes= */ Set.of(
+                    1
+                ),
+                /* affectedResource= */ 1,
+                /* requiredPermission= */ null,
+                /* requiredCrossUserPermission= */ null
+            )
         ));
         return policies;
     }
