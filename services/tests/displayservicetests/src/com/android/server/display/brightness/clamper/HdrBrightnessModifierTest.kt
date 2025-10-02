@@ -23,10 +23,10 @@ import android.net.Uri
 import android.os.IBinder
 import android.os.PowerManager.BRIGHTNESS_MAX
 import android.provider.Settings
+import android.util.MathUtils
 import android.util.Spline
 import android.view.SurfaceControlHdrLayerInfoListener
 import androidx.test.filters.SmallTest
-import com.android.internal.display.BrightnessUtils
 import com.android.server.display.DisplayBrightnessState
 import com.android.server.display.DisplayBrightnessState.BRIGHTNESS_NOT_SET
 import com.android.server.display.DisplayBrightnessState.CUSTOM_ANIMATION_RATE_NOT_SET
@@ -144,7 +144,7 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun contentObserversRegisteredOnInit_flagEnabled() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled()).thenReturn(true)
+        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier(createHdrBrightnessData(allowInLowPowerMode = false))
 
         assertThat(testInjector.registeredLowPowerModeSettingObserver).isNotNull()
@@ -411,7 +411,7 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessEnabledChanged() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled()).thenReturn(true)
+        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false
@@ -443,7 +443,7 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessEnabledChanged_noHdrMode() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled()).thenReturn(true)
+        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false
@@ -457,7 +457,7 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessBoostLevelChanged() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled()).thenReturn(true)
+        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false
@@ -467,7 +467,7 @@ class HdrBrightnessModifierTest {
 
         var expectedHdrBrightness = 0.92f
         var brightnessBoostLevel = 0.3f
-        var ratioScaleFactor = BrightnessUtils.convertGammaToLinear(brightnessBoostLevel)
+        var ratioScaleFactor = MathUtils.sq(brightnessBoostLevel)
         whenever(mockDisplayDeviceConfig.getHdrBrightnessFromSdr(/* brightness= */ 0f,
             MAX_HDR_RATIO, ratioScaleFactor, /* sdrToHdrSpline= */ null))
             .thenReturn(expectedHdrBrightness)
@@ -483,7 +483,7 @@ class HdrBrightnessModifierTest {
 
         expectedHdrBrightness = 0.98f
         brightnessBoostLevel = 0.65f
-        ratioScaleFactor = BrightnessUtils.convertGammaToLinear(brightnessBoostLevel)
+        ratioScaleFactor = MathUtils.sq(brightnessBoostLevel)
         whenever(mockDisplayDeviceConfig.getHdrBrightnessFromSdr(/* brightness= */ 0f,
             MAX_HDR_RATIO, ratioScaleFactor, /* sdrToHdrSpline= */ null))
             .thenReturn(expectedHdrBrightness)
@@ -498,7 +498,7 @@ class HdrBrightnessModifierTest {
 
     @Test
     fun hdrBrightnessBoostLevelChanged_noHdrMode() {
-        whenever(mockFlags.isHdrBrightnessSettingEnabled()).thenReturn(true)
+        whenever(mockFlags.isHdrBrightnessSettingEnabled).thenReturn(true)
         initHdrModifier()
         setupDisplay(width = 100, height = 100, hdrBrightnessData = createHdrBrightnessData(
             allowInLowPowerMode = false

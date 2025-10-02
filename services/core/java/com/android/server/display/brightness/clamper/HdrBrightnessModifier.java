@@ -30,11 +30,11 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.util.MathUtils;
 import android.view.SurfaceControlHdrLayerInfoListener;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.display.BrightnessSynchronizer;
-import com.android.internal.display.BrightnessUtils;
 import com.android.server.display.DisplayBrightnessState;
 import com.android.server.display.DisplayDeviceConfig;
 import com.android.server.display.brightness.BrightnessReason;
@@ -459,8 +459,7 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
     }
 
     private float getRatioScaleFactor() {
-        return mFlags.isHdrBrightnessSettingEnabled() ? BrightnessUtils
-                .convertGammaToLinear(mHdrBrightnessBoostLevel) : 1;
+        return mFlags.isHdrBrightnessSettingEnabled() ? MathUtils.sq(mHdrBrightnessBoostLevel) : 1;
     }
 
     private boolean isNbmOrHbmHdr() {
