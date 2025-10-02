@@ -247,6 +247,9 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 .compatibilityInfoForPackageLocked(app.mInfo);
         compatibilityInfo.cameraCompatibilityInfo = getCameraCompatibilityInfo(activityRecord);
         try {
+            ProtoLog.i(WmProtoLogGroups.WM_DEBUG_STATES, "Updating CameraCompatibilityInfo"
+                    + " for package: %s to: %s.", app.mInfo.packageName,
+                    compatibilityInfo.cameraCompatibilityInfo);
             // TODO(b/380840084): Consider using a ClientTransaction for this update.
             app.getThread().updatePackageCompatibilityInfo(app.mInfo.packageName,
                     compatibilityInfo);
