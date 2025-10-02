@@ -17,27 +17,59 @@
 package com.android.systemui.qs.tiles.dialog
 
 import android.view.LayoutInflater
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastSumBy
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel.ContentViewModel.DefaultPageViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel.ContentViewModel.SwitcherPageViewModel
 import com.android.systemui.res.R
-import com.android.systemui.volume.panel.ui.composable.VolumePanelRoot
+import com.android.systemui.volume.panel.component.shared.model.VolumePanelComponents
+import com.android.systemui.volume.panel.ui.composable.ComposeVolumePanelUiComponent
+import com.android.systemui.volume.panel.ui.composable.VolumePanelComposeScope
 
 @Composable
 fun AudioDetailsContent(audioDetailsViewModel: AudioDetailsViewModel) {
     LaunchedEffect(Unit) { audioDetailsViewModel.activate() }
     when (val currentViewModel = audioDetailsViewModel.contentViewModel) {
-        is DefaultPageViewModel ->
-            Box(modifier = Modifier.fillMaxWidth().height(600.dp)) {
-                VolumePanelRoot(viewModel = currentViewModel.viewModel)
+        is AudioDetailsDefaultPageViewModel -> {
+            val accessibilityTitle = stringResource(R.string.accessibility_volume_settings)
+            val volumePanelState = currentViewModel.volumePanelState
+
+            Box(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .height(600.dp)
+                        .semantics { paneTitle = accessibilityTitle }
+                        .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 20.dp)
+            ) {
+                if (volumePanelState != null) {
+                    with(
+                        VolumePanelComposeScope(
+                            volumePanelState.collectAsStateWithLifecycle().value
+                        )
+                    ) {
+                        AudioContentsDefaultPage(viewModel = currentViewModel)
+                    }
+                }
             }
+        }
         is SwitcherPageViewModel ->
             AndroidView(
                 factory = { context ->
@@ -45,6 +77,61 @@ fun AudioDetailsContent(audioDetailsViewModel: AudioDetailsViewModel) {
                     LayoutInflater.from(context).inflate(R.layout.media_output_dialog, null)
                 }
             )
-        null -> {}
+    }
+}
+
+@Composable
+fun VolumePanelComposeScope.AudioContentsDefaultPage(
+    viewModel: AudioDetailsDefaultPageViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val volumeComponentsFactory = viewModel.volumeComponentsFactory
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        volumeComponentsFactory?.let { factory ->
+            val outputComponent = factory.createComponent(VolumePanelComponents.MEDIA_OUTPUT)
+            with(outputComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
+
+            // TODO(b/448199358): Use customized slider for audio details view instead.
+            val sliderComponent = factory.createComponent(VolumePanelComponents.VOLUME_SLIDERS)
+            with(sliderComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
+
+            val inputComponent = factory.createComponent(VolumePanelComponents.MEDIA_INPUT)
+            with(inputComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
+        }
+
+        AnimatedContent(
+            targetState = viewModel.footerComponents,
+            label = "FooterComponentAnimation",
+        ) { footerComponents ->
+            footerComponents?.let {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(28.dp),
+                ) {
+                    val visibleComponentsCount =
+                        footerComponents.fastSumBy { if (it.isVisible) 1 else 0 }
+
+                    // Center footer component if there is only one present
+                    if (visibleComponentsCount == 1) {
+                        Spacer(modifier = Modifier.weight(0.5f))
+                    }
+
+                    for (component in footerComponents) {
+                        if (component.isVisible) {
+                            with(component.component as ComposeVolumePanelUiComponent) {
+                                Content(Modifier.weight(1f))
+                            }
+                        }
+                    }
+
+                    if (visibleComponentsCount == 1) {
+                        Spacer(modifier = Modifier.weight(0.5f))
+                    }
+                }
+            }
+        }
     }
 }

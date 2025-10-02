@@ -18,13 +18,13 @@ package com.android.systemui.qs.tiles.dialog
 
 import android.content.Intent
 import android.provider.Settings
-import com.android.systemui.lifecycle.ExclusiveActivatable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.systemui.lifecycle.Activatable
+import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandler
-import com.android.systemui.volume.panel.ui.viewmodel.VolumePanelViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
@@ -35,14 +35,12 @@ class AudioDetailsViewModel
 @AssistedInject
 constructor(
     private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler,
-    private val volumePanelViewModelFactory: VolumePanelViewModel.Factory,
+    defaultPageViewModelFactory: AudioDetailsDefaultPageViewModel.Factory,
 ) : TileDetailsViewModel, ExclusiveActivatable() {
     // Controls the current content that should be displayed
-    var contentViewModel: ContentViewModel? by mutableStateOf(null)
+    var contentViewModel: ContentViewModel by mutableStateOf(defaultPageViewModelFactory.create())
 
     sealed interface ContentViewModel {
-        class DefaultPageViewModel(val viewModel: VolumePanelViewModel) : ContentViewModel
-
         class SwitcherPageViewModel : ContentViewModel
     }
 
@@ -60,12 +58,7 @@ constructor(
     }
 
     override suspend fun onActivated(): Nothing {
-        coroutineScope {
-            launch {
-                contentViewModel =
-                    ContentViewModel.DefaultPageViewModel(volumePanelViewModelFactory.create(this))
-            }
-        }
+        coroutineScope { launch { (contentViewModel as Activatable).activate() } }
         awaitCancellation()
     }
 
