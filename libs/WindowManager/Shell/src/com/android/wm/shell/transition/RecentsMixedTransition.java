@@ -31,6 +31,7 @@ import android.window.TransitionInfo;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.pip.PipTransitionController;
@@ -52,10 +53,10 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
     RecentsMixedTransition(int type, IBinder transition, Transitions player,
             MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
             StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
-            RecentsTransitionHandler recentsHandler,
-            DesktopTasksController desktopTasksController,
-            int displayId) {
-        super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler);
+            RecentsTransitionHandler recentsHandler, DesktopTasksController desktopTasksController,
+            BubbleTransitions bubbleTransitions, int displayId) {
+        super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler,
+                bubbleTransitions);
         mRecentsHandler = recentsHandler;
         mDesktopTasksController = desktopTasksController;
         mLeftoversHandler = mRecentsHandler;
