@@ -221,21 +221,7 @@ internal class DemuxNode<W, K, A>(
     }
 }
 
-internal fun <W, K, A> demuxImpl(
-    nameData: NameData,
-    upstream: EventsImpl<MapK<*, K, A>>,
-    numKeys: Int?,
-    storeFactory: MutableMapK.Factory<W, K>,
-): DemuxImpl<K, A> =
-    DemuxImpl(
-        nameData,
-        DemuxLifecycle(
-            nameData,
-            DemuxLifecycleState.Inactive(DemuxActivator(nameData, numKeys, upstream, storeFactory)),
-        ),
-    )
-
-internal fun <K, A> demuxMap(
+internal fun <K, A> demuxImpl(
     nameData: NameData,
     upstream: EvalScope.() -> EventsImpl<Map<K, A>>,
     numKeys: Int?,
