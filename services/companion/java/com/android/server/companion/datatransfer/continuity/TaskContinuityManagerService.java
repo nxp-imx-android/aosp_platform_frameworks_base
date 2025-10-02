@@ -44,6 +44,7 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskR
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
+import com.android.server.companion.datatransfer.continuity.tasks.TaskBroadcaster;
 
 import com.android.server.SystemService;
 
