@@ -731,6 +731,20 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    public void testMuteWhenUnprovisioned() throws Exception {
+        Settings.Global.putInt(getContext().getContentResolver(),
+                Settings.Global.DEVICE_PROVISIONED, 0);
+        initAttentionHelper(mTestFlagResolver);
+
+        NotificationRecord r = getBeepyNotification();
+
+        mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
+
+        verifyNeverBeep();
+        verify(mAccessibilityService, never()).sendAccessibilityEvent(any(), anyInt());
+    }
+
+    @Test
     public void testLockedPrivateA11yRedaction() throws Exception {
         NotificationRecord r = getBeepyNotification();
         r.setPackageVisibilityOverride(NotificationManager.VISIBILITY_NO_OVERRIDE);

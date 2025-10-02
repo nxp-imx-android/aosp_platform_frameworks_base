@@ -1126,7 +1126,8 @@ public final class NotificationAttentionHelper {
 
     boolean sendAccessibilityEvent(NotificationRecord record) {
         if (!mAccessibilityManager.isEnabled() || !mEnableNotificationAccessibilityEvents
-                || (mActivityTaskManager != null && mActivityTaskManager.isInLockTaskMode())) {
+                || (mActivityTaskManager != null && mActivityTaskManager.isInLockTaskMode())
+                || mDisableNotificationEffects) {
             return false;
         }
 
