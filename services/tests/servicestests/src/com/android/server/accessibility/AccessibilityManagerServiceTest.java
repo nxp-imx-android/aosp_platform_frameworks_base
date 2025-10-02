@@ -2475,7 +2475,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    public void displayListReturnsDisplays() {
+    public void displayListReturnsDisplays_containsAddedDisplays() {
         mTestDisplayManagerWrapper.mDisplays = createFakeDisplayList(
                         Display.TYPE_INTERNAL,
                         Display.TYPE_EXTERNAL,
@@ -2483,6 +2483,10 @@ public class AccessibilityManagerServiceTest {
                         Display.TYPE_OVERLAY,
                         Display.TYPE_VIRTUAL
         );
+        List<Integer> expectedDisplayIds = mTestDisplayManagerWrapper.mDisplays.stream()
+                .map(Display::getDisplayId)
+                .toList();
+
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             // In #setUp() we already have TYPE_INTERNAL and TYPE_EXTERNAL. Call the rest.
             for (int i = 2; i < mTestDisplayManagerWrapper.mDisplays.size(); i++) {
@@ -2495,12 +2499,8 @@ public class AccessibilityManagerServiceTest {
         assertThat(displays).hasSize(5);
         assertThat(displays)
                 .comparingElementsUsing(
-                        Correspondence.transforming(Display::getType, "has a type of"))
-                .containsExactly(Display.TYPE_INTERNAL,
-                        Display.TYPE_EXTERNAL,
-                        Display.TYPE_WIFI,
-                        Display.TYPE_OVERLAY,
-                        Display.TYPE_VIRTUAL);
+                        Correspondence.transforming(Display::getDisplayId, "has display ID of"))
+                .containsExactlyElementsIn(expectedDisplayIds);
     }
 
     @Test
