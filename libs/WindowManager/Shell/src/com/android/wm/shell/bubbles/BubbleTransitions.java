@@ -1329,6 +1329,7 @@ public class BubbleTransitions {
             if (mPlayConvertTaskAnimation) {
                 final int left = mStartBounds.left - info.getRoot(0).getOffset().x;
                 final int top = mStartBounds.top - info.getRoot(0).getOffset().y;
+                startTransaction.setCrop(mTaskLeash, mStartBounds);
                 startTransaction.setPosition(mTaskLeash, left, top);
                 startTransaction.show(mSnapshot);
                 // Move snapshot to root so that it remains visible while task is moved to taskview
