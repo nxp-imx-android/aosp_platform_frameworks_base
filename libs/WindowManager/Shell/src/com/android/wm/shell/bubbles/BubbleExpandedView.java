@@ -747,6 +747,9 @@ public class BubbleExpandedView extends LinearLayout {
      * and setting {@code false} actually means rendering the contents in transparent.
      */
     public void setContentVisibility(boolean visibility) {
+        BubbleLog.d(
+                "BubbleExpandedView.setContentVisibility: visible = %b, task view exists = %b, "
+                        + "animating = %b", visibility, mTaskView != null, mIsAnimating);
         mIsContentVisible = visibility;
         if (mTaskView != null && !mIsAnimating) {
             mTaskView.setAlpha(visibility ? 1f : 0f);
