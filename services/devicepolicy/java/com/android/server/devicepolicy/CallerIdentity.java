@@ -34,7 +34,7 @@ public final class CallerIdentity {
     @Nullable
     private final ComponentName mComponentName;
 
-    CallerIdentity(int pid, int uid, @Nullable String packageName,
+    public CallerIdentity(int pid, int uid, @Nullable String packageName,
             @Nullable ComponentName componentName) {
         mPid = pid;
         mUid = uid;

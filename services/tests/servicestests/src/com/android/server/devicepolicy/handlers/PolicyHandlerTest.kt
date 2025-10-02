@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.devicepolicy
+package com.android.server.devicepolicy.handlers
 
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER
@@ -22,7 +22,9 @@ import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.server.devicepolicy.CallerIdentity
 import com.android.server.devicepolicy.DevicePolicyManagerService.NOT_A_DPC
+import com.android.server.devicepolicy.IPermissionChecker
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.Test
