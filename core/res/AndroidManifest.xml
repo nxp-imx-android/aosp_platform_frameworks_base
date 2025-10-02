@@ -8757,14 +8757,6 @@
         android:protectionLevel="signature" />
 
     <!-- Allows an application to perform actions on behalf of users inside of
-         applications.
-         <p>This permission is currently only granted to privileged system apps.
-         <p>Protection level: internal|privileged -->
-    <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS"
-        android:featureFlag="!android.permission.flags.app_function_access_api_enabled"
-        android:protectionLevel="internal|privileged" />
-
-    <!-- Allows an application to perform actions on behalf of users inside of
      applications.
      <p>To execute a function in another app, an application must first hold the
         android.permission.EXECUTE_APP_FUNCTIONS permission. In addition, the application must be
@@ -8774,6 +8766,14 @@
     <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS"
         android:featureFlag="android.permission.flags.app_function_access_api_enabled"
         android:protectionLevel="normal" />
+
+    <!-- Allows an application to perform actions on behalf of users inside of
+         applications.
+         <p>This permission is currently only granted to privileged system apps.
+         <p>Protection level: internal|privileged -->
+    <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS"
+        android:featureFlag="!android.permission.flags.app_function_access_api_enabled"
+        android:protectionLevel="internal|privileged" />
 
     <!-- Allows an application to display its suggestions using the autofill framework.
          <p>For now, this permission is only granted to the Browser application.
