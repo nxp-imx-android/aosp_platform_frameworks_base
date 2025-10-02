@@ -447,7 +447,7 @@ public class AssociationRequestsProcessor {
     /**
      * Grants requested extra runtime permissions to the specified package for the given user.
      */
-    private void grantExtraPermissionsForNonProfile(@NonNull AssociationInfo association) {
+    public void grantExtraPermissionsForNonProfile(@NonNull AssociationInfo association) {
         String packageName = association.getPackageName();
         Set<String> permissionSetKeys = association.getExtraPermissions();
         int userId = association.getUserId();
