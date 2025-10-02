@@ -6862,18 +6862,15 @@ public final class DisplayManagerService extends SystemService {
 
         @Override
         public void onDeviceStateChanged(DeviceState deviceState) {
-            synchronized (mSyncRoot) {
-                // Notify WindowManager that we are about to handle new device state, this should
-                // be sent before any work related to the device state in DisplayManager, so
-                // WindowManager could do implement that depends on the device state and display
-                // changes (serializes device state update and display change events)
-                Message msg = mHandler.obtainMessage(MSG_RECEIVED_DEVICE_STATE);
-                msg.arg1 = deviceState.getIdentifier();
-                mHandler.sendMessage(msg);
+            // Notify WindowManager that we are about to handle new device state, this should
+            // be sent before any work related to the device state in DisplayManager, so
+            // WindowManager could do implement that depends on the device state and display
+            // changes (serializes device state update and display change events)
+            Message msg = mHandler.obtainMessage(MSG_RECEIVED_DEVICE_STATE);
+            msg.arg1 = deviceState.getIdentifier();
+            mHandler.sendMessage(msg);
 
-                mLogicalDisplayMapper
-                        .setDeviceStateLocked(deviceState);
-            }
+            mLogicalDisplayMapper.setDeviceState(deviceState);
         }
     }
 
