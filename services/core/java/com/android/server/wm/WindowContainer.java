@@ -1691,22 +1691,46 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (childCount == 0) {
             return false;
         }
-        for (int i = 0; i < childCount; i++) {
+
+        TaskFragment.AdjacentVisibilityHelper adjacentVisibilityHelper = null;
+        for (int i = childCount - 1; i >= 0; --i) {
             final WindowContainer<?> child = getChildAt(i);
             if (child.fillsParentBounds() && child.hasFillingContent()) {
                 // At least one child fills this container and has content filling itself.
                 return true;
             }
-            if (child.asTaskFragment() != null
-                    && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                // There's at least one child adjacent task fragment. Consider the parent filling
-                // as long as all of the adjacent task fragments have filling content. Whether
-                // or not they fill the parent in union is not important.
-                final boolean allFillingContent = child.hasFillingContent()
-                        && !child.asTaskFragment().forOtherAdjacentTaskFragments(
-                            tf -> !tf.hasFillingContent());
-                if (allFillingContent) {
-                    return true;
+
+            if (com.android.window.flags.Flags.fixTfAdjacentVisibility()) {
+                final TaskFragment tf = child.asTaskFragment();
+                if (tf != null) {
+                    if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
+                        adjacentVisibilityHelper =
+                                tf.getAdjacentTaskFragments().getVisibilityHelper(
+                                        TaskFragment::hasFillingContent);
+                    }
+                    if (adjacentVisibilityHelper != null) {
+                        adjacentVisibilityHelper.process(tf);
+                        if (adjacentVisibilityHelper.isAllAdjacentTaskFragmentProcessed()) {
+                            if (adjacentVisibilityHelper.occludesParent()) {
+                                return true;
+                            } else {
+                                adjacentVisibilityHelper = null;
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (child.asTaskFragment() != null
+                        && child.asTaskFragment().hasAdjacentTaskFragment()) {
+                    // There's at least one child adjacent task fragment. Consider the parent
+                    // filling as long as all of the adjacent task fragments have filling content.
+                    // Whether or not they fill the parent in union is not important.
+                    final boolean allFillingContent = child.hasFillingContent()
+                            && !child.asTaskFragment().forOtherAdjacentTaskFragments(
+                                    tf -> !tf.hasFillingContent());
+                    if (allFillingContent) {
+                        return true;
+                    }
                 }
             }
         }
