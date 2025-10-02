@@ -2,92 +2,80 @@
 
 # This is the "summary-spec" file we provide to "trace_processor_shell".
 
-# Most critically, we collect missed_frames.  Non-zero means we failed.
-# Currently, we're focused on frame drops, so we don't count Buffer Stuffing
-# issues.
+# Most critically, we collect instances of jank which we consider "failing"
+# for this test.  Non-zero means we failed.  We're mostly focused on frame
+# drops currently, so missing deadlines are seen as failures.  However, things
+# like Buffer Stuffing are not failing.
 
-# For basic diagnostics, we also grab the total_frames.
+# For basic diagnostics, we also grab the frame count.
 
-metric_spec: {
-  id: "total_frames_bouncyball"
-  value: "total_frames"
+metric_template_spec {
+  id_prefix: "bouncyball"
+  value_columns: "frame_count"
+  value_columns: "failing_jank_instance_count"
   query: {
-    inner_query_id: "frame_timeline_summary_bouncyball"
+    sql: {
+      sql: "
+        INCLUDE PERFETTO MODULE android.frames.timeline;
+        WITH frames AS (
+          SELECT
+            process.upid,
+            process.name AS process_name,
+            jank_type GLOB '*App Deadline Missed*'
+              OR jank_type GLOB '*SurfaceFlinger CPU Deadline Missed*'
+              OR jank_type GLOB '*SurfaceFlinger GPU Deadline Missed*'
+              OR jank_type GLOB '*Dropped Frame*' AS failing_jank,
+            -- `actual_frame_timeline_slice` can have multiple rows per frame (one per layer) so
+            -- make sure to get the first to prevent duplicate rows per frame.
+            MIN(timeline.ts) AS frame_ts,
+            timeline.dur AS frame_slice_dur
+          FROM actual_frame_timeline_slice AS timeline
+          JOIN process USING (upid)
+          GROUP BY timeline.upid, timeline.name
+        )
+        SELECT
+          f.process_name,
+          f.failing_jank
+        FROM frames AS f
+        WHERE
+          f.process_name = 'com.android.test.bouncyball' AND
+          EXISTS (
+            SELECT 1
+            FROM process_counter_track pct
+            JOIN counter c ON pct.id = c.track_id
+            WHERE
+              pct.upid = f.upid AND
+              pct.name = 'relevant_frame' AND
+              /* 2 is the value of TRACE_STATE_IN_TEST_TIME in the APK.  We limit
+               * our data to frames that happen while the app is in this state. */
+              /*
+               # LINT.IfChange
+               */
+              c.value = 2 AND
+              /*
+               # LINT.ThenChange(/tests/BouncyBall/app/src/main/java/com/android/test/bouncyball/BouncyBallActivity.java)
+               */
+              c.ts BETWEEN f.frame_ts AND f.frame_ts + f.frame_slice_dur
+          )
+      "
+      column_names: "process_name"
+      column_names: "failing_jank"
+    }
+    filters: {
+      column_name: "process_name"
+      op: EQUAL
+      string_rhs: "com.android.test.bouncyball"
+    }
     group_by: {
       aggregates: {
         op: COUNT
-        result_column_name: "total_frames"
+        result_column_name: "frame_count"
       }
-    }
-  }
-}
-metric_spec: {
-  id: "missed_frames_bouncyball"
-  value: "missed_frame_count"
-  query: {
-    inner_query_id: "frame_timeline_summary_bouncyball"
-    group_by: {
       aggregates: {
-        column_name: "missed_frame"
+        column_name: "failing_jank"
         op: SUM
-        result_column_name: "missed_frame_count"
+        result_column_name: "failing_jank_instance_count"
       }
     }
-  }
-}
-
-query: {
-  id: "frame_timeline_summary_bouncyball"
-  sql: {
-    sql: "
-      INCLUDE PERFETTO MODULE android.frames.timeline;
-      WITH frames AS (
-        SELECT
-          process.upid,
-          process.name AS process_name,
-          jank_type GLOB '*App Deadline Missed*'
-            OR jank_type GLOB '*SurfaceFlinger CPU Deadline Missed*'
-            OR jank_type GLOB '*SurfaceFlinger GPU Deadline Missed*'
-            OR jank_type GLOB '*Dropped Frame*' AS missed_frame,
-          -- `actual_frame_timeline_slice` can have multiple rows per frame (one per layer) so make
-          -- sure to get the first to prevent duplicate rows per frame.
-          MIN(timeline.ts) AS frame_ts,
-          timeline.dur AS frame_slice_dur
-        FROM actual_frame_timeline_slice AS timeline
-        JOIN process USING (upid)
-        GROUP BY timeline.upid, timeline.name
-      )
-      SELECT
-        f.process_name,
-        f.missed_frame
-      FROM frames AS f
-      WHERE
-        f.process_name = 'com.android.test.bouncyball' AND
-        EXISTS (
-          SELECT 1
-          FROM process_counter_track pct
-          JOIN counter c ON pct.id = c.track_id
-          WHERE
-            pct.upid = f.upid AND
-            pct.name = 'relevant_frame' AND
-            /* 2 is the value of TRACE_STATE_IN_TEST_TIME in the APK.  We limit
-             * our data to frames that happen while the app is in this state. */
-            /*
-             # LINT.IfChange
-             */
-            c.value = 2 AND
-            /*
-             # LINT.ThenChange(/tests/BouncyBall/app/src/main/java/com/android/test/bouncyball/BouncyBallActivity.java)
-             */
-            c.ts BETWEEN f.frame_ts AND f.frame_ts + f.frame_slice_dur
-        )
-    "
-    column_names: "process_name"
-    column_names: "missed_frame"
-  }
-  filters: {
-    column_name: "process_name"
-    op: EQUAL
-    string_rhs: "com.android.test.bouncyball"
   }
 }
