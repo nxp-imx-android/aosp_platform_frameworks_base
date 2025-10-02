@@ -29,8 +29,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteRawStatement;
+import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.util.ArraySet;
 import android.util.IntArray;
 import android.util.Slog;
 
@@ -260,6 +262,54 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
             Slog.e(LOG_TAG, "Error reading records count " + mDatabaseFile.getName(), exception);
         }
         return count;
+    }
+
+    @NonNull
+    ArraySet<String> getRecentlyUsedPackageNames(@NonNull String[] opNames,
+            @AppOpsManager.HistoricalOpsRequestFilter int filter, long beginTimeMillis,
+            long endTimeMillis, @AppOpsManager.OpFlags int opFlags) {
+        ArraySet<String> results = new ArraySet<>();
+        IntArray opCodes = AppOpHistoryQueryHelper.getAppOpCodes(filter, opNames);
+        if (opCodes == null || opCodes.size() == 0) {
+            return results;
+        }
+
+        List<AppOpHistoryQueryHelper.SQLCondition> conditions =
+                AppOpHistoryQueryHelper.prepareConditions(
+                        beginTimeMillis, endTimeMillis, filter, Process.INVALID_UID,
+                        null /*packageNameFilter*/, null /*attributionTagFilter*/,
+                        opCodes, opFlags);
+        String sql = AppOpHistoryQueryHelper.buildSqlQuery(
+                AppOpHistoryTable.SELECT_DISTINCT_PACKAGE_NAMES, conditions, null, false, -1);
+        Slog.d(LOG_TAG, "getRecentlyUsedPackageNames sql: " + sql);
+        long startTime = SystemClock.uptimeMillis();
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
+                "AppOpHistoryDbHelper_" + mAggregationTimeWindow + "_Read2");
+        try {
+            SQLiteDatabase db = getReadableDatabase();
+            db.beginTransactionReadOnly();
+            try (SQLiteRawStatement statement = db.createRawStatement(sql)) {
+                AppOpHistoryQueryHelper.bindValues(statement, conditions);
+                while (statement.step()) {
+                    results.add(statement.getColumnText(0));
+                }
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        } catch (Exception exception) {
+            Slog.e(LOG_TAG, "Error reading recently used packages from "
+                    + mDatabaseFile.getName(), exception);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+            long readTimeMillis = SystemClock.uptimeMillis() - startTime;
+            FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED,
+                    readTimeMillis, /* write_time= */ -1,
+                    mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow),
+                    FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_UNKNOWN);
+        }
+        Slog.d(LOG_TAG, "Read " + results.size() + " packages from " + mDatabaseFile.getName());
+        return results;
     }
 
     @VisibleForTesting

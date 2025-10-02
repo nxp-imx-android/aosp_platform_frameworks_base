@@ -1197,11 +1197,15 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
         }, UserHandle.ALL, packageSuspendFilter, null, null);
 
-        mHandler.postDelayed(new Runnable() {
+        getIoHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 List<String> packageNames = getPackageListAndResample();
-                initializeRarelyUsedPackagesList(new ArraySet<>(packageNames));
+                if (Flags.enableAllSqliteAppopsAccesses()) {
+                    initializeRarelyUsedPackagesListSQLite(new ArraySet<>(packageNames));
+                } else {
+                    initializeRarelyUsedPackagesList(new ArraySet<>(packageNames));
+                }
             }
         }, RARELY_USED_PACKAGES_INITIALIZATION_DELAY_MILLIS);
 
@@ -7285,6 +7289,33 @@ public class AppOpsService extends IAppOpsService.Stub {
         mSampledAppOpCode = pickOp ? ThreadLocalRandom.current().nextInt(_NUM_OP) : OP_NONE;
         mAcceptableLeftDistance = _NUM_OP - 1;
         mSampledPackage = packageName;
+    }
+
+    /**
+     * Creates list of rarely used packages - packages which were not used over last week or
+     * which declared but did not use permissions over last week.
+     * This is SQLite implementation to fetch only package names from database.
+     */
+    private void initializeRarelyUsedPackagesListSQLite(@NonNull ArraySet<String> candidates) {
+        List<String> runtimeAppOpsList = getRuntimeAppOpsList();
+        try {
+            ArraySet<String> recentlyUsedPkgs = mHistoricalRegistry.getRecentlyUsedPackageNames(
+                    runtimeAppOpsList.toArray(new String[0]), AppOpsManager.HISTORY_FLAGS_ALL,
+                    AppOpsManager.FILTER_BY_OP_NAMES,
+                    Math.max(Instant.now().minus(7, ChronoUnit.DAYS).toEpochMilli(), 0),
+                    Long.MAX_VALUE, OP_FLAG_SELF | OP_FLAG_TRUSTED_PROXIED);
+            candidates.removeAll(recentlyUsedPkgs);
+        } catch (Exception ex) {
+            Slog.e(TAG, "Error getting recently used packages", ex);
+        }
+        synchronized (this) {
+            int numPkgs = mRarelyUsedPackages.size();
+            for (int i = 0; i < numPkgs; i++) {
+                candidates.add(mRarelyUsedPackages.valueAt(i));
+            }
+            mRarelyUsedPackages = candidates;
+            mRarelyUsedPackagesInitialized = true;
+        }
     }
 
     /**

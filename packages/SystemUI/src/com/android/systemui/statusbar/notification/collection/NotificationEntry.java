@@ -53,6 +53,7 @@ import android.service.notification.SnoozeCriterion;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Slog;
 import android.view.ContentInfo;
 
 import androidx.annotation.NonNull;
@@ -437,6 +438,10 @@ public final class NotificationEntry extends ListEntry {
     }
 
     public boolean isBundled() {
+        if (getRanking() == null || getRanking().getChannel() == null) {
+            Slog.wtfQuiet(TAG, "getRanking() or getRanking().getChannel() is null " + getKey());
+            return false;
+        }
         return SYSTEM_RESERVED_IDS.contains(getRanking().getChannel().getId());
     }
 
