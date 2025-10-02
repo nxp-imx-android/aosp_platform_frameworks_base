@@ -10,7 +10,6 @@ hoststubgen-helper-runtime.jar
 # platform_compat_config for that module too.
 # See ravenwood-services.core-platform-compat-config.
 services.core.ravenwood-jarjar.jar
-services.fakes.ravenwood-jarjar.jar
 
 # ICU
 core-icu4j-for-host.ravenwood.jar

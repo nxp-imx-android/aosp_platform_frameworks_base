@@ -112,6 +112,7 @@ genrule_defaults {
     srcs: [
         ":services.core-for-host",
         ":ravenwood-services-policies",
+        ":ravenwood-services-rename-policies",
     ],
     out: ["hoststubgen_services.core.log"],
 }
@@ -122,6 +123,17 @@ java_genrule {
     tools: ["hoststubgen"],
     cmd: "$(location hoststubgen) " +
         services_core_options +
+        "--out-jar $(location ravenwood.jar) ",
+    out: ["ravenwood.jar"],
+}
+
+java_genrule {
+    name: "services.core.ravenwood-jarjar-base",
+    defaults: ["services.core.ravenwood-base_defaults"],
+    tools: ["hoststubgen"],
+    cmd: "$(location hoststubgen) " +
+        services_core_options +
+        "--policy-override-file $(location :ravenwood-services-rename-policies) " +
         "--out-jar $(location ravenwood.jar) ",
     out: ["ravenwood.jar"],
 }
@@ -149,17 +161,10 @@ java_import {
     jars: [":services.core.ravenwood-base{ravenwood.jar}"],
 }
 
-// TODO(b/313930116) This jarjar is a bit slow. We should use hoststubgen for renaming,
-// but services.core.ravenwood has complex dependencies, so it'll take more than
-// just using hoststubgen "rename"s.
-java_library {
+java_import {
     name: "services.core.ravenwood-jarjar",
     defaults: ["ravenwood-internal-only-visibility-java"],
-    installable: false,
-    static_libs: [
-        "services.core.ravenwood",
-    ],
-    jarjar_rules: ":ravenwood-services-jarjar-rules",
+    jars: [":services.core.ravenwood-jarjar-base{ravenwood.jar}"],
 }
 
 ///////////////
