@@ -197,6 +197,7 @@ class DesktopModeKeyGestureHandler(
                         }
                     } ?: return
                 mainExecutor.execute {
+                    // TODO(b/448484440): Call DesktopTasksController#closeTask instead.
                     desktopModeWindowDecorViewModel.get().closeTask(focusedTask)
                 }
             }

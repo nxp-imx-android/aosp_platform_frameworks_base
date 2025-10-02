@@ -985,7 +985,8 @@ public abstract class WMShellModule {
             Optional<DesktopFirstListenerManager> desktopFirstListenerManager,
             TaskSnapshotManager taskSnapshotManager,
             TransactionPool transactionPool,
-            PipTransitionState pipTransitionState) {
+            PipTransitionState pipTransitionState,
+            LockTaskChangeListener lockTaskChangeListener) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1039,7 +1040,8 @@ public abstract class WMShellModule {
                 taskSnapshotManager,
                 transactionPool,
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipTransitionState)
-                        : Optional.empty());
+                        : Optional.empty(),
+                lockTaskChangeListener);
     }
 
     @WMSingleton

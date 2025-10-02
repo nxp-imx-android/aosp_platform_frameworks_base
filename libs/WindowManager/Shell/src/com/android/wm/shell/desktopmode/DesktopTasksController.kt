@@ -108,6 +108,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ExternalInterfaceBinder
 import com.android.wm.shell.common.HomeIntentProvider
+import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.MultiInstanceHelper.Companion.getComponent
@@ -271,6 +272,7 @@ class DesktopTasksController(
     private val taskSnapshotManager: TaskSnapshotManager,
     private val transactionPool: TransactionPool,
     private val pipTransitionState: Optional<PipTransitionState>,
+    private val lockTaskChangeListener: LockTaskChangeListener,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -1957,6 +1959,108 @@ class DesktopTasksController(
                 )
             }
         }
+    }
+
+    /** The result of closing a task. */
+    enum class CloseTaskResult {
+        // Did not close task because the device is in lock task mode.
+        NOT_CLOSED_TASK_LOCKED,
+        // Did not close task because the task cannot enter desktop mode, implying the task cannot
+        // be closed via the desktop mode decoration.
+        NOT_CLOSED_DISABLED_DESKTOP_ENTRY,
+        // Did not close task because the split screen divider is currently flinging, implying the
+        // split screen is in the intermediate state.
+        NOT_CLOSED_DIVIDER_FLINGING,
+        // Did not close task because the task is in split screen but the task at the other side is
+        // not found, implying the split screen is in the intermediate state.
+        NOT_CLOSED_NO_OTHER_TASK,
+        // Did not close task, because the task has unexpected properties, thus we don't know what
+        // the task is.
+        NOT_CLOSED_UNKNOWN_TASK,
+        // Closed task in split screen
+        CLOSED_SPLIT_SCREEN,
+        // Closed task in fullscreen
+        CLOSED_FULLSCREEN,
+        // Closed task in desktop mode
+        CLOSED_DESKTOP,
+    }
+
+    /**
+     * Closes a task.
+     *
+     * If the method returns CloseTaskResult values having the 'CLOSED_' prefix, the task is closed.
+     * Otherwise, the method should be no-op.
+     */
+    fun closeTask(task: RunningTaskInfo): CloseTaskResult {
+        val taskId = task.taskId
+        if (
+            DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue() &&
+                lockTaskChangeListener.isTaskLocked
+        ) {
+            logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOSED_TASK_LOCKED)
+            return CloseTaskResult.NOT_CLOSED_TASK_LOCKED
+        }
+        if (
+            DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue() &&
+                desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)
+        ) {
+            logW(
+                "closeTask(taskId=%d): %s",
+                taskId,
+                CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY,
+            )
+            return CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY
+        }
+        if (splitScreenController.isTaskInSplitScreen(taskId)) {
+            if (
+                DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
+                    .isTrue() && splitScreenController.isDividerFlinging()
+            ) {
+                logW(
+                    "closeTask(taskId=%d): %s",
+                    taskId,
+                    CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING,
+                )
+                return CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING
+            }
+            val otherTaskPosition =
+                when (splitScreenController.getSplitPosition(taskId)) {
+                    SPLIT_POSITION_TOP_OR_LEFT -> SPLIT_POSITION_BOTTOM_OR_RIGHT
+                    SPLIT_POSITION_BOTTOM_OR_RIGHT -> SPLIT_POSITION_TOP_OR_LEFT
+                    else -> error("Unexpected task position")
+                }
+            val otherTask = splitScreenController.getTaskInfo(otherTaskPosition)
+            if (otherTask == null) {
+                logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK)
+                return CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK
+            }
+            splitScreenController.moveTaskToFullscreen(otherTask.taskId, EXIT_REASON_DESKTOP_MODE)
+            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSED_SPLIT_SCREEN)
+            return CloseTaskResult.CLOSED_SPLIT_SCREEN
+        }
+        if (isDesktopTask(task)) {
+            val wct = WindowContainerTransaction()
+            val runOnTransitionStart = onDesktopWindowClose(wct, task.displayId, task)
+            wct.removeTask(task.token)
+            val transition = freeformTaskTransitionStarter.startRemoveTransition(wct)
+            if (transition != null && runOnTransitionStart != null) {
+                runOnTransitionStart.invoke(transition)
+            }
+            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSED_DESKTOP)
+            return CloseTaskResult.CLOSED_DESKTOP
+        }
+        if (
+            DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue() &&
+                task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN
+        ) {
+            val wct = WindowContainerTransaction()
+            wct.removeTask(task.token)
+            transitions.startTransition(TRANSIT_CLOSE, wct, null)
+            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSED_FULLSCREEN)
+            return CloseTaskResult.CLOSED_FULLSCREEN
+        }
+        logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOSED_UNKNOWN_TASK)
+        return CloseTaskResult.NOT_CLOSED_UNKNOWN_TASK
     }
 
     /** Checks whether the given [taskInfo] is allowed to enter PiP in AppOps. */
@@ -7003,6 +7107,10 @@ class DesktopTasksController(
 
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logI(msg: String, vararg arguments: Any?) {
+        ProtoLog.i(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     private fun logW(msg: String, vararg arguments: Any?) {

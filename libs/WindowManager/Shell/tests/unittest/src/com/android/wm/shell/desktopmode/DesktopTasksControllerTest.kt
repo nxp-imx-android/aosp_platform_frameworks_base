@@ -101,6 +101,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.DesktopModeCompatPolicy
 import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx
 import com.android.window.flags.Flags
+import com.android.window.flags.Flags.FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS
@@ -120,6 +121,7 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.HomeIntentProvider
+import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
@@ -177,6 +179,8 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED
+import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
+import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
@@ -315,6 +319,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var transactionPool: TransactionPool
     @Mock private lateinit var pipTransitionState: PipTransitionState
     @Mock private lateinit var surfaceControlTransaction: SurfaceControl.Transaction
+    @Mock private lateinit var lockTaskChangeListener: LockTaskChangeListener
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -560,6 +565,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             taskSnapshotManager,
             transactionPool,
             Optional.of(pipTransitionState),
+            lockTaskChangeListener,
         )
 
     @After
@@ -5526,6 +5532,103 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val minimizingTaskId =
             assertNotNull(desktopTasksLimiter.getMinimizingTask(transition)?.taskId)
         assertThat(minimizingTaskId).isEqualTo(task.taskId)
+    }
+
+    @Test
+    fun closeTask_desktop_closesTask() {
+        val task = setUpFreeformTask()
+        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
+
+        val result = controller.closeTask(task)
+
+        assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP)
+        verify(freeformTaskTransitionStarter).startRemoveTransition(any())
+    }
+
+    @Test
+    fun closeTask_disabledDesktopEntry_doesNothing() {
+        val task = setUpFullscreenTask()
+        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
+        doReturn(true).whenever(desktopModeCompatPolicy).shouldDisableDesktopEntryPoints(task)
+
+        val result = controller.closeTask(task)
+
+        assertThat(result)
+            .isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY)
+        verifyWCTNotExecuted()
+    }
+
+    @Test
+    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
+    fun closeTask_lockTask_doesNothing() {
+        val task = setUpFullscreenTask()
+        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
+        whenever(lockTaskChangeListener.isTaskLocked).thenReturn(true)
+
+        val result = controller.closeTask(task)
+
+        assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOSED_TASK_LOCKED)
+        verifyWCTNotExecuted()
+    }
+
+    @Test
+    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
+    fun closeTask_fullscreen_closesTask() {
+        val task = setUpFullscreenTask()
+        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
+
+        val result = controller.closeTask(task)
+
+        assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.CLOSED_FULLSCREEN)
+
+        val wct = getLatestWct(type = TRANSIT_CLOSE)
+        assertThat(wct.hierarchyOps).hasSize(1)
+        val hierarchyOp = wct.hierarchyOps[0]
+        assertThat(hierarchyOp.type).isEqualTo(HIERARCHY_OP_TYPE_REMOVE_TASK)
+        assertThat(hierarchyOp.container).isEqualTo(task.token.asBinder())
+    }
+
+    @Test
+    fun closeTask_splitScreen_movesOtherToFullscreen() {
+        val task = createSplitScreenTask()
+        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
+        val otherTask = createSplitScreenTask()
+
+        whenever(splitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
+        whenever(splitScreenController.getSplitPosition(task.taskId))
+            .thenReturn(SPLIT_POSITION_TOP_OR_LEFT)
+        whenever(splitScreenController.getTaskInfo(SPLIT_POSITION_BOTTOM_OR_RIGHT))
+            .thenReturn(otherTask)
+
+        val result = controller.closeTask(task)
+
+        assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.CLOSED_SPLIT_SCREEN)
+        verify(splitScreenController)
+            .moveTaskToFullscreen(
+                eq(otherTask.taskId),
+                eq(SplitScreenController.EXIT_REASON_DESKTOP_MODE),
+            )
+    }
+
+    @Test
+    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
+    fun closeTask_splitScreen_dividerFlinging_doNothing() {
+        val task = createSplitScreenTask()
+        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
+        val otherTask = createSplitScreenTask()
+
+        whenever(splitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
+        whenever(splitScreenController.getSplitPosition(task.taskId))
+            .thenReturn(SPLIT_POSITION_TOP_OR_LEFT)
+        whenever(splitScreenController.getTaskInfo(SPLIT_POSITION_BOTTOM_OR_RIGHT))
+            .thenReturn(otherTask)
+        whenever(splitScreenController.isDividerFlinging).thenReturn(true)
+
+        val result = controller.closeTask(task)
+
+        assertThat(result)
+            .isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING)
+        verify(splitScreenController, never()).moveTaskToFullscreen(any(), any())
     }
 
     @Test

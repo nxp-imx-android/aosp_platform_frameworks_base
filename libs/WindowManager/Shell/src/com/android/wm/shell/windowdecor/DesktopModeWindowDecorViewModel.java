@@ -72,7 +72,6 @@ import android.view.InsetsState;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
-import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
@@ -137,7 +136,6 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
-import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.KeyguardChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -161,7 +159,6 @@ import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 import kotlin.Pair;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
-import kotlin.jvm.functions.Function1;
 
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
@@ -1241,87 +1238,38 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     /**
      * Closes a task.
-     * This method closes a task as if the close button on the window decor is clicked.
-     * It does nothing if the task does not have a window decor, thus cannot be closed through the
-     * UI.
+     * This method requests DesktopTasksController to close a task and announce a new focus window
+     * if it closes a desktop task.
      * Must call the method on the shell main executor.
      * @param task Task to be closed.
+     *
+     * TODO(b/448484440): Make the method private.
      */
     public void closeTask(RunningTaskInfo task) {
-        final int taskId = task.taskId;
-        if (mTaskOperations == null) {
-            ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                    "%s: closeTask(taskId=%d): mTaskOperations is null, ignoring", TAG, taskId);
-            return;
-        }
-        if (DesktopExperienceFlags
-                .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
-                && mLockTaskChangeListener.isTaskLocked()) {
-            ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                    "%s: closeTask(taskId=%d): isTaskLocked() is true, ignoring", TAG,
-                    taskId);
-            return;
-        }
-        if (DesktopExperienceFlags
+        if (!DesktopExperienceFlags
                 .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()) {
-            if (mDesktopModeCompatPolicy.shouldDisableDesktopEntryPoints(task)) {
-                ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                        "%s: closeTask(taskId=%d): shouldDisableDesktopEntryPoints() is true, "
-                                + "ignoring",
-                        TAG,
-                        taskId);
-                return;
-            }
-        } else {
-            final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskId);
+            final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(task.taskId);
             if (decoration == null) {
                 ProtoLog.e(WM_SHELL_WINDOW_DECORATION,
-                        "%s: closeTask(taskId=%d): decoration is null, ignoring", TAG, taskId);
+                        "%s: closeTask(taskId=%d): decoration is null, ignoring", TAG, task.taskId);
                 return;
             }
         }
-        if (isTaskInSplitScreen(taskId)) {
-            if (DesktopExperienceFlags
-                    .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
-                    && mSplitScreenController.isDividerFlinging()) {
-                ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
-                        "%s: closeTask(taskId=%d): isDividerFlinging is true. ignoring",
-                        TAG, taskId);
-                return;
-            }
-            ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
-                    "%s: closeTask(taskId=%d): closing split screen", TAG, taskId);
-            mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(taskId).taskId,
-                    SplitScreenController.EXIT_REASON_DESKTOP_MODE);
+        final DesktopTasksController.CloseTaskResult result =
+                mDesktopTasksController.closeTask(task);
+        if (result != DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP) {
             return;
         }
         if (DesktopExperienceFlags
-                .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()
-                && task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
-            ProtoLog.i(WM_SHELL_WINDOW_DECORATION,
-                    "%s: closeTask(taskId=%d): closing fullscreen task", TAG, taskId);
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.removeTask(task.token);
-            mTransitions.startTransition(WindowManager.TRANSIT_CLOSE, wct, null);
-            return;
-        }
-        if (DesktopExperienceFlags
-                .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
+                .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()
+        ) {
             final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(task);
             final WindowDecorationWrapper nextFocusedWindow =
                     mWindowDecorationFinder.apply(nextFocusedTaskId);
-            if (nextFocusedWindow != null) {
-                nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+            if (nextFocusedWindow == null) {
+                return;
             }
-        }
-        ProtoLog.w(WM_SHELL_WINDOW_DECORATION,
-                "%s: closeTask(taskId=%d): closing desktop task", TAG, taskId);
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        final Function1<IBinder, Unit> runOnTransitionStart =
-                mDesktopTasksController.onDesktopWindowClose(wct, task.displayId, task);
-        final IBinder transition = mTaskOperations.closeTask(task.token, wct);
-        if (transition != null && runOnTransitionStart != null) {
-            runOnTransitionStart.invoke(transition);
+            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
         }
     }
 
@@ -1844,14 +1792,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             incrementEventReceiverTasks(taskInfo.displayId);
         }
-    }
-
-    @Nullable
-    private RunningTaskInfo getOtherSplitTask(int taskId) {
-        @SplitPosition int remainingTaskPosition = mSplitScreenController
-                .getSplitPosition(taskId) == SPLIT_POSITION_BOTTOM_OR_RIGHT
-                ? SPLIT_POSITION_TOP_OR_LEFT : SPLIT_POSITION_BOTTOM_OR_RIGHT;
-        return mSplitScreenController.getTaskInfo(remainingTaskPosition);
     }
 
     private boolean isTaskInSplitScreen(int taskId) {
