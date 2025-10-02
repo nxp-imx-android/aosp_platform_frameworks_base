@@ -1028,6 +1028,7 @@ public final class AppFunctionManager {
      * @hide
      */
     @SystemApi
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     public interface OnAppFunctionAccessChangedListener {
         /**
          * Called when the app function access for an agent UID changes.

@@ -1835,7 +1835,7 @@ package android.app.appfunctions {
     field public static final String COLUMN_THREAD_ID = "thread_id";
   }
 
-  public static interface AppFunctionManager.OnAppFunctionAccessChangedListener {
+  @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static interface AppFunctionManager.OnAppFunctionAccessChangedListener {
     method public void onAppFunctionAccessChanged(int);
   }
 
