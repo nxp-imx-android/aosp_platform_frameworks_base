@@ -17,10 +17,12 @@
 package com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor
 
 import android.content.res.Resources
+import android.media.projection.StopReason
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.mediaprojection.data.repository.MediaProjectionRepository
 import com.android.systemui.res.R
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @SysUISingleton
 class ShareScreenPrivacyIndicatorInteractor
@@ -37,7 +40,8 @@ class ShareScreenPrivacyIndicatorInteractor
 constructor(
     @Main private val resources: Resources,
     configurationRepository: ConfigurationRepository,
-    @Background scope: CoroutineScope,
+    @Background private val scope: CoroutineScope,
+    private val mediaProjectionRepository: MediaProjectionRepository,
 ) {
     private val isSharingActive = MutableStateFlow(false)
 
@@ -60,5 +64,10 @@ constructor(
 
     fun hideChip() {
         isSharingActive.value = false
+    }
+
+    fun stopShare() {
+        hideChip()
+        scope.launch { mediaProjectionRepository.stopProjecting(StopReason.STOP_PRIVACY_CHIP) }
     }
 }

@@ -30,11 +30,16 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
 
-/** ViewModel for the privacy indicator of the screen sharing. */
+/**
+ * ViewModel for the privacy indicator of the screen sharing for large screen only. For others,
+ * refer to [ShareToAppChipViewMode].
+ */
 class ShareScreenPrivacyIndicatorViewModel
 @AssistedInject
-constructor(shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor) :
-    StatusBarPopupChipViewModel, HydratedActivatable() {
+constructor(
+    shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
+    private val popupViewModelFactory: ShareScreenPrivacyIndicatorPopupViewModel.Factory,
+) : StatusBarPopupChipViewModel, HydratedActivatable() {
 
     override val chip: PopupChipModel by
         shareScreenPrivacyIndicatorInteractor.isChipVisible
@@ -52,6 +57,7 @@ constructor(shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorIn
                 chipText = null,
                 // TODO(b/444293568) Finalize and update the colors of this chip.
                 colors = ColorsModel.AvControlsTheme,
+                popupViewModelFactory = popupViewModelFactory,
             )
         } else {
             PopupChipModel.Hidden(PopupChipId.ShareScreenPrivacyIndicator)

@@ -21,7 +21,18 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.shareScreenPrivacyIndicatorInteractor
 
 val Kosmos.shareScreenPrivacyIndicatorViewModel by Fixture {
-    ShareScreenPrivacyIndicatorViewModel(shareScreenPrivacyIndicatorInteractor)
+    ShareScreenPrivacyIndicatorViewModel(
+        shareScreenPrivacyIndicatorInteractor,
+        fakeShareScreenPrivacyIndicatorPopupViewModelFactory,
+    )
+}
+
+val Kosmos.fakeShareScreenPrivacyIndicatorPopupViewModelFactory by Fixture {
+    object : ShareScreenPrivacyIndicatorPopupViewModel.Factory {
+        override fun create(): ShareScreenPrivacyIndicatorPopupViewModel {
+            return ShareScreenPrivacyIndicatorPopupViewModel(shareScreenPrivacyIndicatorInteractor)
+        }
+    }
 }
 
 val Kosmos.shareScreenPrivacyIndicatorViewModelFactory:

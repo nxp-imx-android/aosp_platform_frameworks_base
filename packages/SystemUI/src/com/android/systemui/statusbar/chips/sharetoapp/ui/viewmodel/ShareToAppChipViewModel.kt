@@ -155,25 +155,36 @@ constructor(
     private val chipTransitionHelper = ChipTransitionHelper(scope)
 
     override val chip: StateFlow<OngoingActivityChipModel> =
-        combine(chipTransitionHelper.createChipFlow(internalChip), stopDialogToShow) {
-                currentChip,
-                stopDialog ->
-                if (
-                    com.android.media.projection.flags.Flags.showStopDialogPostCallEnd() &&
-                        stopDialog is MediaProjectionStopDialogModel.Shown
-                ) {
-                    logger.log(
-                        TAG,
-                        LogLevel.INFO,
-                        {},
-                        { "Hiding the chip as stop dialog is being shown" },
-                    )
-                    OngoingActivityChipModel.Inactive()
-                } else {
-                    currentChip
+        if (context.resources.getBoolean(R.bool.config_largeScreenPrivacyIndicator)) {
+            // The share-to-app chip is not used on large screens, as the privacy indicator is
+            // handled by the large screen-specific privacy chip defined at
+            // [ShareScreenPrivacyIndicatorViewModel].
+            MutableStateFlow(OngoingActivityChipModel.Inactive()).asStateFlow()
+        } else {
+            combine(chipTransitionHelper.createChipFlow(internalChip), stopDialogToShow) {
+                    currentChip,
+                    stopDialog ->
+                    if (
+                        com.android.media.projection.flags.Flags.showStopDialogPostCallEnd() &&
+                            stopDialog is MediaProjectionStopDialogModel.Shown
+                    ) {
+                        logger.log(
+                            TAG,
+                            LogLevel.INFO,
+                            {},
+                            { "Hiding the chip as stop dialog is being shown" },
+                        )
+                        OngoingActivityChipModel.Inactive()
+                    } else {
+                        currentChip
+                    }
                 }
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), OngoingActivityChipModel.Inactive())
+                .stateIn(
+                    scope,
+                    SharingStarted.WhileSubscribed(),
+                    OngoingActivityChipModel.Inactive(),
+                )
+        }
 
     /**
      * Notifies this class that the user just stopped a screen recording from the dialog that's

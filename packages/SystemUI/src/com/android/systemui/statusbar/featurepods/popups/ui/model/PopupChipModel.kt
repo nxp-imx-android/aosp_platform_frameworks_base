@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.featurepods.popups.ui.model
 
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupViewModel
 
 /**
  * Ids used to track different types of popup chips. Will be used to ensure only one chip is
@@ -67,6 +68,7 @@ sealed class PopupChipModel {
         val hidePopup: () -> Unit = {},
         val hoverBehavior: HoverBehavior = HoverBehavior.None,
         val contentDescription: String? = null,
+        val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,
     ) : PopupChipModel() {
         override val logName = "Shown(id=$chipId, toggled=$isPopupShown)"
     }

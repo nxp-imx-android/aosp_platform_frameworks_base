@@ -22,6 +22,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.currentValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -66,5 +67,17 @@ class ShareScreenPrivacyIndicatorInteractorTest : SysuiTestCase() {
 
             underTest.hideChip()
             assertThat(currentValue(underTest.isChipVisible)).isFalse()
+        }
+
+    @Test
+    fun stopShare_hidesChipAndStopsProjection() =
+        kosmos.runTest {
+            underTest.showChip()
+            assertThat(currentValue(underTest.isChipVisible)).isTrue()
+
+            underTest.stopShare()
+
+            assertThat(currentValue(underTest.isChipVisible)).isFalse()
+            assertThat(kosmos.fakeMediaProjectionRepository.stopProjectingInvoked).isTrue()
         }
 }
