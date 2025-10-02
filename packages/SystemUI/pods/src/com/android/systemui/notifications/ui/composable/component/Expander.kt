@@ -23,8 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +35,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.compose.theme.LocalAndroidColorScheme
+import com.android.systemui.notifications.ui.composable.component.icons.ExpandLess
+import com.android.systemui.notifications.ui.composable.component.icons.ExpandMore
 
 // TODO: b/432249649 - Once we move the compose code for bundles into a pod, we should consolidate
 //  these elements with ExpansionControl used there.
