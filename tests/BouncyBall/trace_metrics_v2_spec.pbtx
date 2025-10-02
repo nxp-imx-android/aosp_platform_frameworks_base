@@ -13,13 +13,26 @@ metric_spec: {
   value: "total_frames"
   query: {
     inner_query_id: "frame_timeline_summary_bouncyball"
+    group_by: {
+      aggregates: {
+        op: COUNT
+        result_column_name: "total_frames"
+      }
+    }
   }
 }
 metric_spec: {
   id: "missed_frames_bouncyball"
-  value: "missed_frames"
+  value: "missed_frame_count"
   query: {
     inner_query_id: "frame_timeline_summary_bouncyball"
+    group_by: {
+      aggregates: {
+        column_name: "missed_frame"
+        op: SUM
+        result_column_name: "missed_frame_count"
+      }
+    }
   }
 }
 
@@ -46,8 +59,7 @@ query: {
       )
       SELECT
         f.process_name,
-        COUNT(*) AS total_frames,
-        SUM(f.missed_frame) AS missed_frames
+        f.missed_frame
       FROM frames AS f
       WHERE
         f.process_name = 'com.android.test.bouncyball' AND
@@ -69,11 +81,9 @@ query: {
              */
             c.ts BETWEEN f.frame_ts AND f.frame_ts + f.frame_slice_dur
         )
-      GROUP BY f.process_name
     "
     column_names: "process_name"
-    column_names: "total_frames"
-    column_names: "missed_frames"
+    column_names: "missed_frame"
   }
   filters: {
     column_name: "process_name"
