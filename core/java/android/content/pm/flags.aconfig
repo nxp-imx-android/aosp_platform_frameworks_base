@@ -345,3 +345,13 @@ flag {
     is_exported: true
     bug: "439646165"
 }
+
+flag {
+    name: "allow_updated_version_better_than_apk_in_apex"
+    namespace: "package_manager_service"
+    description: "Allow successful install of APEX containing APK, even with a better APK version in /data."
+    bug: "421220425"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
