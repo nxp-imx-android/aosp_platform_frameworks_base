@@ -112,6 +112,7 @@ import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.logging.BubbleProtoLog;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker.SessionEvent;
+import com.android.wm.shell.bubbles.util.BubbleShellCommandHandler;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -247,6 +248,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
     private final BubblesFoldLockSettingsObserver mFoldLockSettingsObserver;
     private final BubbleSessionTracker mSessionTracker;
+    private final BubbleShellCommandHandler mBubbleShellCommandHandler;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -446,6 +448,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mSplitScreenController = splitScreenController;
         mFoldLockSettingsObserver = foldLockSettingsObserver;
         mSessionTracker = sessionTracker;
+        mBubbleShellCommandHandler = new BubbleShellCommandHandler(this);
         shellInit.addInitCallback(this::onInit, this);
 
         if (unfoldProgressProvider.isPresent() && Flags.enableBubbleBar()) {
@@ -621,6 +624,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mShellController.addExternalInterface(IBubbles.DESCRIPTOR,
                 this::createExternalInterface, this);
         mShellCommandHandler.addDumpCallback(this::dump, this);
+        mShellCommandHandler.addCommandCallback("bubbles", mBubbleShellCommandHandler, this);
 
         if (com.android.window.flags.Flags.enableExperimentalBubblesController()) {
             try {
@@ -2365,7 +2369,6 @@ public class BubbleController implements ConfigurationChangeListener,
      * <p>
      * Must be called from the main thread.
      */
-    @VisibleForTesting
     @MainThread
     public void removeAllBubbles(@Bubbles.DismissReason int reason) {
         mBubbleData.dismissAll(reason);
