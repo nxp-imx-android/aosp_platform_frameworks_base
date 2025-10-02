@@ -21,6 +21,8 @@ import android.util.Log
 import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.ui.transitions.GlanceableHubTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -37,6 +39,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 
 /** View model for window root view. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -48,6 +51,7 @@ constructor(
     communalSceneInteractor: CommunalSceneInteractor,
     private val blurInteractor: WindowRootViewBlurInteractor,
     private val keyguardInteractor: KeyguardInteractor,
+    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val shadeInteractor: ShadeInteractor,
 ) {
 
@@ -99,7 +103,12 @@ constructor(
     val blurRadius: Flow<Float> =
         blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
             if (blurSupported) {
-                _blurRadius
+                combine(
+                    keyguardTransitionInteractor.isFinishedIn(AOD).onStart { emit(false) },
+                    _blurRadius,
+                ) { _, _blurRadius ->
+                    _blurRadius
+                }
             } else {
                 flowOf(0f)
             }
