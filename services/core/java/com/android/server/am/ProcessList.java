@@ -5423,16 +5423,28 @@ public final class ProcessList extends ProcessListInternal
 
     /**
      * Increments the {@link UidRecord#curProcStateSeq} for all uids using global seq counter
-     * {@link ProcessList#mProcStateSeqCounter} and checks if any uid is coming
-     * from background to foreground or vice versa and if so, notifies the app if it needs to block.
+     * {@link ProcessList#mProcStateSeqCounter}.
      */
     @VisibleForTesting
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    void incrementProcStateSeqAndNotifyAppsLOSP(ActiveUids activeUids) {
+    void incrementProcStateSeqLOSP(ActiveUids activeUids) {
         for (int i = activeUids.size() - 1; i >= 0; --i) {
             final UidRecord uidRec = activeUids.valueAt(i);
             uidRec.curProcStateSeq = getNextProcStateSeq();
         }
+    }
+
+    /**
+     * Notifies applications about potential network access changes after the process state
+     * sequence has been incremented.
+     * <p>This method checks if any UID is transitioning between background and foreground states
+     * and, if so, notifies the corresponding application if network access might be blocked.
+     * This logic is triggered via a callback from the {@link OomAdjuster}.
+     *
+     * @param activeUids The set of UIDs whose proc state sequence was just incremented.
+     */
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    void notifyProcStateChangedForNetworkLOSP(ActiveUids activeUids) {
         if (mService.mConstants.mNetworkAccessTimeoutMs <= 0) {
             return;
         }

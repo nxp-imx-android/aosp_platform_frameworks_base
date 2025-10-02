@@ -563,7 +563,8 @@ public class ActivityManagerServiceTest {
         uidRec.setCurProcState(curState);
         final long beforeProcStateSeq = mAms.mProcessList.mProcStateSeqCounter;
 
-        mAms.mProcessList.incrementProcStateSeqAndNotifyAppsLOSP(mAms.mProcessList.mActiveUids);
+        mAms.mProcessList.incrementProcStateSeqLOSP(mAms.mProcessList.mActiveUids);
+        mAms.mProcessList.notifyProcStateChangedForNetworkLOSP(mAms.mProcessList.mActiveUids);
 
         final long afterProcStateSeq = beforeProcStateSeq
                 + mAms.mProcessList.mActiveUids.size();

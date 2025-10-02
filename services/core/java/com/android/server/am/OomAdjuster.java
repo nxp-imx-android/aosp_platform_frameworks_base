@@ -414,6 +414,9 @@ public abstract class OomAdjuster {
 
         /** Notifies when the process group for an application process has been updated. */
         void onProcessGroupUpdated(ProcessRecordInternal app, int group);
+
+        /** Notifies when the process state sequence number has been incremented for active UIDs. */
+        void onProcStateSeqIncremented(ActiveUidsInternal activeUids);
     }
 
     @VisibleForTesting
@@ -1302,7 +1305,8 @@ public abstract class OomAdjuster {
         // This compares previously set procstate to the current procstate in regards to whether
         // or not the app's network access will be blocked. So, this needs to be called before
         // we update the UidRecord's procstate by calling {@link UidRecord#setSetProcState}.
-        mProcessList.incrementProcStateSeqAndNotifyAppsLOSP(activeUids);
+        mProcessList.incrementProcStateSeqLOSP(activeUids);
+        mCallback.onProcStateSeqIncremented(activeUids);
 
         ArrayList<UidRecordInternal> becameIdle = mTmpBecameIdle;
         becameIdle.clear();
