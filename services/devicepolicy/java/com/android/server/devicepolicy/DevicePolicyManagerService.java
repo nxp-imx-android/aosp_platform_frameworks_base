@@ -27,6 +27,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_AUDIT_LOGGING;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_BLOCK_UNINSTALL;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CAMERA;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CERTIFICATES;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_PROTECTION;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_INPUT_METHODS;
@@ -3775,6 +3776,49 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         Slog.i(LOG_TAG, "Marking Cross Profile Widget Provider migration complete");
         mOwners.markCrossProfileWidgetProviderMigrated();
+        return true;
+    }
+
+    @GuardedBy("getLockObject()")
+    private boolean maybeMigrateCommonCriteriaModeLocked(String backupId) {
+        if (!Flags.commonCriteriaModeCoexistence()) {
+            return false;
+        }
+        if (mOwners.isCommonCriteriaModeMigrated()) {
+            return false;
+        }
+
+        Slog.i(LOG_TAG, "Migrating Common Criteria Mode to policy engine");
+
+        // Common Criteria Mode can be enabled either by DO or by COPE PO.
+        final ActiveAdmin admin = getDeviceOwnerOrProfileOwnerOfOrganizationOwnedDeviceLocked();
+        if (admin == null) {
+            Slog.i(LOG_TAG, "No appropriate admin found for migrating Common Criteria Mode");
+            return false;
+        }
+
+        // Create backup if none exists
+        mDevicePolicyEngine.createBackup(backupId);
+
+        EnforcingAdmin enforcingAdmin =
+                EnforcingAdmin.createEnterpriseEnforcingAdmin(
+                        admin.info.getComponent(),
+                        admin.getUserHandle().getIdentifier()
+                );
+
+        if (admin.mCommonCriteriaMode) {
+            CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
+                    PolicyDefinition.COMMON_CRITERIA_MODE,
+                    enforcingAdmin,
+                    new IntegerPolicyValue(DevicePolicyManager.COMMON_CRITERIA_MODE_ENABLED));
+        } else {
+            Slog.i(LOG_TAG,
+                    "Common Criteria Mode is disabled, skip setting policy in policy engine");
+        }
+
+        Slog.i(LOG_TAG, "Marking Common Criteria Mode migration complete");
+        mOwners.markCommonCriteriaModeMigrated();
+
         return true;
     }
 
@@ -21400,13 +21444,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public void setCommonCriteriaModeEnabled(ComponentName who, String callerPackageName,
             boolean enabled) {
-        CallerIdentity caller = getCallerIdentity(who);
+        if (Flags.commonCriteriaModeCoexistence()) {
+            setCommonCriteriaModeEnabledCoexistence(who, callerPackageName, enabled);
+            return;
+        }
+
+        final CallerIdentity caller = getCallerIdentity(who);
 
         Objects.requireNonNull(who, "ComponentName is null");
         Preconditions.checkCallAuthorization(
                 isDefaultDeviceOwner(caller) || isProfileOwnerOfOrganizationOwnedDevice(caller),
                 "Common Criteria mode can only be controlled by a device owner or "
                         + "a profile owner on an organization-owned device.");
+
         synchronized (getLockObject()) {
             final ActiveAdmin admin = getProfileOwnerOrDeviceOwnerLocked(caller.getUserId());
             admin.mCommonCriteriaMode = enabled;
@@ -21421,6 +21471,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public boolean isCommonCriteriaModeEnabled(ComponentName who) {
+        if (Flags.commonCriteriaModeCoexistence()) {
+            return isCommonCriteriaModeEnabledCoexistence(who);
+        }
+
         if (who != null) {
             final CallerIdentity caller = getCallerIdentity(who);
             Preconditions.checkCallAuthorization(
@@ -21441,6 +21495,61 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             ActiveAdmin admin = getDeviceOwnerOrProfileOwnerOfOrganizationOwnedDeviceLocked();
 
             return admin != null && admin.mCommonCriteriaMode;
+        }
+    }
+
+    private void setCommonCriteriaModeEnabledCoexistence(ComponentName who,
+            String callerPackageName,
+            boolean enabled) {
+        final CallerIdentity caller = getCallerIdentity(who, callerPackageName);
+
+        mPermissions.enforce(MANAGE_DEVICE_POLICY_COMMON_CRITERIA_MODE, caller,
+                UserHandle.USER_ALL);
+
+        synchronized (getLockObject()) {
+            final EnforcingAdmin admin = getEnforcingAdmin(caller);
+
+            if (enabled) {
+                final CompletableFuture<Integer> unused = mDevicePolicyEngine.setGlobalPolicy(
+                        PolicyDefinition.COMMON_CRITERIA_MODE,
+                        admin,
+                        new IntegerPolicyValue(DevicePolicyManager.COMMON_CRITERIA_MODE_ENABLED));
+            } else {
+                final CompletableFuture<Integer> unused = mDevicePolicyEngine.removeGlobalPolicy(
+                        PolicyDefinition.COMMON_CRITERIA_MODE,
+                        admin);
+            }
+        }
+
+        DevicePolicyEventLogger
+                .createEvent(DevicePolicyEnums.SET_COMMON_CRITERIA_MODE)
+                .setAdmin(caller.getPackageName())
+                .setBoolean(enabled)
+                .write();
+    }
+
+    private boolean isCommonCriteriaModeEnabledCoexistence(ComponentName who) {
+        final CallerIdentity caller = getCallerIdentity(who);
+
+        Integer value;
+        if (who != null) {
+            final EnforcingAdmin admin = getEnforcingAdmin(caller);
+
+            value = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
+                    PolicyDefinition.COMMON_CRITERIA_MODE, admin);
+        } else {
+            // Return aggregated state if caller is not admin (who == null).
+            synchronized (getLockObject()) {
+                value = mDevicePolicyEngine.getResolvedPolicy(
+                        PolicyDefinition.COMMON_CRITERIA_MODE,
+                        UserHandle.USER_ALL);
+            }
+        }
+
+        if (value != null) {
+            return value == DevicePolicyManager.COMMON_CRITERIA_MODE_ENABLED;
+        } else {
+            return false;
         }
     }
 
@@ -24496,6 +24605,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 maybeMigrateCrossProfileWidgetProvider(crossProfileWidgetProviderBackupId);
         if (crossProfileWidgetProviderMigrated) {
             Slogf.i(LOG_TAG, "Backup made: " + crossProfileWidgetProviderBackupId);
+        }
+
+        final String commonCriteriaModeEnabledBackupId = "37.4.common-criteria-mode-enabled";
+        final boolean commonCriteriaModeEnabledMigrated = maybeMigrateCommonCriteriaModeLocked(
+                commonCriteriaModeEnabledBackupId);
+        if (commonCriteriaModeEnabledMigrated) {
+            Slogf.i(LOG_TAG, "Backup made: " + commonCriteriaModeEnabledBackupId);
         }
 
         // Additional migration steps should repeat the pattern above with a new backupId.

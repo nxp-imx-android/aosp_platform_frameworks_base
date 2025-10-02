@@ -228,6 +228,12 @@ public final class DevicePolicyIdentifiers {
 
 
     /**
+     * String identifier for {@link DevicePolicyManager#setCommonCriteriaModeEnabled}
+     */
+    @FlaggedApi(android.app.admin.flags.Flags.FLAG_COMMON_CRITERIA_MODE_COEXISTENCE)
+    public static final String COMMON_CRITERIA_MODE_POLICY = "commonCriteriaMode";
+
+    /**
      * @hide
      */
     public static final String USER_RESTRICTION_PREFIX = "userRestriction_";

@@ -707,6 +707,20 @@ class Owners {
         }
     }
 
+    void markCommonCriteriaModeMigrated() {
+        synchronized (mData) {
+            mData.mCommonCriteriaModeMigrated = true;
+            mData.writeDeviceOwner();
+        }
+    }
+
+    boolean isCommonCriteriaModeMigrated() {
+        synchronized (mData) {
+            return mData.mCommonCriteriaModeMigrated;
+        }
+    }
+
+
     @GuardedBy("mData")
     void pushToAppOpsLocked() {
         if (!mSystemReady) {

@@ -392,6 +392,23 @@ final class PolicyDefinition<V> {
                     PolicyEnforcerCallbacks::setCrossProfileWidgetProviderPolicy,
                     new PackageSetPolicySerializer());
 
+    static final PolicyDefinition<Integer> COMMON_CRITERIA_MODE =
+            new PolicyDefinition<>(
+                    new NoArgsPolicyKey(
+                            DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY),
+                    new MostRestrictive<>(
+                            List.of(
+                                    new IntegerPolicyValue(
+                                            DevicePolicyManager.COMMON_CRITERIA_MODE_ENABLED),
+                                    new IntegerPolicyValue(
+                                            DevicePolicyManager.COMMON_CRITERIA_MODE_DISABLED)
+                            )
+                    ),
+                    POLICY_FLAG_GLOBAL_ONLY_POLICY,
+                    PolicyEnforcerCallbacks::noOp,
+                    new IntegerPolicySerializer()
+            );
+
     private static final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
     private static Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
 
@@ -448,6 +465,10 @@ final class PolicyDefinition<V> {
         POLICY_DEFINITIONS.put(
                 DevicePolicyIdentifiers.CROSS_PROFILE_WIDGET_PROVIDER_POLICY,
                 CROSS_PROFILE_WIDGET_PROVIDER);
+        POLICY_DEFINITIONS.put(
+                DevicePolicyIdentifiers.COMMON_CRITERIA_MODE_POLICY,
+                COMMON_CRITERIA_MODE
+        );
 
         // User Restriction Policies
         USER_RESTRICTION_FLAGS.put(UserManager.DISALLOW_MODIFY_ACCOUNTS, /* flags= */ 0);

@@ -104,6 +104,8 @@ class OwnersData {
             "crossProfileWidgetProviderMigrated";
     private static final String ATTR_PERMISSION_GRANT_STATE_MIGRATED =
             "permissionGrantStateMigrated";
+    private static final String ATTR_COMMON_CRITERIA_MODE_MIGRATED =
+            "commonCriteriaModeMigrated";
 
     private static final String ATTR_MIGRATED_POST_UPGRADE = "migratedPostUpgrade";
 
@@ -145,6 +147,7 @@ class OwnersData {
     boolean mCrossProfileWidgetProviderMigrated = false;
     boolean mSetKeyguardDisabledFeaturesMigrated = false;
     boolean mPermissionGrantStateMigrated = false;
+    boolean mCommonCriteriaModeMigrated = false;
 
     boolean mPoliciesMigratedPostUpdate = false;
 
@@ -478,6 +481,10 @@ class OwnersData {
                 out.attributeBoolean(null, ATTR_CROSS_PROFILE_WIDGET_PROVIDER_MIGRATED,
                         mCrossProfileWidgetProviderMigrated);
             }
+            if (Flags.commonCriteriaModeCoexistence()) {
+                out.attributeBoolean(null, ATTR_COMMON_CRITERIA_MODE_MIGRATED,
+                        mCommonCriteriaModeMigrated);
+            }
             out.endTag(null, TAG_POLICY_ENGINE_MIGRATION);
 
         }
@@ -572,6 +579,10 @@ class OwnersData {
                     mCrossProfileWidgetProviderMigrated = Flags.crossProfileWidgetProviderBulkApis()
                             && parser.getAttributeBoolean(null,
                             ATTR_CROSS_PROFILE_WIDGET_PROVIDER_MIGRATED, false);
+                    mCommonCriteriaModeMigrated =
+                            Flags.commonCriteriaModeCoexistence()
+                                    && parser.getAttributeBoolean(null,
+                                    ATTR_COMMON_CRITERIA_MODE_MIGRATED, false);
                     break;
                 default:
                     Slog.e(TAG, "Unexpected tag: " + tag);
