@@ -148,6 +148,15 @@ public class MirrorView extends FrameLayout {
 
     private void init() {
         mHandlerThread.start();
+
+        // Add a placeholder view that's always visible to prevent the MirrorView from collapsing
+        // to a zero-size view when the mirror surface is GONE. The visibility of the SurfaceView
+        // is controlled carefully for performance reasons to avoid creating or maintaining a
+        // surface when a computer control session is not set.
+        // TODO: b/448896612 - Reimplement this as an optimization within the SurfaceView.
+        addView(new View(mContext), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
         mMirrorSurface.setVisibility(View.GONE);
         addView(mMirrorSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
