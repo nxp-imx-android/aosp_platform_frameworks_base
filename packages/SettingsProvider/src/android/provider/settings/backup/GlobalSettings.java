@@ -118,6 +118,7 @@ public class GlobalSettings {
         Settings.Global.Wearable.SCREEN_UNLOCK_SOUND_ENABLED,
         Settings.Global.Wearable.CHARGING_SOUNDS_ENABLED,
         Settings.Global.Wearable.WRIST_DETECTION_AUTO_LOCKING_ENABLED,
+        Settings.Global.Wearable.WRIST_ORIENTATION_MODE,
         Settings.Global.Wearable.AUTO_BEDTIME_MODE,
         Settings.Global.Wearable.GESTURE_PRIMARY_ACTION_USER_PREFERENCE,
         Settings.Global.Wearable.GESTURE_DISMISS_ACTION_USER_PREFERENCE,
