@@ -103,11 +103,11 @@ public:
         set(FrameInfoIndex::FrameDeadline) = std::numeric_limits<int64_t>::max();
     }
 
-    UiFrameInfoBuilder& setVsync(nsecs_t vsyncTime, nsecs_t intendedVsync,
-                                 int64_t vsyncId, int64_t frameDeadline, nsecs_t frameInterval) {
+    UiFrameInfoBuilder& setVsync(nsecs_t vsyncTime, int64_t vsyncId, int64_t frameDeadline,
+                                 nsecs_t frameInterval) {
         set(FrameInfoIndex::FrameTimelineVsyncId) = vsyncId;
         set(FrameInfoIndex::Vsync) = vsyncTime;
-        set(FrameInfoIndex::IntendedVsync) = intendedVsync;
+        set(FrameInfoIndex::IntendedVsync) = vsyncTime;
         // Pretend the other fields are all at vsync, too, so that naive
         // duration calculations end up being 0 instead of very large
         set(FrameInfoIndex::HandleInputStart) = vsyncTime;
@@ -117,7 +117,7 @@ public:
         set(FrameInfoIndex::FrameStartTime) = vsyncTime;
         set(FrameInfoIndex::FrameDeadline) = frameDeadline;
         set(FrameInfoIndex::FrameInterval) = frameInterval;
-        set(FrameInfoIndex::WorkloadTarget) = frameDeadline - intendedVsync;
+        set(FrameInfoIndex::WorkloadTarget) = frameDeadline - vsyncTime;
         return *this;
     }
 
