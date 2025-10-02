@@ -19,17 +19,16 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.ui.viewmodel.quickSettingsContainerViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsShadeOverlayActionsViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsShadeOverlayContentViewModelFactory
-import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
+import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
-import org.mockito.Mockito.mock
 
 val Kosmos.quickSettingsShadeOverlay by
-Kosmos.Fixture {
-    QuickSettingsShadeOverlay(
-        actionsViewModelFactory = quickSettingsShadeOverlayActionsViewModelFactory,
-        contentViewModelFactory = quickSettingsShadeOverlayContentViewModelFactory,
-        quickSettingsContainerViewModelFactory = quickSettingsContainerViewModelFactory,
-        notificationStackScrollView = { mock(NotificationScrollView::class.java) },
-        notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
-    )
-}
+    Kosmos.Fixture {
+        QuickSettingsShadeOverlay(
+            actionsViewModelFactory = quickSettingsShadeOverlayActionsViewModelFactory,
+            contentViewModelFactory = quickSettingsShadeOverlayContentViewModelFactory,
+            quickSettingsContainerViewModelFactory = quickSettingsContainerViewModelFactory,
+            notificationStackScrollView = { notificationScrollView },
+            notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
+        )
+    }

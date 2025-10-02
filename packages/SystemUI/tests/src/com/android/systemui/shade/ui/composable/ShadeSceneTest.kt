@@ -41,7 +41,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
 import com.android.systemui.shade.ui.viewmodel.shadeUserAcionsViewModelFactory
-import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
+import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
@@ -53,7 +53,6 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -89,7 +88,7 @@ class ShadeSceneTest : SysuiTestCase() {
                 val scene =
                     ShadeScene(
                         shadeSession = shadeSession,
-                        notificationStackScrollView = { mock(NotificationScrollView::class.java) },
+                        notificationStackScrollView = { notificationScrollView },
                         actionsViewModelFactory = shadeUserAcionsViewModelFactory,
                         contentViewModelFactory = shadeSceneContentViewModelFactory,
                         notificationsPlaceholderViewModelFactory =

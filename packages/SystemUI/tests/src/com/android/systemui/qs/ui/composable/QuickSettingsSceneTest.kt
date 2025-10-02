@@ -42,7 +42,7 @@ import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
-import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
+import com.android.systemui.statusbar.notification.stack.ui.view.notificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
@@ -51,71 +51,69 @@ import kotlinx.coroutines.test.runCurrent
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 class QuickSettingsSceneTest : SysuiTestCase() {
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    @get:Rule val composeTestRule = createComposeRule()
 
     private val kosmos = testKosmos()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testViewHierarchy() = kosmos.runTest {
-        val shadeSession =
-            object : SaveableSession, Session by Session(SessionStorage()) {
-                @Composable
-                override fun <T : Any> rememberSaveableSession(
-                    vararg inputs: Any?,
-                    saver: Saver<T, out Any>,
-                    key: String?,
-                    init: () -> T,
-                ): T = rememberSession(key, inputs = inputs, init = init)
-            }
+    fun testViewHierarchy() =
+        kosmos.runTest {
+            val shadeSession =
+                object : SaveableSession, Session by Session(SessionStorage()) {
+                    @Composable
+                    override fun <T : Any> rememberSaveableSession(
+                        vararg inputs: Any?,
+                        saver: Saver<T, out Any>,
+                        key: String?,
+                        init: () -> T,
+                    ): T = rememberSession(key, inputs = inputs, init = init)
+                }
 
-        usingMediaInComposeFragment = true
+            usingMediaInComposeFragment = true
 
-        currentTilesInteractor.setTiles(
-            listOf(
-                TileSpec.create("internet"),
-                TileSpec.create("bt"),
-            )
-        )
-
-        testScope.runCurrent()
-
-        val scene =
-            QuickSettingsScene(
-                shadeSession = shadeSession,
-                notificationStackScrollView = { mock(NotificationScrollView::class.java) },
-                notificationsPlaceholderViewModelFactory =
-                    notificationsPlaceholderViewModelFactory,
-                actionsViewModelFactory = quickSettingsUserActionsViewModelFactory,
-                contentViewModelFactory = quickSettingsSceneContentViewModelFactory,
-                jankMonitor = interactionJankMonitor,
+            currentTilesInteractor.setTiles(
+                listOf(TileSpec.create("internet"), TileSpec.create("bt"))
             )
 
-        composeTestRule.setContent {
-            PlatformTheme {
-                WithStatusIconContext(tintedIconManagerFactory) {
-                    with(scene) {
-                        TestContentScope(currentScene = Scenes.QuickSettings) { Content(Modifier) }
+            testScope.runCurrent()
+
+            val scene =
+                QuickSettingsScene(
+                    shadeSession = shadeSession,
+                    notificationStackScrollView = { notificationScrollView },
+                    notificationsPlaceholderViewModelFactory =
+                        notificationsPlaceholderViewModelFactory,
+                    actionsViewModelFactory = quickSettingsUserActionsViewModelFactory,
+                    contentViewModelFactory = quickSettingsSceneContentViewModelFactory,
+                    jankMonitor = interactionJankMonitor,
+                )
+
+            composeTestRule.setContent {
+                PlatformTheme {
+                    WithStatusIconContext(tintedIconManagerFactory) {
+                        with(scene) {
+                            TestContentScope(currentScene = Scenes.QuickSettings) {
+                                Content(Modifier)
+                            }
+                        }
                     }
                 }
             }
+
+            composeTestRule.waitForIdle()
+
+            // Verify that the brightness slider exists.
+            composeTestRule.onNodeWithTag(resIdToTestTag("brightness_slider")).assertExists()
+
+            // Verify that the tiles exist.
+            composeTestRule.onNodeWithTag("element:internet").assertExists()
+            composeTestRule.onNodeWithTag("element:bt").assertExists()
         }
-
-        composeTestRule.waitForIdle()
-
-        // Verify that the brightness slider exists.
-        composeTestRule.onNodeWithTag(resIdToTestTag("brightness_slider")).assertExists()
-
-        // Verify that the tiles exist.
-        composeTestRule.onNodeWithTag("element:internet").assertExists()
-        composeTestRule.onNodeWithTag("element:bt").assertExists()
-    }
 }
