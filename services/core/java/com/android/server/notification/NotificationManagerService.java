@@ -16,6 +16,7 @@
 
 package com.android.server.notification;
 
+import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
 import static android.Manifest.permission.POST_PROMOTED_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
@@ -5226,19 +5227,9 @@ public class NotificationManagerService extends SystemService {
             enforceDeletingChannelHasNoUserInitiatedJob(pkg, callingUser, channelId);
             cancelAllNotificationsInt(MY_UID, MY_PID, pkg, channelId, 0, 0,
                     callingUser, REASON_CHANNEL_REMOVED);
-            boolean previouslyExisted = mPreferencesHelper.deleteNotificationChannel(
-                    pkg, callingUid, channelId, callingUid, isSystemOrSystemUi);
-            if (previouslyExisted) {
-                // Remove from both recent notification archive (recently dismissed notifications)
-                // and notification history
-                mArchive.removeChannelNotifications(pkg, callingUser, channelId);
-                mHistoryManager.deleteNotificationChannel(pkg, callingUid, channelId);
-                mListeners.notifyNotificationChannelChanged(pkg,
-                        UserHandle.getUserHandleForUid(callingUid),
-                        mPreferencesHelper.getNotificationChannel(pkg, callingUid, channelId, true),
-                        NOTIFICATION_CHANNEL_OR_GROUP_DELETED);
-                handleSavePolicyFile();
-            }
+
+            deleteNotificationChannelDirectly(pkg, callingUid, callingUser,
+                    channelId, callingUid,true);
         }
 
         @Override
@@ -7417,6 +7408,46 @@ public class NotificationManagerService extends SystemService {
             }
 
             return created;
+        }
+
+        @Override
+        @FlaggedApi(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+        public void deleteConversationNotificationChannelFromPrivilegedListener(
+                INotificationListener token, String pkg, UserHandle user, String channelId)
+                throws RemoteException {
+            Objects.requireNonNull(pkg);
+            Objects.requireNonNull(user);
+            Objects.requireNonNull(channelId);
+
+            verifyPrivilegedListener(token, user, true);
+            int uid = getUidForPackageAndUser(pkg, user);
+
+            NotificationChannel channel = mPreferencesHelper.getNotificationChannel(pkg,
+                    uid, channelId, false);
+            if (channel == null || !channel.isConversation()) {
+                return;
+            }
+
+            deleteNotificationChannelDirectly(pkg, uid, user.getIdentifier(),
+                    channelId,MY_UID,true);
+        }
+
+        private void deleteNotificationChannelDirectly(String pkg, int uid, int channelUserId,
+                String channelId, int callingUid, boolean fromSystemOrSystemUi){
+            // temp change for upload
+            boolean previouslyExisted = mPreferencesHelper.deleteNotificationChannel(pkg,
+                    uid, channelId, callingUid, fromSystemOrSystemUi);
+            if (previouslyExisted) {
+                // Remove from both recent notification archive (recently dismissed notifications)
+                // and notification history
+                mArchive.removeChannelNotifications(pkg, channelUserId, channelId);
+                mHistoryManager.deleteNotificationChannel(pkg, uid, channelId);
+                mListeners.notifyNotificationChannelChanged(pkg,
+                        UserHandle.getUserHandleForUid(uid),
+                        mPreferencesHelper.getNotificationChannel(pkg, uid, channelId, true),
+                        NOTIFICATION_CHANNEL_OR_GROUP_DELETED);
+                handleSavePolicyFile();
+            }
         }
 
         @Override

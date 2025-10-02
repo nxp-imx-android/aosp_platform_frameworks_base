@@ -98,6 +98,14 @@ flag {
   is_exported: true
 }
 
+flag {
+   name: "notification_conversation_channel_deletion"
+   is_exported: true
+   namespace: "systemui"
+   description: "Allows the NAS to delete conversation notification channels"
+   bug: "416144530"
+}
+
 # End: API flags
 
 # Start: Flags that have been cleaned up in code but need to remain for CTS

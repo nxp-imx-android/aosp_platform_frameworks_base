@@ -123,6 +123,8 @@ import static android.service.notification.Condition.SOURCE_CONTEXT;
 import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_TRUE;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOADING;
+import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
+import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG;
@@ -434,6 +436,16 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     private static final int MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING = 10;
 
+    private final NotificationChannel mParentChannel =
+            new NotificationChannel(PARENT_CHANNEL_ID, "parentName", IMPORTANCE_DEFAULT);
+    private final NotificationChannel mConversationChannel =
+            new NotificationChannel(CONVERSATION_CHANNEL_ID,
+                    "conversationName", IMPORTANCE_DEFAULT);
+
+    private static final String PARENT_CHANNEL_ID = "parentChannelId";
+    private static final String CONVERSATION_CHANNEL_ID = "conversationChannelId";
+    private static final String CONVERSATION_ID = "conversationId";
+
     @ClassRule
     public static final LimitDevicesRule sLimitDevicesRule = new LimitDevicesRule();
 
@@ -591,6 +603,17 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private NotificationManagerService.WorkerHandler mWorkerHandler;
     private Handler mBroadcastsHandler;
     private int mPromotedMode = 0;
+
+    private void setUpChannelsForConversationChannelTest() throws RemoteException {
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), eq(PARENT_CHANNEL_ID), eq(false)))
+                .thenReturn(mParentChannel);
+        when(mPreferencesHelper.getConversationNotificationChannel(
+                eq(mPkg), eq(mUid), eq(PARENT_CHANNEL_ID),
+                eq(CONVERSATION_ID), eq(false), eq(false)))
+                .thenReturn(mConversationChannel);
+        when(mPackageManager.getPackageUid(mPkg, 0, mUserId)).thenReturn(mUid);
+    }
 
     private class TestableToastCallback extends ITransientNotification.Stub {
         @Override
@@ -5624,6 +5647,166 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         assertThat(again).isSameInstanceAs(created);
     }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_cdm_success()
+            throws Exception {
+        // Set up a trusted listener
+        INotificationListener listener = mock(INotificationListener.class);
+        when(listener.asBinder()).thenReturn(mock(IBinder.class));
+        mListener = mListeners.new ManagedServiceInfo(
+                     null, new ComponentName(mPkg, "test_class"),
+                     mUserId, true, null, 0, 123);
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+
+        // Set up cdm
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+
+        // Set up conversation channel
+        setUpChannelsForConversationChannelTest();
+        mConversationChannel.setConversationId(PARENT_CHANNEL_ID, CONVERSATION_ID);
+        when(mPreferencesHelper.getNotificationChannel(eq(mPkg), eq(mUid),
+                eq(CONVERSATION_CHANNEL_ID),eq(false)))
+                .thenReturn(mConversationChannel);
+        when(mPreferencesHelper.deleteNotificationChannel(eq(mPkg), eq(mUid),
+                eq(CONVERSATION_CHANNEL_ID),anyInt(), anyBoolean()))
+                .thenReturn(true);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(listener,
+                mPkg, mUser, CONVERSATION_CHANNEL_ID);
+
+        verify(mPreferencesHelper, times(1)).
+                deleteNotificationChannel(eq(mPkg), eq(mUid),
+                        eq(CONVERSATION_CHANNEL_ID),anyInt(), anyBoolean());
+   }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_cdm_noAccess()
+            throws Exception {
+        // Set up cdm without access
+        mService.setPreferencesHelper(mPreferencesHelper);
+        assertThrows(SecurityException.class, () ->
+                mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                        null, mPkg, mUser, "channelId"));
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_assistant_success()
+            throws Exception {
+        // Set up a trusted listener
+        mListener = mListeners.new ManagedServiceInfo(
+                null, new ComponentName(mPkg, "test_class"),
+                mUserId, true, null, 0, 123);
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+
+        // Set up assistant
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(emptyList());
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+
+        // Set up conversation channel
+        setUpChannelsForConversationChannelTest();
+        mConversationChannel.setConversationId(PARENT_CHANNEL_ID, CONVERSATION_ID);
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), eq(CONVERSATION_CHANNEL_ID), eq(false)))
+                .thenReturn(mConversationChannel);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                null, mPkg, mUser, CONVERSATION_CHANNEL_ID);
+
+        verify(mPreferencesHelper, times(1)).deleteNotificationChannel(
+                eq(mPkg), eq(mUid), eq(CONVERSATION_CHANNEL_ID), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_assistant_noAccess()
+            throws Exception {
+        // Set up assistant without access
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(emptyList());
+        assertThrows(SecurityException.class, () ->
+                mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                        null, mPkg, mUser, "channelId"));
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_badUser() throws Exception {
+        // Set up bad user
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+        mListener = mock(ManagedServices.ManagedServiceInfo.class);
+        mListener.component = new ComponentName(mPkg, mPkg);
+        when(mListener.enabledAndUserMatches(anyInt())).thenReturn(false);
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+
+        assertThrows(SecurityException.class, () ->
+                mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                        null, mPkg, mUser, "channelId"));
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_notConversationChannel()
+            throws Exception {
+        // Set up cdm
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+
+        // Set up a non-conversation channel
+        setUpChannelsForConversationChannelTest();
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), eq(PARENT_CHANNEL_ID), eq(false)))
+                .thenReturn(mParentChannel);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                null, mPkg, mUser, PARENT_CHANNEL_ID);
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_channelNotFound()
+            throws Exception {
+        // Set up cdm
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+
+        // Channel does not exist
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), anyString(), eq(false)))
+                .thenReturn(null);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                null, mPkg, mUser, "nonExistentChannel");
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT,
