@@ -2477,23 +2477,20 @@ class DesktopTasksController(
             }
         }
 
-        val pipTaskComponent = pipTransitionState.getOrNull()?.pipTaskInfo?.baseIntent?.component
+        val pipTaskInfo = pipTransitionState.getOrNull()?.pipTaskInfo
+        val pipTaskComponent = pipTaskInfo?.baseIntent?.component
         // If a task was previously in PiP and is being launched in freeform in Desktop mode,
         // return early to let PipScheduler handle exiting PiP via expand in Shell.
         if (
             DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH.isTrue &&
+                pipTaskInfo != null &&
                 pipTaskComponent != null
         ) {
             for (op in wct.hierarchyOps) {
                 if (
                     op.type == HIERARCHY_OP_TYPE_PENDING_INTENT &&
-                        op.activityIntent?.component == pipTaskComponent
+                        op.pendingIntent?.intent?.component == pipTaskComponent
                 ) {
-                    if (deskId != null && launchingTaskId != null) {
-                        shellTaskOrganizer.getRunningTaskInfo(launchingTaskId)?.let {
-                            addMoveToDeskTaskChanges(wct, it, deskId)
-                        }
-                    }
                     logV("Scheduling exit PiP via expand on app launch for $pipTaskComponent")
                     mPipScheduler.scheduleExitPipViaExpand(
                         /* wasVisible= */ true,
@@ -2501,6 +2498,14 @@ class DesktopTasksController(
                         bounds,
                         WINDOWING_MODE_FREEFORM,
                     )
+                    shellTaskOrganizer.getRunningTaskInfo(pipTaskInfo.taskId)?.let {
+                        moveToDisplay(
+                            it,
+                            displayId,
+                            bounds = bounds,
+                            enterReason = EnterReason.EXIT_PIP,
+                        )
+                    }
                     return Binder()
                 }
             }
