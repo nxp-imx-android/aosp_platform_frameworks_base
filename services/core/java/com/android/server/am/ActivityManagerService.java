@@ -19592,6 +19592,28 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG, mConstants.BACKGROUND_SETTLE_TIME);
             }
         }
+
+        @Override
+        public void onProcessBackgroundRestricted(ProcessRecordInternal app) {
+            mHandler.post(() -> {
+                synchronized (ActivityManagerService.this) {
+                    mServices.stopAllForegroundServicesLocked(app.uid, app.getPackageName());
+                }
+            });
+        }
+
+        @Override
+        public void onProcessCached(ProcessRecordInternal app, OomAdjusterDebugLogger logger) {
+            if (mDeterministicUidIdle || !mHandler.hasMessages(IDLE_UIDS_MSG)) {
+                if (logger.shouldLog(app.uid)) {
+                    logger.logScheduleUidIdle2(
+                            app.getUidRecord().getUid(), app.getPid(),
+                            mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
+                }
+                mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG,
+                        mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
+            }
+        }
     }
 
     static void setProcessGroup(int pid, int group, String processName) {

@@ -79,7 +79,6 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PSS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_USAGE_STATS;
 import static com.android.server.am.ActivityManagerService.FOLLOW_UP_OOMADJUSTER_UPDATE_MSG;
-import static com.android.server.am.ActivityManagerService.IDLE_UIDS_MSG;
 import static com.android.server.am.ActivityManagerService.TAG_LRU;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
@@ -435,6 +434,12 @@ public abstract class OomAdjuster {
         /** Notifies when the {@link UidRecordInternal}'s last background time is updated. */
         void onUidLastBackgroundTimeUpdated(UidRecordInternal uidRec, long nowElapsed,
                 OomAdjusterDebugLogger logger);
+
+        /** Notifies when a process becomes effectively background restricted. */
+        void onProcessBackgroundRestricted(ProcessRecordInternal app);
+
+        /** Notifies when a process transitions to a cached state. */
+        void onProcessCached(ProcessRecordInternal app, OomAdjusterDebugLogger logger);
     }
 
     @VisibleForTesting
@@ -2257,12 +2262,7 @@ public abstract class OomAdjuster {
         if (curBoundByNonBgRestrictedApp != state.isSetBoundByNonBgRestrictedApp()) {
             state.setSetBoundByNonBgRestrictedApp(curBoundByNonBgRestrictedApp);
             if (!curBoundByNonBgRestrictedApp && state.isBackgroundRestricted()) {
-                mService.mHandler.post(() -> {
-                    synchronized (mService) {
-                        mService.mServices.stopAllForegroundServicesLocked(
-                                state.uid, state.getPackageName());
-                    }
-                });
+                mCallback.onProcessBackgroundRestricted(state);
             }
         }
 
@@ -2276,16 +2276,7 @@ public abstract class OomAdjuster {
             // process became eligible and then schedule a check for eligible processes after
             // a background settling time, if needed.
             state.setLastCachedTime(nowElapsed);
-            if (mService.mDeterministicUidIdle
-                    || !mService.mHandler.hasMessages(IDLE_UIDS_MSG)) {
-                if (mLogger.shouldLog(state.uid)) {
-                    mLogger.logScheduleUidIdle2(
-                            uidRec.getUid(), state.getPid(),
-                            mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
-                }
-                mService.mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG,
-                        mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
-            }
+            mCallback.onProcessCached(state, mLogger);
         }
         state.setSetCached(state.isCached());
         if (((oldProcState != state.getSetProcState()) || (oldOomAdj != state.getSetAdj()))
