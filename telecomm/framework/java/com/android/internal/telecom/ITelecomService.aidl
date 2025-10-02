@@ -463,13 +463,24 @@ interface ITelecomService {
     boolean isLocalVoicemailSupported(in String packageName);
 
     /**
-     * @see TelecomServiceImpl#setLocalVoicemailTimeout
+     * @see TelecomServiceImpl#enableLocalVoicemailTimeout
      */
-    void setLocalVoicemailTimeout(in String packageName, in PhoneAccountHandle phoneAccountHandle,
+    void enableLocalVoicemail(in String packageName, in PhoneAccountHandle phoneAccountHandle,
         long timeout);
+
+    /**
+     * @see TelecomServiceImpl# disableLocalVoicemail
+     */
+    void disableLocalVoicemail(in String packageName, in PhoneAccountHandle phoneAccountHandle);
 
     /**
      * @see TelecomServiceImpl#getLocalVoicemailTimeout
      */
     long getLocalVoicemailTimeout(in String packageName, in PhoneAccountHandle phoneAccountHandle);
+
+    /**
+     * @see TelecomServiceImpl#isLocalVoicemailEnabled
+     */
+    boolean isLocalVoicemailEnabled(in String packageName,
+        in PhoneAccountHandle phoneAccountHandle);
 }
