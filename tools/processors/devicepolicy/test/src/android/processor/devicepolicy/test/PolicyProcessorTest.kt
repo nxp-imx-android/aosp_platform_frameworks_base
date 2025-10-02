@@ -43,11 +43,17 @@ class PolicyProcessorTest {
         const val POLICY_IDENTIFIER_TEXTPROTO = "$POLICY_IDENTIFIER.textproto"
         const val POLICY_METADATA_CODEGEN = "$RESOURCE_ROOT/Policies.java"
 
-        const val METADATA_DIRECTORY = "$RESOURCE_ROOT/metadata"
-        val METADATA_CLASS_NAMES = setOf(
-            "PolicyMetadata", "BooleanPolicyMetadata", "IntegerPolicyMetadata", "EnumPolicyMetadata"
+        val METADATA_FILES_JAVA = setOf(
+            "PolicyMetadata",
+            "BooleanPolicyMetadata",
+            "IntegerPolicyMetadata",
+            "EnumPolicyMetadata",
+            "StringPolicyMetadata",
         )
-        val METADATA_FILES_JAVA = METADATA_CLASS_NAMES.map {"android/app/admin/metadata/$it.java"}.toSet()
+            .map {
+                "android/app/admin/metadata/$it.java"
+            }
+            .toSet()
 
         /**
          * Comes from the actual IntDef.java in the source, located in a different folder.
@@ -85,6 +91,7 @@ class PolicyProcessorTest {
                 import android.processor.devicepolicy.EnumPolicyDefinition;
                 import android.processor.devicepolicy.IntegerPolicyDefinition;
                 import android.processor.devicepolicy.PolicyDefinition;
+                import android.processor.devicepolicy.StringPolicyDefinition;
 
                 import java.lang.annotation.Retention;
                 import java.lang.annotation.RetentionPolicy;

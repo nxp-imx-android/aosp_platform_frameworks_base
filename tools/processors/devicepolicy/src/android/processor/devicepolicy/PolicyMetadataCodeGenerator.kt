@@ -128,6 +128,10 @@ object PolicyMetadataCodeGenerator {
             policy
         )
 
+        TypeSpecificPolicyMetadata.TypeMetadataCase.STRING_METADATA -> generateStringPolicyAdder(
+            policy
+        )
+
         TypeSpecificPolicyMetadata.TypeMetadataCase.TYPEMETADATA_NOT_SET -> throw IllegalArgumentException(
             "Type specific metadata unset"
         )
@@ -217,6 +221,13 @@ object PolicyMetadataCodeGenerator {
 
     private fun generateIntegerPolicyAdder(policy: PolicyMetadata) =
         genericPolicyAdder(policy, integerPolicyMetadataType)
+
+    private val stringPolicyMetadataType =
+        ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")
+
+
+    private fun generateStringPolicyAdder(policy: PolicyMetadata) =
+        genericPolicyAdder(policy, stringPolicyMetadataType)
 
     private val setType = ClassName.get(Set::class.java)
     private val listType = ClassName.get(List::class.java)

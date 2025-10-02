@@ -54,3 +54,14 @@ policy_metadata {
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
 }
+policy_metadata {
+  name: "android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY"
+  type: "java.lang.String"
+  documentation: " Test policy 4\n"
+  type_specific_metadata {
+    string_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}

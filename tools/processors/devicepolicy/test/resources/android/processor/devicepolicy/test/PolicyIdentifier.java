@@ -21,6 +21,7 @@ import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.IntegerPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
+import android.processor.devicepolicy.StringPolicyDefinition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -118,4 +119,19 @@ public final class PolicyIdentifier<T> {
     )
     public static final PolicyIdentifier<Integer> SIMPLE_INTEGER_POLICY =
             new PolicyIdentifier<>("SIMPLE_INTEGER_POLICY");
+
+    /**
+     * Test policy 4
+     */
+    @StringPolicyDefinition(
+            base = @PolicyDefinition(
+                    allowedScopes = {
+                            1 // POLICY_SCOPE_USER
+                    },
+                    affectedResource = 1 // RESOURCE_DEVICE_WIDE
+                    // requiredPermission and requiredCrossUserPermission using the default values.
+            )
+    )
+    public static final PolicyIdentifier<String> SIMPLE_STRING_POLICY =
+            new PolicyIdentifier<>("SIMPLE_STRING_POLICY");
 }

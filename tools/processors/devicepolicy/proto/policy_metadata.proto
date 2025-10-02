@@ -57,10 +57,14 @@ message TypeSpecificPolicyMetadata {
         repeated EnumValue values = 4;
     }
 
+    message StringPolicyMetadata {
+    }
+
     oneof type_metadata {
         BooleanPolicyMetadata boolean_metadata = 1;
         IntegerPolicyMetadata integer_metadata = 2;
         EnumPolicyMetadata enum_metadata = 3;
+        StringPolicyMetadata string_metadata = 4;
     }
 }
 
