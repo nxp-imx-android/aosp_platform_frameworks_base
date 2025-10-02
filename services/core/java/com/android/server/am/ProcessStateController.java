@@ -47,7 +47,6 @@ import com.android.server.am.psc.SyncBatchSession;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
 import com.android.server.wm.WindowProcessController;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -284,7 +283,7 @@ public class ProcessStateController {
             return connectionRecord.mBoundServiceSession;
         }
         connectionRecord.mBoundServiceSession = new BoundServiceSession(mServiceBinderCallUpdater,
-                new WeakReference<>(connectionRecord), connectionRecord.toShortString());
+                connectionRecord);
         return connectionRecord.mBoundServiceSession;
     }
 

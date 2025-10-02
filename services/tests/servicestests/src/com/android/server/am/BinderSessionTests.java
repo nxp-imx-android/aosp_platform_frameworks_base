@@ -16,8 +16,8 @@
 
 package com.android.server.am;
 
-import static com.android.server.am.BoundServiceSession.MAX_UNIQUE_TAGS;
-import static com.android.server.am.BoundServiceSession.OVERFLOW_TAG;
+import static com.android.server.am.BinderSession.MAX_UNIQUE_TAGS;
+import static com.android.server.am.BinderSession.OVERFLOW_TAG;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,27 +41,23 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
- * Test class for {@link BoundServiceSession}.
+ * Test class for {@link BinderSession}.
  *
  * Build/Install/Run:
- *  atest FrameworksServicesTests:BoundServiceSessionTests
+ *  atest FrameworksServicesTests:BinderSessionTests
  * Or
- *  atest FrameworksServicesTestsRavenwood_ProcessStateController:BoundServiceSessionTests
+ *  atest FrameworksServicesTestsRavenwood_ProcessStateController:BinderSessionTests
  */
 @Presubmit
-public class BoundServiceSessionTests {
-    private static final String TEST_DEBUG_NAME = "test_bound_service_session";
+public class BinderSessionTests {
+    private final Object mAnyObject = new Object();
+    private final BiConsumer<Object, Boolean> mMockConsumer = mock(BiConsumer.class);
 
-    private final ConnectionRecord mEmptyConnectionRecord = new ConnectionRecord(null, null, null,
-            0, 0, null, 0, null, null, null);
-    private final BiConsumer<ConnectionRecord, Boolean> mMockConsumer = mock(BiConsumer.class);
-
-    private BoundServiceSession getNewBoundServiceSessionForTest() {
-        return new BoundServiceSession(mMockConsumer, new WeakReference<>(mEmptyConnectionRecord),
-                TEST_DEBUG_NAME);
+    private BinderSession<?> getNewBinderSessionForTest() {
+        return new TestBinderSession(mMockConsumer, mAnyObject);
     }
 
-    private static void assertSessionReset(BoundServiceSession session) {
+    private static void assertSessionReset(BinderSession session) {
         assertEquals(0, session.mTotal);
         assertEquals(0, session.mKeyByTag.size());
         assertEquals(0, session.mCountByKey.size());
@@ -69,13 +65,13 @@ public class BoundServiceSessionTests {
 
     @Test
     public void startingState() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
         assertSessionReset(session);
     }
 
     @Test
     public void resetOnUndercount() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession<?> session = getNewBinderSessionForTest();
         final String[] testTags = {"test0", "test1"};
 
         session.binderTransactionStarting(testTags[0]);
@@ -106,7 +102,7 @@ public class BoundServiceSessionTests {
 
     @Test
     public void resetOnInvalidToken() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession<?> session = getNewBinderSessionForTest();
         final String testTag = "test";
 
         final long validToken = session.binderTransactionStarting(testTag);
@@ -135,7 +131,7 @@ public class BoundServiceSessionTests {
 
     @Test
     public void tokenConsistency() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
 
         final String[] testTags = {"test5", "test1", "test2"};
 
@@ -150,7 +146,7 @@ public class BoundServiceSessionTests {
 
     @Test
     public void tokenDistinctness() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
 
         final String[] tags = {"test3", "test1", "otherTag", "test2"};
         final List<Long> tokens = new ArrayList<>();
@@ -168,12 +164,12 @@ public class BoundServiceSessionTests {
 
     @Test
     public void callsConsumerOnChangeFromZero() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
         assertEquals(0, session.mTotal);
 
         session.binderTransactionStarting("test");
         assertEquals(1, session.mTotal);
-        verify(mMockConsumer).accept(mEmptyConnectionRecord, true);
+        verify(mMockConsumer).accept(mAnyObject, true);
 
         session.binderTransactionStarting("test");
         session.binderTransactionStarting("test");
@@ -185,7 +181,7 @@ public class BoundServiceSessionTests {
 
     @Test
     public void callsConsumerOnChangeFromOneToZero() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
         final long token = session.binderTransactionStarting("test");
         assertEquals(1, session.mTotal);
         clearInvocations(mMockConsumer);
@@ -202,12 +198,12 @@ public class BoundServiceSessionTests {
 
         session.binderTransactionCompleted(token);
         assertEquals(0, session.mTotal);
-        verify(mMockConsumer).accept(mEmptyConnectionRecord, false);
+        verify(mMockConsumer).accept(mAnyObject, false);
     }
 
     @Test
     public void callsConsumerOnChangeFromManyToZero() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
         session.binderTransactionStarting("test");
         clearInvocations(mMockConsumer);
 
@@ -218,12 +214,12 @@ public class BoundServiceSessionTests {
 
         session.binderTransactionCompleted(-1);
         assertEquals(0, session.mTotal);
-        verify(mMockConsumer).accept(mEmptyConnectionRecord, false);
+        verify(mMockConsumer).accept(mAnyObject, false);
     }
 
     @Test
     public void noCallToConsumerOnChangeFromZeroToZero() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
         final long token = session.binderTransactionStarting("test");
         session.binderTransactionCompleted(token);
 
@@ -237,7 +233,7 @@ public class BoundServiceSessionTests {
 
     @Test
     public void keyKeeping() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession<?> session = getNewBinderSessionForTest();
 
         final String[] tags = {"test3", "test1", "otherTag", "test2"};
         final List<Integer> keys = new ArrayList<>();
@@ -265,7 +261,7 @@ public class BoundServiceSessionTests {
 
     @Test
     public void countKeeping() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession<?> session = getNewBinderSessionForTest();
 
         final String[] tags = {"test3", "otherTag", "test0"};
         final List<Long> tokens = new ArrayList<>();
@@ -322,14 +318,14 @@ public class BoundServiceSessionTests {
 
     @Test
     public void overflowTags() {
-        final BoundServiceSession session = getNewBoundServiceSessionForTest();
+        final BinderSession session = getNewBinderSessionForTest();
 
         final List<String> uniqueTags = new ArrayList<>(MAX_UNIQUE_TAGS);
         for (int i = 0; i < MAX_UNIQUE_TAGS; i++) {
             final String tag = "unique_tag" + i;
             uniqueTags.add(tag);
             session.binderTransactionStarting(tag);
-            assertEquals(i, (int) session.mKeyByTag.getOrDefault(tag, -1));
+            assertEquals(i, session.mKeyByTag.get(tag));
             assertEquals(1, session.mCountByKey.get(i));
         }
         assertEquals(MAX_UNIQUE_TAGS, session.mCountByKey.size());
@@ -365,6 +361,18 @@ public class BoundServiceSessionTests {
         assertEquals(2, session.mCountByKey.get(MAX_UNIQUE_TAGS));
         for (int i = 0; i < MAX_UNIQUE_TAGS; i++) {
             assertEquals(2, session.mCountByKey.get(i));
+        }
+    }
+
+    /** Minimal wrapper over abstract BinderSession */
+    static class TestBinderSession extends BinderSession<Object> {
+        TestBinderSession(BiConsumer<Object, Boolean> processStateUpdater, Object connection) {
+            super(processStateUpdater, new WeakReference<>(connection), "test_binder_session");
+        }
+
+        @Override
+        protected String getTraceTrack() {
+            return "unused";
         }
     }
 }
