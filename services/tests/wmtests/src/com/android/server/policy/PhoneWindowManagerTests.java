@@ -21,6 +21,8 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.DEFAULT_DISPLAY_GROUP;
 import static android.view.Display.TYPE_INTERNAL;
+import static android.view.KeyEvent.ACTION_DOWN;
+import static android.view.KeyEvent.KEYCODE_POWER;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
@@ -44,6 +46,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
 import static com.android.server.policy.PhoneWindowManager.EXTRA_TRIGGER_HUB;
+import static com.android.server.policy.PhoneWindowManager.MULTI_PRESS_POWER_BRIGHTNESS_BOOST;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_GO_TO_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP;
@@ -86,6 +89,7 @@ import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
 import android.testing.TestableContext;
 import android.view.DisplayInfo;
+import android.view.KeyEvent;
 
 import androidx.test.filters.SmallTest;
 
@@ -571,6 +575,68 @@ public class PhoneWindowManagerTests {
                 List.of(KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
                         KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
                         KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER));
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_USE_EVENT_DISPLAY_ID_FOR_KEY_WAKEUP)
+    public void testWakeKey_wakesCorrectDisplay_useEventDisplayId() {
+        testWakeKey_wakesCorrectDisplay(/* expectEventDisplayIdForWakeup= */ true);
+    }
+
+    @Test
+    @DisableFlags(com.android.hardware.input.Flags.FLAG_USE_EVENT_DISPLAY_ID_FOR_KEY_WAKEUP)
+    public void testWakeKey_wakesCorrectDisplay_notUseEventDisplayId() {
+        testWakeKey_wakesCorrectDisplay(/* expectEventDisplayIdForWakeup= */ false);
+    }
+
+    private void testWakeKey_wakesCorrectDisplay(boolean expectEventDisplayIdForWakeup) {
+        initPhoneWindowManager();
+        final int keyCode = KEYCODE_POWER;
+        final long time = 100L;
+        final int displayId = 3;
+        final int userId = 4;
+        // Create the KeyEvent.
+        final KeyEvent event =
+                new KeyEvent(time, time, ACTION_DOWN, keyCode, /* repeat= */ 0, /* metaState= */ 0);
+        event.setDisplayId(displayId);
+        // Set up the current user ID.
+        mPhoneWindowManager.setCurrentUserLw(userId);
+        when(mUserManagerInternal.getUserAssignedToDisplay(displayId)).thenReturn(userId);
+
+        mPhoneWindowManager.interceptKeyBeforeQueueing(event, WindowManagerPolicy.FLAG_WAKE);
+
+        final int expectedDisplayId = expectEventDisplayIdForWakeup ? displayId : DEFAULT_DISPLAY;
+        verify(mWindowWakeUpPolicy)
+                .wakeUpFromKey(expectedDisplayId, time, keyCode, /* isDown= */ true);
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_USE_EVENT_DISPLAY_ID_FOR_KEY_WAKEUP)
+    public void testPowerMultiPress_wakesCorrectDisplay_useEventDisplayId() {
+        testPowerMultiPress_wakesCorrectDisplay(/* expectEventDisplayIdForWakeup= */ true);
+    }
+
+    @Test
+    @DisableFlags(com.android.hardware.input.Flags.FLAG_USE_EVENT_DISPLAY_ID_FOR_KEY_WAKEUP)
+    public void testPowerMultiPress_wakesCorrectDisplay_notUseEventDisplayId() {
+        testPowerMultiPress_wakesCorrectDisplay(/* expectEventDisplayIdForWakeup= */ false);
+    }
+
+    private void testPowerMultiPress_wakesCorrectDisplay(boolean expectEventDisplayIdForWakeup) {
+        when(mDisplayPolicy.isAwake()).thenReturn(false);
+        when(mDisplayPolicy.isScreenOnEarly()).thenReturn(false);
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.POWER_BUTTON_TRIPLE_PRESS, MULTI_PRESS_POWER_BRIGHTNESS_BOOST);
+        initPhoneWindowManager();
+        mPhoneWindowManager.updateSettings(null);
+
+        final long time = 3L;
+        final int displayId = 5;
+        mPhoneWindowManager.powerPress(time, /* count= */ 3, displayId);
+
+        final int expectedDisplayId = expectEventDisplayIdForWakeup ? displayId : DEFAULT_DISPLAY;
+        verify(mWindowWakeUpPolicy)
+                .wakeUpFromKey(expectedDisplayId, time, KEYCODE_POWER, /* isDown= */ false);
     }
 
     @Test

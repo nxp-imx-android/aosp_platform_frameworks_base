@@ -275,3 +275,13 @@ flag {
     description: "Enables desktop entrypoints for contextual search"
     bug: "442915863"
 }
+
+flag {
+    name: "use_event_display_id_for_key_wakeup"
+    namespace: "input"
+    description: "Use the display associated with a waking KeyEvent, instead of DEFAULT_DISPLAY."
+    bug: "444390628"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
