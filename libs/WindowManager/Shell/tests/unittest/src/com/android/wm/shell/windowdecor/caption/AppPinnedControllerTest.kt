@@ -21,6 +21,7 @@ import android.graphics.Rect
 import android.testing.AndroidTestingRunner
 import android.view.View
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
@@ -29,6 +30,7 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.CoroutineScope
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -51,6 +53,8 @@ class AppPinnedControllerTest : ShellTestCase() {
     private val mockTouchListener = mock<View.OnTouchListener>()
     private val mockMotionListener = mock<View.OnGenericMotionListener>()
     private val mockDecorationActions = mock<WindowDecorationActions>()
+    private val mockTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val mockMainScope = mock<CoroutineScope>()
 
     private fun createController() =
         AppPinnedController(
@@ -62,6 +66,8 @@ class AppPinnedControllerTest : ShellTestCase() {
             mockTouchListener,
             mockMotionListener,
             mockDecorationActions,
+            mockTaskOrganizer,
+            mockMainScope,
         )
 
     @Before
