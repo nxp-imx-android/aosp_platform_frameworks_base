@@ -1940,7 +1940,8 @@ abstract public class ManagedServices {
                             }
                             binder.linkToDeath(info, 0);
 
-                            if (isServiceBoundLocked(info)) {
+                            if (Flags.fixManagedServicesDoubleBinding()
+                                    && isServiceBoundLocked(info)) {
                                 Slog.wtfStack(TAG, "Duplicate binding " + info);
                             }
                             added = mServices.add(info);
