@@ -1776,12 +1776,12 @@ public final class InputDevice implements Parcelable {
         description.append("  USI Version: ").append(getHostUsiVersion()).append("\n");
 
         if (mKeyboardLanguageTag != null) {
-            description.append(" Keyboard language tag: ").append(mKeyboardLanguageTag).append(
+            description.append("  Keyboard language tag: ").append(mKeyboardLanguageTag).append(
                     "\n");
         }
 
         if (mKeyboardLayoutType != null) {
-            description.append(" Keyboard layout type: ").append(mKeyboardLayoutType).append("\n");
+            description.append("  Keyboard layout type: ").append(mKeyboardLayoutType).append("\n");
         }
 
         description.append("  Sources: 0x").append(Integer.toHexString(mSources)).append(" (");
