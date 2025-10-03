@@ -96,7 +96,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
     private static final String ROUTE_ID_ADDRESS_PREFIX = ";address=";
 
     @NonNull private final Context mContext;
+
+    /**
+     * Routing changes using ({@link AudioManager#setPreferredDeviceForStrategy} and {@link
+     * AudioManager#removePreferredDeviceForStrategy}) must happen on {@link #mHandler} to ensure
+     * that {@link #mActiveAudioRoutingPolicyOnHandler} is kept in sync with any active routing
+     * changes.
+     */
     @NonNull private final AudioManager mAudioManager;
+
     @NonNull private final Handler mHandler;
 
     @NonNull
@@ -114,6 +122,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
     @NonNull
     private final AudioManager.OnDevicesForAttributesChangedListener
             mOnDevicesForAttributesChangedListener = this::onDevicesForAttributesChangedListener;
+
+    /**
+     * Whether there's active routing policy (set using {@link
+     * AudioManager#setPreferredDeviceForStrategy}) set by this instance. Allows us to only {@link
+     * AudioManager#removePreferredDeviceForStrategy clear routing policies} if there's an active
+     * routing policy set by this instance.
+     *
+     * <p>Must only be accessed on {@link #mHandler}.
+     */
+    private boolean mActiveAudioRoutingPolicyOnHandler;
 
     @GuardedBy("this")
     @NonNull
@@ -446,6 +464,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         }
     }
 
+    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
     private Runnable getTransferActionForRoute(MediaRoute2InfoHolder mediaRoute2InfoHolder) {
         if (mediaRoute2InfoHolder.mCorrespondsToInactiveBluetoothRoute) {
             String deviceAddress = mediaRoute2InfoHolder.mMediaRoute2Info.getAddress();
@@ -454,6 +473,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
                 // need to apply a routing audio policy.
                 mBluetoothRouteController.activateBluetoothDeviceWithAddress(deviceAddress);
                 mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
+                mActiveAudioRoutingPolicyOnHandler = false;
             };
 
         } else {
@@ -471,9 +491,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
                             AudioDeviceAttributes.ROLE_OUTPUT,
                             mediaRoute2InfoHolder.mAudioDeviceInfoType,
                             deviceAddress);
-            return () ->
-                    mAudioManager.setPreferredDeviceForStrategy(
-                            mStrategyForMedia, deviceAttributes);
+            return () -> {
+                mActiveAudioRoutingPolicyOnHandler = true;
+                mAudioManager.setPreferredDeviceForStrategy(mStrategyForMedia, deviceAttributes);
+            };
         }
     }
 
@@ -546,6 +567,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         var audioDeviceInfos = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
         var availableBluetoothRoutes = mBluetoothRouteController.getAvailableBluetoothRoutes();
         var musicVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
         var musicMaxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         var isVolumeFixed = mAudioManager.isVolumeFixed();
         synchronized (this) {
@@ -859,6 +881,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
     }
 
     /**
+     * Clears the preferred device (using {@link AudioManager#removePreferredDeviceForStrategy}), if
+     * this object has set a preferred device and said preference is active. Otherwise, does
+     * nothing.
+     *
+     * <p>Must be called on {@link #mHandler}.
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
+    private void maybeRemovePreferredDeviceOnHandler() {
+        if (mActiveAudioRoutingPolicyOnHandler) {
+            mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
+            mActiveAudioRoutingPolicyOnHandler = false;
+        }
+    }
+
+    /**
      * Holds a {@link MediaRoute2Info} and associated information that we don't want to put in the
      * {@link MediaRoute2Info} class because it's solely necessary for the implementation of this
      * class.
@@ -952,12 +989,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
         @Override
         public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
             for (AudioDeviceInfo deviceInfo : addedDevices) {
+                if (Flags.enablePreferredDeviceFixes() && !deviceInfo.isSink()) {
+                    // We only care about media sinks / outputs.
+                    continue;
+                }
                 if (AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.contains(deviceInfo.getType())) {
                     // When a new valid media output is connected, we clear any routing policies so
                     // that the default routing logic from the audio framework kicks in. As a result
                     // of this, when the user connects a bluetooth device or a wired headset, the
                     // new device becomes the active route, which is the traditional behavior.
-                    mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
+                    if (Flags.enablePreferredDeviceFixes()) {
+                        mHandler.post(
+                                AudioManagerRouteController.this
+                                        ::maybeRemovePreferredDeviceOnHandler);
+                    } else {
+                        mAudioManager.removePreferredDeviceForStrategy(mStrategyForMedia);
+                    }
                     rebuildAvailableRoutesAndNotify();
                     break;
                 }
