@@ -51,12 +51,16 @@
 #define FFS_NUM_EVENTS 5
 #define USB_STATE_MAX_LEN 20
 #define FFS_VENDOR_CTRL_REQUEST_EP0 "/dev/usb-ffs/ctrl/ep0"
+#define CTRL_INTERFACE_PROTOCOL 0xff
 
 #define FFS_ACCESSORY_EP0 "/dev/usb-ffs/aoa/ep0"
 #define FFS_ACCESSORY_EP1 "/dev/usb-ffs/aoa/ep1"
 #define FFS_ACCESSORY_EP2 "/dev/usb-ffs/aoa/ep2"
 
 namespace {
+/*****************************
+ * Accessory Descriptors
+ *****************************/
 struct func_desc {
     struct usb_interface_descriptor intf;
     struct usb_endpoint_descriptor_no_audio source;
@@ -172,63 +176,20 @@ const struct func_desc_ss ss_descriptors = {
         .sink_comp = ss_sink_comp,
 };
 
-const struct desc_v2 ctrl_desc = {
+const struct desc_v2 acc_desc = {
         .header =
                 {
                         .magic = htole32(FUNCTIONFS_DESCRIPTORS_MAGIC_V2),
-                        .length = htole32(sizeof(ctrl_desc)),
-                        .flags = FUNCTIONFS_ALL_CTRL_RECIP | FUNCTIONFS_CONFIG0_SETUP |
-                                FUNCTIONFS_HAS_FS_DESC | FUNCTIONFS_HAS_HS_DESC |
-                                FUNCTIONFS_HAS_SS_DESC,
+                        .length = htole32(sizeof(acc_desc)),
+                        .flags = htole32(FUNCTIONFS_HAS_FS_DESC | FUNCTIONFS_HAS_HS_DESC |
+                                         FUNCTIONFS_HAS_SS_DESC),
                 },
-        .fs_count = 3,
-        .hs_count = 3,
-        .ss_count = 5,
+        .fs_count = htole32(3),
+        .hs_count = htole32(3),
+        .ss_count = htole32(5),
         .fs_descs = fs_descriptors,
         .hs_descs = hs_descriptors,
         .ss_descs = ss_descriptors,
-};
-
-#define CTRL_INTERFACE_STR "Android Control Interface"
-struct ctrl_functionfs_lang {
-    __le16 code;
-    char str1[sizeof(CTRL_INTERFACE_STR)];
-} __attribute__((packed));
-
-struct ctrl_functionfs_strings {
-    struct usb_functionfs_strings_head header;
-    struct ctrl_functionfs_lang lang0;
-} __attribute__((packed));
-
-const struct ctrl_functionfs_strings ctrl_strings = {
-        .header =
-                {
-                        .magic = htole32(FUNCTIONFS_STRINGS_MAGIC),
-                        .length = htole32(sizeof(ctrl_strings)),
-                        .str_count = htole32(1),
-                        .lang_count = htole32(1),
-                },
-        .lang0 =
-                {
-                        .code = htole16(0x0409),
-                        .str1 = CTRL_INTERFACE_STR,
-                },
-};
-
-const struct desc_v2 acc_desc = {
-    .header =
-            {
-                    .magic = htole32(FUNCTIONFS_DESCRIPTORS_MAGIC_V2),
-                    .length = htole32(sizeof(acc_desc)),
-                    .flags = FUNCTIONFS_HAS_FS_DESC | FUNCTIONFS_HAS_HS_DESC |
-                            FUNCTIONFS_HAS_SS_DESC,
-            },
-    .fs_count = 3,
-    .hs_count = 3,
-    .ss_count = 5,
-    .fs_descs = fs_descriptors,
-    .hs_descs = hs_descriptors,
-    .ss_descs = ss_descriptors,
 };
 
 #define ACC_INTERFACE_STR "Android Accessory Interface"
@@ -254,6 +215,83 @@ const struct acc_functionfs_strings acc_strings = {
                 {
                         .code = htole16(0x0409),
                         .str1 = ACC_INTERFACE_STR,
+                },
+};
+
+/*****************************
+ * Control Descriptors
+ *****************************/
+const struct usb_interface_descriptor ctrl_interface_desc = {
+        .bLength = USB_DT_INTERFACE_SIZE,
+        .bDescriptorType = USB_DT_INTERFACE,
+        .bInterfaceNumber = 0,
+        .bNumEndpoints = 2,
+        .bInterfaceClass = USB_CLASS_VENDOR_SPEC,
+        .bInterfaceSubClass = USB_SUBCLASS_VENDOR_SPEC,
+        .bInterfaceProtocol = CTRL_INTERFACE_PROTOCOL,
+        .iInterface = 1,
+};
+
+const struct func_desc ctrl_fs_descriptors = {
+        .intf = ctrl_interface_desc,
+        .source = fs_source,
+        .sink = fs_sink,
+};
+
+const struct func_desc ctrl_hs_descriptors = {
+        .intf = ctrl_interface_desc,
+        .source = hs_source,
+        .sink = hs_sink,
+};
+
+const struct func_desc_ss ctrl_ss_descriptors = {
+        .intf = ctrl_interface_desc,
+        .source = ss_source,
+        .source_comp = ss_source_comp,
+        .sink = ss_sink,
+        .sink_comp = ss_sink_comp,
+};
+
+const struct desc_v2 ctrl_desc = {
+        .header =
+                {
+                        .magic = htole32(FUNCTIONFS_DESCRIPTORS_MAGIC_V2),
+                        .length = htole32(sizeof(ctrl_desc)),
+                        .flags = htole32(FUNCTIONFS_ALL_CTRL_RECIP | FUNCTIONFS_CONFIG0_SETUP |
+                                         FUNCTIONFS_HAS_FS_DESC | FUNCTIONFS_HAS_HS_DESC |
+                                         FUNCTIONFS_HAS_SS_DESC),
+                },
+        .fs_count = htole32(3),
+        .hs_count = htole32(3),
+        .ss_count = htole32(5),
+        .fs_descs = ctrl_fs_descriptors,
+        .hs_descs = ctrl_hs_descriptors,
+        .ss_descs = ctrl_ss_descriptors,
+};
+
+#define CTRL_INTERFACE_STR "Android Control Interface"
+struct ctrl_functionfs_lang {
+    __le16 code;
+    char str1[sizeof(CTRL_INTERFACE_STR)];
+} __attribute__((packed));
+
+struct ctrl_functionfs_strings {
+    struct usb_functionfs_strings_head header;
+    struct ctrl_functionfs_lang lang0;
+} __attribute__((packed));
+
+const struct ctrl_functionfs_strings ctrl_strings = {
+        .header =
+                {
+                        .magic = htole32(FUNCTIONFS_STRINGS_MAGIC),
+                        .length = htole32(sizeof(ctrl_strings)),
+                        .str_count = htole32(1),
+                        .lang_count = htole32(1),
+                },
+        .lang0 =
+                {
+                        .code = htole16(0x0409),
+                        .str1 = CTRL_INTERFACE_STR,
                 },
 };
 
