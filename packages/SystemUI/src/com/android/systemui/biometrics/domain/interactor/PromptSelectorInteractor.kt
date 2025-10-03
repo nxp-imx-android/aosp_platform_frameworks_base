@@ -169,29 +169,25 @@ constructor(
             ) {
                 return@combine null
             }
-
-            when (kind) {
-                is PromptKind.Biometric -> {
-                    BiometricPromptRequest.Biometric(
-                        info = promptInfo,
-                        userInfo =
-                            BiometricUserInfo(
-                                userId = userId,
-                                deviceCredentialOwnerId =
-                                    credentialInteractor.getCredentialOwnerOrSelfId(userId),
-                            ),
-                        operationInfo = BiometricOperationInfo(gatekeeperChallenge = challenge),
-                        modalities =
-                            if (Flags.bpFallbackOptions()) {
-                                modalities
-                            } else {
-                                kind.activeModalities
-                            },
-                        opPackageName = opPackageName,
-                    )
-                }
-                else -> null
-            }
+            BiometricPromptRequest.Biometric(
+                info = promptInfo,
+                userInfo =
+                    BiometricUserInfo(
+                        userId = userId,
+                        deviceCredentialOwnerId =
+                            credentialInteractor.getCredentialOwnerOrSelfId(userId),
+                    ),
+                operationInfo = BiometricOperationInfo(gatekeeperChallenge = challenge),
+                modalities =
+                    if (Flags.bpFallbackOptions()) {
+                        modalities
+                    } else if (kind is PromptKind.Biometric) {
+                        kind.activeModalities
+                    } else {
+                        BiometricModalities()
+                    },
+                opPackageName = opPackageName,
+            )
         }
 
     override val promptKind: StateFlow<PromptKind> = promptRepository.promptKind

@@ -32,6 +32,7 @@ import static com.android.server.biometrics.BiometricServiceStateProto.STATE_AUT
 import static com.android.server.biometrics.BiometricServiceStateProto.STATE_AUTH_STARTED;
 import static com.android.server.biometrics.BiometricServiceStateProto.STATE_AUTH_STARTED_UI_SHOWING;
 import static com.android.server.biometrics.BiometricServiceStateProto.STATE_ERROR_PENDING_SYSUI;
+import static com.android.server.biometrics.BiometricServiceStateProto.STATE_SHOWING_DEVICE_CREDENTIAL;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -342,12 +343,12 @@ public class AuthSessionTest {
         for (BiometricSensor sensor : session.mPreAuthInfo.eligibleSensors) {
             assertEquals(BiometricSensor.STATE_CANCELING, sensor.getSensorState());
         }
-        assertEquals(STATE_ERROR_PENDING_SYSUI, session.getState());
+        assertEquals(STATE_SHOWING_DEVICE_CREDENTIAL, session.getState());
 
         // If the sensor is STATE_CANCELING, delayed onAuthenticationRejected() shouldn't change the
         // session state to STATE_AUTH_PAUSED.
         session.onAuthenticationRejected(1);
-        assertEquals(STATE_ERROR_PENDING_SYSUI, session.getState());
+        assertEquals(STATE_SHOWING_DEVICE_CREDENTIAL, session.getState());
     }
 
     @Test
@@ -1018,7 +1019,7 @@ public class AuthSessionTest {
         session.onDialogAnimatedIn(true);
         session.onDeviceCredentialPressed();
         assertThat(session.getState()).isEqualTo(
-                BiometricServiceStateProto.STATE_SHOWING_DEVICE_CREDENTIAL);
+                STATE_SHOWING_DEVICE_CREDENTIAL);
 
         session.onResumeAuthentication();
 
