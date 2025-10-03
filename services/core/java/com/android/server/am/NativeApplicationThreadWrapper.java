@@ -77,20 +77,16 @@ import java.util.Map;
  * NativeApplicationThreadWrapper is a helper class treating INativeApplicationThread like
  * IApplicationThread.
  *
- * TODO(b/431636312): Implement necessary methods and raise errors when calling unexpected
+ * <p>TODO(b/431636312): Implement necessary methods and raise errors when calling unexpected
  * methods.
  */
 public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ActivityManagerService" : TAG_AM;
 
-    /**
-     * The default name of the native library that will be loaded in the native process.
-     */
+    /** The default name of the native library that will be loaded in the native process. */
     static final String LIB_NAME_BODY_DEFAULT = "main";
 
-    /**
-     * The default name of the entrypoint function that will run after the library is loaded.
-     */
+    /** The default name of the entrypoint function that will run after the library is loaded. */
     static final String FUNC_NAME_DEFAULT = "ANativeService_onCreate";
 
     /**
@@ -110,8 +106,11 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     private final int mUid;
     private final long mStartSeq;
 
-    NativeApplicationThreadWrapper(INativeApplicationThread nativeThread,
-            ActivityManagerService mgr, int uid, long startSeq) {
+    NativeApplicationThreadWrapper(
+            INativeApplicationThread nativeThread,
+            ActivityManagerService mgr,
+            int uid,
+            long startSeq) {
         if (!android.os.Flags.nativeFrameworkPrototype()) {
             throw new SecurityException("Invalid construction of NativeApplicationThreadWrapper");
         }
@@ -122,16 +121,28 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     }
 
     @Override
-    public final void scheduleReceiver(Intent intent, ActivityInfo info,
-            CompatibilityInfo compatInfo, int resultCode, String data, Bundle extras,
-            boolean ordered, boolean assumeDelivered, int sendingUser, int processState,
-            int sendingUid, String sendingPackage) {}
+    public final void scheduleReceiver(
+            Intent intent,
+            ActivityInfo info,
+            CompatibilityInfo compatInfo,
+            int resultCode,
+            String data,
+            Bundle extras,
+            boolean ordered,
+            boolean assumeDelivered,
+            int sendingUser,
+            int processState,
+            int sendingUid,
+            String sendingPackage) {}
 
     @Override
     public final void scheduleReceiverList(List<ReceiverInfo> info) throws RemoteException {}
 
     @Override
-    public final void scheduleCreateBackupAgent(ApplicationInfo app, int backupMode, int userId,
+    public final void scheduleCreateBackupAgent(
+            ApplicationInfo app,
+            int backupMode,
+            int userId,
             @BackupDestination int backupDestination) {}
 
     @Override
@@ -145,8 +156,10 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
         // Get ServiceInfo with meta-data since `info` doesn't have it.
         try {
             int userId = UserHandle.getUserId(mUid);
-            ServiceInfo infoWithMeta = mMgr.getPackageManager()
-                    .getServiceInfo(info.getComponentName(), PackageManager.GET_META_DATA, userId);
+            ServiceInfo infoWithMeta =
+                    mMgr.getPackageManager()
+                            .getServiceInfo(
+                                    info.getComponentName(), PackageManager.GET_META_DATA, userId);
             if (infoWithMeta.metaData != null) {
                 String ln = infoWithMeta.metaData.getString(META_DATA_LIB_NAME);
                 if (!TextUtils.isEmpty(ln)) libNameBody = ln;
@@ -165,35 +178,55 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
         ServiceRecord r = (ServiceRecord) token;
         List<String> zipPaths = new ArrayList(10);
         List<String> libPaths = new ArrayList(10);
-        LoadedApk.makePaths(null /* activityThread, used for instrumentation */,
-                false /* isBundledApp */, r.appInfo, zipPaths, libPaths);
+        LoadedApk.makePaths(
+                null /* activityThread, used for instrumentation */,
+                false /* isBundledApp */,
+                r.appInfo,
+                zipPaths,
+                libPaths);
 
-        Slog.i(TAG, "Scheduling native service – lib: " + libName
-                        + ", base symbol: " + funcName
-                        + ", nativeLibraryDir: " + r.appInfo.nativeLibraryDir);
+        Slog.i(
+                TAG,
+                "Scheduling native service – lib: "
+                        + libName
+                        + ", base symbol: "
+                        + funcName
+                        + ", nativeLibraryDir: "
+                        + r.appInfo.nativeLibraryDir);
         for (String libPath : libPaths) {
             Slog.i(TAG, "libPath: " + libPath);
         }
 
         try {
-            mNativeThread.scheduleCreateService(r, libPaths, r.appInfo.dataDir,
-                    libName, funcName, processState);
+            mNativeThread.scheduleCreateService(
+                    r, libPaths, r.appInfo.dataDir, libName, funcName, processState);
         } catch (RemoteException e) {
             Slog.w(TAG, "scheduleCreateService failed", e);
         }
     }
 
     @Override
-    public final void scheduleBindService(IBinder token, IBinder bindToken, Intent intent,
-            boolean rebind, int processState, long bindSeq) {
+    public final void scheduleBindService(
+            IBinder token,
+            IBinder bindToken,
+            Intent intent,
+            boolean rebind,
+            int processState,
+            long bindSeq) {
         String data = null;
         if (intent.getData() != null) {
             data = intent.getData().toString();
         }
         try {
             mNativeThread.scheduleBindService(
-                    token, bindToken, intent.hashCode(), intent.getAction(), data, rebind,
-                    processState, bindSeq);
+                    token,
+                    bindToken,
+                    intent.hashCode(),
+                    intent.getAction(),
+                    data,
+                    rebind,
+                    processState,
+                    bindSeq);
         } catch (RemoteException e) {
             Slog.w(TAG, "scheduleBindService failed", e);
         }
@@ -300,9 +333,19 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void dumpService(ParcelFileDescriptor pfd, IBinder servicetoken, String[] args) {}
 
     @Override
-    public void scheduleRegisteredReceiver(IIntentReceiver receiver, Intent intent, int resultCode,
-            String dataStr, Bundle extras, boolean ordered, boolean sticky, boolean assumeDelivered,
-            int sendingUser, int processState, int sendingUid, String sendingPackage)
+    public void scheduleRegisteredReceiver(
+            IIntentReceiver receiver,
+            Intent intent,
+            int resultCode,
+            String dataStr,
+            Bundle extras,
+            boolean ordered,
+            boolean sticky,
+            boolean assumeDelivered,
+            int sendingUser,
+            int processState,
+            int sendingUid,
+            String sendingPackage)
             throws RemoteException {}
 
     @Override
@@ -312,8 +355,14 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void profilerControl(boolean start, ProfilerInfo profilerInfo, int profileType) {}
 
     @Override
-    public void dumpHeap(boolean managed, boolean mallocInfo, boolean runGc, String dumpBitmaps,
-            String path, ParcelFileDescriptor fd, RemoteCallback finishCallback) {}
+    public void dumpHeap(
+            boolean managed,
+            boolean mallocInfo,
+            boolean runGc,
+            String dumpBitmaps,
+            String path,
+            ParcelFileDescriptor fd,
+            RemoteCallback finishCallback) {}
 
     @Override
     public void attachAgent(String agent) {}
@@ -342,15 +391,27 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
 
     @NeverCompile
     @Override
-    public void dumpMemInfo(ParcelFileDescriptor pfd, Debug.MemoryInfo mem, boolean checkin,
-            boolean dumpFullInfo, boolean dumpDalvik, boolean dumpSummaryOnly,
-            boolean dumpUnreachable, boolean dumpAllocatorStats, String[] args) {}
+    public void dumpMemInfo(
+            ParcelFileDescriptor pfd,
+            Debug.MemoryInfo mem,
+            boolean checkin,
+            boolean dumpFullInfo,
+            boolean dumpDalvik,
+            boolean dumpSummaryOnly,
+            boolean dumpUnreachable,
+            boolean dumpAllocatorStats,
+            String[] args) {}
 
     @NeverCompile
     @Override
-    public void dumpMemInfoProto(ParcelFileDescriptor pfd, Debug.MemoryInfo mem,
-            boolean dumpFullInfo, boolean dumpDalvik, boolean dumpSummaryOnly,
-            boolean dumpUnreachable, String[] args) {}
+    public void dumpMemInfoProto(
+            ParcelFileDescriptor pfd,
+            Debug.MemoryInfo mem,
+            boolean dumpFullInfo,
+            boolean dumpDalvik,
+            boolean dumpSummaryOnly,
+            boolean dumpUnreachable,
+            String[] args) {}
 
     @Override
     public void dumpGfxInfo(ParcelFileDescriptor pfd, String[] args) {}
@@ -365,8 +426,12 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void unstableProviderDied(IBinder provider) {}
 
     @Override
-    public void requestAssistContextExtras(IBinder activityToken, IBinder requestToken,
-            int requestType, int sessionId, int flags) {}
+    public void requestAssistContextExtras(
+            IBinder activityToken,
+            IBinder requestToken,
+            int requestType,
+            int sessionId,
+            int flags) {}
 
     @Override
     public void setCoreSettings(Bundle coreSettings) {}
@@ -430,31 +495,47 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void scheduleTransaction(ClientTransaction transaction) throws RemoteException {}
 
     @Override
-    public void scheduleTaskFragmentTransaction(@NonNull ITaskFragmentOrganizer organizer,
-            @NonNull TaskFragmentTransaction transaction) throws RemoteException {}
+    public void scheduleTaskFragmentTransaction(
+            @NonNull ITaskFragmentOrganizer organizer, @NonNull TaskFragmentTransaction transaction)
+            throws RemoteException {}
 
     @Override
-    public void requestDirectActions(@NonNull IBinder activityToken,
-            @NonNull IVoiceInteractor interactor, @Nullable RemoteCallback cancellationCallback,
+    public void requestDirectActions(
+            @NonNull IBinder activityToken,
+            @NonNull IVoiceInteractor interactor,
+            @Nullable RemoteCallback cancellationCallback,
             @NonNull RemoteCallback callback) {}
 
     @Override
-    public void performDirectAction(@NonNull IBinder activityToken, @NonNull String actionId,
-            @Nullable Bundle arguments, @Nullable RemoteCallback cancellationCallback,
+    public void performDirectAction(
+            @NonNull IBinder activityToken,
+            @NonNull String actionId,
+            @Nullable Bundle arguments,
+            @Nullable RemoteCallback cancellationCallback,
             @NonNull RemoteCallback resultCallback) {}
 
     @Override
-    public void notifyContentProviderPublishStatus(@NonNull ContentProviderHolder holder,
-            @NonNull String authorities, int userId, boolean published) {}
+    public void notifyContentProviderPublishStatus(
+            @NonNull ContentProviderHolder holder,
+            @NonNull String authorities,
+            int userId,
+            boolean published) {}
 
     @Override
-    public void instrumentWithoutRestart(ComponentName instrumentationName,
-            Bundle instrumentationArgs, IInstrumentationWatcher instrumentationWatcher,
-            IUiAutomationConnection instrumentationUiConnection, ApplicationInfo targetInfo) {}
+    public void instrumentWithoutRestart(
+            ComponentName instrumentationName,
+            Bundle instrumentationArgs,
+            IInstrumentationWatcher instrumentationWatcher,
+            IUiAutomationConnection instrumentationUiConnection,
+            ApplicationInfo targetInfo) {}
 
     @Override
-    public void updateUiTranslationState(IBinder activityToken, int state,
-            TranslationSpec sourceSpec, TranslationSpec targetSpec, List<AutofillId> viewIds,
+    public void updateUiTranslationState(
+            IBinder activityToken,
+            int state,
+            TranslationSpec sourceSpec,
+            TranslationSpec targetSpec,
+            List<AutofillId> viewIds,
             UiTranslationSpec uiTranslationSpec) {}
 
     @Override
