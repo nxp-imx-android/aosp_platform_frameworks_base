@@ -957,13 +957,6 @@ public class PipTransition extends PipTransitionController implements
             return false;
         }
 
-        // Since opening a new task while in Desktop Mode always first open in Fullscreen
-        // until DesktopMode Shell code resolves it to Freeform, PipTransition will get a
-        // possibility to handle it also. In this case return false to not have it enter PiP.
-        if (mPipDesktopState.isPipInDesktopMode()) {
-            return false;
-        }
-
         // Assuming auto-enter is enabled and pipTask is non-null, the TRANSIT_OPEN request type
         // implies that we are entering PiP in button navigation mode. This is guaranteed by
         // TaskFragment#startPausing()` in Core which wouldn't get called in gesture nav.
