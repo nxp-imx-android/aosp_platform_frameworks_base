@@ -19,13 +19,11 @@ package com.android.wm.shell.transition;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
-import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
-import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -395,17 +393,6 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mSplitHandler.removePipFromSplitIfNeeded(request, out);
             }
             mSplitHandler.addEnterOrExitForPipIfNeeded(request, out);
-
-            final ActivityManager.RunningTaskInfo triggerTask = request.getTriggerTask();
-            if (TransitionUtil.isOpeningType(request.getType())
-                    && triggerTask != null
-                    && triggerTask.getWindowingMode() != WINDOWING_MODE_PINNED
-                    && mSplitHandler.getSplitItemPosition(triggerTask.token)
-                    == SPLIT_POSITION_UNDEFINED) {
-                // OPEN request triggered from a task not in PiP nor split-screen,
-                // make sure the task to open is brought to front.
-                out.reorder(triggerTask.token, true);
-            }
             return out;
         } else if (request.getType() == TRANSIT_PIP
                 && (request.getFlags() & FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY) != 0 && (
