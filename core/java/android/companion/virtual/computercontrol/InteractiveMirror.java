@@ -18,6 +18,7 @@ package android.companion.virtual.computercontrol;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresNoPermission;
+import android.companion.virtualdevice.flags.Flags;
 import android.os.RemoteException;
 import android.view.SurfaceControl;
 
@@ -47,7 +48,7 @@ public final class InteractiveMirror implements AutoCloseable {
     }
 
     /**
-     * Set whether the user can interact with the contents of the mirror.
+     * Sets whether the user can interact with the contents of the mirror.
      *
      * @see #DEFAULT_INTERACTIVE
      */
@@ -60,7 +61,27 @@ public final class InteractiveMirror implements AutoCloseable {
         }
     }
 
-    /** Get the mirror surface associated with the interactive mirror. */
+    /**
+     * Resizes the mirror.
+     */
+    @RequiresNoPermission
+    public void resize(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+
+        if (!Flags.computerControlShowTouches()) {
+            return;
+        }
+
+        try {
+            mMirror.resize(width, height);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /** Returns the mirror surface associated with the interactive mirror. */
     @NonNull
     public SurfaceControl getMirrorSurface() {
         return mMirrorSurface;

@@ -19,7 +19,10 @@ package com.android.server.companion.virtual.computercontrol;
 import android.annotation.RequiresNoPermission;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.gui.DropInputMode;
+import android.view.DisplayInfo;
 import android.view.SurfaceControl;
+
+import com.android.server.input.InputManagerInternal;
 
 import java.util.function.Supplier;
 
@@ -33,13 +36,18 @@ import java.util.function.Supplier;
  */
 final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
 
+    private final DisplayInfo mDisplayInfo;
     private final SurfaceControl mMirrorSurface;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
+    private final InputManagerInternal mInputManagerInternal;
 
     InteractiveMirrorImpl(SurfaceControl mirrorSurface,
-            Supplier<SurfaceControl.Transaction> transactionSupplier) {
+            Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
+            InputManagerInternal inputManagerInternal) {
         mMirrorSurface = mirrorSurface;
         mTransactionSupplier = transactionSupplier;
+        mDisplayInfo = displayInfo;
+        mInputManagerInternal = inputManagerInternal;
     }
 
     @RequiresNoPermission
@@ -49,6 +57,21 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
             transaction.setDropInputMode(mMirrorSurface,
                     interactive ? DropInputMode.NONE : DropInputMode.ALL).apply();
         }
+    }
+
+    @RequiresNoPermission
+    @Override
+    public void resize(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+
+        final float sx = ((float) mDisplayInfo.logicalWidth) / width;
+        final float sy = ((float) mDisplayInfo.logicalHeight) / height;
+        // The overall scale is the max due to letterboxing / pillarboxing
+        // TODO(b/448309877): Figure out if we need a different scale mechanism here.
+        mInputManagerInternal.setAccessibilityPointerIconScaleFactor(mDisplayInfo.displayId,
+                Math.max(sx, sy));
     }
 
     @RequiresNoPermission
