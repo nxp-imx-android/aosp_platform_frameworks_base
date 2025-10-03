@@ -276,7 +276,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testSendSmartReply_controllerCalledForSmartReply() {
         CharSequence[] testChoices = createChoicesWithAnimatedReply();
         setSmartReplies(testChoices);
@@ -286,7 +285,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testSendSmartReply_controllerCalledForAnimatedReply() {
         CharSequence[] testChoices = createChoicesWithAnimatedReply();
         setSmartReplies(testChoices);
@@ -1371,7 +1369,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testMeasure_animatedReplies_areShownAndMeasuredCorrectly() {
 
         // Define 3 animated replies
@@ -1404,7 +1401,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testMeasure_animatedActions_areShownAndMeasuredCorrectly() {
 
         // Define 3 animated actions
@@ -1446,7 +1442,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testMeasure_animatedRepliesAndActions_showAllAnimatedRepliesAndHideActions() {
 
         // Define 2 animated replies
@@ -1481,7 +1476,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testMeasure_animatedRepliesAndAnimatedActions_prioritizeAnimatedReplies() {
 
         // Define 2 animated replies
@@ -1516,7 +1510,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testMeasure_animatedRepliesAndActions_notEnoughSpace_showOnlyAnimatedReplies() {
 
         // Define 3 animated replies
@@ -1556,7 +1549,6 @@ public class SmartReplyViewTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT)
     public void testMeasure_animatedActionsAndSmartReplies_showAllAnimatedActionsAndHideReplies() {
 
         // Define 3 animated actions

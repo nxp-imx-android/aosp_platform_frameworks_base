@@ -310,34 +310,18 @@ public class NotificationConversationInfo extends LinearLayout implements
         // Delegate
         bindDelegate();
     }
-    private boolean showSummarizationFeedback() {
-        return NmSummarizationUiFlag.isEnabled();
-    }
-
-    private boolean showAnimatedFeedback() {
-        return com.android.systemui.Flags.notificationAnimatedActionsTreatment();
-    }
-
-    private boolean showClassificationFeedback() {
-        return Flags.notificationClassificationUi();
-    }
 
     private void bindFeedback() {
         View feedbackButton = findViewById(R.id.feedback);
-        if (!showSummarizationFeedback() && !showAnimatedFeedback()
-                && !showClassificationFeedback()) {
+        Intent intent = NotificationInfo.getAssistantFeedbackIntent(
+                    mINotificationManager, mPm, mSbn.getKey(), mRanking);
+        if (intent == null) {
             feedbackButton.setVisibility(GONE);
         } else {
-            Intent intent = NotificationInfo.getAssistantFeedbackIntent(
-                    mINotificationManager, mPm, mSbn.getKey(), mRanking);
-            if (intent == null) {
-                feedbackButton.setVisibility(GONE);
-            } else {
-                feedbackButton.setVisibility(VISIBLE);
-                feedbackButton.setOnClickListener((View v) -> {
-                    mFeedbackClickListener.onClick(v, intent);
-                });
-            }
+            feedbackButton.setVisibility(VISIBLE);
+            feedbackButton.setOnClickListener((View v) -> {
+                mFeedbackClickListener.onClick(v, intent);
+            });
         }
     }
 

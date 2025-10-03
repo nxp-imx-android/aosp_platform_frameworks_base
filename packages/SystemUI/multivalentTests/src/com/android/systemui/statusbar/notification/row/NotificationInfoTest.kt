@@ -75,6 +75,7 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.android.telecom.telecomManager
 import com.google.common.truth.Truth.assertThat
+import java.util.concurrent.CountDownLatch
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,7 +90,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.concurrent.CountDownLatch
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -866,19 +866,6 @@ class NotificationInfoTest : SysuiTestCase() {
         bindNotification(wasShownHighPriority = false)
 
         assertThat(underTest.willBeRemoved()).isFalse()
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI,
-        Flags.FLAG_NM_SUMMARIZATION,
-        Flags.FLAG_NM_SUMMARIZATION_UI,
-        com.android.systemui.Flags.FLAG_NOTIFICATION_ANIMATED_ACTIONS_TREATMENT
-    )
-    @Throws(Exception::class)
-    fun testBindNotification_HidesFeedbackLink_flagOff() {
-        bindNotification()
-        assertThat(underTest.findViewById<View>(R.id.feedback).visibility).isEqualTo(GONE)
     }
 
     @Test

@@ -48,7 +48,6 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.Button
 import androidx.appcompat.content.res.AppCompatResources
-import com.android.systemui.Flags
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.shared.system.ActivityManagerWrapper
@@ -145,29 +144,25 @@ constructor(
     ): List<Button> {
         val finalCombinedButtons: List<Button>
 
-        if (Flags.notificationAnimatedActionsTreatment()) {
-            // Order is Animated Replies -> Animated Actions -> Smart Replies -> Smart Actions
+        // Order is Animated Replies -> Animated Actions -> Smart Replies -> Smart Actions
 
-            // Filter buttons based on their type for the animated treatment
-            val animatedReplyButtons =
-                smartReplyButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_REPLY }
-            val regularReplyButtons =
-                smartReplyButtons.filter { it.getButtonType() == SmartButtonType.REPLY }
+        // Filter buttons based on their type for the animated treatment
+        val animatedReplyButtons =
+            smartReplyButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_REPLY }
+        val regularReplyButtons =
+            smartReplyButtons.filter { it.getButtonType() == SmartButtonType.REPLY }
 
-            val animatedActionButtons =
-                smartActionButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_ACTION }
-            val regularActionButtons =
-                smartActionButtons.filter { it.getButtonType() == SmartButtonType.ACTION }
+        val animatedActionButtons =
+            smartActionButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_ACTION }
+        val regularActionButtons =
+            smartActionButtons.filter { it.getButtonType() == SmartButtonType.ACTION }
 
-            finalCombinedButtons =
-                animatedReplyButtons +
-                    animatedActionButtons +
-                    regularReplyButtons +
-                    regularActionButtons
-        } else {
-            // Order is Smart Replies -> Smart Actions
-            finalCombinedButtons = smartReplyButtons + smartActionButtons
-        }
+        finalCombinedButtons =
+            animatedReplyButtons +
+                animatedActionButtons +
+                regularReplyButtons +
+                regularActionButtons
+
         return finalCombinedButtons
     }
 
@@ -453,8 +448,7 @@ constructor(
         packageContext: Context,
     ): Button {
         val isAnimatedAction =
-            Flags.notificationAnimatedActionsTreatment() &&
-                smartActions.fromAssistant &&
+            smartActions.fromAssistant &&
                 action.extras.getBoolean(Notification.Action.EXTRA_IS_ANIMATED, false)
         val layoutRes =
             if (isAnimatedAction) {
@@ -574,10 +568,7 @@ constructor(
         choice: CharSequence,
         delayOnClickListener: Boolean,
     ): Button {
-        val enableAnimatedReply =
-            Flags.notificationAnimatedActionsTreatment() &&
-                smartReplies.fromAssistant &&
-                isAnimatedReply(choice)
+        val enableAnimatedReply = smartReplies.fromAssistant && isAnimatedReply(choice)
         val layoutRes =
             if (enableAnimatedReply) {
                 R.layout.animated_action_button
@@ -677,7 +668,7 @@ constructor(
                 smartReplyController.smartReplySent(
                     entry,
                     replyIndex,
-                    if (Flags.notificationAnimatedActionsTreatment()) choice else button.text,
+                    choice,
                     getNotificationLocation(entry).toMetricsEventEnum(),
                     false, /* modifiedBeforeSending */
                 )
