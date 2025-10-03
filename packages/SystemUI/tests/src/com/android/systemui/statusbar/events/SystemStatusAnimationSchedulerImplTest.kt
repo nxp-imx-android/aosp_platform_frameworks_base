@@ -29,6 +29,7 @@ import android.testing.TestableLooper.RunWithLooper
 import android.view.View
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_FIX_DOT_NOT_VISIBLE_RACE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
 import com.android.systemui.dump.DumpManager
@@ -104,7 +105,10 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
+            return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_LOCATION_INDICATORS_ENABLED,
+                FLAG_FIX_DOT_NOT_VISIBLE_RACE,
+            )
         }
     }
 
@@ -602,31 +606,84 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
     }
 
     @Test
+    @EnableFlags(FLAG_FIX_DOT_NOT_VISIBLE_RACE)
     fun testPrivacyEvent_forceVisibleIsUpdated_whenRescheduledDuringAnimatingState() = runTest {
         // Instantiate class under test with TestScope from runTest
         initializeSystemStatusAnimationScheduler(testScope = this)
 
         // create and schedule privacy event
         createAndScheduleFakePrivacyEvent()
+        fastForwardAnimationToState(RunningChipAnim)
+
         // request removal of persistent dot (sets forceVisible to false)
         systemStatusAnimationScheduler.removePersistentDot()
-        fastForwardAnimationToState(RunningChipAnim)
 
         // create and schedule a privacy event again (resets forceVisible to true)
         createAndScheduleFakePrivacyEvent()
 
-        // skip status chip display time
-        advanceTimeBy(DISPLAY_LENGTH + 1)
+        // The old animation was cancelled and should be animating out now
+        testScheduler.runCurrent()
         assertEquals(AnimatingOut, systemStatusAnimationScheduler.animationState.value)
         verify(listener, times(1)).onSystemEventAnimationFinish(anyBoolean())
 
         // skip disappear animation
         animatorTestRule.advanceTimeBy(DISAPPEAR_ANIMATION_DURATION)
+        testScheduler.runCurrent()
+
+        // After the first animation is cancelled, the new event is queued up
+        assertEquals(AnimationQueued, systemStatusAnimationScheduler.animationState.value)
+
+        // Advance time through the new event's full lifecycle to confirm it works.
+        // Including the coroutine TestScope for DEBOUNCE_DELAY and DISPLAY_LENGTH, and also the
+        // animation fade in/out.
+        // Both timelines should be advanced to simulate the full lifecycle.
+        advanceTimeBy(DEBOUNCE_DELAY + APPEAR_ANIMATION_DURATION + DISPLAY_LENGTH + 2)
+        animatorTestRule.advanceTimeBy(APPEAR_ANIMATION_DURATION + DISAPPEAR_ANIMATION_DURATION)
+        testScheduler.runCurrent()
 
         // verify that we reach ShowingPersistentDot and that listener callback is invoked
         assertEquals(ShowingPersistentDot, systemStatusAnimationScheduler.animationState.value)
         verify(listener, times(1))
             .onSystemStatusAnimationTransitionToPersistentDot(any(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_DOT_NOT_VISIBLE_RACE)
+    fun testPrivacyDot_visible_whenRemovedAndRescheduledInDebounceWindow() = runTest {
+        initializeSystemStatusAnimationScheduler(testScope = this)
+        createAndScheduleFakePrivacyEvent()
+        assertEquals(AnimationQueued, systemStatusAnimationScheduler.animationState.value)
+
+        // The dot is removed and another privacy event is scheduled within the debounce window
+        advanceTimeBy(DEBOUNCE_DELAY / 2)
+        systemStatusAnimationScheduler.removePersistentDot()
+        createAndScheduleFakePrivacyEvent()
+
+        // Animation proceeds and ends up showing the persistent dot
+        fastForwardAnimationToState(ShowingPersistentDot)
+        assertEquals(ShowingPersistentDot, systemStatusAnimationScheduler.animationState.value)
+        verify(listener, times(1))
+            .onSystemStatusAnimationTransitionToPersistentDot(any(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_DOT_NOT_VISIBLE_RACE)
+    fun testPrivacyDot_animationCancelled_whenRemovedInDebounceWindow() = runTest {
+        initializeSystemStatusAnimationScheduler(testScope = this)
+        createAndScheduleFakePrivacyEvent()
+        assertEquals(AnimationQueued, systemStatusAnimationScheduler.animationState.value)
+
+        // The dot is removed within the debounce window
+        advanceTimeBy(DEBOUNCE_DELAY / 2)
+        systemStatusAnimationScheduler.removePersistentDot()
+
+        // Animation should be cancelled, state Idle
+        assertEquals(Idle, systemStatusAnimationScheduler.animationState.value)
+
+        // Advance time past the debounce window, nothing should happen
+        advanceTimeBy(DEBOUNCE_DELAY)
+        assertEquals(Idle, systemStatusAnimationScheduler.animationState.value)
+        verify(listener, never()).onSystemEventAnimationBegin()
     }
 
     @Test
