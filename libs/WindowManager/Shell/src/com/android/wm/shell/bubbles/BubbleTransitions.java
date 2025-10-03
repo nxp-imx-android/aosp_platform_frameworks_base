@@ -220,6 +220,20 @@ public class BubbleTransitions {
         }
     }
 
+    /**
+     * Handles a startTransition request and amend the necessary operations to the given wct.
+     */
+    public void handleRequest(@NonNull WindowContainerTransaction wct, @NonNull IBinder transition,
+            @NonNull TransitionRequestInfo request) {
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            final TransitionHandler transitionHandler = mEnterTransitions.get(transition);
+            if (transitionHandler != null) {
+                wct.merge(transitionHandler.handleRequest(transition, request),
+                        true /* transfer */);
+            }
+        }
+    }
+
     /** Notifies when the unfold transition has finished. */
     public void notifyUnfoldTransitionFinished(@NonNull IBinder transition) {
         if (com.android.wm.shell.Flags.enableBubbleBar()) {
@@ -1219,8 +1233,8 @@ public class BubbleTransitions {
                     opts.setTaskAlwaysOnTop(true);
                     opts.setLaunchNextToBubble(true);
                     opts.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+                    opts.setLaunchBounds(launchBounds);
                 }
-                opts.setLaunchBounds(launchBounds);
                 // TODO(b/437451940): start the pending intent or shortcut via WCT
                 if (mBubble.isShortcut()) {
                     final LauncherApps launcherApps = mContext.getSystemService(
@@ -1275,7 +1289,16 @@ public class BubbleTransitions {
         @Override
         public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
                 @Nullable TransitionRequestInfo request) {
-            return null;
+            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+                return null;
+            }
+
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            final Rect bounds = new Rect();
+            mPositioner.getTaskViewRestBounds(bounds);
+            wct.setBounds(mBubbleController.getAppBubbleRootTaskToken(), bounds);
+            BubbleLog.d("LaunchOrConvertToBubble.handleRequest(), set root bounds " + bounds);
+            return wct;
         }
 
         @Override
@@ -1579,13 +1602,14 @@ public class BubbleTransitions {
             final boolean reparentToTda =
                     mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
                             && mTaskInfo.getParentTaskId() != INVALID_TASK_ID;
+            final WindowContainerToken rootToken = mBubbleController.getAppBubbleRootTaskToken();
             final WindowContainerTransaction wct = getEnterBubbleTransaction(
-                    mTaskInfo.token, mBubbleController.getAppBubbleRootTaskToken(), launchBounds,
+                    mTaskInfo.token, rootToken, launchBounds,
                     true /* isAppBubble */, reparentToTda);
             mHomeIntentProvider.addLaunchHomePendingIntent(wct, mTaskInfo.displayId,
                     mTaskInfo.userId);
 
-            wct.setBounds(mTaskInfo.token, launchBounds);
+            wct.setBounds(rootToken != null ? rootToken : mTaskInfo.token, launchBounds);
 
             final TaskView tv = b.getTaskView();
             tv.setSurfaceLifecycle(SurfaceView.SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT);
@@ -2279,7 +2303,7 @@ public class BubbleTransitions {
             final TaskView tv = mBubble.getTaskView();
             mPositioner.getTaskViewRestBounds(mBounds);
             WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.setBounds(tv.getTaskInfo().token, mBounds);
+            mTaskViewTransitions.updateTaskViewTaskBounds(wct, tv.getTaskInfo(), mBounds);
             mTransition = mTransitions.startTransition(TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR,
                     wct, this);
             mTaskViewTransitions.removePendingTransitions(tv.getController());
