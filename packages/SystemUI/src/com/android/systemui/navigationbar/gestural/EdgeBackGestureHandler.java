@@ -21,8 +21,6 @@ import static android.view.InputDevice.SOURCE_TOUCHPAD;
 import static android.view.MotionEvent.TOOL_TYPE_FINGER;
 import static android.view.MotionEvent.TOOL_TYPE_MOUSE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION;
-
-import static com.android.systemui.Flags.blockMouseEdgeBackGesture;
 import static com.android.systemui.Flags.edgebackGestureHandlerGetRunningTasksBackground;
 import static com.android.systemui.classifier.Classifier.BACK_GESTURE;
 import static com.android.systemui.navigationbar.gestural.Utilities.isTrackpadThreeFingerSwipe;
@@ -1358,17 +1356,12 @@ public class EdgeBackGestureHandler {
     }
 
     private boolean isButtonPressFromTrackpadOrMouse(MotionEvent ev) {
-        if (blockMouseEdgeBackGesture()) {
-            boolean isSourceMouseOrTouchpad = ev.getSource() == SOURCE_MOUSE
-                    || ev.getSource() == SOURCE_TOUCHPAD
-                    || ev.getSource() == (SOURCE_MOUSE | SOURCE_TOUCHPAD);
-            boolean isTooltypeMouseOrFinger = ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_MOUSE
-                    || ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_FINGER;
-            return isSourceMouseOrTouchpad && isTooltypeMouseOrFinger;
-        } else {
-            return ev.getSource() == (SOURCE_MOUSE | SOURCE_TOUCHPAD)
-                    && ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_FINGER;
-        }
+        boolean isSourceMouseOrTouchpad = ev.getSource() == SOURCE_MOUSE
+                || ev.getSource() == SOURCE_TOUCHPAD
+                || ev.getSource() == (SOURCE_MOUSE | SOURCE_TOUCHPAD);
+        boolean isTooltypeMouseOrFinger = ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_MOUSE
+                || ev.getToolType(ev.getActionIndex()) == TOOL_TYPE_FINGER;
+        return isSourceMouseOrTouchpad && isTooltypeMouseOrFinger;
     }
 
     private void dispatchToBackAnimation(MotionEvent event) {
