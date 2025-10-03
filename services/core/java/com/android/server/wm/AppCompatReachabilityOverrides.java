@@ -272,8 +272,8 @@ class AppCompatReachabilityOverrides {
             return false;
         }
         final Rect parentAppBoundsOverride = getConfigOverrideHint().getParentAppBoundsOverride();
-        final Rect parentAppBounds = parentAppBoundsOverride != null
-                ? parentAppBoundsOverride : parentConfiguration.windowConfiguration.getAppBounds();
+        final Rect parentAppBounds = parentAppBoundsOverride.isEmpty()
+                ? parentConfiguration.windowConfiguration.getAppBounds() : parentAppBoundsOverride;
         // Use screen resolved bounds which uses resolved bounds or size compat bounds
         // as activity bounds can sometimes be empty
         final Rect opaqueActivityBounds = mActivityRecord.mAppCompatController
@@ -303,8 +303,8 @@ class AppCompatReachabilityOverrides {
             return false;
         }
         final Rect parentAppBoundsOverride = getConfigOverrideHint().getParentAppBoundsOverride();
-        final Rect parentAppBounds = parentAppBoundsOverride != null
-                ? parentAppBoundsOverride : parentConfiguration.windowConfiguration.getAppBounds();
+        final Rect parentAppBounds = parentAppBoundsOverride.isEmpty()
+                ? parentConfiguration.windowConfiguration.getAppBounds() : parentAppBoundsOverride;
         // Use screen resolved bounds which uses resolved bounds or size compat bounds
         // as activity bounds can sometimes be empty.
         final Rect opaqueActivityBounds = mActivityRecord.mAppCompatController

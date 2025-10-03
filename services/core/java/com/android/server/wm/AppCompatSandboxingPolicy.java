@@ -81,8 +81,7 @@ class AppCompatSandboxingPolicy {
                 // parent.
                 appBounds = mResolveConfigHint.mParentAppBoundsOverride;
             }
-            if (!resolvedConfig.windowConfiguration.getBounds().isEmpty()) {
-                // Only set if there is a resolved override config.
+            if (mResolveConfigHint.shouldSandboxToAppBounds()) {
                 resolvedConfig.windowConfiguration.setBounds(appBounds);
             }
         }
@@ -125,10 +124,10 @@ class AppCompatSandboxingPolicy {
         private DisplayInfo mTmpOverrideDisplayInfo;
         @Nullable
         private AppCompatDisplayInsets mTmpCompatInsets;
-        @Nullable
-        private Rect mParentAppBoundsOverride;
-        @Nullable
-        private Rect mParentBoundsOverride;
+        @NonNull
+        private final Rect mParentAppBoundsOverride = new Rect();
+        @NonNull
+        private final Rect mParentBoundsOverride = new Rect();
         @Configuration.Orientation
         private int mTmpOverrideConfigOrientation;
         private boolean mUseOverrideInsetsForConfig;
@@ -136,9 +135,11 @@ class AppCompatSandboxingPolicy {
         private void resolveTmpOverrides(DisplayContent dc, Configuration parentConfig,
                 boolean isFixedRotationTransforming, @Nullable Rect safeRegionBounds,
                 boolean shouldApplyLegacyInsets) {
-            mParentAppBoundsOverride = safeRegionBounds != null ? safeRegionBounds : new Rect(
-                    parentConfig.windowConfiguration.getAppBounds());
-            mParentBoundsOverride = safeRegionBounds != null ? safeRegionBounds : new Rect(
+            final Rect parentAppBounds = parentConfig.windowConfiguration.getAppBounds() != null
+                    ? parentConfig.windowConfiguration.getAppBounds() : new Rect();
+            mParentAppBoundsOverride.set(safeRegionBounds != null ? safeRegionBounds :
+                    parentAppBounds);
+            mParentBoundsOverride.set(safeRegionBounds != null ? safeRegionBounds :
                     parentConfig.windowConfiguration.getBounds());
             mTmpOverrideConfigOrientation = parentConfig.orientation;
             Insets insets = Insets.NONE;
@@ -169,6 +170,8 @@ class AppCompatSandboxingPolicy {
         }
 
         private void resetTmpOverrides() {
+            mParentAppBoundsOverride.setEmpty();
+            mParentBoundsOverride.setEmpty();
             mTmpOverrideDisplayInfo = null;
             mTmpCompatInsets = null;
             mTmpOverrideConfigOrientation = ORIENTATION_UNDEFINED;
@@ -184,12 +187,12 @@ class AppCompatSandboxingPolicy {
             return mTmpCompatInsets;
         }
 
-        @Nullable
+        @NonNull
         Rect getParentAppBoundsOverride() {
             return mParentAppBoundsOverride;
         }
 
-        @Nullable
+        @NonNull
         Rect getParentBoundsOverride() {
             return mParentBoundsOverride;
         }
@@ -201,6 +204,16 @@ class AppCompatSandboxingPolicy {
         @Configuration.Orientation
         int getOverrideOrientation() {
             return mTmpOverrideConfigOrientation;
+        }
+
+        /**
+         * Returns {@code true} if the app bounds should be sandboxed to the parent app bounds.
+         * This is typically true when the top inset of the app bounds differs from the top inset
+         * of the parent bounds, indicating that compatibility treatment (like excluding caption
+         * insets) has been applied.
+         */
+        private boolean shouldSandboxToAppBounds() {
+            return mParentAppBoundsOverride.top != mParentBoundsOverride.top;
         }
     }
 }
