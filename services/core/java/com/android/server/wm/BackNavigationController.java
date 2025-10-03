@@ -286,7 +286,10 @@ class BackNavigationController {
                     & PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED) != 0;
             infoBuilder.setAppProgressAllowed(canInterruptInView && !transferGestureToEmbedded
                     && callbackInfo.isAnimationCallback());
-            mNavigationMonitor.startMonitor(window, navigationObserver);
+            if (!mNavigationMonitor.startMonitor(window, navigationObserver)) {
+                Slog.e(TAG, "Unable to monitor remote binder, returning null.");
+                return null;
+            }
 
             int requestOverride = callbackInfo.getOverrideBehavior();
             ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "startBackNavigation currentTask=%s, "
@@ -830,21 +833,29 @@ class BackNavigationController {
                     }
                 };
 
-        void startMonitor(@NonNull WindowState window, @NonNull RemoteCallback observer) {
+        boolean startMonitor(@NonNull WindowState window, @NonNull RemoteCallback observer) {
             mNavigatingWindow = window;
             mObserver = observer;
             try {
                 mObserver.getInterface().asBinder().linkToDeath(mListenerDeathRecipient,
                         0 /* flags */);
-            } catch (RemoteException r) {
-                Slog.e(TAG, "Failed to link to death");
+            } catch (RuntimeException | RemoteException r) {
+                Slog.e(TAG, "Failed to link to death " + r);
+                mObserver = null;
+                mNavigatingWindow = null;
+                return false;
             }
+            return true;
         }
 
         void stopMonitorForRemote() {
             if (mObserver != null) {
-                mObserver.getInterface().asBinder().unlinkToDeath(mListenerDeathRecipient,
-                        0 /* flags */);
+                try {
+                    mObserver.getInterface().asBinder().unlinkToDeath(mListenerDeathRecipient,
+                            0 /* flags */);
+                } catch (RuntimeException r) {
+                    Slog.e(TAG, "Failed to unlink to death " + r);
+                }
             }
             mObserver = null;
         }
