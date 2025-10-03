@@ -44752,7 +44752,6 @@ package android.telephony {
     field public static final String KEY_WFC_EMERGENCY_ADDRESS_CARRIER_APP_STRING = "wfc_emergency_address_carrier_app_string";
     field public static final String KEY_WORLD_MODE_ENABLED_BOOL = "world_mode_enabled_bool";
     field public static final String KEY_WORLD_PHONE_BOOL = "world_phone_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.support_low_battery_alert") public static final int LOW_BATTERY_ALERT_DISABLED = -1; // 0xffffffff
     field @FlaggedApi("com.android.internal.telephony.flags.expose_oppt_auto_data_switch_policies") public static final int OPP_AUTO_DATA_SWITCH_POLICY_DISABLED = 0; // 0x0
     field @FlaggedApi("com.android.internal.telephony.flags.expose_oppt_auto_data_switch_policies") public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOLLOW_SYSTEM = 2147483647; // 0x7fffffff
     field @FlaggedApi("com.android.internal.telephony.flags.expose_oppt_auto_data_switch_policies") public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY = 1; // 0x1
