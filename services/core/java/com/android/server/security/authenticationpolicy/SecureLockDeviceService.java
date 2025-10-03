@@ -44,7 +44,6 @@ import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.UsbManager;
-import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.PowerManager;
 import android.os.RemoteCallbackList;
@@ -340,7 +339,6 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
 
         mSecureLockDeviceSettingsManager.initSettingsControllerDependencies(
                 mContext.getSystemService(DevicePolicyManager.class),
-                NfcAdapter.getDefaultAdapter(mContext),
                 mContext.getSystemService(UsbManager.class),
                 LocalServices.getService(IUsbManagerInternal.class)
         );

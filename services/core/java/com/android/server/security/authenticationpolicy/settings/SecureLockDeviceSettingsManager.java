@@ -19,7 +19,6 @@ package com.android.server.security.authenticationpolicy.settings;
 import android.app.admin.DevicePolicyManager;
 import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.UsbManager;
-import android.nfc.NfcAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,8 +38,7 @@ public interface SecureLockDeviceSettingsManager {
 
     /** Initializes system service dependencies that are not ready until boot is completed */
     void initSettingsControllerDependencies(@Nullable DevicePolicyManager devicePolicyManager,
-            @Nullable NfcAdapter nfcAdapter, @Nullable UsbManager usbManager,
-            @Nullable IUsbManagerInternal usbManagerInternal);
+            @Nullable UsbManager usbManager, @Nullable IUsbManagerInternal usbManagerInternal);
 
     /**
      * Resets map of {@link ManagedSetting} for security features in secure lock device. This is

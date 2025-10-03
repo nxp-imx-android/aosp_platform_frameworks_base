@@ -194,8 +194,8 @@ public class AppOpHistoryHelper {
                 }
             }
             if (includeDiscreteEvents) {
-                // Discrete accesses doesn't include rejected events.
-                if (event.totalAccessCount() > 0) {
+                // Discrete accesses doesn't include rejected events, reject event has 0 duration.
+                if (event.totalAccessCount() > 0 || event.totalDurationMillis() > 0) {
                     result.addDiscreteAccess(event.opCode(), event.uid(), event.packageName(),
                             event.attributionTag(), event.uidState(), event.opFlags(),
                             discretizeTimestamp(event.accessTimeMillis()),
