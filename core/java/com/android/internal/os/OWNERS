@@ -22,3 +22,4 @@ per-file *ApplicationSharedMemory* = file:/PERFORMANCE_OWNERS
 
 # Memcg memory accounting
 per-file MemcgProcMemoryUtil.java = file:/PERFORMANCE_OWNERS
+per-file MemcgProcMemoryUtil.java = file:/MEMORY_OWNERS
