@@ -81,6 +81,8 @@ public class PresentationControllerTests extends WindowTestsBase {
         final DisplayContent dc = createPresentationDisplay();
         final ActivityRecord activity = createActivityRecord(createTask(dc));
         assertTrue(activity.isVisible());
+        // Finish WAKE transition (adding task to empty display wakes it up)
+        mPlayer.flush();
 
         // Add a presentation window, which requests the activity to stop.
         final WindowState window = addPresentationWindow(100000, dc.mDisplayId);
@@ -115,6 +117,8 @@ public class PresentationControllerTests extends WindowTestsBase {
         final DisplayContent dc = createPresentationDisplay();
         final ActivityRecord activity = createActivityRecord(createTask(dc));
         assertTrue(activity.isVisible());
+        // Finish WAKE transition (adding task to empty display wakes it up)
+        mPlayer.flush();
 
         final WindowState window = addPresentationWindow(100000, dc.mDisplayId);
         assertFalse(window.mTransitionController.isCollecting());

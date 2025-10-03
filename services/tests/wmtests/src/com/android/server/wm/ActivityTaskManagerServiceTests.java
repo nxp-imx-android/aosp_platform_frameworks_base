@@ -927,8 +927,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         assertTopNonSleeping.accept(topActivity);
 
         // Sleep all displays.
-        mWm.mRoot.forAllDisplays(display -> doReturn(true).when(display).shouldSleep());
-        mAtm.updateSleepIfNeededLocked();
+        mWm.mRoot.forAllDisplays(display -> {
+            doReturn(true).when(display).shouldSleep();
+            display.sleepIfNeeded();
+        });
         // Simulate holding sleep wake lock if it is acquired.
         verify(mSupervisor.mGoingToSleepWakeLock).acquire();
         doReturn(true).when(mSupervisor.mGoingToSleepWakeLock).isHeld();
@@ -963,8 +965,10 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         assertEquals(homeActivity.app, mAtm.mInternal.getTopApp());
 
         // Wake all displays.
-        mWm.mRoot.forAllDisplays(display -> doReturn(false).when(display).shouldSleep());
-        mAtm.updateSleepIfNeededLocked();
+        mWm.mRoot.forAllDisplays(display -> {
+            doReturn(false).when(display).shouldSleep();
+            display.wakeIfNeeded();
+        });
 
         assertTopNonSleeping.accept(homeActivity);
     }

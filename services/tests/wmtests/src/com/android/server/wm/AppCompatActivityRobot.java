@@ -418,7 +418,7 @@ class AppCompatActivityRobot {
 
         // Make sure the display doesn't get into sleep when created;
         doReturn(false).when(mSecondaryDisplayContent).shouldSleep();
-        mAtm.updateSleepIfNeededLocked();
+        mSecondaryDisplayContent.wakeIfNeeded();
 
         onPostDisplayContentCreation(mSecondaryDisplayContent);
     }

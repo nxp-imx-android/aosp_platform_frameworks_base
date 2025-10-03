@@ -2150,12 +2150,12 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 mHandler.removeMessages(LAUNCH_TIMEOUT_MSG);
             }
         }
-        mRootWindowContainer.sleepAllDisplays();
     }
 
     boolean shutdownLocked(int timeout) {
         mRootWindowContainer.prepareForShutdown();
         goingToSleepLocked();
+        mRootWindowContainer.forAllDisplays(display -> display.setIsSleeping(true));
 
         boolean timedout = false;
         final long endTime = System.currentTimeMillis() + timeout;

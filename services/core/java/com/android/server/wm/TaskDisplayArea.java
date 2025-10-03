@@ -291,7 +291,10 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         // Update the top resumed activity because the preferred top focusable task may be changed.
         mAtmService.mTaskSupervisor.updateTopResumedActivityIfNeeded("addChildTask");
 
-        mAtmService.updateSleepIfNeededLocked();
+        // If the display was previously empty, then we may need to wake it up.
+        if (mDisplayContent != null) {
+            mDisplayContent.wakeIfNeeded();
+        }
     }
 
     @Override
@@ -310,7 +313,10 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     private void removeChildTask(Task task) {
         super.removeChild(task);
         onRootTaskRemoved(task);
-        mAtmService.updateSleepIfNeededLocked();
+        // If the display becomes empty, we may need to put it to sleep
+        if (mDisplayContent != null) {
+            mDisplayContent.sleepIfNeeded();
+        }
         removeRootTaskReferenceIfNeeded(task);
     }
 
