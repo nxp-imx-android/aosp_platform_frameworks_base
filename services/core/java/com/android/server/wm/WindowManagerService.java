@@ -10368,14 +10368,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     return true;
                 }
             }
-            final TaskSnapshot snapshot;
-            if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                snapshot = mTaskSnapshotController.getSnapshot(imeTargetWindowTask.mTaskId,
-                        TaskSnapshotManager.RESOLUTION_ANY);
-            } else {
-                snapshot = mTaskSnapshotController.getSnapshot(imeTargetWindowTask.mTaskId,
-                        false /* isLowResolution */);
-            }
+            final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
+                    imeTargetWindowTask.mTaskId, TaskSnapshotManager.RESOLUTION_ANY);
             return snapshot != null && snapshot.hasImeSurface();
         }
     }
@@ -10462,15 +10456,7 @@ public class WindowManagerService extends IWindowManager.Stub
         if (taskSnapshot == null) {
             return null;
         }
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            return taskSnapshot.wrapToBitmap();
-        } else {
-            if (taskSnapshot.getHardwareBuffer() == null) {
-                return null;
-            }
-            return Bitmap.wrapHardwareBuffer(taskSnapshot.getHardwareBuffer(),
-                    taskSnapshot.getColorSpace());
-        }
+        return taskSnapshot.wrapToBitmap();
     }
 
     @Override

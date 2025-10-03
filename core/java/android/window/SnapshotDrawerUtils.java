@@ -51,7 +51,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.hardware.HardwareBuffer;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.SurfaceControl;
@@ -116,14 +115,8 @@ public class SnapshotDrawerUtils {
             mRootSurface = rootSurface;
             mSnapshot = snapshot;
             mTitle = title;
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                mSnapshotH = snapshot.getHardwareBufferHeight();
-                mSnapshotW = snapshot.getHardwareBufferWidth();
-            } else {
-                final HardwareBuffer hwBuffer = snapshot.getHardwareBuffer();
-                mSnapshotW = hwBuffer.getWidth();
-                mSnapshotH = hwBuffer.getHeight();
-            }
+            mSnapshotH = snapshot.getHardwareBufferHeight();
+            mSnapshotW = snapshot.getHardwareBufferWidth();
             mContainerW = windowBounds.width();
             mContainerH = windowBounds.height();
         }
@@ -146,24 +139,14 @@ public class SnapshotDrawerUtils {
             }
 
             // In case window manager leaks us, make sure we don't retain the snapshot.
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                mSnapshot.closeBuffer();
-            } else {
-                if (mSnapshot.getHardwareBuffer() != null) {
-                    mSnapshot.getHardwareBuffer().close();
-                }
-            }
+            mSnapshot.closeBuffer();
             if (releaseAfterDraw) {
                 mRootSurface.release();
             }
         }
 
         private void drawSizeMatchSnapshot() {
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                mSnapshot.setBufferToSurface(mTransaction, mRootSurface);
-            } else {
-                mTransaction.setBuffer(mRootSurface, mSnapshot.getHardwareBuffer());
-            }
+            mSnapshot.setBufferToSurface(mTransaction, mRootSurface);
             mTransaction.setColorSpace(mRootSurface, mSnapshot.getColorSpace()).apply();
         }
 
@@ -176,13 +159,8 @@ public class SnapshotDrawerUtils {
                         .setName(mTitle + " - task-snapshot-surface")
                         .setBLASTLayer()
                         .setParent(mRootSurface)
-                        .setCallsite("TaskSnapshotWindow.drawSizeMismatchSnapshot");
-                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                    builder.setFormat(mSnapshot.getHardwareBufferFormat());
-                } else {
-                    final HardwareBuffer buffer = mSnapshot.getHardwareBuffer();
-                    builder.setFormat(buffer.getFormat());
-                }
+                        .setCallsite("TaskSnapshotWindow.drawSizeMismatchSnapshot")
+                        .setFormat(mSnapshot.getHardwareBufferFormat());
                 childSurfaceControl = builder.build();
             }
 
@@ -204,11 +182,7 @@ public class SnapshotDrawerUtils {
             final float scaleY = (float) mContainerH / mSnapshotH;
             mTransaction.setScale(childSurfaceControl, scaleX, scaleY);
             mTransaction.setColorSpace(childSurfaceControl, mSnapshot.getColorSpace());
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                mSnapshot.setBufferToSurface(mTransaction, childSurfaceControl);
-            } else {
-                mTransaction.setBuffer(childSurfaceControl, mSnapshot.getHardwareBuffer());
-            }
+            mSnapshot.setBufferToSurface(mTransaction, childSurfaceControl);
             mTransaction.apply();
             if (!WindowManager.useClientSurface()) {
                 childSurfaceControl.release();

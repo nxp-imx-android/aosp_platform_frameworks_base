@@ -89,9 +89,7 @@ public class TaskSnapshotWindow {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_STARTING_WINDOW,
                 "create taskSnapshot surface for task: %d", taskId);
 
-        final int format = com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()
-                ? snapshot.getHardwareBufferFormat()
-                : snapshot.getHardwareBuffer().getFormat();
+        final int format = snapshot.getHardwareBufferFormat();
         final WindowManager.LayoutParams layoutParams = SnapshotDrawerUtils.createLayoutParameters(
                 info, TITLE_FORMAT + taskId, TYPE_APPLICATION_STARTING,
                 format, appToken);

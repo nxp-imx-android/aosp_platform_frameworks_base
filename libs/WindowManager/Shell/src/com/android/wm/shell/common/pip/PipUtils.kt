@@ -142,12 +142,8 @@ object PipUtils {
     @JvmStatic
     fun getTaskSnapshot(taskId: Int, isLowResolution: Boolean): TaskSnapshot? {
         return if (taskId <= 0) null else try {
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                TaskSnapshotManager.getInstance().getTaskSnapshot(taskId,
-                    TaskSnapshotManager.convertRetrieveFlag(isLowResolution))
-            } else {
-                ActivityTaskManager.getService().getTaskSnapshot(taskId, isLowResolution)
-            }
+            TaskSnapshotManager.getInstance().getTaskSnapshot(taskId,
+                TaskSnapshotManager.convertRetrieveFlag(isLowResolution))
         } catch (e: RemoteException) {
             Log.e(TAG, "Failed to get task snapshot, taskId=$taskId", e)
             null

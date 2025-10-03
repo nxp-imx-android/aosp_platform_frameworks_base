@@ -42,7 +42,6 @@ import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
@@ -233,14 +232,8 @@ class SnapshotController {
             final WindowContainer wc = changeInfos.get(i).mContainer;
             final Task task = wc.asTask();
             if (task != null && wc.isVisibleRequested() && !task.inPinnedWindowingMode()) {
-                final TaskSnapshot snapshot;
-                if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                    snapshot = mTaskSnapshotController.getSnapshot(task.mTaskId,
-                            TaskSnapshotManager.RESOLUTION_ANY);
-                } else {
-                    snapshot = mTaskSnapshotController.getSnapshot(task.mTaskId,
-                            false /* isLowResolution */);
-                }
+                final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(task.mTaskId,
+                        TaskSnapshotManager.RESOLUTION_ANY);
                 if (snapshot != null) {
                     mTaskSnapshotController.removeAndDeleteSnapshot(task.mTaskId, task.mUserId);
                 }

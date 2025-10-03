@@ -2303,16 +2303,10 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
 
-        final TaskSnapshot snapshot;
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            snapshot = mWmService.mTaskSnapshotController.getSnapshot(task.mTaskId,
-                    Flags.respectRequestedTaskSnapshotResolution()
-                            ? TaskSnapshotManager.RESOLUTION_ANY
-                            : TaskSnapshotManager.RESOLUTION_HIGH);
-        } else {
-            snapshot = mWmService.mTaskSnapshotController.getSnapshot(task.mTaskId,
-                    false /* isLowResolution */);
-        }
+        final TaskSnapshot snapshot = mWmService.mTaskSnapshotController.getSnapshot(task.mTaskId,
+                Flags.respectRequestedTaskSnapshotResolution()
+                        ? TaskSnapshotManager.RESOLUTION_ANY
+                        : TaskSnapshotManager.RESOLUTION_HIGH);
         final int type = getStartingWindowType(newTask, taskSwitch, processRunning,
                 allowTaskSnapshot, activityCreated, activityAllDrawn, snapshot);
 

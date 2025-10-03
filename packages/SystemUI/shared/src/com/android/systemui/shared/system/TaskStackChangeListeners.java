@@ -190,10 +190,8 @@ public class TaskStackChangeListeners {
                 } catch (Exception e) {
                     Log.w(TAG, "Failed to call registerTaskStackListener", e);
                 }
-                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                    TaskSnapshotManager.getInstance()
-                            .registerTaskSnapshotListener(mTaskSnapshotListener);
-                }
+                TaskSnapshotManager.getInstance()
+                        .registerTaskSnapshotListener(mTaskSnapshotListener);
             }
         }
 
@@ -211,10 +209,8 @@ public class TaskStackChangeListeners {
                 } catch (Exception e) {
                     Log.w(TAG, "Failed to call unregisterTaskStackListener", e);
                 }
-                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                    TaskSnapshotManager.getInstance()
-                            .unregisterTaskSnapshotListener(mTaskSnapshotListener);
-                }
+                TaskSnapshotManager.getInstance()
+                        .unregisterTaskSnapshotListener(mTaskSnapshotListener);
             }
         }
 
@@ -391,10 +387,6 @@ public class TaskStackChangeListeners {
                         }
                         if (!snapshotConsumed) {
                             thumbnail.recycleBitmap();
-                            if (!com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()
-                                    && snapshot.getHardwareBuffer() != null) {
-                                snapshot.getHardwareBuffer().close();
-                            }
                         }
                         Trace.endSection();
                         break;
