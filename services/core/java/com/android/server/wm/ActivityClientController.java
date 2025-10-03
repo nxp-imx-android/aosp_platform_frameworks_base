@@ -1293,8 +1293,7 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     private Task getMultiwindowFullscreenTargetTask() {
         Task task = mService.getTopDisplayFocusedRootTask();
-        if (DesktopExperienceFlags.ENABLE_REQUEST_FULLSCREEN_RESTORE_FREEFORM_BUGFIX.isTrue()
-                && task.mCreatedByOrganizer) {
+        if (task.mCreatedByOrganizer) {
             final Task topMostChild = task.getTopLeafTask();
             if (topMostChild != null) {
                 task = topMostChild;
