@@ -16,10 +16,12 @@
 
 package com.android.systemui.shade
 
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
@@ -177,6 +179,7 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun instantCollapseShade_notificationShadeHidden() =
         kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
@@ -193,6 +196,7 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun instantCollapseShade_qsShadeHidden() =
         kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)

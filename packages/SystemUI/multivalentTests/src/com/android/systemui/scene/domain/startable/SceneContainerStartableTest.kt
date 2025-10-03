@@ -36,6 +36,7 @@ import com.android.internal.policy.IKeyguardDismissCallback
 import com.android.keyguard.AuthInteractionProperties
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.Flags
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.activityTransitionAnimator
@@ -240,6 +241,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun hydrateVisibility_dualShade() =
         kosmos.runTest {
             enableDualShade()
@@ -579,6 +581,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun switchFromBouncerToQuickSettingsWhenDeviceUnlocked_whenLeaveOpenShade_dualShade() =
         kosmos.runTest {
             enableDualShade()
@@ -1808,6 +1811,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun hydrateWindowController_setNotificationShadeFocusable_dual_shade() =
         kosmos.runTest {
             enableDualShade()
@@ -2070,6 +2074,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun hydrateInteractionState_dualShade_whileLocked() =
         kosmos.runTest {
             enableDualShade()
@@ -2159,6 +2164,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun hydrateInteractionState_dualShade_whileUnlocked() =
         kosmos.runTest {
             enableDualShade()
@@ -2948,6 +2954,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun handleDisableFlags_dualShade() =
         kosmos.runTest {
             underTest.start()
