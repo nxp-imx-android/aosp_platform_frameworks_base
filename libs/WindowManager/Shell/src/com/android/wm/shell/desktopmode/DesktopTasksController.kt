@@ -820,7 +820,11 @@ class DesktopTasksController(
         runOnTransitStart(transition)
     }
 
-    private fun onDisplayDisconnect(
+    /**
+     * Returns a WindowContainerTransaction containing all the changes when a display is
+     * disconnected.
+     */
+    fun onDisplayDisconnect(
         disconnectedDisplayId: Int,
         destinationDisplayId: Int,
         transition: IBinder,
@@ -3654,19 +3658,6 @@ class DesktopTasksController(
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
         logV("handleRequest request=%s", request)
-        // First, check if this is a display disconnect request.
-        val displayChange = request.displayChange
-        if (
-            DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue &&
-                displayChange != null &&
-                displayChange.disconnectReparentDisplay != INVALID_DISPLAY
-        ) {
-            return onDisplayDisconnect(
-                displayChange.displayId,
-                displayChange.disconnectReparentDisplay,
-                transition,
-            )
-        }
         val userChange = request.userChange
         if (
             DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue &&

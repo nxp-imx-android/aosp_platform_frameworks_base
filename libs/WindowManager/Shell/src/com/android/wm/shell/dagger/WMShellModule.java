@@ -1225,12 +1225,14 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<DisplayDisconnectTransitionHandler> provideDisplayDisconnectTransitionHandler(
-            ShellInit shellInit, Transitions transitions) {
+            ShellInit shellInit, Transitions transitions,
+            Optional<DesktopTasksController> desktopTasksController) {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
             return Optional.empty();
         } else {
             return Optional.of(
-                    new DisplayDisconnectTransitionHandler(transitions, shellInit)
+                    new DisplayDisconnectTransitionHandler(transitions, shellInit,
+                            desktopTasksController)
             );
         }
     }

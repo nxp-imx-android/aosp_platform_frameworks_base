@@ -25,6 +25,7 @@ import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import java.util.Optional
 
 /**
  * Handler to animate the transition from disconnecting a display.
@@ -32,8 +33,11 @@ import com.android.wm.shell.transition.Transitions
  * TODO: b/391652399 Consider moving this out of desktop package as it becomes less
  *   desktop-specific.
  */
-class DisplayDisconnectTransitionHandler(val transitions: Transitions, shellInit: ShellInit) :
-    Transitions.TransitionHandler {
+class DisplayDisconnectTransitionHandler(
+    val transitions: Transitions,
+    shellInit: ShellInit,
+    private val desktopTasksController: Optional<DesktopTasksController>,
+) : Transitions.TransitionHandler {
 
     private val pendingTransitions = mutableSetOf<IBinder>()
 
@@ -66,15 +70,25 @@ class DisplayDisconnectTransitionHandler(val transitions: Transitions, shellInit
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
-        // Fallback method; if no other handler takes the transition, we still need to tell
-        // this one to handle the animation later. Currently this is possible on a device
-        // that supports multi-display but does not support desktop mode, as
-        // DesktopTasksController will not handle the disconnect request.
-        val displayChange = request.displayChange ?: return null
+        val displayChange = request.displayChange
         if (
             DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue &&
+                displayChange != null &&
                 displayChange.disconnectReparentDisplay != INVALID_DISPLAY
         ) {
+            if (desktopTasksController.isPresent) {
+                return desktopTasksController
+                    .get()
+                    .onDisplayDisconnect(
+                        displayChange.displayId,
+                        displayChange.disconnectReparentDisplay,
+                        transition,
+                    )
+            }
+            // Fallback method; if no other handler takes the transition, we still need to tell
+            // this one to handle the animation later. Currently this is possible on a device
+            // that supports multi-display but does not support desktop mode, as
+            // DesktopTasksController will not handle the disconnect request.
             addPendingTransition(transition)
         }
         // Return null since another handler may want to make specific task changes.
