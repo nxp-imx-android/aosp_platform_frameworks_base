@@ -471,78 +471,82 @@ private fun ContentScope.SplitShade(
                             .fillMaxSize()
                             .padding(bottom = navBarBottomHeight)
                 ) {
-                    val sceneState =
-                        rememberMutableSceneTransitionLayoutState(
-                            initialScene =
-                                remember { if (qsContainerViewModel.isEditing) Edit else QS },
-                            transitions = transitions,
-                        )
+                    if (viewModel.isQsEnabled) {
+                        val sceneState =
+                            rememberMutableSceneTransitionLayoutState(
+                                initialScene =
+                                    remember { if (qsContainerViewModel.isEditing) Edit else QS },
+                                transitions = transitions,
+                            )
 
-                    val coroutineScope = rememberCoroutineScope()
+                        val coroutineScope = rememberCoroutineScope()
 
-                    LaunchedEffect(sceneState, qsContainerViewModel.isEditing, coroutineScope) {
-                        if (qsContainerViewModel.isEditing) {
-                            sceneState.setTargetScene(Edit, coroutineScope)
-                        } else {
-                            sceneState.setTargetScene(QS, coroutineScope)
-                        }
-                    }
-
-                    NestedSceneTransitionLayout(
-                        state = sceneState,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        scene(QS) {
-                            val tileSquishiness by
-                                with(this@SplitShade) {
-                                    animateContentFloatAsState(
-                                        value = 1f,
-                                        key = QuickSettings.SharedValues.TilesSquishiness,
-                                        canOverflow = false,
-                                    )
-                                }
-
-                            LaunchedEffect(Unit) {
-                                snapshotFlow { tileSquishiness }
-                                    .collect { viewModel.setTileSquishiness(it) }
+                        LaunchedEffect(sceneState, qsContainerViewModel.isEditing, coroutineScope) {
+                            if (qsContainerViewModel.isEditing) {
+                                sceneState.setTargetScene(Edit, coroutineScope)
+                            } else {
+                                sceneState.setTargetScene(QS, coroutineScope)
                             }
+                        }
 
-                            Element(QS.rootElementKey, Modifier) {
-                                Column {
-                                    Box(
-                                        Modifier.weight(1f)
-                                            .sysuiResTag("expanded_qs_scroll_view")
-                                            .verticalScroll(rememberScrollState())
-                                            .wrapContentHeight(
-                                                align = Alignment.Top,
-                                                unbounded = true,
-                                            )
-                                    ) {
-                                        QuickSettingsContent(
-                                            qsContainerViewModel,
-                                            mediaInRow = false,
+                        NestedSceneTransitionLayout(
+                            state = sceneState,
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            scene(QS) {
+                                val tileSquishiness by
+                                    with(this@SplitShade) {
+                                        animateContentFloatAsState(
+                                            value = 1f,
+                                            key = QuickSettings.SharedValues.TilesSquishiness,
+                                            canOverflow = false,
                                         )
                                     }
-                                    FooterActionsWithAnimatedVisibility(
-                                        viewModel = footerActionsViewModel,
-                                        isCustomizing = false,
-                                        customizingAnimationDuration = 0,
-                                        modifier =
-                                            Modifier.align(Alignment.CenterHorizontally)
-                                                .sysuiResTag("qs_footer_actions"),
-                                    )
+
+                                LaunchedEffect(Unit) {
+                                    snapshotFlow { tileSquishiness }
+                                        .collect { viewModel.setTileSquishiness(it) }
+                                }
+
+                                Element(QS.rootElementKey, Modifier) {
+                                    Column {
+                                        Box(
+                                            Modifier.weight(1f)
+                                                .sysuiResTag("expanded_qs_scroll_view")
+                                                .verticalScroll(rememberScrollState())
+                                                .wrapContentHeight(
+                                                    align = Alignment.Top,
+                                                    unbounded = true,
+                                                )
+                                        ) {
+                                            QuickSettingsContent(
+                                                qsContainerViewModel,
+                                                mediaInRow = false,
+                                            )
+                                        }
+                                        FooterActionsWithAnimatedVisibility(
+                                            viewModel = footerActionsViewModel,
+                                            isCustomizing = false,
+                                            customizingAnimationDuration = 0,
+                                            modifier =
+                                                Modifier.align(Alignment.CenterHorizontally)
+                                                    .sysuiResTag("qs_footer_actions"),
+                                        )
+                                    }
                                 }
                             }
-                        }
 
-                        scene(Edit) {
-                            Element(Edit.rootElementKey, Modifier) {
-                                GridAnchor()
-                                EditMode(
-                                    qsContainerViewModel.editModeViewModel,
-                                    Modifier.testTag("edit_mode_scene")
-                                        .padding(horizontal = QuickSettingsShade.Dimensions.Padding),
-                                )
+                            scene(Edit) {
+                                Element(Edit.rootElementKey, Modifier) {
+                                    GridAnchor()
+                                    EditMode(
+                                        qsContainerViewModel.editModeViewModel,
+                                        Modifier.testTag("edit_mode_scene")
+                                            .padding(
+                                                horizontal = QuickSettingsShade.Dimensions.Padding
+                                            ),
+                                    )
+                                }
                             }
                         }
                     }
