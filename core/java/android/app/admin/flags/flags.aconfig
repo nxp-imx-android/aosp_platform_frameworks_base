@@ -560,3 +560,13 @@ flag {
   bug: "436799232"
   is_exported: true
 }
+
+flag {
+  name: "fix_disabled_by_admin_short_message_not_shown"
+  namespace: "enterprise"
+  description: "[HSUM]Test Issues Review Request for 1TCs fail at Device Owner Tests -> Policy transparency test -> Disallow config tethering test [run-on-secondary-user]"
+  bug: "448569510"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
