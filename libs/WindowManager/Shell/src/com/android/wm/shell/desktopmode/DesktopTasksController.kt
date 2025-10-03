@@ -6006,44 +6006,32 @@ class DesktopTasksController(
                     validDragArea,
                 )
 
-                val newDisplayId = motionEvent.displayId
-                val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(newDisplayId)
-                val isCrossDisplayDrag =
-                    DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue() &&
-                        newDisplayId != taskInfo.getDisplayId() &&
-                        displayAreaInfo != null
-
-                if (!isCrossDisplayDrag && destinationBounds == dragStartBounds) {
+                if (destinationBounds == dragStartBounds) {
                     // There's no actual difference between the start and end bounds, so while a
                     // WCT change isn't needed, the dragged surface still needs to be snapped back
-                    // to its original location.
+                    // to its original location. This is as long as it moved some in the first
+                    // place, if it didn't and |currentDragBounds| is already at destination then
+                    // there's no need to animate.
                     if (currentDragBounds != dragStartBounds) {
-                        // If task's position needs to be changed from the current bounds, animate
-                        // the bounds change
+                        releaseVisualIndicator()
                         returnToDragStartAnimator.start(
                             taskInfo.taskId,
                             taskSurface,
                             startBounds = currentDragBounds,
                             endBounds = dragStartBounds,
                         )
-                    } else {
-                        // Set the task bounds even if there is no difference between the current
-                        // bounds and destination bounds in case that task surface was moved off
-                        // screen during the drag
-                        val t = transactionPool.acquire()
-                        t.setPosition(
-                            taskSurface,
-                            destinationBounds.left.toFloat(),
-                            destinationBounds.top.toFloat(),
-                        )
-                        t.apply()
-                        transactionPool.release(t)
                     }
-                    releaseVisualIndicator()
                     return true
                 }
 
+                val newDisplayId = motionEvent.displayId
+                val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(newDisplayId)
+                val isCrossDisplayDrag =
+                    DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue() &&
+                        newDisplayId != taskInfo.getDisplayId() &&
+                        displayAreaInfo != null
                 val prevCaptionInsets = taskInfo.freeformCaptionInsets
+
                 if (isCrossDisplayDrag) {
                     val captionInsetsDp =
                         displayController
