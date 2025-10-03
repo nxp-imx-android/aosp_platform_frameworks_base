@@ -16,6 +16,8 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -23,8 +25,10 @@ import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -49,15 +53,16 @@ import org.junit.runner.RunWith
 class GoneUserActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private lateinit var underTest: GoneUserActionsViewModel
+    private val Kosmos.underTest: GoneUserActionsViewModel by
+        Kosmos.Fixture { GoneUserActionsViewModel(shadeModeInteractor = shadeModeInteractor) }
 
     @Before
     fun setUp() {
-        underTest = GoneUserActionsViewModel(shadeModeInteractor = kosmos.shadeModeInteractor)
-        underTest.activateIn(kosmos.testScope)
+        with(kosmos) { underTest.activateIn(testScope) }
     }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun downTransitionKey_splitShadeEnabled_isGoneToSplitShade() =
         kosmos.runTest {
             val userActions by collectLastValue(underTest.actions)
@@ -76,6 +81,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun downTransitionKey_dualShadeEnabled_isNull() =
         kosmos.runTest {
             val userActions by collectLastValue(underTest.actions)
@@ -95,6 +101,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun swipeDownWithTwoFingers_splitShade_goesToShade() =
         kosmos.runTest {
             val userActions by collectLastValue(underTest.actions)
@@ -105,6 +112,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun swipeDownWithTwoFingers_dualShadeEnabled_isNull() =
         kosmos.runTest {
             val userActions by collectLastValue(underTest.actions)
