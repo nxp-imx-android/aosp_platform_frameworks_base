@@ -18,14 +18,12 @@ package com.android.systemui.unfold
 
 import android.content.Context
 import android.hardware.devicestate.DeviceStateManager
-import android.os.SystemProperties
 import com.android.internal.foldables.FoldLockSettingAvailabilityProvider
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.LifecycleScreenStatusProvider
 import com.android.systemui.unfold.config.UnfoldTransitionConfig
-import com.android.systemui.unfold.dagger.UnfoldBg
 import com.android.systemui.unfold.dagger.UnfoldMain
 import com.android.systemui.unfold.data.repository.FoldStateRepository
 import com.android.systemui.unfold.data.repository.FoldStateRepositoryImpl
@@ -138,19 +136,14 @@ class UnfoldTransitionModule {
     fun provideShellProgressProvider(
         config: UnfoldTransitionConfig,
         foldProvider: FoldProvider,
-        provider: Provider<Optional<UnfoldTransitionProgressProvider>>,
         @Named(UNFOLD_ONLY_PROVIDER)
         unfoldOnlyProvider: Provider<Optional<UnfoldTransitionProgressProvider>>,
     ): ShellUnfoldProgressProvider {
         val resultingProvider =
             if (config.isEnabled) {
-                // Return unfold only provider to the shell if we don't want to animate tasks during
+                // Return unfold only provider to the shell as we don't want to animate tasks during
                 // folding. Shell provider listeners are responsible for animating task bounds.
-                if (ENABLE_FOLD_TASK_ANIMATIONS) {
-                    provider
-                } else {
-                    unfoldOnlyProvider
-                }
+                unfoldOnlyProvider
             } else {
                 null
             }
@@ -192,8 +185,3 @@ class UnfoldTransitionModule {
 
 const val UNFOLD_STATUS_BAR = "unfold_status_bar"
 const val UNFOLD_ONLY_PROVIDER = "unfold_only_provider"
-
-// TODO: b/265764985 - tracking bug to clean-up the flag
-// FeatureFlags are not accessible here because it's a global submodule (see GlobalModule.java)
-private val ENABLE_FOLD_TASK_ANIMATIONS =
-    SystemProperties.getBoolean("persist.unfold.enable_fold_tasks_animation", false)
