@@ -74,7 +74,7 @@ import static android.companion.CompanionDeviceManager.FLAG_CALL_METADATA;
 import static android.companion.CompanionDeviceManager.FLAG_TASK_CONTINUITY;
 import static android.companion.CompanionDeviceManager.FLAG_UNIVERSAL_MODES;
 import static android.companion.CompanionDeviceManager.FLAG_UNIVERSAL_CLIPBOARD;
-import static android.companion.AssociationRequest.PERMISSION_NEARBY;
+import static android.companion.AssociationRequest.PERMISSION_GROUP_NEARBY;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_PCC;
 import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
@@ -152,7 +152,7 @@ public final class PermissionsUtils {
             Map.entry(PERMISSION_ADD_TRUSTED_DISPLAY, List.of(ADD_TRUSTED_DISPLAY)));
 
     public static final Map<String, Integer> EXTRA_PERM_SET_TO_ID = Map.ofEntries(
-            Map.entry(PERMISSION_NEARBY, PERMISSION_NEARBY_DEVICES)
+            Map.entry(PERMISSION_GROUP_NEARBY, PERMISSION_NEARBY_DEVICES)
     );
 
     private static final Set<String> SYSTEM_ONLY_DEVICE_PROFILES;

@@ -204,7 +204,7 @@ public final class AssociationRequest implements Parcelable {
      * Permission group to access nearby devices.
      */
     @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
-    public static final String PERMISSION_NEARBY = "NEARBY_DEVICES";
+    public static final String PERMISSION_GROUP_NEARBY = "NEARBY_DEVICES";
 
     /**
      * Device profile: Allows the companion app to access notification, recent photos and media for
@@ -238,7 +238,7 @@ public final class AssociationRequest implements Parcelable {
     @StringDef(
             prefix = {"PERMISSION_"},
             value = {
-                    PERMISSION_NEARBY
+                    PERMISSION_GROUP_NEARBY
             }
     )
     @Retention(RetentionPolicy.SOURCE)
@@ -365,7 +365,7 @@ public final class AssociationRequest implements Parcelable {
     private static final int DISPLAY_NAME_LENGTH_LIMIT = 1024;
 
     private static final Set<String> ALLOWED_EXTRA_PERMISSIONS = Set.of(
-            PERMISSION_NEARBY
+            PERMISSION_GROUP_NEARBY
     );
 
     private AssociationRequest(Builder builder) {
@@ -878,6 +878,14 @@ public final class AssociationRequest implements Parcelable {
 
         /**
          * Sets the set of extra permissions to be requested for this association.
+         *
+         * <p>These permissions will be granted to the companion app upon a successful association.
+         * Users can manually grant or revoke these permissions through the system settings.
+         * This API will not overwrite any permission status that a user has manually set.
+         *
+         * <p>When a device is disassociated, the system will attempt to revoke the permissions
+         * that were granted for it. This revocation will also not override any permissions that the
+         * user has manually set.
          *
          * @param permissions a non-null set of permissions from
          *                    {@link android.companion.AssociationRequest.Permission}.
