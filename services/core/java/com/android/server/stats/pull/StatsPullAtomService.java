@@ -5279,7 +5279,8 @@ public class StatsPullAtomService extends SystemService {
                 LocalServices.getService(ActivityManagerInternal.class)
                         .getMemoryStateForProcesses();
         for (ProcessMemoryState managedProcess : managedProcessList) {
-            final MemcgMemorySnapshot snapshot = readMemcgMemorySnapshot(managedProcess.pid);
+            final MemcgMemorySnapshot snapshot =
+                    readMemcgMemorySnapshot(managedProcess.uid, managedProcess.pid);
             if (snapshot == null) {
                 continue;
             }
@@ -5300,7 +5301,7 @@ public class StatsPullAtomService extends SystemService {
                         .getMemoryStateForProcesses();
         for (ProcessMemoryState managedProcess : managedProcessList) {
             final MemcgHighWaterMarkMemorySnapshot snapshot =
-                    readHighWaterMarkMemorySnapshot(managedProcess.pid);
+                    readHighWaterMarkMemorySnapshot(managedProcess.uid, managedProcess.pid);
             if (snapshot == null) {
                 continue;
             }
