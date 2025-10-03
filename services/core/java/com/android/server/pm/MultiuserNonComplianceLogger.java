@@ -42,7 +42,9 @@ final class MultiuserNonComplianceLogger {
 
     private final Handler mHandler;
 
-    // TODO(b/414326600): merge collections below and/or use the proper proto / structure
+    // TODO(b/414326600): merge collections below and/or use the proper proto / structure. For
+    // example, instead of having 2 sets for mLaunchedHsuActivities and mBlockedHsuActivities,
+    // we should have just one for the activity and an @IntDef with the result.
 
     // Key is "absolute" uid  / app id (i.e., stripping out the user id part), value is count.
     @Nullable
@@ -56,6 +58,10 @@ final class MultiuserNonComplianceLogger {
     @Nullable
     private final ArraySet<ComponentName> mLaunchedHsuActivities;
 
+    // Activities blocked while the current user is the headless system user.
+    @Nullable
+    private final ArraySet<ComponentName> mBlockedHsuActivities;
+
     MultiuserNonComplianceLogger(Context context, Handler handler) {
         mContext = context;
         mHandler = handler;
@@ -64,10 +70,12 @@ final class MultiuserNonComplianceLogger {
             mGetMainUserCalls = new SparseIntArray();
             mIsMainUserCalls = new SparseIntArray();
             mLaunchedHsuActivities = new ArraySet<>();
+            mBlockedHsuActivities = new ArraySet<>();
         } else {
             mGetMainUserCalls = null;
             mIsMainUserCalls = null;
             mLaunchedHsuActivities = null;
+            mBlockedHsuActivities = null;
         }
     }
 
@@ -92,10 +100,19 @@ final class MultiuserNonComplianceLogger {
     }
 
     void logLaunchedHsuActivity(ComponentName activity) {
-        if (mLaunchedHsuActivities == null) {
+        logHsuActivity(mLaunchedHsuActivities, activity);
+    }
+
+    void logBlockedHsuActivity(ComponentName activity) {
+        logHsuActivity(mBlockedHsuActivities, activity);
+    }
+
+    private void logHsuActivity(@Nullable ArraySet<ComponentName> activities,
+            ComponentName activity) {
+        if (activities == null) {
             return;
         }
-        mHandler.post(() -> mLaunchedHsuActivities.add(activity));
+        mHandler.post(() -> activities.add(activity));
     }
 
     void dump(IndentingPrintWriter pw) {
@@ -103,7 +120,9 @@ final class MultiuserNonComplianceLogger {
         pw.println();
         dumpDeprecatedCalls(pw, "isMainUser", mIsMainUserCalls);
         pw.println();
-        dumpLaunchedHsuActivities(pw);
+        dumpHsuActivities(pw, mBlockedHsuActivities, "blocked");
+        pw.println();
+        dumpHsuActivities(pw, mLaunchedHsuActivities, "launched");
     }
 
     private void dumpDeprecatedCalls(
@@ -133,21 +152,20 @@ final class MultiuserNonComplianceLogger {
         pw.decreaseIndent();
     }
 
-    private void dumpLaunchedHsuActivities(IndentingPrintWriter pw) {
-        if (mLaunchedHsuActivities == null) {
-            pw.println("Not logging launched HSU activities");
+    private void dumpHsuActivities(IndentingPrintWriter pw, ArraySet<ComponentName> activities,
+            String what) {
+        if (activities == null) {
+            pw.printf("Not logging %s HSU activities\n", what);
             return;
         }
         // TODO(b/414326600): should dump in the mHandler thread (as its state is written in that
         // thread), but it would require blocking the caller until it's done
-        int size = mLaunchedHsuActivities.size();
+        int size = activities.size();
 
-        // TODO(b/414326600): for now they're always launched, but once the allowlist mechanism is
-        // implemented, it should print the real action
-        pw.printf("%d activities launched on HSU\n", size);
+        pw.printf("%d activities %s on HSU\n", size, what);
         pw.increaseIndent();
         for (int i = 0; i < size; i++) {
-            pw.println(mLaunchedHsuActivities.valueAt(i).flattenToShortString());
+            pw.println(activities.valueAt(i).flattenToShortString());
         }
         pw.decreaseIndent();
     }
@@ -164,6 +182,9 @@ final class MultiuserNonComplianceLogger {
         }
         if (mLaunchedHsuActivities != null) {
             mLaunchedHsuActivities.clear();
+        }
+        if (mBlockedHsuActivities != null) {
+            mBlockedHsuActivities.clear();
         }
     }
 
