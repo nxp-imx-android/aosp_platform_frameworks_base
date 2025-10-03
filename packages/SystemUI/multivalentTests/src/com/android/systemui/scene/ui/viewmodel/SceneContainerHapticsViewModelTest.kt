@@ -178,7 +178,8 @@ class SceneContainerHapticsViewModelTest : SysuiTestCase() {
             assertThat(msdlPlayer.latestPropertiesPlayed).isNull()
         }
 
-    @DisableFlags(Flags.FLAG_MSDL_FEEDBACK, Flags.FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_DUAL_SHADE)
+    @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
     @Test
     fun onValidOverlayTransition_withoutMSDL_playsHapticConstantForShadePullHaptics() =
         kosmos.runTest {

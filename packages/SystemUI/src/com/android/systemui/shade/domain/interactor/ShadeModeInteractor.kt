@@ -23,6 +23,7 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.shade.data.repository.ShadeConfigRepository
+import com.android.systemui.shade.shared.flag.DualShadeFlag
 import com.android.systemui.shade.shared.model.ShadeMode
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -82,41 +84,53 @@ constructor(
 ) : ShadeModeInteractor {
 
     private val isDualShadeEnabled: StateFlow<Boolean> =
-        shadeConfigRepository.useDualShadeSetting
-            .flatMapLatest { useSetting ->
-                if (useSetting) {
-                    Log.d(TAG, "Using Dual Shade setting")
-                    shadeConfigRepository.isDualShadeSettingEnabled.onEach {
-                        Log.d(
-                            TAG,
-                            "Dual Shade is ${if (it) "enabled" else "disabled"} by the setting",
-                        )
-                    }
-                } else {
-                    Log.d(TAG, "Overriding Dual Shade setting")
-                    shadeConfigRepository.isDualShadeEnabledByDefault.onEach {
-                        Log.d(TAG, "Dual Shade is ${if (it) "enabled" else "disabled"} by default")
+        if (DualShadeFlag.isEnabled) {
+            shadeConfigRepository.useDualShadeSetting
+                .flatMapLatest { useSetting ->
+                    if (useSetting) {
+                        Log.d(TAG, "Using Dual Shade setting")
+                        shadeConfigRepository.isDualShadeSettingEnabled.onEach {
+                            Log.d(
+                                TAG,
+                                "Dual Shade is ${if (it) "enabled" else "disabled"} by the setting",
+                            )
+                        }
+                    } else {
+                        Log.d(TAG, "Overriding Dual Shade setting")
+                        shadeConfigRepository.isDualShadeEnabledByDefault.onEach {
+                            Log.d(
+                                TAG,
+                                "Dual Shade is ${if (it) "enabled" else "disabled"} by default",
+                            )
+                        }
                     }
                 }
-            }
-            .stateIn(
-                applicationScope,
-                SharingStarted.Eagerly,
-                initialValue = shadeConfigRepository.isDualShadeEnabledByDefault(),
-            )
+                .stateIn(
+                    applicationScope,
+                    SharingStarted.Eagerly,
+                    initialValue = shadeConfigRepository.isDualShadeEnabledByDefault(),
+                )
+        } else {
+            Log.d(TAG, "The Dual Shade feature flag is disabled")
+            MutableStateFlow(false)
+        }
 
     override val isFullWidthShade: StateFlow<Boolean> =
-        isDualShadeEnabled
-            .flatMapLatest { isDualShadeEnabled ->
-                if (isDualShadeEnabled) {
-                    // Dual Shade should be shown
-                    Log.d(TAG, "Shade layout is derived from the Dual Shade config")
-                    shadeConfigRepository.isFullWidthShade
-                } else {
-                    // Single/Split shade should be shown
-                    Log.d(TAG, "Shade layout is derived from the legacy config")
-                    shadeConfigRepository.legacyUseSplitShade.map { !it }
+        if (DualShadeFlag.isEnabled) {
+                isDualShadeEnabled.flatMapLatest { isDualShadeEnabled ->
+                    if (isDualShadeEnabled) {
+                        // Dual Shade should be shown
+                        Log.d(TAG, "Shade layout is derived from the Dual Shade config")
+                        shadeConfigRepository.isFullWidthShade
+                    } else {
+                        // Single shade should be shown
+                        Log.d(TAG, "Single shade is always full-width")
+                        flowOf(true)
+                    }
                 }
+            } else {
+                Log.d(TAG, "Shade layout is derived from the legacy config")
+                shadeConfigRepository.legacyUseSplitShade.map { !it }
             }
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
@@ -145,10 +159,10 @@ constructor(
         isDualShadeEnabled: Boolean,
         isFullWidthShade: Boolean,
     ): ShadeMode {
-        return when {
-            isDualShadeEnabled -> ShadeMode.Dual
-            isFullWidthShade -> ShadeMode.Single
-            else -> ShadeMode.Split
+        return if (DualShadeFlag.isEnabled) {
+            if (isDualShadeEnabled) ShadeMode.Dual else ShadeMode.Single
+        } else {
+            if (isFullWidthShade) ShadeMode.Single else ShadeMode.Split
         }
     }
 
@@ -185,8 +199,8 @@ class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInteractor {
 
     override val shadeMode: StateFlow<ShadeMode> = MutableStateFlow(ShadeMode.Single)
 
-    override val isFullWidthShade: StateFlow<Boolean> = MutableStateFlow(false)
+    override val isFullWidthShade: StateFlow<Boolean> = MutableStateFlow(true)
 
     override val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal> =
-        MutableStateFlow(Alignment.End)
+        MutableStateFlow(Alignment.CenterHorizontally)
 }

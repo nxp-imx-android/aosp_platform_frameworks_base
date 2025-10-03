@@ -26,6 +26,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.shadeConfigRepository
+import com.android.systemui.shade.shared.flag.DualShadeFlag
 import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import kotlinx.coroutines.runBlocking
 
@@ -51,12 +52,14 @@ val Kosmos.shadeMode by Fixture { shadeModeInteractor.shadeMode }
  *   (`false`).
  */
 fun Kosmos.enableDualShade(wideLayout: Boolean? = null, enabledBySetting: Boolean = true) {
+    check(DualShadeFlag.isEnabled) {
+        "Dual Shade not supported when ${DualShadeFlag.FLAG_NAME} is disabled."
+    }
     if (enabledBySetting) {
         overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, true)
         runBlocking { secureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, true) }
     } else {
         overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, false)
-        overrideResource(R.bool.config_dualShadeEnabledByDefault, true)
     }
     fakeConfigurationRepository.onAnyConfigurationChange()
 
@@ -88,6 +91,9 @@ fun Kosmos.enableSingleShade(wideLayout: Boolean = false) {
 }
 
 fun Kosmos.enableSplitShade() {
+    check(!DualShadeFlag.isEnabled) {
+        "Split Shade not supported when ${DualShadeFlag.FLAG_NAME} is enabled."
+    }
     disableDualShade()
     overrideLargeScreenResources(isLargeScreen = true)
     displayStateRepository.setIsWideScreen(true)
