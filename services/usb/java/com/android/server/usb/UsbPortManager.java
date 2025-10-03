@@ -18,8 +18,6 @@ package com.android.server.usb;
 
 import static android.hardware.usb.UsbOperationInternal.USB_OPERATION_ERROR_PORT_MISMATCH;
 import static android.hardware.usb.UsbOperationInternal.USB_OPERATION_ERROR_INTERNAL;
-import static android.hardware.usb.UsbPortStatus.CONTAMINANT_DETECTION_NOT_SUPPORTED;
-import static android.hardware.usb.UsbPortStatus.CONTAMINANT_PROTECTION_NONE;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_DEVICE;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_HOST;
 import static android.hardware.usb.UsbPortStatus.MODE_DFP;
@@ -27,13 +25,13 @@ import static android.hardware.usb.UsbPortStatus.MODE_DUAL;
 import static android.hardware.usb.UsbPortStatus.MODE_UFP;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SINK;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SOURCE;
-import static com.android.server.usb.hal.port.UsbPortHal.HAL_POWER_ROLE_SOURCE;
+
 import static com.android.server.usb.hal.port.UsbPortHal.HAL_POWER_ROLE_SINK;
+import static com.android.server.usb.hal.port.UsbPortHal.HAL_POWER_ROLE_SOURCE;
 import static com.android.server.usb.hal.port.UsbPortHal.HAL_DATA_ROLE_HOST;
 import static com.android.server.usb.hal.port.UsbPortHal.HAL_DATA_ROLE_DEVICE;
 import static com.android.server.usb.hal.port.UsbPortHal.HAL_MODE_DFP;
 import static com.android.server.usb.hal.port.UsbPortHal.HAL_MODE_UFP;
-
 import static com.android.internal.usb.DumpUtils.writePort;
 import static com.android.internal.usb.DumpUtils.writePortStatus;
 
@@ -46,30 +44,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.hardware.usb.DisplayPortAltModeInfo;
 import android.hardware.usb.IDisplayPortAltModeInfoListener;
 import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.ParcelableUsbPort;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
-import android.hardware.usb.DisplayPortAltModeInfo;
-import android.hardware.usb.V1_0.IUsb;
-import android.hardware.usb.V1_0.PortRole;
-import android.hardware.usb.V1_0.PortRoleType;
-import android.hardware.usb.V1_0.Status;
-import android.hardware.usb.V1_1.PortStatus_1_1;
-import android.hardware.usb.V1_2.IUsbCallback;
-import android.hardware.usb.V1_2.PortStatus;
-import android.hidl.manager.V1_0.IServiceManager;
-import android.hidl.manager.V1_0.IServiceNotification;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HwBinder;
 import android.os.IBinder;
-import android.os.IInterface;
 import android.os.Message;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -81,7 +66,6 @@ import android.util.IntArray;
 import android.util.Log;
 import android.util.Slog;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.util.FrameworkStatsLog;
@@ -92,12 +76,9 @@ import com.android.server.usb.hal.port.RawPortInfo;
 import com.android.server.usb.hal.port.UsbPortHal;
 import com.android.server.usb.hal.port.UsbPortHalInstance;
 
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
+import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 
 /**
  * Allows trusted components to control the properties of physical USB ports
@@ -767,29 +748,12 @@ public class UsbPortManager implements IBinder.DeathRecipient {
 
             pw.println("Adding simulated port: portId=" + portId
                     + ", supportedModes=" + UsbPort.modeToString(supportedModes));
-            mSimulatedPorts.put(portId,
-                    new RawPortInfo(
-                            portId,
-                            supportedModes,
-                            UsbPortStatus.CONTAMINANT_PROTECTION_NONE,
-                            UsbPortStatus.MODE_NONE,
-                            false,
-                            UsbPortStatus.POWER_ROLE_NONE,
-                            false,
-                            UsbPortStatus.DATA_ROLE_NONE,
-                            false,
-                            false,
-                            UsbPortStatus.CONTAMINANT_PROTECTION_NONE,
-                            false,
-                            UsbPortStatus.CONTAMINANT_DETECTION_NOT_SUPPORTED,
-                            UsbPortStatus.DATA_STATUS_UNKNOWN,
-                            false,
-                            UsbPortStatus.POWER_BRICK_STATUS_UNKNOWN,
-                            supportsComplianceWarnings,
-                            new int[] {},
-                            UsbPortStatus.PLUG_STATE_UNKNOWN,
-                            supportedAltModes,
-                            displayPortAltModeInfo));
+            RawPortInfo.Builder builder = new RawPortInfo.Builder(portId);
+            builder.setSupportedModes(supportedModes)
+                    .setSupportsComplianceWarnings(supportsComplianceWarnings)
+                    .setSupportedAltModes(supportedAltModes)
+                    .setDisplayPortAltModeInfo(displayPortAltModeInfo);
+            mSimulatedPorts.put(portId, builder.build());
             updatePortsLocked(pw, null);
         }
     }
@@ -1545,12 +1509,12 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     || mUsbPortStatus.getCurrentDataRole() != currentDataRole
                     || mUsbPortStatus.getSupportedRoleCombinations()
                     != supportedRoleCombinations) {
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole, currentDataRole,
-                        supportedRoleCombinations, UsbPortStatus.CONTAMINANT_PROTECTION_NONE,
-                        UsbPortStatus.CONTAMINANT_DETECTION_NOT_SUPPORTED,
-                        UsbPortStatus.DATA_STATUS_UNKNOWN, false,
-                        UsbPortStatus.POWER_BRICK_STATUS_UNKNOWN,
-                        new int[] {}, 0, null);
+                UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                mUsbPortStatus = builder.build();
+
                 dispositionChanged = true;
             }
 
@@ -1592,11 +1556,16 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     != powerTransferLimited
                     || mUsbPortStatus.getPowerBrickConnectionStatus()
                     != powerBrickConnectionStatus) {
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole, currentDataRole,
-                        supportedRoleCombinations, contaminantProtectionStatus,
-                        contaminantDetectionStatus, usbDataStatus,
-                        powerTransferLimited, powerBrickConnectionStatus,
-                        new int[] {}, 0, null);
+                UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                builder.setContaminantStatus(contaminantProtectionStatus,
+                        contaminantDetectionStatus);
+                builder.setUsbDataStatus(usbDataStatus);
+                builder.setPowerTransferLimited(powerTransferLimited);
+                builder.setPowerBrickConnectionStatus(powerBrickConnectionStatus);
+                mUsbPortStatus = builder.build();
                 dispositionChanged = true;
             }
 
@@ -1622,6 +1591,7 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             boolean dispositionChanged = false;
             boolean complianceChanged = false;
             boolean displayPortChanged = false;
+            UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
 
             if (mUsbPortStatus != null) {
                 complianceChanged = complianceWarningsChanged(complianceWarnings);
@@ -1652,21 +1622,35 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 if (mUsbPortStatus == null && complianceWarnings.length > 0) {
                     mComplianceWarningChange = COMPLIANCE_WARNING_CHANGED;
                 }
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole, currentDataRole,
-                        supportedRoleCombinations, contaminantProtectionStatus,
-                        contaminantDetectionStatus, usbDataStatus,
-                        powerTransferLimited, powerBrickConnectionStatus,
-                        complianceWarnings, plugState, displayPortAltModeInfo);
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                builder.setContaminantStatus(contaminantProtectionStatus,
+                        contaminantDetectionStatus);
+                builder.setUsbDataStatus(usbDataStatus);
+                builder.setPowerTransferLimited(powerTransferLimited);
+                builder.setPowerBrickConnectionStatus(powerBrickConnectionStatus);
+                builder.setComplianceWarnings(complianceWarnings);
+                builder.setPlugState(plugState);
+                builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
+                mUsbPortStatus = builder.build();
                 dispositionChanged = true;
             // Case used in order to send compliance warning broadcast or signal DisplayPort
             // listeners. These targeted broadcasts don't use dispositionChanged to broadcast to
             // general ACTION_USB_PORT_CHANGED.
             } else if (complianceChanged || displayPortChanged) {
-                mUsbPortStatus = new UsbPortStatus(currentMode, currentPowerRole,
-                        currentDataRole, supportedRoleCombinations,
-                        contaminantProtectionStatus, contaminantDetectionStatus,
-                        usbDataStatus, powerTransferLimited, powerBrickConnectionStatus,
-                        complianceWarnings, plugState, displayPortAltModeInfo);
+                builder.setCurrentMode(currentMode);
+                builder.setCurrentRoles(currentPowerRole, currentDataRole);
+                builder.setSupportedRoleCombinations(supportedRoleCombinations);
+                builder.setContaminantStatus(contaminantProtectionStatus,
+                        contaminantDetectionStatus);
+                builder.setUsbDataStatus(usbDataStatus);
+                builder.setPowerTransferLimited(powerTransferLimited);
+                builder.setPowerBrickConnectionStatus(powerBrickConnectionStatus);
+                builder.setComplianceWarnings(complianceWarnings);
+                builder.setPlugState(plugState);
+                builder.setDisplayPortAltModeInfo(displayPortAltModeInfo);
+                mUsbPortStatus = builder.build();
             }
 
             if (mUsbPortStatus.isConnected() && mConnectedAtMillis == 0) {
