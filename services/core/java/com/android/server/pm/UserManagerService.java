@@ -8364,15 +8364,6 @@ public class UserManagerService extends IUserManager.Stub {
             }
         } // synchronized (mPackagesLock)
 
-        pw.println();
-        mUserVisibilityMediator.dump(pw, args);
-        pw.println();
-
-        if (mHam != null) {
-            mHam.dump(pw, args);
-            pw.println();
-        }
-
         // Dump some capabilities
         pw.println();
         if (isCreationOverrideEnabled()) {
@@ -8422,9 +8413,19 @@ public class UserManagerService extends IUserManager.Stub {
             pw.println("  System user allocations: " + mUser0Allocations.get());
         }
         synchronized (mUsersLock) {
-            printNullableUser(pw, "Boot user", mBootUser);
-            printNullableUser(pw, "Device owner user", mDeviceOwnerUserId);
+            printNullableUser(pw, "  Boot user", mBootUser);
+            printNullableUser(pw, "  Device owner user", mDeviceOwnerUserId);
         }
+
+        pw.println();
+        mUserVisibilityMediator.dump(pw, args);
+        pw.println();
+
+        if (mHam != null) {
+            mHam.dump(pw, args);
+            pw.println();
+        }
+
         // TODO(b/413464199): This confusing line is, regrettably, currently required by Tradefed.
         pw.println("Can add private profile: "+ canAddPrivateProfile(currentUserId));
 
@@ -8457,7 +8458,7 @@ public class UserManagerService extends IUserManager.Stub {
             mSystemPackageInstaller.dump(ipw);
 
             ipw.println();
-            ipw.println("Non-multiuser-compliant events:");
+            ipw.println("Non-compliant events:");
             ipw.increaseIndent();
             mNonComplianceLogger.dump(ipw);
             ipw.decreaseIndent();
