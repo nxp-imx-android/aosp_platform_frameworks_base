@@ -1021,6 +1021,24 @@ constructor(
                             switchToScene(Scenes.Communal, "unoccluded and previously on communal")
                         } else if (deviceEntryInteractor.isDeviceEntered.value) {
                             switchToScene(Scenes.Gone, "unoccluded and device entered")
+                        } else if (
+                            sceneInteractor.currentOverlays.value.contains(Overlays.Bouncer)
+                        ) {
+                            // We've unoccluded while the bouncer was showing over an occluding
+                            // activity. This can happen if the occluding activity crashed or
+                            // finished itself behind the bouncer. It can also happen if a CTS
+                            // test/very adversarial user launched a non-SHOW_WHEN_LOCKED activity
+                            // with FLAG_DISMISS_KEYGUARD over a SHOW_WHEN_LOCKED activity. In that
+                            // case, FLAG_DISMISS_KEYGUARD will cause the bouncer to show, but then
+                            // the lack of SHOW_WHEN_LOCKED will cause WM to kill the activity. CTS
+                            // tests expect to be able to enter the PIN and unlock the device in
+                            // this case, so leave the bouncer visible.
+                            switchToScene(
+                                Scenes.Lockscreen,
+                                "unoccluded and device not entered, " +
+                                    "bouncer was showing; leaving it up",
+                                hideOverlays = HideOverlayCommand.HideNone,
+                            )
                         } else {
                             switchToScene(Scenes.Lockscreen, "unoccluded and device not entered")
                         }
