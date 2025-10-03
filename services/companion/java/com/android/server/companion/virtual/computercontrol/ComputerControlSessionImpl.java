@@ -39,6 +39,7 @@ import android.companion.virtual.computercontrol.IComputerControlLifecycleCallba
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.InteractiveMirror;
+import android.companion.virtual.computercontrol.SessionLifecycleTracker;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -171,9 +172,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
 
-    private final Object mLifecycleCallbackLock = new Object();
-    @GuardedBy("mLifecycleCallbackLock")
-    private IComputerControlLifecycleCallback mLifecycleCallback;
+    @GuardedBy("mLifecycle")
+    private final SessionLifecycleTracker mLifecycle = new SessionLifecycleTracker();
+    @GuardedBy("mLifecycle")
+    private boolean mIsRemoteCallbackAdded = false;
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -511,8 +513,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     public void setLifecycleCallback(IComputerControlLifecycleCallback callback) {
-        synchronized (mLifecycleCallbackLock) {
-            mLifecycleCallback = callback;
+        synchronized (mLifecycle) {
+            if (mIsRemoteCallbackAdded) {
+                throw new IllegalStateException("Callback already set");
+            }
+            mIsRemoteCallbackAdded = true;
+            mLifecycle.addCallback(new ComputerControlSession.LifecycleCallback() {
+                @Override
+                public void onClosed(@ComputerControlSession.SessionCloseReason int reason) {
+                    try {
+                        callback.onClosed(reason);
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                }
+            });
         }
     }
 
@@ -524,15 +539,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     void close(@ComputerControlSession.SessionCloseReason int closeReason)
             throws RemoteException {
         releaseResources();
-        synchronized (mLifecycleCallbackLock) {
-            if (mLifecycleCallback != null) {
-                try {
-                    mLifecycleCallback.onClosed(closeReason);
-                    mLifecycleCallback = null;
-                } catch (RemoteException e) {
-                    Slog.w(TAG, "Failed to send LifeCycleCallback#onClosed");
-                }
-            }
+        synchronized (mLifecycle) {
+            mLifecycle.onClosed(closeReason);
         }
     }
 
