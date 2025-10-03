@@ -621,13 +621,6 @@ public class DesktopModeTouchEventListener
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL: {
                 final boolean wasDragging = mIsDragging;
-                if (!DesktopExperienceFlags.ENABLE_FIX_LEAKING_VISUAL_INDICATOR.isTrue()
-                        && !wasDragging) {
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "was not dragging, ignore",
-                            viewName, MotionEvent.actionToString(e.getAction()));
-                    return false;
-                }
                 if (wasDragging) {
                     mDesktopModeUiEventLogger.log(taskInfo,
                             DesktopUiEventEnum.DESKTOP_WINDOW_MOVE_BY_HEADER_DRAG);
@@ -636,8 +629,7 @@ public class DesktopModeTouchEventListener
                     mDragPointerId = e.getPointerId(0);
                 }
                 final int dragPointerIdx = e.findPointerIndex(mDragPointerId);
-                if (DesktopExperienceFlags.ENABLE_FIX_LEAKING_VISUAL_INDICATOR.isTrue()
-                        && !dragAllowed) {
+                if (!dragAllowed) {
                     debugLogD("handleFreeformMotionEvent(%s) action=%s "
                                     + "drag is not allowed, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
@@ -684,8 +676,7 @@ public class DesktopModeTouchEventListener
                         t.apply();
                     }
                 }
-                if (DesktopExperienceFlags.ENABLE_FIX_LEAKING_VISUAL_INDICATOR.isTrue()
-                        && !wasDragging) {
+                if (!wasDragging) {
                     debugLogD("handleFreeformMotionEvent(%s) action=%s "
                                     + "was not dragging, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
