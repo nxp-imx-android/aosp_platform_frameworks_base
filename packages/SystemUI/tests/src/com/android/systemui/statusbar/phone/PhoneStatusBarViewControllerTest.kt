@@ -69,7 +69,6 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
-import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
@@ -648,7 +647,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun dualShade_qsIsExpandedOnEndSideContentMouseClick() =
         kosmos.runTest {
             enableDualShade(wideLayout = true)
@@ -680,7 +679,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun shadeIsExpandedOnEndSideContentMouseClick_dualShade_expandsQuickSettingsShade() {
         kosmos.enableDualShade()
         attachToWindow(view)
@@ -776,7 +775,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun statusIconContainerIsHandlingTouchScreenTaps_dualShade_expandsQuickSettingsShade_flagOn() {
         Assume.assumeTrue(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
         kosmos.enableDualShade()
@@ -795,7 +794,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun statusIconContainerIsNotHandlingTouchScreenTaps_dualShade_flagOff() {
         Assume.assumeFalse(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
         kosmos.enableDualShade()
