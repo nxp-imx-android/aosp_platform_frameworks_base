@@ -504,9 +504,12 @@ java_library {
         "//packages/modules/Telephony:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
     ],
-    libs: [
-        "framework-telecom.stubs.module_lib",
-    ],
+    libs: select(release_flag("RELEASE_TELECOM_MAINLINE_MODULE"), {
+        true: [],
+        default: [
+            "framework-telecom.stubs.module_lib",
+        ],
+    }),
     compile_dex: false,
     headers_only: true,
 }
