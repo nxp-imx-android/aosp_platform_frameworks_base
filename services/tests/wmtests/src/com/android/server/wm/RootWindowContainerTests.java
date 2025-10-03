@@ -1564,6 +1564,64 @@ public class RootWindowContainerTests extends WindowTestsBase {
     }
 
     @Test
+    public void testGetTopVisibleActivities_focusedAndNonFocusedRootTasks() {
+        // Make every Task opaque.
+        final ActivityTaskSupervisor.OpaqueContainerHelper opaqueContainerHelper =
+                mAtm.mTaskSupervisor.mOpaqueContainerHelper;
+        spyOn(opaqueContainerHelper);
+        doReturn(true).when(opaqueContainerHelper).isOpaque(
+                any(), any(), anyBoolean(), anyBoolean());
+
+        final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
+        resizeDisplay(display, 1000, 1000);
+
+        // Create an invisible fullscreen root task. It is created first, so it will be at the
+        // bottom and occluded by the tasks created later.
+        final Task invisibleRootTask = createTask(display, WINDOWING_MODE_FULLSCREEN,
+                ACTIVITY_TYPE_STANDARD);
+        createActivityRecordWithParentTask(invisibleRootTask);
+        invisibleRootTask.setVisibleRequested(false);
+
+        // Create a non-focused fullscreen root task with two activities.
+        final Task nonFocusedRootTask = createTask(display, WINDOWING_MODE_FULLSCREEN,
+                ACTIVITY_TYPE_STANDARD);
+        final ActivityRecord nonFocusedActivity1 = createActivityRecordWithParentTask(
+                nonFocusedRootTask);
+        final ActivityRecord nonFocusedActivity2 = createActivityRecordWithParentTask(
+                nonFocusedRootTask);
+        nonFocusedRootTask.setVisibleRequested(true);
+
+        // Create a focused multi-window root task with two activities. It is created last, so it
+        // will be on top.
+        final Task focusedRootTask = createTask(display, WINDOWING_MODE_MULTI_WINDOW,
+                ACTIVITY_TYPE_STANDARD);
+        final ActivityRecord focusedActivity1 = createActivityRecordWithParentTask(focusedRootTask);
+        final ActivityRecord focusedActivity2 = createActivityRecordWithParentTask(focusedRootTask);
+        focusedRootTask.setBounds(500, 0, 1000, 1000);
+        focusedRootTask.setVisibleRequested(true);
+
+        // Set the focused root task on the display.
+        doReturn(focusedRootTask.getRootTask()).when(display).getFocusedRootTask();
+
+        // Call the method under test.
+        final List<ActivityAssistInfo> result = mRootWindowContainer.getTopVisibleActivities(
+                display.mDisplayId);
+
+        // Verify the results.
+        // Total visible activities should be 4.
+        assertEquals(4, result.size());
+
+        // The activities from the focused root task should be first, in top-to-bottom order.
+        assertEquals(focusedActivity2.token, result.get(0).getActivityToken());
+        assertEquals(focusedActivity1.token, result.get(1).getActivityToken());
+
+        // The activities from the non-focused visible root task should be next, in top-to-bottom
+        // order.
+        assertEquals(nonFocusedActivity2.token, result.get(2).getActivityToken());
+        assertEquals(nonFocusedActivity1.token, result.get(3).getActivityToken());
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
     public void testStartHomeOnDisplaysWithNoHome() {
         // Create a display with no home activity.
