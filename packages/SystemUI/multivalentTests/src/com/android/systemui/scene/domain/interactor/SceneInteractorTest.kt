@@ -17,11 +17,14 @@
 package com.android.systemui.scene.domain.interactor
 
 import android.app.StatusBarManager
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ShowOrHideOverlay
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
@@ -29,6 +32,7 @@ import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintA
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -70,7 +74,7 @@ import org.mockito.kotlin.verify
 class SceneInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val underTest by lazy { kosmos.sceneInteractor }
+    private val Kosmos.underTest by Kosmos.Fixture { sceneInteractor }
 
     @Before
     fun setUp() {
@@ -83,9 +87,8 @@ class SceneInteractorTest : SysuiTestCase() {
     // TODO(b/356596436): Add tests for showing, hiding, and replacing overlays after we've defined
     //  them.
     @Test
-    fun allContentKeys() {
-        assertThat(underTest.allContentKeys).isEqualTo(kosmos.sceneKeys + kosmos.overlayKeys)
-    }
+    fun allContentKeys() =
+        kosmos.runTest { assertThat(underTest.allContentKeys).isEqualTo(sceneKeys + overlayKeys) }
 
     @Test
     fun changeScene_toUnknownScene_doesNothing() =
@@ -110,6 +113,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun changeScene_sameScene_hidesOverlays() =
         kosmos.runTest {
             enableDualShade()
@@ -125,6 +129,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun changeScene_sameScene_requestToKeepOverlays_keepsOverlays() =
         kosmos.runTest {
             enableDualShade()
@@ -158,7 +163,8 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             assertThrows(IllegalStateException::class.java) {
                 underTest.changeScene(Scenes.Gone, "reason")
-            } }
+            }
+        }
 
     @Test
     fun changeScene_toGoneWhenTransitionToLockedFromGone() =
@@ -206,6 +212,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun snapToScene_toUnknownScene_hidesOverlays() =
         kosmos.runTest {
             enableDualShade()
@@ -234,6 +241,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun snapToScene_sameScene_hidesOverlays() =
         kosmos.runTest {
             enableDualShade()
@@ -249,6 +257,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun snapToScene_sameScene_requestToKeepOverlays_keepsOverlays() =
         kosmos.runTest {
             enableDualShade()
@@ -383,6 +392,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun transitioningTo_overlayChange() =
         kosmos.runTest {
             enableDualShade()
@@ -615,6 +625,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun showOverlay_overlayDisabled_doesNothing() =
         kosmos.runTest {
             enableDualShade()
@@ -631,6 +642,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun replaceOverlay_withDisabledOverlay_doesNothing() =
         kosmos.runTest {
             enableDualShade()
@@ -711,6 +723,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun changeScene_toIncorrectShade_crashes() =
         kosmos.runTest {
             enableDualShade()
@@ -720,6 +733,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun changeScene_toIncorrectQuickSettings_crashes() =
         kosmos.runTest {
             enableDualShade()
@@ -729,6 +743,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun snapToScene_toIncorrectShade_crashes() =
         kosmos.runTest {
             enableDualShade()
@@ -738,6 +753,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun snapToScene_toIncorrectQuickSettings_crashes() =
         kosmos.runTest {
             enableDualShade()
@@ -747,6 +763,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun showOverlay_incorrectShadeOverlay_crashes() =
         kosmos.runTest {
             disableDualShade()
@@ -756,6 +773,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun showOverlay_incorrectQuickSettingsOverlay_crashes() =
         kosmos.runTest {
             disableDualShade()
@@ -765,6 +783,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun instantlyShowOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -781,6 +800,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun instantlyHideOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -894,6 +914,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun topmostContent_sceneChange_withOverlay() =
         kosmos.runTest {
             enableDualShade()
@@ -915,6 +936,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun topmostContent_overlayChange_higherZOrder() =
         kosmos.runTest {
             enableDualShade()
@@ -936,6 +958,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun topmostContent_overlayChange_lowerZOrder() =
         kosmos.runTest {
             enableDualShade()
