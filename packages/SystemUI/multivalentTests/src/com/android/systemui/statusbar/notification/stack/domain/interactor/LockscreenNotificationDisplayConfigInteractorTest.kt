@@ -16,9 +16,12 @@
 
 package com.android.systemui.statusbar.notification.stack.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
@@ -36,24 +39,19 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlinx.coroutines.flow.flowOf
-import org.junit.Before
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
 class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
+
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val Kosmos.underTest: LockscreenNotificationDisplayConfigInteractor by
+        Kosmos.Fixture { lockscreenNotificationDisplayConfigInteractor }
 
-    private lateinit var interactor: LockscreenNotificationDisplayConfigInteractor
-
-    // something that's not -1
-    private val limit = 5
-
-    @Before
-    fun setUp() {
-        interactor = kosmos.lockscreenNotificationDisplayConfigInteractor
-    }
+    private val maxNotifications = 5 // something that's not -1
+    private val calculateMaxNotifications: (Int, Boolean) -> Int = { _, _ -> maxNotifications }
 
     @Test
     fun singleShade_IdleOnLockScreen_showOnlyFullHeight() =
@@ -61,7 +59,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
             enableSingleShade()
 
             val lockScreenConfig by
-                collectLastValue(interactor.getLockscreenDisplayConfig { _, _ -> limit })
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
@@ -69,12 +67,13 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun splitShade_IdleOnLockScreen_showOnlyFullHeight() =
         kosmos.runTest {
             enableSplitShade()
 
             val lockScreenConfig by
-                collectLastValue(interactor.getLockscreenDisplayConfig { _, _ -> limit })
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
@@ -82,12 +81,13 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun dualShadeShade_IdleOnLockScreen_showOnlyFullHeight() =
         kosmos.runTest {
             enableDualShade()
 
             val lockScreenConfig by
-                collectLastValue(interactor.getLockscreenDisplayConfig { _, _ -> limit })
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
@@ -100,7 +100,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
             enableSingleShade()
 
             val lockScreenConfig by
-                collectLastValue(interactor.getLockscreenDisplayConfig { _, _ -> limit })
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Shade))
 
@@ -108,12 +108,13 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun splitShade_IdleOnShade_noLimit() =
         kosmos.runTest {
             enableSplitShade()
 
             val lockScreenConfig by
-                collectLastValue(interactor.getLockscreenDisplayConfig { _, _ -> limit })
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Shade))
 
@@ -121,12 +122,13 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun dualShadeShade_NotificationShadeOverLockScreen_noLimit() =
         kosmos.runTest {
             enableDualShade()
 
             val lockScreenConfig by
-                collectLastValue(interactor.getLockscreenDisplayConfig { _, _ -> limit })
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
 
             setTransitionState(
                 ObservableTransitionState.Idle(
@@ -139,12 +141,13 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun dualShadeShade_QuickSettingsOverLockScreen_showOnlyFullHeight() =
         kosmos.runTest {
             enableDualShade()
 
             val lockScreenConfig by
-                collectLastValue(interactor.getLockscreenDisplayConfig { _, _ -> limit })
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
 
             setTransitionState(
                 ObservableTransitionState.Idle(
@@ -171,6 +174,6 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
     private fun assertShowOnlyFullHeight(lockScreenConfig: LockscreenDisplayConfig?) {
         assertThat(lockScreenConfig).isNotNull()
         assertThat(lockScreenConfig!!.isOnLockscreen).isTrue()
-        assertThat(lockScreenConfig.maxNotifications).isEqualTo(limit)
+        assertThat(lockScreenConfig.maxNotifications).isEqualTo(maxNotifications)
     }
 }
