@@ -88,7 +88,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     /** Callback interface for listening to changes in a split-screen stage. */
     public interface StageListenerCallbacks {
         /** Called when the root task on current display appears. */
-        void onRootTaskAppeared(ActivityManager.RunningTaskInfo taskInfo);
+        void onRootTaskAppeared();
 
         void onStageVisibilityChanged(StageTaskListener stageTaskListener);
 
@@ -99,7 +99,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         void onChildTaskMovedToBubble(StageTaskListener stage, int taskId);
 
         /** Called when the root task on current display vanishes. */
-        void onRootTaskVanished(ActivityManager.RunningTaskInfo taskInfo);
+        void onRootTaskVanished();
 
         void onNoLongerSupportMultiWindow(StageTaskListener stageTaskListener,
                 ActivityManager.RunningTaskInfo taskInfo);
@@ -270,7 +270,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
                     mRootTaskInfo.configuration,
                     mIconProvider);
             mHasRootTask = true;
-            mCallbacks.onRootTaskAppeared(taskInfo);
+            mCallbacks.onRootTaskAppeared();
             if (mVisible != mRootTaskInfo.isVisible) {
                 mVisible = mRootTaskInfo.isVisible;
                 mCallbacks.onStageVisibilityChanged(this);
@@ -332,7 +332,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
             mHasRootTask = false;
             mVisible = false;
             mHasChildren = false;
-            mCallbacks.onRootTaskVanished(taskInfo);
+            mCallbacks.onRootTaskVanished();
             mRootTaskInfo = null;
             mRootLeash = null;
             mSyncQueue.runInSync(t -> {

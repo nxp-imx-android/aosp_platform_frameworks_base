@@ -126,7 +126,7 @@ public final class StageTaskListenerTests extends ShellTestCase {
     @Test
     public void testRootTaskAppeared() {
         assertThat(mStageTaskListener.mRootTaskInfo.taskId).isEqualTo(mRootTask.taskId);
-        verify(mCallbacks).onRootTaskAppeared(mRootTask);
+        verify(mCallbacks).onRootTaskAppeared();
         verify(mCallbacks, never()).onStageVisibilityChanged(mStageTaskListener);
     }
 
