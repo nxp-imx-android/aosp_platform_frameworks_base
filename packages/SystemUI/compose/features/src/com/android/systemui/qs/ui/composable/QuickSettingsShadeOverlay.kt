@@ -490,6 +490,7 @@ object QuickSettingsShade {
                 brightnessThumbHeight,
                 brightnessThumbWidth,
                 brightnessTrackHeight,
+                brightnessVerticalPadding,
             )
 
         val volumeSliderDimensions: VolumeSliderDimensions
@@ -521,6 +522,12 @@ object QuickSettingsShade {
             @Composable
             @ReadOnlyComposable
             get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_track_height)
+
+        private val brightnessVerticalPadding : Dp
+            @Composable
+            @ReadOnlyComposable
+            get() =
+                dimensionResource(id = R.dimen.overlay_qs_layout_brightness_vertical_padding)
 
         private val volumeVerticalPadding: Dp
             @Composable
