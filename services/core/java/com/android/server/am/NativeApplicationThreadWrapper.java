@@ -150,24 +150,21 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
 
     @Override
     public final void scheduleCreateService(
-            IBinder token, ServiceInfo info, CompatibilityInfo compatInfo, int processState) {
+            IBinder token, ServiceInfo info, CompatibilityInfo compatInfo, int processState)
+            throws RemoteException {
         String libNameBody = LIB_NAME_BODY_DEFAULT;
         String funcName = FUNC_NAME_DEFAULT;
         // Get ServiceInfo with meta-data since `info` doesn't have it.
-        try {
-            int userId = UserHandle.getUserId(mUid);
-            ServiceInfo infoWithMeta =
-                    mMgr.getPackageManager()
-                            .getServiceInfo(
-                                    info.getComponentName(), PackageManager.GET_META_DATA, userId);
-            if (infoWithMeta.metaData != null) {
-                String ln = infoWithMeta.metaData.getString(META_DATA_LIB_NAME);
-                if (!TextUtils.isEmpty(ln)) libNameBody = ln;
-                String fn = infoWithMeta.metaData.getString(META_DATA_FUNC_NAME);
-                if (!TextUtils.isEmpty(fn)) funcName = fn;
-            }
-        } catch (RemoteException e) {
-            Slog.w(TAG, "getServiceInfo failed", e);
+        int userId = UserHandle.getUserId(mUid);
+        ServiceInfo infoWithMeta =
+                mMgr.getPackageManager()
+                        .getServiceInfo(
+                                info.getComponentName(), PackageManager.GET_META_DATA, userId);
+        if (infoWithMeta.metaData != null) {
+            String ln = infoWithMeta.metaData.getString(META_DATA_LIB_NAME);
+            if (!TextUtils.isEmpty(ln)) libNameBody = ln;
+            String fn = infoWithMeta.metaData.getString(META_DATA_FUNC_NAME);
+            if (!TextUtils.isEmpty(fn)) funcName = fn;
         }
         String libName = "lib" + libNameBody + ".so";
 
@@ -197,12 +194,8 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
             Slog.i(TAG, "libPath: " + libPath);
         }
 
-        try {
-            mNativeThread.scheduleCreateService(
-                    r, libPaths, r.appInfo.dataDir, libName, funcName, processState);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "scheduleCreateService failed", e);
-        }
+        mNativeThread.scheduleCreateService(
+                r, libPaths, r.appInfo.dataDir, libName, funcName, processState);
     }
 
     @Override
@@ -212,45 +205,35 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
             Intent intent,
             boolean rebind,
             int processState,
-            long bindSeq) {
+            long bindSeq)
+            throws RemoteException {
         String data = null;
         if (intent.getData() != null) {
             data = intent.getData().toString();
         }
-        try {
-            mNativeThread.scheduleBindService(
-                    token,
-                    bindToken,
-                    intent.hashCode(),
-                    intent.getAction(),
-                    data,
-                    rebind,
-                    processState,
-                    bindSeq);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "scheduleBindService failed", e);
-        }
+        mNativeThread.scheduleBindService(
+                token,
+                bindToken,
+                intent.hashCode(),
+                intent.getAction(),
+                data,
+                rebind,
+                processState,
+                bindSeq);
     }
 
     @Override
-    public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent) {
-        try {
-            mNativeThread.scheduleUnbindService(token, bindToken, intent.hashCode());
-        } catch (RemoteException e) {
-            Slog.w(TAG, "scheduleUnbindService failed", e);
-        }
+    public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent)
+            throws RemoteException {
+        mNativeThread.scheduleUnbindService(token, bindToken, intent.hashCode());
     }
 
     @Override
     public final void scheduleServiceArgs(IBinder token, ParceledListSlice args) {}
 
     @Override
-    public final void scheduleStopService(IBinder token) {
-        try {
-            mNativeThread.scheduleDestroyService(token);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "scheduleDestroyService failed", e);
-        }
+    public final void scheduleStopService(IBinder token) throws RemoteException {
+        mNativeThread.scheduleDestroyService(token);
     }
 
     @Override
@@ -294,13 +277,10 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
             SharedMemory serializedSystemFontMap,
             FileDescriptor applicationSharedMemoryFd,
             long startRequestedElapsedTime,
-            long startRequestedUptime) {
-        try {
-            // TODO(b/431634361): Send necessary or useful information to native processes.
-            mNativeThread.bindApplication();
-        } catch (RemoteException e) {
-            Slog.w(TAG, "bindApplication failed", e);
-        }
+            long startRequestedUptime)
+            throws RemoteException {
+        // TODO(b/431634361): Send necessary or useful information to native processes.
+        mNativeThread.bindApplication();
     }
 
     @Override
@@ -440,12 +420,8 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void updatePackageCompatibilityInfo(String pkg, CompatibilityInfo info) {}
 
     @Override
-    public void scheduleTrimMemory(int level) {
-        try {
-            mNativeThread.scheduleTrimMemory(level);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "scheduleTrimMemory failed", e);
-        }
+    public void scheduleTrimMemory(int level) throws RemoteException {
+        mNativeThread.scheduleTrimMemory(level);
     }
 
     @Override
@@ -455,12 +431,8 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void scheduleOnNewSceneTransitionInfo(IBinder token, SceneTransitionInfo info) {}
 
     @Override
-    public void setProcessState(int state) {
-        try {
-            mNativeThread.setProcessState(state);
-        } catch (RemoteException e) {
-            Slog.w(TAG, "setProcessState failed", e);
-        }
+    public void setProcessState(int state) throws RemoteException {
+        mNativeThread.setProcessState(state);
     }
 
     @Override
