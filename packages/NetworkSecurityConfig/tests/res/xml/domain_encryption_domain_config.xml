@@ -8,11 +8,11 @@
     <domain>android.com</domain>
   </domain-config>
   <domain-config>
-    <domainEncryption mode="strict" />
-    <domain>strict.android.com</domain>
+    <domainEncryption mode="enabled" />
+    <domain>enabled.android.com</domain>
   </domain-config>
   <domain-config>
-    <domainEncryption mode="closed" />
-    <domain>closed.android.com</domain>
+    <domainEncryption mode="required" />
+    <domain>required.android.com</domain>
   </domain-config>
 </network-security-config>

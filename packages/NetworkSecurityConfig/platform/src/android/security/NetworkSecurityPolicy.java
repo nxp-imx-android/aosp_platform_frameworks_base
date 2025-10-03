@@ -125,8 +125,8 @@ public class NetworkSecurityPolicy {
         DOMAIN_ENCRYPTION_MODE_UNKNOWN,
         DOMAIN_ENCRYPTION_MODE_DISABLED,
         DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC,
-        DOMAIN_ENCRYPTION_MODE_STRICT,
-        DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED
+        DOMAIN_ENCRYPTION_MODE_ENABLED,
+        DOMAIN_ENCRYPTION_MODE_REQUIRED
     })
     public @interface DomainEncryptionMode {}
 
@@ -157,20 +157,20 @@ public class NetworkSecurityPolicy {
             libcore.net.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
 
     /**
-     * Domain encryption is in strict mode for the app. ECH will be enabled when there is server
-     * support, otherwise GREASE will be used.
+     * Domain encryption is in fully enabled mode for the app. ECH will be enabled when there is
+     * server support, otherwise GREASE will be used.
      */
     @FlaggedApi(android.security.Flags.FLAG_ENCRYPTED_CLIENT_HELLO_CONFIGURATION)
-    public static final int DOMAIN_ENCRYPTION_MODE_STRICT =
-            libcore.net.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_STRICT;
+    public static final int DOMAIN_ENCRYPTION_MODE_ENABLED =
+            libcore.net.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_ENABLED;
 
     /**
-     * Domain encryption should fail closed (i.e. if encryption cannot be enabled for any reason,
-     * the connection will fail).
+     * Domain encryption is required for the app and should fail closed (i.e. if encryption cannot
+     * be enabled for any reason, the connection will fail).
      */
     @FlaggedApi(android.security.Flags.FLAG_ENCRYPTED_CLIENT_HELLO_CONFIGURATION)
-    public static final int DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED =
-            libcore.net.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_FAIL_CLOSED;
+    public static final int DOMAIN_ENCRYPTION_MODE_REQUIRED =
+            libcore.net.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_REQUIRED;
 
     /**
      * Returns the domain encryption mode the app has chosen for the given {@code hostname},
