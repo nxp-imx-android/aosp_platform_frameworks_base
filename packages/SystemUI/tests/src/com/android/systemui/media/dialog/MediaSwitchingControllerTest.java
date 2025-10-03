@@ -172,6 +172,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Mock private MediaDevice mMediaDevice3;
     @Mock private MediaDevice mMediaDevice4;
     @Mock private MediaDevice mMediaDevice5;
+    @Mock private MediaDevice mMediaDevice6;
+    @Mock private MediaDevice mMediaDevice7;
     @Mock private NearbyDevice mNearbyDevice1;
     @Mock
     private NearbyDevice mNearbyDevice2;
@@ -259,27 +261,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mLocalBluetoothManager.getCachedDeviceManager()).thenReturn(
                 mCachedBluetoothDeviceManager);
 
-        mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        mPackageName,
-                        mContext.getUser(),
-                        /* token */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository);
+        mMediaSwitchingController = createDefaultMediaSwitchingController();
         mLocalMediaManager = spy(mMediaSwitchingController.mLocalMediaManager);
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false);
         mMediaSwitchingController.mLocalMediaManager = mLocalMediaManager;
@@ -369,7 +351,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         null,
                         mContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -415,7 +398,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         null,
                         mSpyContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -610,6 +594,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Test
     public void onDeviceListUpdate_verifyDeviceListCallback_inputRouting() {
         enableInputRoutingConfig();
+        mMediaSwitchingController = createDefaultMediaSwitchingController();
         mMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -654,6 +639,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mMediaDevice1.getFeatures())
                 .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
         when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
+        mMediaSwitchingController = createDefaultMediaSwitchingController();
         mMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -673,8 +659,30 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
-    public void onInputDeviceListUpdate_verifyDeviceListCallback() {
+    public void onInputDeviceListUpdateWithInputType_verifyDeviceListCallback_inputRouting() {
         enableInputRoutingConfig();
+        mMediaSwitchingController =
+                new MediaSwitchingController(
+                        mSpyContext,
+                        mPackageName,
+                        mContext.getUser(),
+                        /* token= */ null,
+                        MediaSwitchingType.INPUT,
+                        mMediaSessionManager,
+                        mLocalBluetoothManager,
+                        mStarter,
+                        mNotifCollection,
+                        mDialogTransitionAnimator,
+                        mNearbyMediaDevicesManager,
+                        mAudioManager,
+                        mPowerExemptionManager,
+                        mKeyguardManager,
+                        mClock,
+                        mFakeBackgroundExecutor,
+                        mVolumePanelGlobalStateInteractor,
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
         AudioDeviceInfo[] audioDeviceInfos = {};
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
                 .thenReturn(audioDeviceInfos);
@@ -683,31 +691,108 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         // Output devices have changed.
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        final MediaDevice mediaDevice3 =
-                InputMediaDevice.create(
-                        mContext,
-                        TEST_DEVICE_3_ID,
-                        "",
-                        AudioDeviceInfo.TYPE_BUILTIN_MIC,
-                        MAX_VOLUME,
-                        CURRENT_VOLUME,
-                        VOLUME_FIXED_TRUE,
-                        /* isSelected= */ true,
-                        PRODUCT_NAME_BUILTIN_MIC);
-        final MediaDevice mediaDevice4 =
-                InputMediaDevice.create(
-                        mContext,
-                        TEST_DEVICE_4_ID,
-                        "",
-                        AudioDeviceInfo.TYPE_WIRED_HEADSET,
-                        MAX_VOLUME,
-                        CURRENT_VOLUME,
-                        VOLUME_FIXED_TRUE,
-                        /* isSelected= */ false,
-                        PRODUCT_NAME_WIRED_HEADSET);
-        final List<MediaDevice> inputDevices = new ArrayList<>();
-        inputDevices.add(mediaDevice3);
-        inputDevices.add(mediaDevice4);
+        final List<MediaDevice> inputDevices = ImmutableList.of(mMediaDevice6, mMediaDevice7);
+
+        // Input devices have changed.
+        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
+
+        final List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+        final List<MediaDevice> devices = getMediaDevices(resultList);
+
+        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice6);
+
+        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice7);
+
+        assertThat(resultList.size()).isEqualTo(2);
+
+        // Only contains input devices.
+        assertThat(devices).containsNoneIn(mMediaDevices);
+        assertThat(devices).hasSize(inputDevices.size());
+        verify(mCb, atLeastOnce()).onDeviceListChanged();
+        verify(mNearbyMediaDevicesManager, never()).registerNearbyDevicesCallback(any());
+        verify(mLocalMediaManager, never()).registerCallback(any());
+        verify(mLocalMediaManager, never()).startScan();
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    public void onInputDeviceListUpdateWithOutputType_verifyDeviceListCallback_inputRouting() {
+        enableInputRoutingConfig();
+        mMediaSwitchingController =
+                new MediaSwitchingController(
+                        mSpyContext,
+                        mPackageName,
+                        mContext.getUser(),
+                        /* token= */ null,
+                        MediaSwitchingType.OUTPUT,
+                        mMediaSessionManager,
+                        mLocalBluetoothManager,
+                        mStarter,
+                        mNotifCollection,
+                        mDialogTransitionAnimator,
+                        mNearbyMediaDevicesManager,
+                        mAudioManager,
+                        mPowerExemptionManager,
+                        mKeyguardManager,
+                        mClock,
+                        mFakeBackgroundExecutor,
+                        mVolumePanelGlobalStateInteractor,
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
+        AudioDeviceInfo[] audioDeviceInfos = {};
+        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+                .thenReturn(audioDeviceInfos);
+        mMediaSwitchingController.start(mCb);
+
+        // Output devices have changed.
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        final List<MediaDevice> inputDevices = ImmutableList.of(mMediaDevice6, mMediaDevice7);
+
+        // Input devices have changed.
+        mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
+
+        final List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+        final List<MediaDevice> devices = getMediaDevices(resultList);
+
+        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
+        assertThat(resultList.get(0).hasTopSeparator()).isTrue();
+        assertThat(resultList.get(0).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
+
+        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+
+        assertThat(resultList.get(2).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+
+        assertThat(resultList.size()).isEqualTo(3);
+
+        assertThat(mMediaSwitchingController.hasConnectDeviceButton()).isTrue();
+
+        // Only contains output devices.
+        assertThat(devices).containsExactlyElementsIn(mMediaDevices);
+        verify(mCb, atLeastOnce()).onDeviceListChanged();
+        verify(mInputRouteManager, never()).registerCallback(any());
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    public void onInputDeviceListUpdate_verifyDeviceListCallback() {
+        enableInputRoutingConfig();
+        AudioDeviceInfo[] audioDeviceInfos = {};
+        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+                .thenReturn(audioDeviceInfos);
+        mMediaSwitchingController = createDefaultMediaSwitchingController();
+        mMediaSwitchingController.start(mCb);
+
+        // Output devices have changed.
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        final List<MediaDevice> inputDevices = ImmutableList.of(mMediaDevice6, mMediaDevice7);
 
         // Input devices have changed.
         mMediaSwitchingController.mInputDeviceCallback.onInputDeviceListUpdated(inputDevices);
@@ -957,7 +1042,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         "",
                         mSpyContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -988,7 +1074,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         "",
                         mSpyContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -1039,7 +1126,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         null,
                         mSpyContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -1074,7 +1162,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         null,
                         mSpyContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -1295,7 +1384,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         null,
                         mSpyContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -1470,7 +1560,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mSpyContext,
                         null,
                         mSpyContext.getUser(),
-                        /* token */ null,
+                        /* token= */ null,
+                        /* mediaSwitchingType= */ null,
                         mMediaSessionManager,
                         mLocalBluetoothManager,
                         mStarter,
@@ -1820,5 +1911,29 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mSpyContext.getResources()).thenReturn(spyResources);
         when(spyResources.getBoolean(
                 R.bool.config_enableInputRouting)).thenReturn(true);
+    }
+
+    private MediaSwitchingController createDefaultMediaSwitchingController() {
+        return new MediaSwitchingController(
+                mSpyContext,
+                mPackageName,
+                mContext.getUser(),
+                /* token= */ null,
+                /* mediaSwitchingType= */ null,
+                mMediaSessionManager,
+                mLocalBluetoothManager,
+                mStarter,
+                mNotifCollection,
+                mDialogTransitionAnimator,
+                mNearbyMediaDevicesManager,
+                mAudioManager,
+                mPowerExemptionManager,
+                mKeyguardManager,
+                mClock,
+                mFakeBackgroundExecutor,
+                mVolumePanelGlobalStateInteractor,
+                mUserTracker,
+                mJavaAdapter,
+                mAudioSharingRepository);
     }
 }

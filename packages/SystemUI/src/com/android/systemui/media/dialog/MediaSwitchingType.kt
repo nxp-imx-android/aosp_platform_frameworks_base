@@ -16,10 +16,9 @@
 
 package com.android.systemui.media.dialog
 
-import com.android.systemui.kosmos.Kosmos
-import org.mockito.kotlin.mock
-
-val Kosmos.mediaSwitchingController by Kosmos.Fixture { mock<MediaSwitchingController>() }
-
-val Kosmos.mediaSwitchingControllerFactory by
-    Kosmos.Fixture { MediaSwitchingController.Factory { _, _, _ -> mediaSwitchingController } }
+/** Enum for the different types of media switching devices. */
+enum class MediaSwitchingType {
+    ALL,
+    INPUT,
+    OUTPUT,
+}

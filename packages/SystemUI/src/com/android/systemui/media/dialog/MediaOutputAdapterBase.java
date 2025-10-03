@@ -71,8 +71,9 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
     }
 
     boolean isCurrentlyConnected(MediaDevice device) {
-        return TextUtils.equals(device.getId(),
-                mController.getCurrentConnectedMediaDevice().getId())
+        MediaDevice currentConnectedMediaDevice = mController.getCurrentConnectedMediaDevice();
+        return (currentConnectedMediaDevice != null
+                && TextUtils.equals(device.getId(), currentConnectedMediaDevice.getId()))
                 || (!mController.hasGroupPlayback() && device.isSelected());
     }
 
