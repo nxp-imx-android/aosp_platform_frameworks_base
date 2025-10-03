@@ -646,16 +646,6 @@ flag {
 }
 
 flag {
-    name: "fix_shade_header_wrong_icon_size"
-    namespace: "lse_desktop_experience"
-    description: "Fix system icon size in shade header on connected displays"
-    bug: "412409667"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "screenshot_force_shutter_sound"
     namespace: "systemui"
     description: "Force screenshot sound when camera sound is forced and camera is open"

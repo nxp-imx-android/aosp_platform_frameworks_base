@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.pipeline.wifi.ui.view
 
 import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
@@ -28,7 +27,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
@@ -251,30 +249,6 @@ class ModernStatusBarWifiViewTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NewStatusBarIcons.FLAG_NAME)
-    @DisableFlags(Flags.FLAG_FIX_SHADE_HEADER_WRONG_ICON_SIZE)
-    fun configChanged_dimensionsWithNewValues_flagDisabled_dimensionsNotUpdated() {
-        val view = ModernStatusBarWifiView.constructAndBind(context, SLOT_NAME, viewModel)
-        val iconView = view.getIconView()
-        val group = view.getIconGroupView()
-        val initialHeight =
-            context.resources.getDimensionPixelSize(R.dimen.status_bar_wifi_signal_height_updated)
-        val initialMargin =
-            context.resources.getDimensionPixelSize(
-                R.dimen.status_bar_wifi_signal_horizontal_margin
-            )
-
-        overrideResource(R.dimen.status_bar_wifi_signal_height_updated, initialHeight + 10)
-        overrideResource(R.dimen.status_bar_wifi_signal_horizontal_margin, initialMargin + 10)
-        view.onConfigurationChanged(Configuration())
-
-        assertThat(iconView.layoutParams.height).isEqualTo(initialHeight)
-        val newMarginLp = group.layoutParams as ViewGroup.MarginLayoutParams
-        assertThat(newMarginLp.marginStart).isEqualTo(initialMargin)
-        assertThat(newMarginLp.marginEnd).isEqualTo(initialMargin)
-    }
-
-    @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, Flags.FLAG_FIX_SHADE_HEADER_WRONG_ICON_SIZE)
     fun configChanged_dimensionsWithNewValues_flagEnabled_dimensionsUpdated() {
         val view = ModernStatusBarWifiView.constructAndBind(context, SLOT_NAME, viewModel)
         val iconView = view.getIconView()
