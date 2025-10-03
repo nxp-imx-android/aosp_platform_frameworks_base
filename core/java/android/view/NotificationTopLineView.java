@@ -46,6 +46,7 @@ public class NotificationTopLineView extends ViewGroup {
     private final int mChildHideWidth;
     @Nullable private View mAppName;
     @Nullable private View mTitle;
+    @Nullable private View mAltTitle;
     @Nullable private View mAppNameDivider;
     private View mHeaderText;
     private View mHeaderTextDivider;
@@ -102,14 +103,8 @@ public class NotificationTopLineView extends ViewGroup {
         super.onFinishInflate();
         mAppName = findViewById(R.id.app_name_text);
         mTitle = findViewById(R.id.title);
-        if (mTitle == null) {
-            final View altTitle = findViewById(R.id.alt_title);
-            // use altTitle when it is visible.
-            if (altTitle != null && altTitle.getVisibility() == VISIBLE) {
-                mTitle = altTitle;
-                mAppNameDivider = findViewById(R.id.app_name_text_divider);
-            }
-        }
+        mAltTitle = findViewById(R.id.alt_title);
+        mAppNameDivider = findViewById(R.id.app_name_text_divider);
         mHeaderText = findViewById(R.id.header_text);
         mHeaderTextDivider = findViewById(R.id.header_text_divider);
         mSecondaryHeaderText = findViewById(R.id.header_text_secondary);
@@ -172,6 +167,7 @@ public class NotificationTopLineView extends ViewGroup {
                     .adjust(mVerificationText, null, mChildMinWidth)
                     // Next, shrink the title text (this has contentTitle; only in headerless views)
                     .adjust(mTitle, null, mChildMinWidth)
+                    .adjust(mAltTitle, null, mChildMinWidth)
                     // Next, shrink the header down to 0 if still necessary.
                     .adjust(mHeaderText, mHeaderTextDivider, 0)
                     // Next, shrink the verification text down to 0 if still necessary. The
