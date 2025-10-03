@@ -170,7 +170,7 @@ constructor(
         }
 
     /** Doze transition information. */
-    val dozeTransitionModel: Flow<DozeTransitionModel> = repository.dozeTransitionModel
+    val dozeTransitionModel: StateFlow<DozeTransitionModel> = repository.dozeTransitionModel
 
     val isPulsing: Flow<Boolean> = dozeTransitionModel.map { it.to == DozeStateModel.DOZE_PULSING }
 

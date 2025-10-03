@@ -185,7 +185,7 @@ interface KeyguardRepository {
     val isDreamingWithOverlay: Flow<Boolean>
 
     /** Doze state information, as it transitions */
-    val dozeTransitionModel: Flow<DozeTransitionModel>
+    val dozeTransitionModel: StateFlow<DozeTransitionModel>
 
     val lastDozeTapToWakePosition: StateFlow<Point?>
 
@@ -466,36 +466,45 @@ constructor(
 
     override val isDreaming: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    override val dozeTransitionModel: Flow<DozeTransitionModel> = conflatedCallbackFlow {
-        val callback =
-            object : DozeTransitionCallback {
-                override fun onDozeTransition(
-                    oldState: DozeMachine.State,
-                    newState: DozeMachine.State,
-                ) {
-                    trySendWithFailureLogging(
-                        DozeTransitionModel(
-                            from = dozeMachineStateToModel(oldState),
-                            to = dozeMachineStateToModel(newState),
-                        ),
-                        TAG,
-                        "doze transition model",
-                    )
-                }
+    override val dozeTransitionModel: StateFlow<DozeTransitionModel> =
+        conflatedCallbackFlow {
+                val callback =
+                    object : DozeTransitionCallback {
+                        override fun onDozeTransition(
+                            oldState: DozeMachine.State,
+                            newState: DozeMachine.State,
+                        ) {
+                            trySendWithFailureLogging(
+                                DozeTransitionModel(
+                                    from = dozeMachineStateToModel(oldState),
+                                    to = dozeMachineStateToModel(newState),
+                                ),
+                                TAG,
+                                "doze transition model",
+                            )
+                        }
+                    }
+
+                dozeTransitionListener.addCallback(callback)
+                trySendWithFailureLogging(
+                    DozeTransitionModel(
+                        from = dozeMachineStateToModel(dozeTransitionListener.oldState),
+                        to = dozeMachineStateToModel(dozeTransitionListener.newState),
+                    ),
+                    TAG,
+                    "initial doze transition model",
+                )
+
+                awaitClose { dozeTransitionListener.removeCallback(callback) }
             }
-
-        dozeTransitionListener.addCallback(callback)
-        trySendWithFailureLogging(
-            DozeTransitionModel(
-                from = dozeMachineStateToModel(dozeTransitionListener.oldState),
-                to = dozeMachineStateToModel(dozeTransitionListener.newState),
-            ),
-            TAG,
-            "initial doze transition model",
-        )
-
-        awaitClose { dozeTransitionListener.removeCallback(callback) }
-    }
+            .stateIn(
+                scope,
+                SharingStarted.Eagerly,
+                DozeTransitionModel(
+                    from = dozeMachineStateToModel(dozeTransitionListener.oldState),
+                    to = dozeMachineStateToModel(dozeTransitionListener.newState),
+                ),
+            )
 
     override val isEncryptedOrLockdown: Flow<Boolean> =
         conflatedCallbackFlow {
