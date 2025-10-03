@@ -773,6 +773,7 @@ public class CachedAppOptimizer {
     }
 
     private native void compactSystem();
+    private native void compactSystemWithMemcg();
 
     /**
      * Enable binder reports via generic netlink
@@ -1906,7 +1907,11 @@ public class CachedAppOptimizer {
                 case COMPACT_SYSTEM_MSG: {
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "compactSystem");
                     long memFreedBefore = getMemoryFreedCompaction();
-                    compactSystem();
+                    if (Flags.useMemcgForCompaction()) {
+                        compactSystemWithMemcg();
+                    } else {
+                        compactSystem();
+                    }
                     long memFreedAfter = getMemoryFreedCompaction();
                     long memFreed = memFreedAfter - memFreedBefore;
                     mCompactStatsManager.logSystemCompactionPerformed(memFreed);

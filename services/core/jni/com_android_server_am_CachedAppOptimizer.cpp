@@ -49,12 +49,13 @@
 #include <utils/Trace.h>
 
 #include <algorithm>
+#include <fstream>
 #include <optional>
+#include <string>
 
 using android::base::StringPrintf;
-using android::base::WriteStringToFile;
 using android::meminfo::ProcMemInfo;
-using namespace android::meminfo;
+using android::meminfo::Vma;
 
 static const size_t kPageSize = getpagesize();
 static const size_t kPageMask = ~(kPageSize - 1);
@@ -497,7 +498,33 @@ static void com_android_server_am_CachedAppOptimizer_compactSystem(JNIEnv *, job
 
         int pid = atoi(current->d_name);
 
-        compactMemcg(status_info.st_uid, pid, COMPACT_ACTION_ANON_FLAG | COMPACT_ACTION_FILE_FLAG);
+        compactProcess(pid, COMPACT_ACTION_ANON_FLAG | COMPACT_ACTION_FILE_FLAG);
+    }
+}
+
+static void com_android_server_am_CachedAppOptimizer_compactSystemWithMemcg(JNIEnv*, jobject) {
+    std::ifstream current_file("/sys/fs/cgroup/system/memory.current");
+    if (!current_file) {
+        LOG(ERROR) << "Could not open system memory.current";
+        return;
+    }
+
+    std::string current;
+    if (!std::getline(current_file, current)) {
+        LOG(ERROR) << "Could not read system memory.current";
+        return;
+    }
+
+    std::ofstream reclaim_file("/sys/fs/cgroup/system/memory.reclaim");
+    if (!reclaim_file) {
+        LOG(ERROR) << "Could not open system memory.reclaim";
+        return;
+    }
+
+    reclaim_file << current;
+    reclaim_file.flush();
+    if (!reclaim_file) {
+        LOG(ERROR) << "Could not write to system memory.reclaim";
     }
 }
 
@@ -676,6 +703,8 @@ static const JNINativeMethod sMethods[] = {
         {"getMemoryFreedCompaction", "()J",
          (void*)com_android_server_am_CachedAppOptimizer_getMemoryFreedCompaction},
         {"compactSystem", "()V", (void*)com_android_server_am_CachedAppOptimizer_compactSystem},
+        {"compactSystemWithMemcg", "()V",
+         (void*)com_android_server_am_CachedAppOptimizer_compactSystemWithMemcg},
         {"compactProcess", "(II)V",
          (void*)com_android_server_am_CachedAppOptimizer_compactNativeProcess},
         {"performNativeMemcgCompaction", "(III)V",
