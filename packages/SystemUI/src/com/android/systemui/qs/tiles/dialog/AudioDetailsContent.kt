@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.paneTitle
@@ -41,9 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastSumBy
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.compose.PlatformSliderDefaults
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel.ContentViewModel.SwitcherPageViewModel
 import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.shared.model.VolumePanelComponents
+import com.android.systemui.volume.panel.component.volume.ui.composable.VolumeSlider
 import com.android.systemui.volume.panel.ui.composable.ComposeVolumePanelUiComponent
 import com.android.systemui.volume.panel.ui.composable.VolumePanelComposeScope
 
@@ -99,9 +102,21 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
             val outputComponent = factory.createComponent(VolumePanelComponents.MEDIA_OUTPUT)
             with(outputComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
 
-            // TODO(b/448199358): Use customized slider for audio details view instead.
-            val sliderComponent = factory.createComponent(VolumePanelComponents.VOLUME_SLIDERS)
-            with(sliderComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
+            viewModel.volumeSliderViewModel?.let { volumeSliderViewModel ->
+                val volumeSliderState by volumeSliderViewModel.slider.collectAsStateWithLifecycle()
+                VolumeSlider(
+                    showLabel = false,
+                    state = volumeSliderState,
+                    onValueChange = { newValue: Float ->
+                        volumeSliderViewModel.onValueChanged(volumeSliderState, newValue)
+                    },
+                    onValueChangeFinished = { volumeSliderViewModel.onValueChangeFinished() },
+                    onIconTapped = { volumeSliderViewModel.toggleMuted(volumeSliderState) },
+                    sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),
+                    hapticsViewModelFactory =
+                        volumeSliderViewModel.getSliderHapticsViewModelFactory(),
+                )
+            }
 
             SectionTitle(R.string.quick_settings_audio_input_section_title)
 

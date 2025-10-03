@@ -16,12 +16,16 @@
 
 package com.android.systemui.qs.tiles.dialog
 
+import android.media.AudioManager
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.volume.panel.component.volume.domain.model.SliderType
+import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
 import com.android.systemui.volume.panel.ui.viewmodel.ComponentState
 import com.android.systemui.volume.panel.ui.viewmodel.VolumePanelViewModel
 import dagger.assisted.AssistedFactory
@@ -36,8 +40,10 @@ import kotlinx.coroutines.launch
 
 class AudioDetailsDefaultPageViewModel
 @AssistedInject
-constructor(private val volumePanelViewModelFactory: VolumePanelViewModel.Factory) :
-    AudioDetailsViewModel.ContentViewModel, HydratedActivatable() {
+constructor(
+    private val volumePanelViewModelFactory: VolumePanelViewModel.Factory,
+    private val audioStreamSliderViewModelFactory: AudioStreamSliderViewModel.Factory,
+) : AudioDetailsViewModel.ContentViewModel, HydratedActivatable() {
     private var volumePanelViewModel: VolumePanelViewModel? by mutableStateOf(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,11 +57,20 @@ constructor(private val volumePanelViewModelFactory: VolumePanelViewModel.Factor
 
     val volumePanelState by derivedStateOf { volumePanelViewModel?.volumePanelState }
 
+    var volumeSliderViewModel: AudioStreamSliderViewModel? = null
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch {
                 if (volumePanelViewModel == null) {
                     volumePanelViewModel = volumePanelViewModelFactory.create(this)
+                    volumeSliderViewModel =
+                        audioStreamSliderViewModelFactory.create(
+                            AudioStreamSliderViewModel.FactoryAudioStreamWrapper(
+                                SliderType.Stream(AudioStream(AudioManager.STREAM_MUSIC)).stream
+                            ),
+                            this,
+                        )
                 }
             }
         }
