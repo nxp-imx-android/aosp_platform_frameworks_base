@@ -1359,35 +1359,37 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
         final int uid = Binder.getCallingUid();
         final long token = Binder.clearCallingIdentity();
         try {
-            // mPackageName has been verified in MediaSessionService.enforcePackageName().
-            if (receiver != null && !TextUtils.equals(mPackageName, receiver.getPackageName())) {
-                EventLog.writeEvent(0x534e4554, "238177121", -1, ""); // SafetyNet logging.
-                throw new IllegalArgumentException(
-                        "receiver does not belong to "
-                                + "package name provided to MediaSessionRecord. Pkg = "
-                                + mPackageName
-                                + ", Receiver Pkg = "
-                                + receiver.getPackageName());
-            }
             if ((mPolicies & MediaSessionPolicyProvider.SESSION_POLICY_IGNORE_BUTTON_RECEIVER)
                     != 0) {
                 return;
             }
-
-            if (!componentNameExists(receiver, mContext, mUserId)) {
-                if (CompatChanges.isChangeEnabled(THROW_FOR_INVALID_BROADCAST_RECEIVER, uid)) {
-                    throw new IllegalArgumentException("Invalid component name: " + receiver);
-                } else {
-                    Slog.w(
-                            TAG,
-                            "setMediaButtonBroadcastReceiver(): "
-                                    + "Ignoring invalid component name="
-                                    + receiver);
+            if (receiver != null) {
+                // mPackageName has been verified in MediaSessionService.enforcePackageName().
+                if (!TextUtils.equals(mPackageName, receiver.getPackageName())) {
+                    EventLog.writeEvent(0x534e4554, "238177121", -1, ""); // SafetyNet logging.
+                    throw new IllegalArgumentException(
+                            "receiver does not belong to "
+                                    + "package name provided to MediaSessionRecord. Pkg = "
+                                    + mPackageName
+                                    + ", Receiver Pkg = "
+                                    + receiver.getPackageName());
                 }
-                return;
+                if (!componentNameExists(receiver, mContext, mUserId)) {
+                    if (CompatChanges.isChangeEnabled(THROW_FOR_INVALID_BROADCAST_RECEIVER, uid)) {
+                        throw new IllegalArgumentException("Invalid component name: " + receiver);
+                    } else {
+                        Slog.w(
+                                TAG,
+                                "setMediaButtonBroadcastReceiver(): "
+                                        + "Ignoring invalid component name="
+                                        + receiver);
+                    }
+                    return;
+                }
+                mMediaButtonReceiverHolder = MediaButtonReceiverHolder.create(mUserId, receiver);
+            } else {
+                mMediaButtonReceiverHolder = null;
             }
-
-            mMediaButtonReceiverHolder = MediaButtonReceiverHolder.create(mUserId, receiver);
             mService.onMediaButtonReceiverChanged(MediaSessionRecord.this);
         } finally {
             Binder.restoreCallingIdentity(token);
