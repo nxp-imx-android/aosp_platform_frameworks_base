@@ -26,7 +26,11 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
+import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
+import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
@@ -45,6 +49,7 @@ class WindowRootViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos()
     val testScope = kosmos.testScope
     private val communalRepository by lazy { kosmos.communalSceneRepository }
+    private val keyguardTransitionRepository by lazy { kosmos.fakeKeyguardTransitionRepository }
 
     val underTest by lazy { kosmos.windowRootViewModel }
 
@@ -61,6 +66,25 @@ class WindowRootViewModelTest : SysuiTestCase() {
 
             assertThat(blurRadius).isEqualTo(30)
             assertThat(isSurfaceOpaque).isEqualTo(false)
+        }
+
+    @Test
+    fun keyguardTransitionToAodEmitsLastBlurRadius() =
+        testScope.runTest {
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            val blurRadii by collectValues(underTest.blurRadius)
+            runCurrent()
+
+            kosmos.fakeBouncerTransitions.first().windowBlurRadius.value = 30.0f
+            runCurrent()
+
+            val currentSize = blurRadii.size
+            assertThat(blurRadii[currentSize - 1]).isEqualTo(30)
+
+            keyguardTransitionRepository.sendTransitionSteps(LOCKSCREEN, AOD, testScope)
+
+            assertThat(blurRadii.size).isEqualTo(currentSize + 1)
+            assertThat(blurRadii[currentSize]).isEqualTo(30)
         }
 
     @Test

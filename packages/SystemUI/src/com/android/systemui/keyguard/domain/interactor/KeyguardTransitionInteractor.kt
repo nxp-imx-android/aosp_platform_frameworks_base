@@ -206,11 +206,15 @@ constructor(
         if (keyguardTransitionForceFinishOnScreenOff()) {
             /**
              * If the screen is turning off, finish the current transition immediately. Further
-             * frames won't be visible anyway.
+             * frames won't be visible anyway. However, when going to AOD, the screen goes to OFF
+             * but then right to DOZE, so we need the animation to continue.
              */
             scope.launch("KTF-force-finish") {
                 powerInteractor.screenPowerState
-                    .filter { it == ScreenPowerState.SCREEN_TURNING_OFF }
+                    .filter {
+                        it == ScreenPowerState.SCREEN_TURNING_OFF &&
+                            startedKeyguardTransitionStep.value.to != KeyguardState.AOD
+                    }
                     .collect { repository.forceFinishCurrentTransition() }
             }
         }

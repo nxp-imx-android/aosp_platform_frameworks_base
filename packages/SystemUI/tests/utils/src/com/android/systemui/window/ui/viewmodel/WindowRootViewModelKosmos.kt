@@ -18,6 +18,7 @@ package com.android.systemui.window.ui.viewmodel
 
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.ui.transitions.FakeBouncerTransition
 import com.android.systemui.keyguard.ui.transitions.FakeGlanceableHubTransition
 import com.android.systemui.kosmos.Kosmos
@@ -43,6 +44,7 @@ val Kosmos.windowRootViewModel by
             communalSceneInteractor,
             windowRootViewBlurInteractor,
             keyguardInteractor,
+            keyguardTransitionInteractor,
             shadeInteractor,
         )
     }
