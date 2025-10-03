@@ -69,6 +69,15 @@ import java.util.function.Consumer;
  * user types from {@link com.android.internal.R.xml#config_user_types}.
  * Recall that config_user_types values, if defined, will overwrite the AOSP defaults set here.
  *
+ * Note based on how UserTypeFactory and UserTypeDetails are actually used in UserManagerService:
+ * Updates to UserTypeDetails here will generally affect pre-existing users of that type.
+ * Note, however, that DefaultRestrictions refers to the restrictions applied at the time of user
+ * creation; therefore, the active restrictions of any pre-existing users will not be updated.
+ * Similarly, for other getDefault...() UserTypeDetails fields (except getDefaultUserProperties).
+ * Changing the DefaultUserProperties will change the UserProperties for any existing user (unless
+ * that user's property had been explicitly overridden from the default value, which never actually
+ * happen as of the time of this writing).
+ *
  * Tests are located in {@link UserManagerServiceUserTypeTest}.
  * @hide
  */
@@ -616,7 +625,9 @@ public final class UserTypeFactory {
                 final String elementName = parser.getName();
                 if ("profile-type".equals(elementName)) {
                     isProfile = true;
-                } else if ("full-type".equals(elementName)) {
+                } else if ("full-type".equals(elementName)
+                        || "system-type".equals(elementName)
+                        || "full-system-type".equals(elementName)) {
                     isProfile = false;
                 } else if ("change-user-type".equals(elementName)) {
                     // parsed in parseUserUpgrades
@@ -647,10 +658,7 @@ public final class UserTypeFactory {
                         throw new IllegalArgumentException("Illegal custom user type name "
                                 + typeName + ": Non-AOSP user types cannot start with 'android.'");
                     }
-                    final boolean isValid =
-                            (isProfile && builder.getBaseType() == UserInfo.FLAG_PROFILE)
-                            || (!isProfile && builder.getBaseType() == UserInfo.FLAG_FULL);
-                    if (!isValid) {
+                    if (!doesTypeElementHaveCorrectBase(elementName, builder.getBaseType())) {
                         throw new IllegalArgumentException("Wrong base type to customize user type "
                                 + "(" + typeName + "), which is type "
                                 + UserInfo.flagsToString(builder.getBaseType()));
@@ -690,15 +698,15 @@ public final class UserTypeFactory {
                         final Bundle restrictions = UserRestrictionsUtils
                                 .readRestrictions(XmlUtils.makeTyped(parser));
                         builder.setDefaultRestrictions(restrictions);
+                    } else if ("user-properties".equals(childName)) {
+                        builder.getDefaultUserProperties()
+                                .updateFromXml(XmlUtils.makeTyped(parser));
                     } else if (isProfile && "badge-labels".equals(childName)) {
                         setResAttributeArray(parser, builder::setBadgeLabels);
                     } else if (isProfile && "badge-colors".equals(childName)) {
                         setResAttributeArray(parser, builder::setBadgeColors);
                     } else if (isProfile && "badge-colors-dark".equals(childName)) {
                         setResAttributeArray(parser, builder::setDarkThemeBadgeColors);
-                    } else if ("user-properties".equals(childName)) {
-                        builder.getDefaultUserProperties()
-                                .updateFromXml(XmlUtils.makeTyped(parser));
                     } else {
                         Slog.w(LOG_TAG, "Unrecognized tag " + childName + " in "
                                 + parser.getPositionDescription());
@@ -887,6 +895,16 @@ public final class UserTypeFactory {
             throw new IllegalArgumentException("Illegal upgrade of user type " + userType
                     + " : Can only upgrade profiles user types");
         }
+    }
+
+    private static boolean doesTypeElementHaveCorrectBase(String typeName, int baseType) {
+        return switch (typeName) {
+            case "profile-type" -> baseType == FLAG_PROFILE;
+            case "full-type" -> baseType == FLAG_FULL;
+            case "system-type" -> baseType == FLAG_SYSTEM;
+            case "full-system-type" -> baseType == (FLAG_FULL | FLAG_SYSTEM);
+            default -> false;
+        };
     }
 
     /**
