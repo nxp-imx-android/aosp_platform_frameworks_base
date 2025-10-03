@@ -251,14 +251,32 @@ class BackupRestoreProcessor {
             AssociationInfo newAssociation = new AssociationInfo.Builder(association)
                     .setPending(false)
                     .build();
-            addRoleHolderForAssociation(mContext, newAssociation, success -> {
-                if (success) {
+            if (newAssociation.getDeviceProfile() == null) {
+                try {
+                    mAssociationRequestsProcessor
+                            .grantExtraPermissionsForNonProfile(newAssociation);
                     mAssociationStore.updateAssociation(newAssociation);
                     Slog.i(TAG, "Association=[" + association + "] is restored.");
-                } else {
-                    Slog.e(TAG, "Failed to restore association=[" + association + "].");
+                } catch (SecurityException se) {
+                    Slog.e(TAG, "Failed to restore association=[" + association + "]"
+                            + "due to SecurityException", se);
+                } catch (IllegalArgumentException iae) {
+                    Slog.e(TAG, "Failed to restore association=[" + association + "]"
+                            + "due to IllegalArgumentException", iae);
+                } catch (RuntimeException e) {
+                    Slog.e(TAG, "Failed to restore association=[" + association + "]"
+                            + "due to an unexpected runtime error", e);
                 }
-            });
+            } else {
+                addRoleHolderForAssociation(mContext, newAssociation, success -> {
+                    if (success) {
+                        mAssociationStore.updateAssociation(newAssociation);
+                        Slog.i(TAG, "Association=[" + association + "] is restored.");
+                    } else {
+                        Slog.e(TAG, "Failed to restore association=[" + association + "].");
+                    }
+                });
+            }
         }
     }
 
