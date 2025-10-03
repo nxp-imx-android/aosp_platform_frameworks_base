@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.app.WallpaperManager.COMMAND_FREEZE;
 import static android.app.WallpaperManager.COMMAND_UNFREEZE;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -27,6 +28,7 @@ import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_WALLPAPER;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.H.WALLPAPER_DRAW_PENDING_TIMEOUT;
+import static com.android.window.flags.Flags.choosingVisibleAsWallpaperTarget;
 import static com.android.window.flags.Flags.multiCrop;
 
 import android.annotation.Nullable;
@@ -155,9 +157,39 @@ class WallpaperController {
             return true;
         } else if (w.hasWallpaper()
                 && (w.mActivityRecord != null ? w.isOnScreen() : w.isReadyForDisplay())) {
-            if (DEBUG_WALLPAPER) Slog.v(TAG, "Found wallpaper target: " + w);
-            mFindResults.setWallpaperTarget(w);
-            mFindResults.setIsWallpaperTargetForLetterbox(w.hasWallpaperForLetterboxBackground());
+            if (choosingVisibleAsWallpaperTarget()
+                    && !w.isVisibleRequested() && !mFindResults.hasInvisibleRequestedTarget) {
+                // If the first target is not visibleRequested, set it as a candidate and search for
+                // the next visible target.
+                if (DEBUG_WALLPAPER) {
+                    Slog.v(TAG, "Found candidate wallpaper target: " + w);
+                }
+                mFindResults.hasInvisibleRequestedTarget = true;
+                mFindResults.setWallpaperTarget(w);
+                mFindResults.setIsWallpaperTargetForLetterbox(
+                        w.hasWallpaperForLetterboxBackground());
+                return false;
+            } else {
+                if (mFindResults.hasInvisibleRequestedTarget) {
+                    if (w.isVisibleRequested()) {
+                        // Find the next visible target behind the candidate, and stop.
+                        if (DEBUG_WALLPAPER) {
+                            Slog.v(TAG, "Found wallpaper target behind candidate: " + w);
+                        }
+                        mFindResults.setWallpaperTarget(w);
+                        mFindResults.setIsWallpaperTargetForLetterbox(
+                                w.hasWallpaperForLetterboxBackground());
+                    } else if (w.getWindowingMode() != WINDOWING_MODE_FULLSCREEN) {
+                        // Search for the next potential window.
+                        return false;
+                    }
+                } else {
+                    if (DEBUG_WALLPAPER) Slog.v(TAG, "Found wallpaper target: " + w);
+                    mFindResults.setWallpaperTarget(w);
+                    mFindResults.setIsWallpaperTargetForLetterbox(
+                            w.hasWallpaperForLetterboxBackground());
+                }
+            }
             // While the keyguard is going away, both notification shade and a normal activity such
             // as a launcher can satisfy criteria for a wallpaper target. In this case, we should
             // chose the normal activity, otherwise wallpaper becomes invisible when a new animation
@@ -1000,9 +1032,9 @@ class WallpaperController {
 
         static final class TopWallpaper {
             // A wp that can be visible on home screen only
-            WindowState mTopHideWhenLockedWallpaper = null;
+            WindowState mTopHideWhenLockedWallpaper;
             // A wallpaper that has permission to be visible on lock screen (lock or shared wp)
-            WindowState mTopShowWhenLockedWallpaper = null;
+            WindowState mTopShowWhenLockedWallpaper;
 
             void reset() {
                 mTopHideWhenLockedWallpaper = null;
@@ -1012,9 +1044,10 @@ class WallpaperController {
 
         TopWallpaper mTopWallpaper = new TopWallpaper();
         boolean mNeedsShowWhenLockedWallpaper;
-        boolean useTopWallpaperAsTarget = false;
-        WindowState wallpaperTarget = null;
-        boolean isWallpaperTargetForLetterbox = false;
+        boolean useTopWallpaperAsTarget;
+        WindowState wallpaperTarget;
+        boolean isWallpaperTargetForLetterbox;
+        boolean hasInvisibleRequestedTarget;
 
         void setTopHideWhenLockedWallpaper(WindowState win) {
             if (mTopWallpaper.mTopHideWhenLockedWallpaper != win) {
@@ -1066,6 +1099,7 @@ class WallpaperController {
             wallpaperTarget = null;
             useTopWallpaperAsTarget = false;
             isWallpaperTargetForLetterbox = false;
+            hasInvisibleRequestedTarget = false;
         }
     }
 }

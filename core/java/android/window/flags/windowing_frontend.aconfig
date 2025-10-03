@@ -453,3 +453,12 @@ flag {
     }
 }
 
+flag {
+    name: "choosing_visible_as_wallpaper_target"
+    namespace: "windowing_frontend"
+    description: "Prefer choosing a visible window as wallpaper target."
+    bug: "446629055"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
