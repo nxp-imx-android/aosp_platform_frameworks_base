@@ -483,7 +483,7 @@ static void com_android_server_am_CachedAppOptimizer_compactSystem(JNIEnv *, job
             continue;
         }
 
-        std::string status_name = StringPrintf("/proc/%s/status", current->d_name);
+        std::string status_name = StringPrintf("/proc/%s/", current->d_name);
         struct stat status_info;
 
         if (stat(status_name.c_str(), &status_info) != 0) {
