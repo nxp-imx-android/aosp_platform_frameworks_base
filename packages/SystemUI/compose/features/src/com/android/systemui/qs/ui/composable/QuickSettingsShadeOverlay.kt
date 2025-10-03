@@ -503,10 +503,14 @@ object QuickSettingsShade {
                 volumeVerticalPadding,
             )
 
+        val ToolbarHeight: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_toolbar_height)
+
         // This is used around the header and toolbar
         val ShortPadding = 8.dp
         val Padding = 16.dp
-        val ToolbarHeight = 48.dp
 
         private val brightnessThumbHeight: Dp
             @Composable
