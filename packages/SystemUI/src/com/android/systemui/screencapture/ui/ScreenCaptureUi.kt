@@ -25,6 +25,7 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
@@ -132,17 +133,20 @@ constructor(
             SideEffect { dialog.dismissWithoutAnimation() }
         }
 
+        val useLargeScreenShareAnimations = isLargeScreen && type == ScreenCaptureType.SHARE_SCREEN
         val density = LocalDensity.current
         val emphasizedDecelerate = remember { CubicBezierEasing(0.05f, 0.7f, 0.1f, 1.0f) }
         val standardEasing = remember { CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f) }
         val initialOffsetPx = with(density) { 40.dp.roundToPx() }
+        val standardAccelerate = remember { CubicBezierEasing(0.3f, 0.0f, 1.0f, 1.0f) }
+        val targetOffsetPx = with(density) { 20.dp.roundToPx() }
 
         AnimatedVisibility(
             visibleState = visibleState,
             // TODO(b/449826486): make each capture type (screenshots, recording, sharing) control
             // their own animations.
             enter =
-                if (isLargeScreen && type == ScreenCaptureType.SHARE_SCREEN) {
+                if (useLargeScreenShareAnimations) {
                     slideInVertically(
                         animationSpec = tween(durationMillis = 300, easing = emphasizedDecelerate),
                         initialOffsetY = { initialOffsetPx },
@@ -150,7 +154,18 @@ constructor(
                 } else {
                     scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically()
                 },
-            exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
+            exit =
+                if (useLargeScreenShareAnimations) {
+                    slideOutVertically(
+                        animationSpec = tween(durationMillis = 150, easing = standardAccelerate),
+                        targetOffsetY = { targetOffsetPx },
+                    ) +
+                        fadeOut(
+                            animationSpec = tween(durationMillis = 150, easing = standardAccelerate)
+                        )
+                } else {
+                    scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically()
+                },
         ) {
             val builder: ScreenCaptureUiComponent.Builder =
                 componentBuilders[parameters.screenCaptureType] ?: defaultBuilder.get()
