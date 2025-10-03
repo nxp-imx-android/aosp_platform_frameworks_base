@@ -16,10 +16,12 @@
 
 package com.android.systemui.statusbar.notification
 
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
@@ -116,6 +118,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun updateBoundsWithDualShade() =
         kosmos.runTest {
             enableDualShade()
