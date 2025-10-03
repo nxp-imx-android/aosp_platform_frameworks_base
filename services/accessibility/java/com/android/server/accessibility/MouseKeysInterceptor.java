@@ -120,6 +120,12 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      */
     private static final float CURSOR_MOVEMENT_PARAMETER = sqrt(2);
 
+    @VisibleForTesting
+    public static final int FAKE_DEVICE_GENERATION_ID = -1;
+
+    @VisibleForTesting
+    public static final int FAKE_NUMPAD_DEVICE_GENERATION_ID = -2;
+
     private final AccessibilityManagerService mAms;
     private final Handler mHandler;
 
@@ -176,12 +182,8 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     @VisibleForTesting
     float mAcceleration = 0.1f;
 
-    /**
-     * The keycodes to which the mouse keys functionality will be bound to can be either
-     * primary keycodes or numpad keycodes.
-     * This decides whether primary key bindings should be used for mouse keys.
-     */
-    private boolean mUserSetPrimaryKeys = true;
+    /** This decides whether primary key bindings should be included for mouse keys. */
+    private boolean mUsePrimaryKeys = true;
 
     /**
      * Cache to store whether a device (by its ID) has the required numpad keys.
@@ -246,25 +248,47 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
          * We check if the input device has been generated using {@link InputDevice#getGeneration()}
          * to test with the default {@link MouseKeyEvent} values in the unit tests.
          */
-        public int getKeyCode(InputDevice inputDevice, boolean usePrimaryKeys) {
+        private int getKeyCode(InputDevice inputDevice, boolean usePrimaryKeys) {
             int locationKeyCode = getKeyCodeValue(usePrimaryKeys);
-            if (inputDevice.getGeneration() == -1) {
+            // Fake devices used in tests.
+            if (inputDevice.getGeneration() == FAKE_DEVICE_GENERATION_ID
+                    || inputDevice.getGeneration() == FAKE_NUMPAD_DEVICE_GENERATION_ID) {
                 return locationKeyCode;
             }
             return inputDevice.getKeyCodeForKeyLocation(locationKeyCode);
         }
 
         /**
+         * Get the key code associated with the given primary key MouseKeyEvent for the given
+         * keyboard input device, taking into account its layout.
+         */
+        public int getPrimaryKeyCode(InputDevice inputDevice) {
+            return getKeyCode(inputDevice, /* usePrimaryKeys= */ true);
+        }
+
+        /**
+         * Get the key code associated with the given numpad MouseKeyEvent for the given  keyboard
+         * input device, taking into account its layout.
+         */
+        public int getNumpadKeyCode(InputDevice inputDevice) {
+            return getKeyCode(inputDevice, /* usePrimaryKeys= */ false);
+        }
+
+        /**
          * Get all the mouse key keycodes for all the {@link MouseKeyEvent}s depending on
          * whether the binding type uses primary keys or not.
          */
-        public static int[] getAllMouseKeys(boolean usePrimaryKeys) {
+        private static int[] getAllMouseKeys(boolean usePrimaryKeys) {
             int[] deviceKeys = new int[MouseKeyEvent.values().length];
             int i = 0;
             for (MouseKeyEvent event : MouseKeyEvent.values()) {
                 deviceKeys[i++] = event.getKeyCodeValue(usePrimaryKeys);
             }
             return deviceKeys;
+        }
+
+        private static int[] getAllNumpadMouseKeys() {
+            return getAllMouseKeys(/* usePrimaryKeys= */ false);
         }
 
         /**
@@ -284,18 +308,29 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     }
 
     /**
-     * Create a map of key codes to their corresponding {@link MouseKeyEvent} values
-     * for a specific input device, for a specific key binding type (whether primary or numpad).
+     * Create a map of key codes to their corresponding {@link MouseKeyEvent} values for a specific
+     * input device.
      * The key for {@code mDeviceKeyCodeMap} is the deviceId.
      * The key for {@code keyCodeToEnumMap} is the keycode for each {@link MouseKeyEvent}
      * according to the keyboard layout of the input device and key binding type.
      */
-    public void initializeDeviceToEnumMap(InputDevice inputDevice, boolean usePrimaryKeys) {
+    public void initializeDeviceToEnumMap(InputDevice inputDevice) {
         int deviceId = inputDevice.getId();
+
+        // Checking for FAKE_NUMPAD_DEVICE_GENERATION_ID is only for tests.
+        boolean deviceHasNumpad = deviceHasNumpad(inputDevice)
+                || inputDevice.getGeneration() == FAKE_NUMPAD_DEVICE_GENERATION_ID;
         SparseArray<MouseKeyEvent> keyCodeToEnumMap = new SparseArray<>();
         for (MouseKeyEvent mouseKeyEventType : MouseKeyEvent.values()) {
-            int keyCode = mouseKeyEventType.getKeyCode(inputDevice, usePrimaryKeys);
-            keyCodeToEnumMap.put(keyCode, mouseKeyEventType);
+            if (mUsePrimaryKeys) {
+                keyCodeToEnumMap.put(mouseKeyEventType.getPrimaryKeyCode(inputDevice),
+                        mouseKeyEventType);
+            }
+
+            if (deviceHasNumpad) {
+                keyCodeToEnumMap.put(mouseKeyEventType.getNumpadKeyCode(inputDevice),
+                        mouseKeyEventType);
+            }
         }
         mDeviceKeyCodeMap.put(deviceId, keyCodeToEnumMap);
     }
@@ -549,32 +584,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         }
     }
 
-    /**
-     * Check whether primary key bindings should be used for mouse keys based on user preference
-     * and input device capabilities.
-     * If the user has chosen to use numpad keys, but the input device doesn't support all the
-     * numpad keys for mouse keys functionality, then the primary keys should be used as
-     * mouse keys for that input device.
-     *
-     * @param device Input device.
-     * @return True or false depending on whether primary keys should be used for the input device.
-     */
-    private boolean shouldUsePrimaryKeysForDevice(InputDevice device) {
-        // Skip the numpad keys check for the input device if it has been generated for
-        // tests, since generated input devices don't contain a KeyCharacterMapping
-        if (device.getGeneration() == -1) {
-            return mUserSetPrimaryKeys;
-        } else if (mUserSetPrimaryKeys) {
-            return true;
-        } else if (!deviceHasNumpad(device)) {
-            Slog.w(LOG_TAG, "Defaulting back to primary mouse key bindings "
-                    + "since not all numpad keys exist on device " + device.getName());
-            return true;
-        }
-        return false;
-    }
-
-
     private boolean isMouseKey(int keyCode, int deviceId) {
         SparseArray<MouseKeyEvent> keyCodeToEnumMap = mDeviceKeyCodeMap.get(deviceId);
         return keyCodeToEnumMap.contains(keyCode);
@@ -659,10 +668,9 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
             return;
         }
         mActiveInputDeviceId = deviceId;
-        boolean usePrimaryKeys = shouldUsePrimaryKeysForDevice(inputDevice);
 
         if (!mDeviceKeyCodeMap.contains(mActiveInputDeviceId)) {
-            initializeDeviceToEnumMap(inputDevice, usePrimaryKeys);
+            initializeDeviceToEnumMap(inputDevice);
         }
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap
@@ -742,7 +750,7 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
             return mDeviceNumpadCapabilityCache.get(deviceId);
         }
 
-        int[] numpadKeys = MouseKeyEvent.getAllMouseKeys(/* usePrimaryKeys= */ false);
+        int[] numpadKeys = MouseKeyEvent.getAllNumpadMouseKeys();
         boolean[] resultsDeviceHasKeys = device.hasKeys(numpadKeys);
 
         for (int i = 0; i < resultsDeviceHasKeys.length; i++) {
@@ -905,7 +913,7 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         final InputDevice inputDevice = mInputManager.getInputDevice(deviceId);
         // Update the enum mapping only if input device that changed is a physical keyboard
         if (isDeviceEligible(inputDevice)) {
-            initializeDeviceToEnumMap(inputDevice, shouldUsePrimaryKeysForDevice(inputDevice));
+            initializeDeviceToEnumMap(inputDevice);
             Slog.i(LOG_TAG, "Updating key code enum map for device ID: " + deviceId);
         }
     }
@@ -1003,14 +1011,16 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         public void onChange(boolean selfChange, Uri uri) {
             Slog.i(LOG_TAG, "onChange triggered. selfChange=" + selfChange + ", uri=" + uri);
             if (mPrimaryKeysSettingUri.equals(uri)) {
-                mUserSetPrimaryKeys =
+                // Setting this value to true/false does not effect the use of the numpad for
+                // mouse key control.
+                mUsePrimaryKeys =
                         Settings.Secure.getIntForUser(
                                 mContentResolver,
                                 Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_USE_PRIMARY_KEYS,
                                 1,
                                 mUserId) == 1;
                 Slog.i(LOG_TAG, "Primary keys toggled. New value for using Primary keys  = "
-                        + mUserSetPrimaryKeys);
+                        + mUsePrimaryKeys);
 
                 // Clear the existing device keycode map.
                 // The next call to onKeyEventInternal will force re-initialize the keycode map
