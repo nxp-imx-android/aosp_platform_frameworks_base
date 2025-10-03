@@ -23,7 +23,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.statusbar.layout.StatusBarAppHandleTracking
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.wm.shell.windowdecor.viewholder.AppHandlePositionCallback
 import com.android.wm.shell.windowdecor.viewholder.AppHandles
@@ -52,7 +51,7 @@ constructor(
     private val hydrator = Hydrator(traceName = "AppHandlesViewModel.hydrator")
 
     private val _appHandleBounds: Flow<List<Rect>> =
-        if (StatusBarAppHandleTracking.isEnabled && appHandles.isPresent) {
+        if (appHandles.isPresent) {
                 conflatedCallbackFlow {
                     val listener = AppHandlePositionCallback { handles ->
                         trySend(
