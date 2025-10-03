@@ -243,17 +243,11 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
         when(mSystemUIToast.getInAnimation()).thenReturn(mAnimator);
         when(mWifiStateWorker.isWifiEnabled()).thenReturn(true);
 
-        mInternetDetailsContentController = new InternetDetailsContentController(mContext,
-                mock(UiEventLogger.class), mock(ActivityStarter.class), mAccessPointController,
-                mSubscriptionManager, mTelephonyManager, mWifiManager,
-                mConnectivityManager, mSatelliteManager, mHandler, mExecutor, mBroadcastDispatcher,
-                mock(KeyguardUpdateMonitor.class), mGlobalSettings, mKeyguardStateController,
-                mWindowManager, mToastFactory, mWorkerHandler, mCarrierConfigTracker,
-            mLocationController, mDialogTransitionAnimator, mWifiStateWorker, mFlags,
-            mKosmos.getShadeDialogContextInteractor());
+        createController();
         mSubscriptionManager.addOnSubscriptionsChangedListener(mExecutor,
                 mInternetDetailsContentController.mOnSubscriptionsChangedListener);
         mInternetDetailsContentController.onStart(mInternetDialogCallback, true);
+        mInternetDetailsContentController.initSystemService();
         mInternetDetailsContentController.onAccessPointsChanged(mAccessPoints);
         mInternetDetailsContentController.mActivityStarter = mActivityStarter;
         mInternetDetailsContentController.mWifiIconInjector = mWifiIconInjector;
@@ -528,6 +522,16 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
 
         assertThat(mInternetDetailsContentController.getSubtitleText(false))
                 .isEqualTo(getResourcesString("non_carrier_network_unavailable"));
+    }
+
+    @Test
+    public void getSubtitleText_beforeInitSystemService_returnNull() {
+        createController();
+        mInternetDetailsContentController.onStart(mInternetDialogCallback, true);
+
+        CharSequence text = mInternetDetailsContentController.getSubtitleText(false);
+
+        assertThat(text).isNull();
     }
 
     @Test
@@ -1247,6 +1251,17 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
         mInternetDetailsContentController.mOnSubscriptionsChangedListener.onSubscriptionsChanged();
 
         assertTrue(mInternetDetailsContentController.hasActiveSubIdOnDds());
+    }
+
+    private void createController() {
+        mInternetDetailsContentController = new InternetDetailsContentController(mContext,
+                mock(UiEventLogger.class), mock(ActivityStarter.class), mAccessPointController,
+                mSubscriptionManager, mTelephonyManager, mWifiManager,
+                mConnectivityManager, mSatelliteManager, mHandler, mExecutor, mBroadcastDispatcher,
+                mock(KeyguardUpdateMonitor.class), mGlobalSettings, mKeyguardStateController,
+                mWindowManager, mToastFactory, mWorkerHandler, mCarrierConfigTracker,
+                mLocationController, mDialogTransitionAnimator, mWifiStateWorker, mFlags,
+                mKosmos.getShadeDialogContextInteractor());
     }
 
     private String getResourcesString(String name) {
