@@ -360,7 +360,7 @@ public class ComputerControlSessionTest {
 
     @Test
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_SHOW_TOUCHES)
-    public void createSession_setsShowTouchesOnDisplay() {
+    public void createSession_setsForceShowTouchesOnDisplay() {
         createComputerControlSession(mDefaultParams);
         verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, true);
     }

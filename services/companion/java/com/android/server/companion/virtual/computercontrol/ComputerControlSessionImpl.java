@@ -164,6 +164,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final InputMethodManagerInternal mInputMethodManagerInternal;
     private final UserManagerInternal mUserManagerInternal;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    private final InputManagerInternal mInputManagerInternal;
+    private final DisplayManagerGlobal mDisplayManagerGlobal;
     private final ViewConfiguration mViewConfiguration;
     private final long mGlobalSessionTimeoutDurationMs;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
@@ -212,6 +214,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mActivityTaskManagerInternal = LocalServices.getService(
                 ActivityTaskManagerInternal.class);
+        mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
+        mDisplayManagerGlobal = displayManagerGlobal;
 
         // TODO(b/440005498): Consider using the display from the app's context instead.
         mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
@@ -236,7 +240,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // used as a map key for the virtual input devices.
         mVirtualDisplayToken = new DisplayManagerGlobal.VirtualDisplayCallback(null, null);
 
-        final DisplayInfo mainDisplayInfo = displayManagerGlobal.getDisplayInfo(mMainDisplayId);
+        final DisplayInfo mainDisplayInfo = mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId);
         final int displayWidth = mainDisplayInfo.logicalWidth;
         final int displayHeight = mainDisplayInfo.logicalHeight;
         final VirtualDisplayConfig virtualDisplayConfig = new VirtualDisplayConfig.Builder(
@@ -261,9 +265,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             });
 
             if (Flags.computerControlShowTouches()) {
-                InputManagerInternal inputManagerInternal = LocalServices.getService(
-                        InputManagerInternal.class);
-                inputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
+                mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
                         true /* enabled */);
             }
 
@@ -441,7 +443,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         outMirrorSurface.copyFrom(mirrorSurface,
                 "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
-        final var mirror = new InteractiveMirrorImpl(mirrorSurface, mTransactionSupplier);
+        final var mirror = new InteractiveMirrorImpl(mirrorSurface, mTransactionSupplier,
+                mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal);
         mirror.setInteractive(InteractiveMirror.DEFAULT_INTERACTIVE);
         return mirror;
     }

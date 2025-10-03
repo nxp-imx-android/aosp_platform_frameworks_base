@@ -27,8 +27,11 @@ import android.hardware.input.VirtualTouchEvent;
 @RequiresNoPermission
 oneway interface IInteractiveMirror {
 
-    /** Set whether the user can interact with the contents of the mirror. */
+    /** Sets whether the user can interact with the contents of the mirror. */
     void setInteractive(boolean interactive);
+
+    /** Resizes the mirror. */
+    void resize(int width, int height);
 
     /** Closes this mirror display and the associated touchscreen. */
     void close();
