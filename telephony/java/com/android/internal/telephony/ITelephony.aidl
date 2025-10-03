@@ -3332,6 +3332,14 @@ interface ITelephony {
     boolean setMaxAllowedSatelliteDataModeForCtsTest(int maxAllowedDataMode);
 
     /**
+     * This API can be used for testing purposes to uncap the max allowed data mode.
+     *
+     * @return {@code true} if the max allowed data mode is uncapped successfully,
+     * {@code false} otherwise.
+     */
+    boolean uncapMaxAllowedSatelliteDataMode();
+
+    /**
      * Request to get the session stats of the satellite service.
      *
      * @param subId The subId of the subscription to get the session stats for.

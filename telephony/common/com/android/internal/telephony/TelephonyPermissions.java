@@ -825,6 +825,17 @@ public final class TelephonyPermissions {
     }
 
     /**
+     * Checks if the current build is userdebug or eng. Throws SecurityException otherwise.
+     *
+     * @param operationName the operation name for which userdebug or eng build is enforced for.
+     */
+    public static void enforceDebugBuildsOnly(String operationName) {
+        if (!Build.TYPE.equals("userdebug") && !Build.TYPE.equals("eng")) {
+            throw new SecurityException(operationName + " allowed only on userdebug or eng builds");
+        }
+    }
+
+    /**
      * Returns the target SDK version number for a given package name.
      *
      * This call MUST be invoked before clearing the calling UID.
