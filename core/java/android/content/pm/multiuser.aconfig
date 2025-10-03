@@ -458,6 +458,13 @@ flag {
 }
 
 flag {
+    name: "hsu_allowlist_notifications"
+    namespace: "multiuser"
+    description: "Adds an allowlist mechanism to device which notifications can be shown when the current user is the headless system user"
+    bug: "412176703"
+}
+
+flag {
     name: "private_space_file_limit_check_timeout"
     namespace: "profile_experiences"
     description: "Add a timeout for file limit checks during file transfer to private space"
