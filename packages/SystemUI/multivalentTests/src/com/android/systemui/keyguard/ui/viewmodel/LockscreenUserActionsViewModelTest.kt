@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
@@ -178,6 +179,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
+    @DisableFlags(Flags.FLAG_DUAL_SHADE)
     fun userActions_combinedShade() =
         kosmos.runTest {
             disableDualShade()
@@ -266,7 +268,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
+    @EnableFlags(Flags.FLAG_COMMUNAL_HUB, Flags.FLAG_DUAL_SHADE)
     fun userActions_dualShade() =
         kosmos.runTest {
             enableDualShade(wideLayout = !isNarrowScreen)
