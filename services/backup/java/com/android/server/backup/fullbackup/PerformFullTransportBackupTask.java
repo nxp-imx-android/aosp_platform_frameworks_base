@@ -380,6 +380,8 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
 
             // In some cases there may not be a monitor passed in when creating this task. So, if we
             // don't have one already we ask the transport for a monitor.
+            // TODO(b/380051012): Remove this after rolling out
+            // enable_kv_backup_logs_from_transport_with_proper_flow_id.
             if (mBackupManagerMonitorEventSender.getMonitor() == null) {
                 try {
                     mBackupManagerMonitorEventSender
