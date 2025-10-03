@@ -175,6 +175,6 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     private sealed interface SegmentedButtonIcon {
         data class DrawableIcon(val drawable: Drawable) : SegmentedButtonIcon
 
-        data class ResourceIcon(@DrawableRes val resId: Int) : SegmentedButtonIcon
+        data class ResourceIcon(@param:DrawableRes val resId: Int) : SegmentedButtonIcon
     }
 }

@@ -32,7 +32,7 @@ internal class FixedTimingTransitionProgressProvider
 @Inject
 constructor(
     private val foldStateProvider: FoldStateProvider,
-    @UnfoldMain private val mainHandler: Handler,
+    @param:UnfoldMain private val mainHandler: Handler,
 ) :
     UnfoldTransitionProgressProvider, FoldStateProvider.FoldUpdatesListener {
 
