@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
@@ -194,7 +195,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {
-                    // TODO: b/441475896 - Lock activity policy; Unblock input and display surface.
+                    reconfigureActivityPolicy(/* unlockPolicy= */ false);
 
                     mVirtualDisplay.setSurface(mClientSurface);
                 }
@@ -209,10 +210,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         // the client surface from the display.
                         mVirtualDisplay.setSurface(mBlockedStateImageReader.getSurface());
 
-                        // In the short term, we don't do anything special when entering the blocked
-                        // state. The state exists to notify the client through the callback.
-                        // TODO: b/441475896 - Block input and display surface; Unlock activity
-                        //  policy.
+                        reconfigureActivityPolicy(/* unlockPolicy= */ true);
                     }
                 }
 
@@ -319,8 +317,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     virtualDeviceParams);
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
             mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
-
-            applyActivityPolicy();
 
             // Create the display with a clean identity so it can be trusted. The virtual display's
             // token must not be leaked to the client.
@@ -652,12 +648,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mOnClosedListener.accept(this);
     }
 
-    private void applyActivityPolicy() throws RemoteException {
+    private void reconfigureActivityPolicy(boolean unlockPolicy) {
         List<String> exemptedPackageNames = new ArrayList<>();
         if (Flags.computerControlActivityPolicyStrict()) {
-            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-            exemptedPackageNames.addAll(mAllowlistedPackages);
+            if (unlockPolicy) {
+                mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_DEFAULT);
+            } else {
+                mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
+                exemptedPackageNames.addAll(mAllowlistedPackages);
+            }
         } else {
             // This legacy policy allows all apps other than PermissionController to be automated.
             String permissionControllerPackage =
