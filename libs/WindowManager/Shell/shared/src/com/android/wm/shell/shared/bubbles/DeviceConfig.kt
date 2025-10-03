@@ -35,7 +35,7 @@ data class DeviceConfig(
         val isLandscape: Boolean,
         val isRtl: Boolean,
         val windowBounds: Rect,
-        val insets: Insets
+        val insets: Insets,
 ) {
     companion object {
 
@@ -58,7 +58,7 @@ data class DeviceConfig(
                     isLandscape = isLandscape,
                     isRtl = isRtl,
                     windowBounds = windowBounds,
-                    insets = insets
+                insets = insets,
             )
         }
 

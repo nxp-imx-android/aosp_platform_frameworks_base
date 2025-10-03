@@ -20,18 +20,27 @@ import android.content.Context
 import android.graphics.Rect
 import android.util.TypedValue
 import androidx.annotation.DimenRes
+import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.shared.bubbles.DragZone.Bounds.CircleZone
 import com.android.wm.shell.shared.bubbles.DragZone.Bounds.RectZone
 import com.android.wm.shell.shared.bubbles.DragZone.DropTargetRect
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
+import kotlin.math.min
 
 /** A class for creating drag zones for dragging bubble objects or dragging into bubbles. */
-class DragZoneFactory(
+class DragZoneFactory @JvmOverloads constructor(
     private val context: Context,
     private val deviceConfig: DeviceConfig,
     private val splitScreenModeChecker: SplitScreenModeChecker,
     private val desktopWindowModeChecker: DesktopWindowModeChecker,
     private val bubbleBarPropertiesProvider: BubbleBarPropertiesProvider,
+    private val dpToPxResolver: (Int, Context) -> Int = { dp, c ->
+        TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp.toFloat(),
+            c.resources.displayMetrics
+        ).toInt()
+    }
 ) {
 
     private val windowBounds: Rect
@@ -60,16 +69,27 @@ class DragZoneFactory(
     private var desktopWindowDropTargetPaddingSmall = 0
     private var desktopWindowDropTargetPaddingLarge = 0
     private var expandedViewDropTargetWidth = 0
-    private var expandedViewDropTargetHeight = 0
     private var expandedViewDropTargetPaddingHorizontal = 0
     private var bubbleBarDropTargetPaddingHorizontal = 0
     private var spacingBetweenExpandedViewAndBubble = 0
+    private var spacingBetweenExpandedViewAndStatusBar = 0
+    private var expandedViewDropTargetHeightLimit = 0
 
     private var dropTargetCornerRadius = 0f
 
     private val expandedViewDropTargetPaddingBottom: Int
         get() = bubbleBarPropertiesProvider.getBubbleBarTopFromScreenBottom() +
                 spacingBetweenExpandedViewAndBubble
+
+    private val expandedViewDropTargetHeight: Int
+        get() {
+            val availableScreenHeight =
+                windowBounds.height() -
+                        expandedViewDropTargetPaddingBottom -
+                        deviceConfig.insets.top -
+                        spacingBetweenExpandedViewAndStatusBar
+            return min(expandedViewDropTargetHeightLimit, availableScreenHeight)
+        }
 
     private val fullScreenDropTarget: DropTargetRect
         get() =
@@ -189,24 +209,22 @@ class DragZoneFactory(
         desktopWindowDropTargetPaddingSmall = 100.dpToPx()
         desktopWindowDropTargetPaddingLarge = 130.dpToPx()
         expandedViewDropTargetWidth = 330.dpToPx()
-        expandedViewDropTargetHeight = 578.dpToPx()
         expandedViewDropTargetPaddingHorizontal = 24.dpToPx()
         bubbleBarDropTargetPaddingHorizontal = 24.dpToPx()
-        spacingBetweenExpandedViewAndBubble = 16.dpToPx()
-
+        spacingBetweenExpandedViewAndBubble = 32.dpToPx()
         dropTargetCornerRadius = 28.dpToPx().toFloat()
+        spacingBetweenExpandedViewAndStatusBar = 60.dpToPx()
+        expandedViewDropTargetHeightLimit = if (deviceConfig.isSmallTablet) {
+            EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP
+        } else {
+            EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP
+        }.dpToPx()
     }
 
     private fun Context.resolveDimension(@DimenRes dimension: Int) =
         resources.getDimensionPixelSize(dimension)
 
-    private fun Int.dpToPx() =
-        TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                this.toFloat(),
-                context.resources.displayMetrics
-            )
-            .toInt()
+    private fun Int.dpToPx() = dpToPxResolver.invoke(this, context)
 
     /**
      * Creates the list of drag zones for the dragged object.
@@ -712,5 +730,13 @@ class DragZoneFactory(
         fun getBottomPadding(): Int = 0
 
         fun getBubbleBarTopFromScreenBottom(): Int = getHeight() + getBottomPadding()
+    }
+
+    companion object {
+        @VisibleForTesting
+        const val EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP = 578
+
+        @VisibleForTesting
+        const val EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP = 625
     }
 }

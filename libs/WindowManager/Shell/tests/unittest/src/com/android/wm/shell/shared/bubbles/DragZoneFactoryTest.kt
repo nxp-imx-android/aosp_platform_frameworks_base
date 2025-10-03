@@ -27,6 +27,8 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.BubbleBarPropertiesProvider
+import com.android.wm.shell.shared.bubbles.DragZoneFactory.Companion.EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP
+import com.android.wm.shell.shared.bubbles.DragZoneFactory.Companion.EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.DesktopWindowModeChecker
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
@@ -49,19 +51,19 @@ class DragZoneFactoryTest {
     private lateinit var dragZoneFactory: DragZoneFactory
     private val tabletPortrait =
         DeviceConfig(
-            windowBounds = Rect(0, 0, 1000, 2000),
+            windowBounds = Rect(0, 0, 1400, 2000),
             isLargeScreen = true,
             isSmallTablet = false,
             isLandscape = false,
             isRtl = false,
-            insets = Insets.of(0, 0, 0, 0)
+            insets = Insets.of(0, 24, 0, 0),
         )
     private val tabletLandscape =
-        tabletPortrait.copy(windowBounds = Rect(0, 0, 2000, 1000), isLandscape = true)
+        tabletPortrait.copy(windowBounds = Rect(0, 0, 2000, 1400), isLandscape = true)
     private val foldablePortrait =
-        tabletPortrait.copy(windowBounds = Rect(0, 0, 800, 900), isSmallTablet = true)
+        tabletPortrait.copy(windowBounds = Rect(0, 0, 1000, 1200), isSmallTablet = true)
     private val foldableLandscape =
-        foldablePortrait.copy(windowBounds = Rect(0, 0, 900, 800), isLandscape = true)
+        foldablePortrait.copy(windowBounds = Rect(0, 0, 1200, 1000), isLandscape = true)
     private var splitScreenMode = SplitScreenMode.NONE
     private val splitScreenModeChecker = SplitScreenModeChecker { splitScreenMode }
     private var isDesktopWindowModeSupported = true
@@ -74,14 +76,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForBubbleBar_tablet() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletPortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletPortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.BubbleBar(BubbleBarLocation.LEFT))
         val expectedZones: List<DragZoneVerifier> =
@@ -96,14 +91,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForBubble_tablet_portrait() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletPortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletPortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
         val expectedZones: List<DragZoneVerifier> =
@@ -122,14 +110,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForBubble_tablet_landscape() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
         val expectedZones: List<DragZoneVerifier> =
@@ -148,14 +129,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForBubble_foldable_portrait() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldablePortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldablePortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
         val expectedZones: List<DragZoneVerifier> =
@@ -173,14 +147,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForBubble_foldable_landscape() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldableLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldableLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
         val expectedZones: List<DragZoneVerifier> =
@@ -198,14 +165,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForExpandedView_tablet_portrait() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletPortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletPortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -222,18 +182,14 @@ class DragZoneFactoryTest {
             )
         assertThat(dragZones).hasSize(expectedZones.size)
         dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
+        dragZones.getExpandedViewDropTargetHeights().forEach {
+            assertThat(it).isEqualTo(EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP)
+        }
     }
 
     @Test
     fun dragZonesForExpandedView_tablet_landscape() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -250,18 +206,14 @@ class DragZoneFactoryTest {
             )
         assertThat(dragZones).hasSize(expectedZones.size)
         dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
+        dragZones.getExpandedViewDropTargetHeights().forEach {
+            assertThat(it).isEqualTo(EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_TABLET_DP)
+        }
     }
 
     @Test
     fun dragZonesForExpandedView_foldable_portrait() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldablePortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldablePortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -277,18 +229,14 @@ class DragZoneFactoryTest {
             )
         assertThat(dragZones).hasSize(expectedZones.size)
         dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
+        dragZones.getExpandedViewDropTargetHeights().forEach {
+            assertThat(it).isEqualTo(EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP)
+        }
     }
 
     @Test
     fun dragZonesForExpandedView_foldable_landscape() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldableLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldableLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -304,19 +252,36 @@ class DragZoneFactoryTest {
             )
         assertThat(dragZones).hasSize(expectedZones.size)
         dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) -> instanceVerifier(zone) }
+        dragZones.getExpandedViewDropTargetHeights().forEach {
+            assertThat(it).isEqualTo(EXPANDED_VIEW_DROP_TARGET_HEIGHT_LIMIT_SMALL_TABLET_DP)
+        }
+    }
+
+    @Test
+    fun dragZonesForExpandedView_shortFoldable_landscapeExpandedDropTargetOccupiesAvailableSpace() {
+        val screenHeight = 800
+        dragZoneFactory = createDragZoneFactory(
+            deviceConfig = foldableLandscape.copy(windowBounds = Rect(0, 0, 1200, screenHeight))
+        )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
+            )
+
+        // available space is equal to:
+        // screenHeight(800) - bubbleBarBottomHeight (80 + 50)
+        // - EXPANDED_VIEW_BUBBLE_BAR_SPACING_DP (32) - EXPANDED_VIEW_STATUS_BAR_SPACING_DP(60)
+        // - topInset (24)
+        val availableSpace = 554
+        dragZones.getExpandedViewDropTargetHeights().forEach {
+            assertThat(it).isEqualTo(availableSpace)
+        }
     }
 
     @Test
     fun dragZonesForBubble_desktopModeDisabled() {
         isDesktopWindowModeSupported = false
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldableLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldableLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
         assertThat(dragZones.filterIsInstance<DragZone.DesktopWindow>()).isEmpty()
@@ -325,14 +290,7 @@ class DragZoneFactoryTest {
     @Test
     fun dragZonesForExpandedView_desktopModeDisabled() {
         isDesktopWindowModeSupported = false
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldableLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldableLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -343,14 +301,7 @@ class DragZoneFactoryTest {
     @Test
     fun dragZonesForBubble_splitScreenModeUnsupported() {
         splitScreenMode = SplitScreenMode.UNSUPPORTED
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldableLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldableLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(DraggedObject.Bubble(BubbleBarLocation.LEFT))
         assertThat(dragZones.filterIsInstance<DragZone.Split>()).isEmpty()
@@ -359,14 +310,7 @@ class DragZoneFactoryTest {
     @Test
     fun dragZonesForExpandedView_splitScreenModeUnsupported() {
         splitScreenMode = SplitScreenMode.UNSUPPORTED
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                foldableLandscape,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = foldableLandscape)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -376,14 +320,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForLauncherIcon_bubbleBarHasBubbles() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletPortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletPortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = false)
@@ -399,14 +336,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForLauncherIcon_bubbleBarHasNoBubbles() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletPortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletPortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.LauncherIcon(showBubbleBarPillowDropTarget = true)
@@ -422,14 +352,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragZonesForLauncherIcon_bubbleBarHasNoBubblesDoNotShowDropTarget() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletPortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletPortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.LauncherIcon(
@@ -449,14 +372,7 @@ class DragZoneFactoryTest {
 
     @Test
     fun dragExpandedView_expandedViewDropTarget_shouldBeAboveBubbleBar() {
-        dragZoneFactory =
-            DragZoneFactory(
-                context,
-                tabletPortrait,
-                splitScreenModeChecker,
-                desktopWindowModeChecker,
-                bubbleBarPropertiesProvider,
-            )
+        dragZoneFactory = createDragZoneFactory(deviceConfig = tabletPortrait)
         val dragZones =
             dragZoneFactory.createSortedDragZones(
                 DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
@@ -479,4 +395,27 @@ class DragZoneFactoryTest {
     private fun DragZone.verifySecondaryDropZone(isPresent: Boolean) {
         assertThat(secondDropTarget != null == isPresent).isTrue()
     }
+
+
+    private fun createDragZoneFactory(
+        context: Context = this.context,
+        deviceConfig: DeviceConfig,
+        splitScreenModeChecker: SplitScreenModeChecker = this.splitScreenModeChecker,
+        desktopWindowModeChecker: DesktopWindowModeChecker = this.desktopWindowModeChecker,
+        bubbleBarPropertiesProvider: BubbleBarPropertiesProvider = this.bubbleBarPropertiesProvider,
+        dpToPxResolver: (Int, Context) -> Int = { dp, _ -> dp }, // in tests dp will be equals to px
+    ): DragZoneFactory {
+        return DragZoneFactory(
+            context,
+            deviceConfig,
+            splitScreenModeChecker,
+            desktopWindowModeChecker,
+            bubbleBarPropertiesProvider,
+            dpToPxResolver
+        )
+    }
+
+    private fun List<DragZone>.getExpandedViewDropTargetHeights(): List<Int> =
+        filter { it is DragZone.Bubble.Left || it is DragZone.Bubble.Right }
+            .mapNotNull { it.dropTarget?.rect?.height() }
 }
