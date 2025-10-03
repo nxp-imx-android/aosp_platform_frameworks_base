@@ -80,6 +80,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.ActivityOptions.SourceInfo;
+import android.app.ApplicationExitInfo;
 import android.app.ApplicationStartInfo;
 import android.app.WaitResult;
 import android.app.WindowConfiguration.WindowingMode;
@@ -1268,8 +1269,8 @@ class ActivityMetricsLogger {
         final int packageState = stopped
                 ? APP_START_OCCURRED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_STOPPED
                 : APP_START_OCCURRED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_NORMAL;
-
         final boolean firstLaunch = wasFirstLaunch(info);
+
         FrameworkStatsLog.write(
                 FrameworkStatsLog.APP_START_OCCURRED,
                 info.applicationInfo.uid,
@@ -1318,6 +1319,10 @@ class ActivityMetricsLogger {
         }
 
         logAppStartMemoryStateCapture(info);
+
+        if (android.app.Flags.logAppRestartOccurred()) {
+            logAppRestartOccurred(info);
+        }
     }
 
     private boolean isIncrementalLoading(String packageName, int userId) {
@@ -1573,6 +1578,50 @@ class ActivityMetricsLogger {
                 memoryStat.rssInBytes,
                 memoryStat.cacheInBytes,
                 memoryStat.swapInBytes);
+    }
+
+    private void logAppRestartOccurred(TransitionInfoSnapshot info) {
+        if (info.processRecord == null || info.processRecord.isAppRestartLogged()) {
+            return;
+        }
+        info.processRecord.setAppRestartLogged();
+
+        final ApplicationExitInfo lastExitInfo = info.processRecord.getLastExitInfo();
+        if (lastExitInfo == null) {
+            return;
+        }
+
+        final int startType;
+        if (info.type == TYPE_TRANSITION_COLD_LAUNCH) {
+            startType = FrameworkStatsLog.APP_RESTART_OCCURRED__TYPE__COLD;
+        } else if (info.type == TYPE_TRANSITION_WARM_LAUNCH) {
+            startType = FrameworkStatsLog.APP_RESTART_OCCURRED__TYPE__WARM;
+        } else {
+            return;
+        }
+
+        final long millisSinceLastExit = System.currentTimeMillis() - lastExitInfo.getTimestamp();
+
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.APP_RESTART_OCCURRED,
+                info.applicationInfo.uid,
+                startType,
+                millisSinceLastExit,
+                lastExitInfo.getReason(),
+                lastExitInfo.getSubReason(),
+                lastExitInfo.getImportance());
+
+        if (DEBUG_METRICS) {
+            final String message = String.format(
+                    "APP_RESTART_OCCURRED(%s, %s, %s, lastExit={%.1fs ago, %s / %s})",
+                    info.applicationInfo.uid,
+                    info.packageName,
+                    WaitResult.launchStateToString(info.getLaunchState()),
+                    millisSinceLastExit / 1000.0,
+                    ApplicationExitInfo.reasonCodeToString(lastExitInfo.getReason()),
+                    ApplicationExitInfo.subreasonToString(lastExitInfo.getSubReason()));
+            Slog.i(TAG, message);
+        }
     }
 
     /**

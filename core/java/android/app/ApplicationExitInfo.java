@@ -745,6 +745,13 @@ public final class ApplicationExitInfo implements Parcelable {
      */
     private boolean mHasForegroundServices;
 
+    /**
+     * Whether the process has shown UI (i.e. started an activity).
+     *
+     * <p>For system internal use only, will not retain across processes.
+     */
+    private boolean mHasShownUi;
+
     /** @hide */
     @IntDef(prefix = { "REASON_" }, value = {
         REASON_UNKNOWN,
@@ -1292,6 +1299,24 @@ public final class ApplicationExitInfo implements Parcelable {
         mHasForegroundServices = hasForegroundServices;
     }
 
+    /**
+     * @see #mHasShownUi
+     *
+     * @hide
+     */
+    public boolean hasShownUi() {
+        return mHasShownUi;
+    }
+
+    /**
+     * @see #mHasShownUi
+     *
+     * @hide
+     */
+    public void setHasShownUi(boolean hasShownUi) {
+        mHasShownUi = hasShownUi;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -1358,6 +1383,7 @@ public final class ApplicationExitInfo implements Parcelable {
         mNativeTombstoneRetriever = other.mNativeTombstoneRetriever;
         mLoggedInStatsd = other.mLoggedInStatsd;
         mHasForegroundServices = other.mHasForegroundServices;
+        mHasShownUi = other.mHasShownUi;
     }
 
     private ApplicationExitInfo(@NonNull Parcel in) {
