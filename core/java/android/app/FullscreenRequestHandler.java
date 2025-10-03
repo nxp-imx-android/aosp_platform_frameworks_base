@@ -23,10 +23,15 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
 import android.os.OutcomeReceiver;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.util.Singleton;
+
+import com.android.internal.annotations.VisibleForTesting;
 
 /**
  * @hide
  */
+@RavenwoodKeepWholeClass
 public class FullscreenRequestHandler {
     @IntDef(prefix = { "RESULT_" }, value = {
             RESULT_APPROVED,
@@ -45,11 +50,32 @@ public class FullscreenRequestHandler {
 
     public static final String REMOTE_CALLBACK_RESULT_KEY = "result";
 
-    static void requestFullscreenMode(@NonNull @Activity.FullscreenModeRequest int request,
+    private static final Singleton<FullscreenRequestHandler> sInstance =
+            new Singleton<FullscreenRequestHandler>() {
+                @Override
+                protected FullscreenRequestHandler create() {
+                    return new FullscreenRequestHandler(ActivityClient.getInstance());
+                }
+            };
+
+    private final ActivityClient mActivityClient;
+
+    /** @return the singleton instance of {@link FullscreenRequestHandler} */
+    public static FullscreenRequestHandler getInstance() {
+        return sInstance.get();
+    }
+
+    @VisibleForTesting
+    public FullscreenRequestHandler(ActivityClient activityClient) {
+        mActivityClient = activityClient;
+    }
+
+    /** Handles the fullscreen mode request. */
+    public void requestFullscreenMode(@Activity.FullscreenModeRequest int request,
             @Nullable OutcomeReceiver<Void, Throwable> approvalCallback, IBinder token) {
         try {
             if (approvalCallback != null) {
-                ActivityClient.getInstance().requestMultiwindowFullscreen(token, request,
+                mActivityClient.requestMultiwindowFullscreen(token, request,
                         new IRemoteCallback.Stub() {
                             @Override
                             public void sendResult(Bundle res) {
@@ -58,7 +84,7 @@ public class FullscreenRequestHandler {
                             }
                         });
             } else {
-                ActivityClient.getInstance().requestMultiwindowFullscreen(token, request, null);
+                mActivityClient.requestMultiwindowFullscreen(token, request, null);
             }
         } catch (Throwable e) {
             if (approvalCallback != null) {
@@ -67,7 +93,7 @@ public class FullscreenRequestHandler {
         }
     }
 
-    private static void notifyFullscreenRequestResult(
+    private void notifyFullscreenRequestResult(
             OutcomeReceiver<Void, Throwable> callback, int result) {
         Throwable e = null;
         switch (result) {
