@@ -5452,7 +5452,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         @Override
         void assignLayer(Transaction t, int layer) {
-            if (!mNeedsLayer) {
+            if (!mNeedsLayer || mTransitionController.mBuildingFinishLayers) {
                 return;
             }
             super.assignLayer(t, layer);
@@ -5462,7 +5462,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         @Override
         void assignRelativeLayer(Transaction t, SurfaceControl relativeTo, int layer,
                 boolean forceUpdate) {
-            if (!mNeedsLayer) {
+            if (!mNeedsLayer || mTransitionController.mBuildingFinishLayers) {
                 return;
             }
             super.assignRelativeLayer(t, relativeTo, layer, forceUpdate);
@@ -5610,6 +5610,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
             // Leave the ImeContainer where the DisplayAreaPolicy placed it.
             // When using FEATURE_IME, Organizer assumes the responsibility for placing the surface.
+            return;
+        }
+        if (mTransitionController.mBuildingFinishLayers) {
+            // IME layer can be updated during transition, e.g. an activity can request to show
+            // IME when it is opening. So it doesn't need to enforce the end state with finish
+            // transaction of transition. This also avoids replacing new state with old state due
+            // to transaction order issues (e.g. finish transaction contains old state).
             return;
         }
 
