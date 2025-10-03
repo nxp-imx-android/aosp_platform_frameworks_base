@@ -435,8 +435,8 @@ public class AssociationRequestsProcessor {
         DeviceId newDeviceId = null;
 
         if (deviceId != null) {
-            newDeviceId = new DeviceId(
-                    deviceId.getCustomId(), deviceId.getMacAddress(), generateRandom128BitKey());
+            newDeviceId = new DeviceId.Builder().setCustomId(deviceId.getCustomId()).setMacAddress(
+                    deviceId.getMacAddress()).setKey(generateRandom128BitKey()).build();
         }
         association = (new AssociationInfo.Builder(association)).setDeviceId(newDeviceId).build();
         mAssociationStore.updateAssociation(association);

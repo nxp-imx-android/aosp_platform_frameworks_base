@@ -56,9 +56,9 @@ public final class ActionResult implements Parcelable {
     private final int mResultCode;
     private final ActionRequest mActionRequest;
 
-    private ActionResult(@NonNull ActionRequest actionRequest, int resultCode) {
-        this.mResultCode = resultCode;
-        this.mActionRequest = actionRequest;
+    private ActionResult(Builder builder) {
+        mResultCode = builder.mResultCode;
+        mActionRequest = builder.mActionRequest;
     }
 
     /**
@@ -134,8 +134,8 @@ public final class ActionResult implements Parcelable {
      */
     public static final class Builder {
 
-        private int mResultCode;
-        private ActionRequest mActionRequest;
+        private final int mResultCode;
+        private final ActionRequest mActionRequest;
 
         /**
          * @param actionRequest The original {@link ActionRequest} for this result.
@@ -144,8 +144,8 @@ public final class ActionResult implements Parcelable {
         public Builder(@NonNull ActionRequest actionRequest, @ResultCode int resultCode) {
             Objects.requireNonNull(actionRequest, "ActionRequest cannot be null.");
 
-            this.mActionRequest = actionRequest;
-            this.mResultCode = resultCode;
+            mActionRequest = actionRequest;
+            mResultCode = resultCode;
         }
 
         /**
@@ -153,7 +153,7 @@ public final class ActionResult implements Parcelable {
          */
         @NonNull
         public ActionResult build() {
-            return new ActionResult(mActionRequest, mResultCode);
+            return new ActionResult(this);
         }
     }
 }
