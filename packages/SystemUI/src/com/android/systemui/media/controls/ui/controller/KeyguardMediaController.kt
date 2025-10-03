@@ -18,7 +18,6 @@ package com.android.systemui.media.controls.ui.controller
 
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
@@ -291,10 +290,7 @@ constructor(
         if (MediaControlsInComposeFlag.isEnabled) {
             return composeView.boundsOnScreen.contains(x, y)
         }
-        val bounds = Rect()
-        mediaHost.hostView.getBoundsOnScreen(bounds)
-
-        return bounds.contains(x, y)
+        return mediaHost.visible && mediaHost.hostView.boundsOnScreen.contains(x, y)
     }
 
     fun refreshMediaPosition(reason: String) {
