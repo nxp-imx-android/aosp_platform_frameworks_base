@@ -127,6 +127,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
     public void start() {
         IntentFilter intentFilter = new IntentFilter(AudioManager.VOLUME_CHANGED_ACTION);
         intentFilter.addAction(AudioManager.STREAM_DEVICES_CHANGED_ACTION);
+        intentFilter.addAction(AudioManager.STREAM_MUTE_CHANGED_ACTION);
+        intentFilter.addAction(AudioManager.MASTER_MUTE_CHANGED_ACTION);
         mContext.registerReceiverAsUser(mAudioReceiver, mUser,
                 intentFilter, null, null);
         mHandler.post(() -> mDeviceRouteController.start(mUser));
@@ -704,13 +706,22 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         // This will be called in the main thread.
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (!intent.getAction().equals(AudioManager.VOLUME_CHANGED_ACTION)
-                    && !intent.getAction().equals(AudioManager.STREAM_DEVICES_CHANGED_ACTION)) {
+            String action = intent.getAction();
+            if (action == null) {
                 return;
             }
 
-            int streamType = intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE, -1);
-            if (streamType != AudioManager.STREAM_MUSIC) {
+            boolean shouldUpdateVolume = switch (action) {
+                case AudioManager.MASTER_MUTE_CHANGED_ACTION -> true;
+                case AudioManager.VOLUME_CHANGED_ACTION,
+                     AudioManager.STREAM_DEVICES_CHANGED_ACTION,
+                     AudioManager.STREAM_MUTE_CHANGED_ACTION ->
+                        intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE, -1)
+                                == AudioManager.STREAM_MUSIC;
+                default -> false;
+            };
+
+            if (!shouldUpdateVolume) {
                 return;
             }
 
