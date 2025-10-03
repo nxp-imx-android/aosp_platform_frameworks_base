@@ -166,7 +166,6 @@ import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
-import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.shared.split.SplitBounds;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitIndex;
@@ -2141,7 +2140,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     }
 
     @SplitPosition
-    int getSplitPosition(int taskId) {
+    public int getSplitPosition(int taskId) {
         if (mSideStage.getTopVisibleChildTaskId() == taskId) {
             return getSideStagePosition();
         } else if (mMainStage.getTopVisibleChildTaskId() == taskId) {
@@ -3331,38 +3330,6 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
     }
 
-    /** @return whether the transition-request implies entering pip from split. */
-    public boolean requestImpliesSplitToPip(TransitionRequestInfo request) {
-        final TaskInfo triggerTask = request.getTriggerTask();
-        if (!isSplitActive()
-                || (triggerTask != null && triggerTask.displayId != mDisplayId)
-                || !mMixedHandler.requestHasPipEnter(request)) {
-            return false;
-        }
-
-        if (request.getTriggerTask() != null && getSplitPosition(
-                request.getTriggerTask().taskId) != SPLIT_POSITION_UNDEFINED) {
-            return true;
-        }
-
-        if (PipFlags.isPip2ExperimentEnabled()
-                && request.getPipChange() != null && getSplitPosition(
-                request.getPipChange().getTaskInfo().taskId) != SPLIT_POSITION_UNDEFINED) {
-            // In PiP2, PiP-able task can also come in through the pip change request field.
-            return true;
-        }
-
-        // If one of the splitting tasks support auto-pip, wm-core might reparent the task to TDA
-        // and file a TRANSIT_PIP transition when finishing transitions.
-        // @see com.android.server.wm.RootWindowContainer#moveActivityToPinnedRootTask
-        if (enableFlexibleSplit()) {
-            return mStageOrderOperator.getActiveStages().stream()
-                    .anyMatch(stage -> stage.getChildCount() == 0);
-        } else {
-            return mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0;
-        }
-    }
-
     /**
      * This is used for mixed-transition scenarios (specifically when transitioning one split task
      * into PIP). For such scenarios, just make sure to include exiting split or entering split when
@@ -3371,7 +3338,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
      * for PiP2 where PiP-able task can also come in through the pip change request field,
      * and this method is provided to explicitly prepare an exit in that case.
      *
-     * This is only called if requestImpliesSplitToPip() returns `true`.
+     * This is only called if request Split to PiP returns `true`.
      */
     public void removePipFromSplitIfNeeded(@NonNull TransitionRequestInfo request,
             @NonNull WindowContainerTransaction outWCT) {
@@ -3394,7 +3361,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
      * into PIP). For such scenarios, just make sure to include exiting split or entering split when
      * appropriate.
      *
-     * This is only called if requestImpliesSplitToPip() returns `true`.
+     * This is only called if request Split to PiP returns `true`.
      */
     public void addEnterOrExitForPipIfNeeded(@Nullable TransitionRequestInfo request,
             @NonNull WindowContainerTransaction outWCT) {
@@ -3402,8 +3369,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 request.getDebugId());
 
         final @WindowManager.TransitionType int type = request.getType();
-        if (isSplitActive() && !isOpeningType(type)
-                && (mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0)) {
+        if (isSplitActive() && !isOpeningType(type) && hasEmptyStage()) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "  One of the splits became "
                     + "empty during a mixed transition (to PIP), so make sure split-screen "
                     + "state is cleaned-up. mainStageCount=%d sideStageCount=%d",
@@ -3511,15 +3477,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 // children so we may end up with an empty stage, but once we migrate away from that
                 // we'll actually need to check that the task being launched into fullscreen is
                 // actually the last child of a stage
-                final boolean hasEmptyStage;
-                if (enableFlexibleSplit()) {
-                    hasEmptyStage = mStageOrderOperator.getActiveStages().stream()
-                            .anyMatch(stage -> stage.getChildCount() == 0);
-                } else {
-                    hasEmptyStage = mMainStage.getChildCount() == 0
-                            || mSideStage.getChildCount() == 0;
-                }
-                if (isLastTaskInAnyStage(task.taskId) || hasEmptyStage) {
+                if (isLastTaskInAnyStage(task.taskId) || hasEmptyStage()) {
                     ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
                             "Fullscreen task launch transition will break split");
                     return true;
@@ -3704,15 +3662,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             }
 
             final ArraySet<StageTaskListener> dismissStages = record.getShouldDismissedStage();
-            boolean anyStageHasNoChildren;
-            if (enableFlexibleSplit()) {
-                anyStageHasNoChildren = mStageOrderOperator.getActiveStages().stream()
-                        .anyMatch(stage -> stage.getChildCount() == 0);
-            } else {
-                anyStageHasNoChildren = mMainStage.getChildCount() == 0
-                        || mSideStage.getChildCount() == 0;
-            }
-            if (anyStageHasNoChildren || dismissStages.size() == 1) {
+            if (hasEmptyStage() || dismissStages.size() == 1) {
                 // If the size of dismissStages == 1, one of the task is closed without prepare
                 // pending transition, which could happen if all activities were finished after
                 // finish top activity in a task, so the trigger task is null when handleRequest.
@@ -4634,6 +4584,16 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     @Override
     int getLastActiveStage() {
         return mLastActiveStage;
+    }
+
+    @Override
+    public boolean isTaskOnSplitDisplay(@NonNull TaskInfo taskInfo) {
+        return taskInfo.displayId == mDisplayId;
+    }
+
+    @Override
+    public boolean hasEmptyStage() {
+        return mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0;
     }
 
     /**

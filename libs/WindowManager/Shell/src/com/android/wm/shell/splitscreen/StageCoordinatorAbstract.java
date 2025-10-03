@@ -275,7 +275,7 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
      * for PiP2 where PiP-able task can also come in through the pip change request field,
      * and this method is provided to explicitly prepare an exit in that case.
      *
-     * This is only called if requestImpliesSplitToPip() returns `true`.
+     * This is only called if request Split to PiP returns `true`.
      */
     public abstract void removePipFromSplitIfNeeded(@NonNull TransitionRequestInfo request,
             @NonNull WindowContainerTransaction outWCT);
@@ -285,7 +285,7 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
      * into PIP). For such scenarios, just make sure to include exiting split or entering split when
      * appropriate.
      *
-     * This is only called if requestImpliesSplitToPip() returns `true`.
+     * This is only called if request Split to PiP returns `true`.
      */
     public abstract void addEnterOrExitForPipIfNeeded(@Nullable TransitionRequestInfo request,
             @NonNull WindowContainerTransaction outWCT);
@@ -484,9 +484,6 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
     @SplitScreen.StageType
     public abstract int getSplitItemStage(@Nullable WindowContainerToken token);
 
-    /** @return whether the transition-request implies entering pip from split. */
-    public abstract boolean requestImpliesSplitToPip(TransitionRequestInfo request);
-
     /** @return whether the opening task implies entering bubbles from split. */
     public abstract boolean requestImpliesSplitToBubble(TaskInfo openingTask);
 
@@ -540,6 +537,27 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
      * @return the last active stage.
      */
     abstract @StageType int getLastActiveStage();
+
+    /**
+     * Checks if the task is associated with this split display's ID.
+     *
+     * This method determines if the {@link TaskInfo#displayId} of the
+     * given task matches the internal display ID ({@code mDisplayId}) of this
+     * split display container.
+     *
+     * @param taskInfo The {@link TaskInfo} of the task.
+     * @return {@code true} if the task's display ID matches this split display's ID;
+     * {@code false} otherwise.
+     */
+    public abstract boolean isTaskOnSplitDisplay(@NonNull TaskInfo taskInfo);
+
+    /**
+     * Checks if the current split contains a stage that is empty.
+     *
+     * @return {@code true} if an active stage is empty, indicating a task that
+     * supports auto-PiP; {@code false} otherwise.
+     */
+    public abstract boolean hasEmptyStage();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ///
