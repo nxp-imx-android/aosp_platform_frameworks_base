@@ -12532,43 +12532,31 @@ public class TelephonyManager {
 
     /**
      * TTY (teletypewriter) mode is off.
-     *
-     * @hide
      */
     @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
-    @SystemApi
     public static final int TTY_MODE_OFF = 0;
 
     /**
      * TTY (teletypewriter) mode is on. The speaker is off and the microphone is muted. The user
      * will communicate with the remote party by sending and receiving text messages.
-     *
-     * @hide
      */
     @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
-    @SystemApi
     public static final int TTY_MODE_FULL = 1;
 
     /**
      * TTY (teletypewriter) mode is in hearing carryover mode (HCO). The microphone is muted but the
      * speaker is on. The user will communicate with the remote party by sending text messages and
      * hearing an audible reply.
-     *
-     * @hide
      */
     @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
-    @SystemApi
     public static final int TTY_MODE_HCO = 2;
 
     /**
      * TTY (teletypewriter) mode is in voice carryover mode (VCO). The speaker is off but the
      * microphone is still on. User will communicate with the remote party by speaking and receiving
      * text message replies.
-     *
-     * @hide
      */
     @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
-    @SystemApi
     public static final int TTY_MODE_VCO = 3;
 
     /** @hide */

@@ -16354,10 +16354,6 @@ package android.telephony {
     field public static final int THERMAL_MITIGATION_RESULT_MODEM_NOT_AVAILABLE = 2; // 0x2
     field public static final int THERMAL_MITIGATION_RESULT_SUCCESS = 0; // 0x0
     field public static final int THERMAL_MITIGATION_RESULT_UNKNOWN_ERROR = 4; // 0x4
-    field @FlaggedApi("com.android.server.telecom.flags.move_get_tty_mode_to_telephony_manager") public static final int TTY_MODE_FULL = 1; // 0x1
-    field @FlaggedApi("com.android.server.telecom.flags.move_get_tty_mode_to_telephony_manager") public static final int TTY_MODE_HCO = 2; // 0x2
-    field @FlaggedApi("com.android.server.telecom.flags.move_get_tty_mode_to_telephony_manager") public static final int TTY_MODE_OFF = 0; // 0x0
-    field @FlaggedApi("com.android.server.telecom.flags.move_get_tty_mode_to_telephony_manager") public static final int TTY_MODE_VCO = 3; // 0x3
   }
 
   public static class TelephonyManager.BootstrapAuthenticationCallback {
