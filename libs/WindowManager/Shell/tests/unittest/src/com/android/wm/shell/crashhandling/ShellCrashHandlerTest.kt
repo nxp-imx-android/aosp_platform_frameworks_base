@@ -20,6 +20,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.PendingIntent
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.app.WindowConfiguration.WINDOWING_MODE_PINNED
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -121,6 +122,23 @@ class ShellCrashHandlerTest : ShellTestCase() {
 
         verifyExitBubbleTransaction(wct, bubbleTask.token.asBinder())
         wct.assertPendingIntentAt(wct.hierarchyOps.lastIndex, launchHomeIntent(DEFAULT_DISPLAY))
+    }
+
+    @Test
+    fun init_pipTaskExists_removesTask() {
+        val pipTask = createTaskInfo(1, windowingMode = WINDOWING_MODE_PINNED)
+        whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(pipTask))
+
+        shellInit.init()
+
+        val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        verify(transitions)
+            .startTransition(eq(android.view.WindowManager.TRANSIT_CLOSE), wctCaptor.capture(), eq(null))
+        val wct = wctCaptor.value
+        assertThat(wct.hierarchyOps).hasSize(1)
+        val op = wct.hierarchyOps[0]
+        assertThat(op.type).isEqualTo(WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK)
+        assertThat(op.container).isEqualTo(pipTask.token.asBinder())
     }
 
     private fun launchHomeIntent(displayId: Int): Intent {
