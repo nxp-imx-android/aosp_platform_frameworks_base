@@ -87,7 +87,8 @@ constructor(
      * (including any shortcuts to them), the user preference value is ignored, and
      * [isDualShadeEnabledByDefault] is used.
      */
-    val useDualShadeSetting: Flow<Boolean> = booleanConfigFlow(R.bool.config_useDualShadeSetting)
+    val useDualShadeSetting: Flow<Boolean> =
+        booleanConfigFlow(com.android.settingslib.R.bool.config_useDualShadeSetting)
 
     /**
      * Whether notifications shade should be in the top end position (e.g. the right side of the

@@ -37,12 +37,4 @@
     Whether Dual Shade should be enabled in the absence of an explicit preference set by the user.
     -->
     <bool name="config_dualShadeEnabledByDefault">false</bool>
-
-    <!--
-    Whether to allow the user to choose between Single and Dual Shade modes via the Settings app.
-    When `false`, the preference and associated Settings Page are absent from the Settings app
-    (including any shortcuts to them), the user preference value is ignored, and
-    `config_dualShadeEnabledByDefault` is used.
-    -->
-    <bool name="config_useDualShadeSetting">true</bool>
 </resources>

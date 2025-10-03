@@ -19,3 +19,4 @@
     <!-- The Dual Shade setting only applies to compact devices. -->
     <bool name="config_useDualShadeSetting">false</bool>
 </resources>
+

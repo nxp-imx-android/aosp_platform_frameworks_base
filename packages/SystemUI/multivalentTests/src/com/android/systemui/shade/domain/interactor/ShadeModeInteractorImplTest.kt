@@ -95,7 +95,7 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
             val shadeMode by collectLastValue(underTest.shadeMode)
             assertThat(shadeMode).isEqualTo(ShadeMode.Split)
 
-            overrideResource(R.bool.config_useDualShadeSetting, false)
+            overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, false)
             overrideResource(R.bool.config_dualShadeEnabledByDefault, true)
             fakeConfigurationRepository.onConfigurationChange()
 
@@ -110,7 +110,7 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
             val shadeMode by collectLastValue(underTest.shadeMode)
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
 
-            overrideResource(R.bool.config_useDualShadeSetting, false)
+            overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, false)
             overrideResource(R.bool.config_dualShadeEnabledByDefault, true)
             fakeConfigurationRepository.onConfigurationChange()
 
