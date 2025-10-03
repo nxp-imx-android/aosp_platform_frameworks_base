@@ -16,14 +16,19 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureParametersInteractor
+import com.android.systemui.screencapture.record.largescreen.ui.DirectoryPickerActivity
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
+import com.android.systemui.settings.UserTracker
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -35,12 +40,14 @@ import kotlinx.coroutines.launch
 class PreCaptureToolbarViewModel
 @AssistedInject
 constructor(
+    @Application private val context: Context,
     @Background private val backgroundScope: CoroutineScope,
     private val uiEventLogger: UiEventLogger,
+    private val userTracker: UserTracker,
     private val iconProvider: ScreenCaptureIconProvider,
     featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     recordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
-    private val largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
+    largeScreenCaptureParametersInteractor: LargeScreenCaptureParametersInteractor,
 ) : HydratedActivatable() {
     private val toolbarBoundsSource = MutableStateFlow(Rect())
     private val toolbarOpacitySource = MutableStateFlow(1f)
@@ -93,10 +100,10 @@ constructor(
         }
     }
 
-    fun updateCustomSaveLocationUriString(uriString: String) {
-        backgroundScope.launch {
-            largeScreenCaptureParametersInteractor.setCustomSaveLocation(uriString)
-        }
+    fun requestLaunchDirectoryPicker() {
+        val intent = Intent(context, DirectoryPickerActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivityAsUser(intent, userTracker.userHandle)
     }
 
     fun recordClose() {

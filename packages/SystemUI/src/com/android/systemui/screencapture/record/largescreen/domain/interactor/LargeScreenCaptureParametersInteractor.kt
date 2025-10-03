@@ -16,12 +16,12 @@
 
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
-import com.android.systemui.screencapture.common.ScreenCaptureUiScope
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.screencapture.record.largescreen.data.repository.LargeScreenCaptureParametersRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
-@ScreenCaptureUiScope
+@SysUISingleton
 class LargeScreenCaptureParametersInteractor
 @Inject
 constructor(private val largeScreenSettingsRepository: LargeScreenCaptureParametersRepository) {

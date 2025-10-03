@@ -24,7 +24,6 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
@@ -118,33 +117,6 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
     @Test
     fun customSaveLocationUriString_initialValue_isEmpty() =
         kosmos.runTest { assertThat(viewModel.customSaveLocationUriString).isEmpty() }
-
-    @Test
-    fun updateCustomSaveLocationUriString_updatesState_whenNonEmpty() =
-        kosmos.runTest {
-            val testUri = "content://media/external/downloads/123"
-
-            assertThat(viewModel.customSaveLocationUriString).isEmpty()
-
-            viewModel.updateCustomSaveLocationUriString(testUri)
-            runCurrent()
-
-            assertThat(viewModel.customSaveLocationUriString).isEqualTo(testUri)
-        }
-
-    @Test
-    fun updateCustomSaveLocationUriString_updatesState_whenEmpty() =
-        kosmos.runTest {
-            val testUri = "content://media/external/downloads/456"
-            viewModel.updateCustomSaveLocationUriString(testUri)
-            runCurrent()
-            assertThat(viewModel.customSaveLocationUriString).isEqualTo(testUri)
-
-            viewModel.updateCustomSaveLocationUriString("")
-            runCurrent()
-
-            assertThat(viewModel.customSaveLocationUriString).isEmpty()
-        }
 
     @Test
     fun recordParametersViewModel_updatesAudioSourceState() =
