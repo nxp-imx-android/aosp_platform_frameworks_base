@@ -28,7 +28,9 @@ import java.util.function.Supplier;
 
 /**
  * Utility class to read the flags used in the power manager server.
+ * @deprecated use {@link Flags} directly, see b/440342129
  */
+@Deprecated
 public class PowerManagerFlags {
     private static final boolean DEBUG = false;
     private static final String TAG = "PowerManagerFlags";

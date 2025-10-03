@@ -102,6 +102,16 @@ flag {
 }
 
 flag {
+    name: "lock_on_power_group_disconnect"
+    namespace: "lse_desktop_experience"
+    description: "Fixes device locking when all remaining power groups are disconnected"
+    bug: "449662568"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "partial_sleep_wakelocks"
     namespace: "power"
     description: "Enable new wakelock to keep device asleep - for the user, but ensure that the CPU remains awake."

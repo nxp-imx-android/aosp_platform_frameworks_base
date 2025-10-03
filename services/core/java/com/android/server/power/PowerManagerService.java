@@ -772,33 +772,12 @@ public final class PowerManagerService extends SystemService
         public void onDisplayRemoved(int displayId) {
             mNotifier.clearScreenTimeoutPolicyListeners(displayId);
 
-            if (com.android.server.display.feature.flags.Flags.separateTimeouts()
-                    && !mFeatureFlags.isLockOnUnplugEnabled()) {
+            if ((com.android.server.display.feature.flags.Flags.separateTimeouts()
+                    && !mFeatureFlags.isLockOnUnplugEnabled())
+                    || com.android.server.power.feature.flags.Flags.lockOnPowerGroupDisconnect()) {
                 return;
             }
-
-            // if all the remaining devices are asleep, lock the default display.
-            synchronized (mLock) {
-                for (int i = 0; i < mPowerGroups.size(); i++) {
-                    PowerGroup pg = mPowerGroups.valueAt(i);
-                    // If a power group remains, that is an adjacent group
-                    // and it is awake, then do not lock the device.
-                    if (pg.isDefaultOrAdjacentGroup()
-                            && pg.getWakefulnessLocked() == WAKEFULNESS_AWAKE) {
-                        return;
-                    }
-                }
-            }
             tryToLockNow();
-        }
-
-        private void tryToLockNow() {
-            if (mWindowManagerInternal == null) {
-                mWindowManagerInternal =  getLocalService(WindowManagerInternal.class);
-            }
-            if (mWindowManagerInternal != null) {
-                mWindowManagerInternal.lockNow();
-            }
         }
 
         @Override
@@ -853,6 +832,11 @@ public final class PowerManagerService extends SystemService
                     return;
                 }
                 onPowerGroupEventLocked(DISPLAY_GROUP_REMOVED, mPowerGroups.get(groupId));
+
+                if (!com.android.server.power.feature.flags.Flags.lockOnPowerGroupDisconnect()) {
+                    return;
+                }
+                tryToLockNow();
             }
         }
 
@@ -7940,5 +7924,28 @@ public final class PowerManagerService extends SystemService
             return Display.INVALID_DISPLAY_GROUP;
         }
         return displayInfo.displayGroupId;
+    }
+
+    private void tryToLockNow() {
+        // if all the remaining devices are asleep, lock the default display.
+        synchronized (mLock) {
+            for (int i = 0; i < mPowerGroups.size(); i++) {
+                PowerGroup pg = mPowerGroups.valueAt(i);
+                // If a power group remains, that is an adjacent group
+                // and it is awake, then do not lock the device.
+                if (pg.isDefaultOrAdjacentGroup()
+                        && pg.getWakefulnessLocked() == WAKEFULNESS_AWAKE) {
+                    return;
+                }
+            }
+        }
+
+        if (mWindowManagerInternal == null) {
+            mWindowManagerInternal =  getLocalService(WindowManagerInternal.class);
+        }
+        if (mWindowManagerInternal != null) {
+            Slog.i(TAG, "Locking, due to no remaining awake power groups.");
+            mWindowManagerInternal.lockNow();
+        }
     }
 }
