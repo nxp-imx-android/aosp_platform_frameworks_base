@@ -296,6 +296,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                 }
                 final TransitionInfoContainer tic = TransitionInfoContainer.extractInfo(info);
 
+                int registeredRemotes = 0;
                 for (Map.Entry<RemoteTransition, TransitionFilter> entry
                         : mWrappedReturnTransitionMap.entrySet()) {
                     RemoteTransition t = entry.getKey();
@@ -312,6 +313,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                                 Log.d(TAG, "Registering filter " + filter);
                             }
                             mShellTransitions.registerRemote(filter, t);
+                            registeredRemotes++;
                         } else {
                             Log.w(TAG, "Failed to update default filter:" + filter);
                         }
@@ -324,6 +326,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                             }
                             mShellTransitions.registerRemoteForTakeover(
                                     takeoverFilter, t);
+                            registeredRemotes++;
                         } else {
                             Log.w(TAG, "Failed to update takeover filter: " + takeoverFilter);
                         }
@@ -339,10 +342,15 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                             } else {
                                 mShellTransitions.registerRemote(updatedFilter, t);
                             }
+                            registeredRemotes++;
                         } else {
                             Log.w(TAG, "Failed to update provided filter: " + f);
                         }
                     }
+                }
+                if (registeredRemotes == 0) {
+                    // clean up since we don't have anything that needs holding onto
+                    destroy();
                 }
                 return true;
             }
@@ -473,6 +481,18 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
             return wrappedTransitionMap;
         }
 
+        /**
+         * Update the provided transition filter with applicable details from the current transition
+         * info from a given launch. The updated filter will have TopActivity and/or LaunchCookie
+         * details added to specific requirements as appropriate which can be used for matching
+         * app launches with their corresponding returns. If the update fails or is skipped for
+         * whatever reason, it will return null and no return animation will be registered for
+         * the launch.
+         *
+         * @param filter the TransitionFilter to be updated.
+         * @param info the TransitionInfo associated with a given app launch.
+         * @return the updated transition filter or null if the update failed.
+         */
         @Nullable
         private static TransitionFilter updateTransitionFilterForInfo(
                 TransitionFilter filter,
@@ -484,8 +504,8 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                         "updateTransitionFilterForInfo:"
                                 + "\n\tfilter=" + filter
                                 + "\n\tlaunchingTaskInfo=" + info.launchingTaskInfo
-                                + "\n\tlaunchedTaskInfo=" + info.launchedTaskInfo
                                 + "\n\tlaunchingActivity=" + info.launchingActivity
+                                + "\n\tlaunchedTaskInfo=" + info.launchedTaskInfo
                                 + "\n\tlaunchedActivity=" + info.launchedActivity);
             }
             if (info.launchingTaskInfo == null && info.launchingActivity == null) {
@@ -527,6 +547,8 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                 return null;
             }
 
+            boolean hasOpeningModeRequirement = false;
+            boolean hasClosingChangeModeRequirement = false;
             for (int i = 0; i < filter.mRequirements.length; i++) {
                 TransitionFilter.Requirement req = filter.mRequirements[i];
                 if (req.mNot) {
@@ -539,7 +561,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                                     ? info.launchingTaskInfo.topActivity : info.launchingActivity;
                     Log.d(TAG, "updateTransitionFilterForInfo: "
                             + "opening change expects topActivity: " + req.mTopActivity);
-
+                    hasOpeningModeRequirement = true;
                 } else if (isFilterModeClosingOrChange(req.mModes)) {
                     if (info.launchedTaskInfo != null) {
                         // For task transitions, the closing task's cookie must match the task we
@@ -554,9 +576,14 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                         Log.d(TAG, "updateTransitionFilterForInfo: "
                                 + "closing change expects top activity: " + req.mTopActivity);
                     }
+                    hasClosingChangeModeRequirement = true;
                 }
             }
-            return filter;
+            if (hasOpeningModeRequirement && hasClosingChangeModeRequirement) {
+                return filter;
+            }
+            Log.w(TAG, "updateTransitionFilterForInfo failed - filter missing required modes");
+            return null;
         }
     }
 
