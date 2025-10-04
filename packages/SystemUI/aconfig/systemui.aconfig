@@ -1698,16 +1698,6 @@ flag {
 }
 
 flag {
-   name: "qs_compose_fragment_early_expansion"
-   namespace: "systemui"
-   description: "Start expansion from QQS into QS early when touching the shade."
-   bug: "414856236"
-   metadata {
-     purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "per_display_ongoing_call_status_bar_visibility"
    namespace: "systemui"
    description: "Adds per display implementation for the logic of whether the status bar should be visible for ongoing calls."

@@ -25,7 +25,6 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
-import com.android.systemui.Flags.FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.kosmos.Kosmos
@@ -442,16 +441,6 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     }
 
     @Test
-    @DisableFlags(FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION)
-    fun minExpansion_expanded_noEarlyExpansion() = runTest {
-        underTest.isQsExpanded = true
-        underTest.setQsExpansionValue(0f)
-
-        assertThat(underTest.expansionState.progress).isEqualTo(0f)
-    }
-
-    @Test
-    @EnableFlags(FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION)
     fun minExpansion_expanded_earlyExpansion() = runTest {
         underTest.isQsExpanded = true
         underTest.setQsExpansionValue(0f)
@@ -463,7 +452,6 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     }
 
     @Test
-    @EnableFlags(FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION)
     fun minExpansion_expanded_collapsingShade_panelExpansion_noEarlyExpansion() = runTest {
         underTest.isQsExpanded = true
         underTest.setQsExpansionValue(0f)
@@ -473,7 +461,6 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     }
 
     @Test
-    @EnableFlags(FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION)
     fun minExpansion_expanded_collapsingShade_squishiness_noEarlyExpansion() = runTest {
         underTest.isQsExpanded = true
         underTest.setQsExpansionValue(0f)
