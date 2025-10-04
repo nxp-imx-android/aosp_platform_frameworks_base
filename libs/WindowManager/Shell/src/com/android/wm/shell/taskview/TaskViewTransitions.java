@@ -770,6 +770,13 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return false;
         }
 
+        if (pending == null && taskViews.isEmpty()) {
+            // Not a taskView transition, have some other handler animate it
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "Transitions.startAnimation(): skipping non-taskView transition");
+            return false;
+        }
+
         // Prepare taskViews for animation
         boolean isReadyForAnimation = true;
         for (int i = 0; i < taskViews.size(); ++i) {
