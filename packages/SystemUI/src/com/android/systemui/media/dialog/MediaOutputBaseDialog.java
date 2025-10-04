@@ -19,8 +19,6 @@ package com.android.systemui.media.dialog;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 
-import static com.android.systemui.Flags.enableOutputSwitcherAudioSharingButton;
-
 import android.annotation.NonNull;
 import android.app.WallpaperColors;
 import android.content.Context;
@@ -340,25 +338,23 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mConnectDeviceButton.setIconTint(ColorStateList.valueOf(
                 mMediaSwitchingController.getColorScheme().getPrimary()));
 
-        if (enableOutputSwitcherAudioSharingButton()) {
-            MediaOutputColorScheme colorScheme = mMediaSwitchingController.getColorScheme();
-            mAudioSharingButton.setTextColor(
-                    getButtonColorStateList(
-                            /* defaultColor= */ colorScheme.getOnSurfaceVariant(),
-                            /* activatedColor= */ colorScheme.getOnPrimary()));
-            mAudioSharingButton.setStrokeColor(
-                    getButtonColorStateList(
-                            /* defaultColor= */ colorScheme.getOutlineVariant(),
-                            /* activatedColor= */ colorScheme.getPrimary()));
-            mAudioSharingButton.setBackgroundTintList(
-                    getButtonColorStateList(
-                            /* defaultColor= */ colorScheme.getSurfaceContainer(),
-                            /* activatedColor= */ colorScheme.getPrimary()));
-            mAudioSharingButton.setIconTint(
-                    getButtonColorStateList(
-                            /* defaultColor= */ colorScheme.getPrimary(),
-                            /* activatedColor= */ colorScheme.getOnPrimary()));
-        }
+        MediaOutputColorScheme colorScheme = mMediaSwitchingController.getColorScheme();
+        mAudioSharingButton.setTextColor(
+                getButtonColorStateList(
+                        /* defaultColor= */ colorScheme.getOnSurfaceVariant(),
+                        /* activatedColor= */ colorScheme.getOnPrimary()));
+        mAudioSharingButton.setStrokeColor(
+                getButtonColorStateList(
+                        /* defaultColor= */ colorScheme.getOutlineVariant(),
+                        /* activatedColor= */ colorScheme.getPrimary()));
+        mAudioSharingButton.setBackgroundTintList(
+                getButtonColorStateList(
+                        /* defaultColor= */ colorScheme.getSurfaceContainer(),
+                        /* activatedColor= */ colorScheme.getPrimary()));
+        mAudioSharingButton.setIconTint(
+                getButtonColorStateList(
+                        /* defaultColor= */ colorScheme.getPrimary(),
+                        /* activatedColor= */ colorScheme.getOnPrimary()));
     }
 
     private ColorStateList getButtonColorStateList(int defaultColor, int activatedColor) {
@@ -387,21 +383,17 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
 
     private void refreshQuickAccessShelf() {
         boolean showQuickAccessShelf = false;
-        if (enableOutputSwitcherAudioSharingButton()) {
-            AudioSharingButtonState buttonState =
-                    mMediaSwitchingController.getAudioSharingButtonState();
-            if (buttonState == null) {
-                mAudioSharingButton.setVisibility(View.GONE);
-            } else {
-                showQuickAccessShelf = true;
-                mAudioSharingButton.setVisibility(View.VISIBLE);
-                mAudioSharingButton.setText(buttonState.getResId());
-                mAudioSharingButton.setActivated(buttonState.isActive());
-                mAudioSharingButton.setOnClickListener(
-                        mMediaSwitchingController::launchAudioSharing);
-            }
-        } else {
+        AudioSharingButtonState buttonState =
+                mMediaSwitchingController.getAudioSharingButtonState();
+        if (buttonState == null) {
             mAudioSharingButton.setVisibility(View.GONE);
+        } else {
+            showQuickAccessShelf = true;
+            mAudioSharingButton.setVisibility(View.VISIBLE);
+            mAudioSharingButton.setText(buttonState.getResId());
+            mAudioSharingButton.setActivated(buttonState.isActive());
+            mAudioSharingButton.setOnClickListener(
+                    mMediaSwitchingController::launchAudioSharing);
         }
 
         if (mMediaSwitchingController.hasConnectDeviceButton()) {
