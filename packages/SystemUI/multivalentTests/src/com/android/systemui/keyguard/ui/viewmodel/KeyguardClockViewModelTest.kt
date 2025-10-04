@@ -332,6 +332,17 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
+    fun dateWeatherBelowLargeClock_calligraphyClock_largeFontAndDisplaySize_false() =
+        kosmos.runTest {
+            config = ClockConfig("DIGITAL_CLOCK_CALLIGRAPHY", "Test", "")
+            fakeKeyguardClockRepository.setCurrentClock(clockController)
+            mockConfiguration.fontScale = 0.85f
+            mockConfiguration.screenWidthDp = 375
+            val result3 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result3).isFalse()
+        }
+
+    @Test
     fun dateWeatherBelowSmallClock_variousFontAndDisplaySize_shadeLayoutNotWide_false() =
         kosmos.runTest {
             enableSingleShade()

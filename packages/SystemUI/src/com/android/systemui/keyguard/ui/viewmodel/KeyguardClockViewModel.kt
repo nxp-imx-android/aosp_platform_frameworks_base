@@ -47,7 +47,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -294,8 +293,9 @@ constructor(
     ): Boolean {
         val breakingPairs: List<Pair<Float, Int>> =
             when (currentClock?.config?.id) {
-                NUMBER_OVERLAP_CLOCK_ID -> NUMBER_OVERLAP_BREAKING_PAIRS
-                METRO_CLOCK_ID -> METRO_CLOCK_BREAKING_PAIRS
+                CALLIGRAPHY_CLOCK_ID,
+                METRO_CLOCK_ID,
+                NUMBER_OVERLAP_CLOCK_ID -> OVERSIZED_CLOCK_BREAKING_PAIRS
                 else -> DEFAULT_BREAKING_PAIRS
             }
 
@@ -334,21 +334,17 @@ constructor(
         private const val NUMBER_OVERLAP_CLOCK_ID = "DIGITAL_CLOCK_NUMBEROVERLAP"
         private const val METRO_CLOCK_ID = "DIGITAL_CLOCK_METRO"
 
-        private val NUMBER_OVERLAP_BREAKING_PAIRS =
+        private const val CALLIGRAPHY_CLOCK_ID = "DIGITAL_CLOCK_CALLIGRAPHY"
+
+        // This set of breaking pairs are for "oversized" clocks.
+        // These clocks, small or large, are larger than expected and need to have this fallback
+        // happen sooner due to size constraints.
+        private val OVERSIZED_CLOCK_BREAKING_PAIRS =
             listOf(
                 0.85f to 376, // tiny font size but large display size
                 1f to 376,
                 1.15f to 411,
-                1.3f to 411,
-                1.5f to 411, // large font size but tiny display size
-            )
-
-        private val METRO_CLOCK_BREAKING_PAIRS =
-            listOf(
-                0.85f to 376, // tiny font size but large display size
-                1f to 376,
-                1.15f to 376,
-                1.3f to 376, // large font size but tiny display size
+                1.3f to 411, // large font size but tiny display size
             )
 
         // Font axes width max cutoff
