@@ -162,7 +162,6 @@ class PooledWindowDecorViewHostSupplierTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLEAR_REUSABLE_SCVH_ON_RELEASE)
     @DisableFlags(Flags.FLAG_ENABLE_PER_DISPLAY_WINDOW_DECOR_VIEW_HOST_POOL)
     fun release_resetsViewHost_perDisplayPoolDisabled() = runTest {
         supplier = createSupplier(maxPoolSize = 5)
@@ -251,7 +250,6 @@ class PooledWindowDecorViewHostSupplierTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_CLEAR_REUSABLE_SCVH_ON_RELEASE,
         Flags.FLAG_ENABLE_PER_DISPLAY_WINDOW_DECOR_VIEW_HOST_POOL,
     )
     fun release_resetsViewHost_perDisplayPoolEnabled() = runTest {

@@ -136,9 +136,7 @@ class PooledWindowDecorViewHostSupplier(
     }
 
     override fun release(viewHost: WindowDecorViewHost, t: SurfaceControl.Transaction) {
-        if (DesktopExperienceFlags.ENABLE_CLEAR_REUSABLE_SCVH_ON_RELEASE.isTrue) {
-            viewHost.reset()
-        }
+        viewHost.reset()
         val displayPool =
             if (enablePerDisplayPool) {
                 displayPools[viewHost.displayId]
