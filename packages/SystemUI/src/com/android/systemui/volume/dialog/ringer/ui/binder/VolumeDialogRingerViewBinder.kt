@@ -52,6 +52,7 @@ import com.android.systemui.volume.dialog.ringer.ui.viewmodel.VolumeDialogRinger
 import com.android.systemui.volume.dialog.ui.binder.ViewBinder
 import com.android.systemui.volume.dialog.ui.utils.suspendAnimate
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import javax.inject.Inject
 import kotlin.properties.Delegates
 import kotlinx.coroutines.CoroutineScope
@@ -59,6 +60,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.launch
 
 private const val CLOSE_DRAWER_DELAY = 300L
 // Ensure roundness and color of button is updated when progress is changed by a minimum fraction.
@@ -71,6 +73,7 @@ class VolumeDialogRingerViewBinder
 constructor(
     private val viewModel: VolumeDialogRingerDrawerViewModel,
     private val dialogViewModel: VolumeDialogViewModel,
+    private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
 ) : ViewBinder {
     private val roundnessSpringForce =
         SpringForce(1F).apply {
@@ -128,6 +131,15 @@ constructor(
         ringerBackgroundView.updateBackground()
         launchTraced("VDRVB#addTouchableBounds") {
             dialogViewModel.addTouchableBounds(ringerBackgroundView)
+        }
+
+        if (blurOnMoreSurfaces()) {
+            launch {
+                windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
+                    volumeDialogBackgroundView.setIsBlurSupported(supported)
+                    ringerBackgroundView.setIsBlurSupported(supported)
+                }
+            }
         }
 
         viewModel.ringerViewModel
@@ -270,6 +282,19 @@ constructor(
                 }
             }
             .launchInTraced("VDRVB#ringerViewModel", this)
+    }
+
+    private fun View.setIsBlurSupported(supported: Boolean) {
+        if (blurOnMoreSurfaces()) {
+            val layers = (background as LayerDrawable)
+            (layers.getDrawable(0) as BackgroundBlurDrawable).setVisible(supported, false)
+            (layers.getDrawable(1) as GradientDrawable).setColor(
+                context.getColor(
+                    if (supported) R.color.volume_dialog_view_background_blur
+                    else R.color.volume_dialog_view_background_blur_fallback
+                )
+            )
+        }
     }
 
     private suspend fun MotionLayout.animateAndBindDrawerButtons(
@@ -479,7 +504,6 @@ constructor(
     private fun View.updateBackground() {
         if (blurOnMoreSurfaces() && background is GradientDrawable) {
             val surfaceEffect = background as GradientDrawable
-            surfaceEffect.setColor(SurfaceEffectColors.surfaceEffect0(context))
 
             val blurDrawable = viewRootImpl.createBackgroundBlurDrawable()
             val dialogCornerRadius: Int = context.resources.getDimensionPixelSize(
@@ -496,6 +520,8 @@ constructor(
                         surfaceEffect
                     )
                 ))
+
+            setIsBlurSupported(windowRootViewBlurInteractor.isBlurCurrentlySupported.value)
         } else {
             background = background.mutate()
         }
