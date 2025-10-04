@@ -1811,12 +1811,15 @@ package android.hardware.display {
   public final class DisplayManager {
     method public boolean areUserDisabledHdrTypesAllowed();
     method @RequiresPermission(android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE) public void clearGlobalUserPreferredDisplayMode();
+    method @RequiresPermission("android.permission.MANAGE_DISPLAYS") public void disableConnectedDisplay(int);
+    method @RequiresPermission("android.permission.MANAGE_DISPLAYS") public void enableConnectedDisplay(int);
     method @Nullable public android.view.Display.Mode getGlobalUserPreferredDisplayMode();
     method @NonNull public android.hardware.display.HdrConversionMode getHdrConversionModeSetting();
     method @NonNull public int[] getSupportedHdrOutputTypes();
     method @NonNull public int[] getUserDisabledHdrTypes();
     method public boolean isMinimalPostProcessingRequested(int);
     method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void overrideHdrTypes(int, @NonNull int[]);
+    method public void registerDisplayListener(@NonNull android.hardware.display.DisplayManager.DisplayListener, @Nullable android.os.Handler, long, long);
     method @FlaggedApi("com.android.server.display.feature.flags.delay_implicit_rr_registration_until_rr_accessed") public void resetImplicitRefreshRateCallbackStatus();
     method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public void setAreUserDisabledHdrTypesAllowed(boolean);
     method @RequiresPermission(android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE) public void setGlobalUserPreferredDisplayMode(@NonNull android.view.Display.Mode);
@@ -1825,10 +1828,12 @@ package android.hardware.display {
     method @RequiresPermission(android.Manifest.permission.OVERRIDE_DISPLAY_MODE_REQUESTS) public void setShouldAlwaysRespectAppRequestedMode(boolean);
     method @RequiresPermission(android.Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS) public boolean setTemporaryBrightnessMode(int, int);
     method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public void setUserDisabledHdrTypes(@NonNull int[]);
+    method @RequiresPermission(android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE) public void setUserPreferredDisplayMode(int, @NonNull android.view.Display.Mode, boolean);
     method @RequiresPermission(android.Manifest.permission.OVERRIDE_DISPLAY_MODE_REQUESTS) public boolean shouldAlwaysRespectAppRequestedMode();
     field public static final String DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED = "android.hardware.display.category.ALL_INCLUDING_DISABLED";
     field public static final String DISPLAY_CATEGORY_REAR = "android.hardware.display.category.REAR";
     field public static final String HDR_OUTPUT_CONTROL_FLAG = "enable_hdr_output_control";
+    field public static final long PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED = 2L; // 0x2L
     field public static final int SWITCHING_TYPE_ACROSS_AND_WITHIN_GROUPS = 2; // 0x2
     field public static final int SWITCHING_TYPE_NONE = 0; // 0x0
     field public static final int SWITCHING_TYPE_RENDER_FRAME_RATE_ONLY = 3; // 0x3
@@ -1836,6 +1841,11 @@ package android.hardware.display {
     field public static final int VIRTUAL_DISPLAY_FLAG_OWN_FOCUS = 16384; // 0x4000
     field public static final int VIRTUAL_DISPLAY_FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS = 512; // 0x200
     field public static final int VIRTUAL_DISPLAY_FLAG_SUPPORTS_TOUCH = 64; // 0x40
+  }
+
+  public static interface DisplayManager.DisplayListener {
+    method public default void onDisplayConnected(int);
+    method public default void onDisplayDisconnected(int);
   }
 
   @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") public final class DisplayTopology implements android.os.Parcelable {
@@ -3867,6 +3877,7 @@ package android.view {
 
   public static final class Display.Mode implements android.os.Parcelable {
     ctor public Display.Mode(int, int, float);
+    method public int getFlags();
     method public float getVsyncRate();
     method public boolean isSynthetic();
     method public boolean matches(int, int, float);
