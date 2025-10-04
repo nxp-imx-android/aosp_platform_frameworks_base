@@ -853,7 +853,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DRAG_END_STABLE_BOUNDS_RESET)
     fun testDragResize_displayHasChanged_refetchStableBounds() = runOnUiThread {
         // Start drag on display 0
         taskPositioner.onDragPositioningStart(

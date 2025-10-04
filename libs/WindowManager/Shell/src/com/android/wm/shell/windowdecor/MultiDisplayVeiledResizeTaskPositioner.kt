@@ -430,10 +430,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     )
                 )
 
-                if (
-                    DesktopExperienceFlags.ENABLE_DRAG_END_STABLE_BOUNDS_RESET.isTrue &&
-                        displayId != startDisplayId
-                ) {
+                if (displayId != startDisplayId) {
                     currentDisplayLayout.getStableBounds(stableBounds)
                 }
             }
