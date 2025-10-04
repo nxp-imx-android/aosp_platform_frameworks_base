@@ -18,6 +18,7 @@ package com.android.systemui.recents;
 
 import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.KeyEvent.KEYCODE_BACK;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_UP;
@@ -245,6 +246,16 @@ public class OverviewProxyService extends CurrentUserTracker implements
 
                 notifyBackAction(true, -1, -1, true, false);
             });
+        }
+
+        @Override
+        public void onKeyEvent(int keycode) {
+            verifyCallerAndClearCallingIdentityPostMain(
+                    "onKeyEvent " + KeyEvent.keyCodeToString(keycode),
+                    () -> {
+                        sendEvent(KeyEvent.ACTION_DOWN, keycode);
+                        sendEvent(KeyEvent.ACTION_UP, keycode);
+                    });
         }
 
         @Override
