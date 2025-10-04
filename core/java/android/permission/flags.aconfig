@@ -670,3 +670,10 @@ flag {
     bug: "416236349"
     is_exported: true
 }
+
+flag {
+    name: "extend_send_safety_center_update_permission_to_signature"
+    namespace: "android_exploits_research"
+    description: "This flag controls whether the SEND_SAFETY_CENTER_UPDATE permission is extended to signature level"
+    bug: "403623944"
+}
