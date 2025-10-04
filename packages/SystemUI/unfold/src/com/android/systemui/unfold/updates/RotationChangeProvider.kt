@@ -41,7 +41,7 @@ class RotationChangeProvider
 constructor(
     private val displayManager: DisplayManager,
     private val context: Context,
-    @UnfoldBg private val bgHandler: Handler,
+    @param:UnfoldBg private val bgHandler: Handler,
     @Assisted private val callbackHandler: Handler,
 ) : CallbackController<RotationChangeProvider.RotationListener> {
 
