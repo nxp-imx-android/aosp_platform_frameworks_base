@@ -23,7 +23,7 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
-import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.customization.clocks.FontTextStyle
@@ -49,12 +49,12 @@ data class LayerConfig(
     val aodStyle: FontTextStyle,
     val alignment: DigitalAlignment,
     val timespec: DigitalTimespec,
-    val timeFormatter: DigitalTimeFormatter?,
+    val timeFormatter: DigitalFormatter?,
 )
 
-open class FlexClockTextViewController(
+class FlexClockTextViewController(
     private val clockCtx: ClockContext,
-    private val layerCfg: LayerConfig,
+    layerCfg: LayerConfig,
     isLargeClock: Boolean,
 ) : FlexClockViewController {
     override val view = FlexClockTextView(clockCtx, isLargeClock)
@@ -171,7 +171,7 @@ open class FlexClockTextViewController(
 
             override fun onPickerCarouselSwiping(swipingFraction: Float) {}
 
-            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
+            override fun onPositionAnimated(anim: ClockPositionAnimationArgs) {}
 
             override fun onFidgetTap(x: Float, y: Float) {
                 view.animateFidget(VPointF(x, y), enforceBounds = true)
@@ -193,7 +193,7 @@ open class FlexClockTextViewController(
             }
 
             override fun onFontSettingChanged(fontSizePx: Float) {
-                view.applyTextSize(fontSizePx)
+                view.applyTextSize(fontSizePx, constrainedByHeight = false)
             }
 
             override fun onThemeChanged(theme: ThemeConfig) {

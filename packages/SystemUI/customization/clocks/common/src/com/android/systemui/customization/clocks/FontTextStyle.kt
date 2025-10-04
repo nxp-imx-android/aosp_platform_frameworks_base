@@ -19,9 +19,22 @@ package com.android.systemui.customization.clocks
 import android.view.animation.Interpolator
 import com.android.systemui.animation.TextAnimator
 
-data class FontTextStyle(
-    val lineHeight: Float? = null,
-    val fontSizeScale: Float? = null,
-    val transitionDuration: Long = TextAnimator.DEFAULT_ANIMATION_DURATION,
-    val transitionInterpolator: Interpolator? = null,
-)
+interface TextStyle {
+    /** scale factor applied to the default clock's font size. */
+    val fontSizeScale: Float
+}
+
+interface FontTextStyle : TextStyle {
+    val lineHeight: Float?
+    val fontFeatureSettings: String
+    val transitionDuration: Long
+    val transitionInterpolator: Interpolator?
+}
+
+data class FontTextStyleImpl(
+    override val lineHeight: Float? = null,
+    override val fontSizeScale: Float = 1f,
+    override val fontFeatureSettings: String = "",
+    override val transitionDuration: Long = TextAnimator.DEFAULT_ANIMATION_DURATION,
+    override val transitionInterpolator: Interpolator? = null,
+) : FontTextStyle

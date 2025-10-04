@@ -70,6 +70,8 @@ value class VPointF(val data: ULong) {
 
     fun dot(pt: VPointF): Float = x * pt.x + y * pt.y
 
+    fun swap() = VPointF(y, x)
+
     fun normalize(): VPointF {
         val length = this.length()
         return VPointF(x / length, y / length)
@@ -161,6 +163,8 @@ value class VPoint(val data: ULong) {
     fun toLong(): Long = data.toLong()
 
     fun abs() = VPoint(abs(x), abs(y))
+
+    fun swap() = VPoint(y, x)
 
     operator fun component1(): Int = x
 

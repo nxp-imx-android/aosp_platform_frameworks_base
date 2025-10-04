@@ -20,10 +20,9 @@ import android.graphics.Rect
 import android.icu.util.TimeZone
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.clocks.ClockContext
-import com.android.systemui.customization.clocks.ClockLogger
-import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
-import com.android.systemui.customization.clocks.FontTextStyle
+import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.customization.clocks.view.HorizontalAlignment
 import com.android.systemui.customization.clocks.view.VerticalAlignment
@@ -43,9 +42,6 @@ import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.util.Locale
 
 class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClockViewController {
-    private val logger =
-        ClockLogger(null, clockCtx.messageBuffer, FlexClockViewGroupController::class.simpleName!!)
-
     val layerControllers = mutableListOf<FlexClockViewController>()
     val dozeState = AnimationState(1F)
 
@@ -62,10 +58,10 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
 
         val layerCfg =
             LayerConfig(
-                style = FontTextStyle(lineHeight = 147.25f),
+                style = FontTextStyleImpl(lineHeight = 147.25f),
                 alignment = DigitalAlignment(HorizontalAlignment.CENTER, VerticalAlignment.CENTER),
                 aodStyle =
-                    FontTextStyle(
+                    FontTextStyleImpl(
                         transitionInterpolator = Interpolators.EMPHASIZED,
                         transitionDuration = FlexClockViewGroup.AOD_TRANSITION_DURATION,
                     ),
@@ -75,7 +71,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
                 timeFormatter = null,
             )
 
-        DigitalTimeFormatter("hh", clockCtx.timeKeeper).also { timeFormatter ->
+        DigitalFormatter.Time("hh", clockCtx.timeKeeper).also { timeFormatter ->
             createController(
                 layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, timeFormatter = timeFormatter)
             )
@@ -87,7 +83,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
             )
         }
 
-        DigitalTimeFormatter("mm", clockCtx.timeKeeper).also { timeFormatter ->
+        DigitalFormatter.Time("mm", clockCtx.timeKeeper).also { timeFormatter ->
             createController(
                 layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, timeFormatter = timeFormatter)
             )
@@ -157,7 +153,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
                 view.animateCharge()
             }
 
-            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
+            override fun onPositionAnimated(anim: ClockPositionAnimationArgs) {}
 
             override fun onPickerCarouselSwiping(swipingFraction: Float) {}
 
