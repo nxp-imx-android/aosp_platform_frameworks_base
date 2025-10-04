@@ -424,17 +424,6 @@ flag {
     description: "Have the status bar *always* use region sampling to calculate icon contrast"
     bug: "365120736"
 }
-
-flag {
-    name: "status_bar_dark_icon_interactor_mixed_fix"
-    namespace: "systemui"
-    description: "Fix DarkIconInteractor#toIsAreaDark result for mixed status bar lightness, for icons that do not overlap with the dark icon area."
-    bug: "423390143"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
 flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
