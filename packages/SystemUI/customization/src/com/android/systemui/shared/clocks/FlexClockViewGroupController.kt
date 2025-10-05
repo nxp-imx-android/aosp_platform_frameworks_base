@@ -124,12 +124,6 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
             override fun onAlarmDataChanged(data: AlarmData) {}
 
             override fun onZenDataChanged(data: ZenData) {}
-
-            override var isReactiveTouchInteractionEnabled
-                get() = view.isReactiveTouchInteractionEnabled
-                set(value) {
-                    view.isReactiveTouchInteractionEnabled = value
-                }
         }
 
     override val animations =

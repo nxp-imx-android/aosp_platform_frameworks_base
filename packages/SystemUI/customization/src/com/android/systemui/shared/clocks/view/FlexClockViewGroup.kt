@@ -47,11 +47,6 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     override val children: Sequence<FlexClockTextView>
         get() = (this as ViewGroup).children.filterIsInstance<FlexClockTextView>()
 
-    var isReactiveTouchInteractionEnabled = false
-        set(value) {
-            field = value
-        }
-
     private var lockscreenTranslate = VPointF.ZERO
     private var aodTranslate = VPointF.ZERO
 

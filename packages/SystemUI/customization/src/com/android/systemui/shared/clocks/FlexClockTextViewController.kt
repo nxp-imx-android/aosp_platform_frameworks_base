@@ -111,8 +111,6 @@ class FlexClockTextViewController(
 
     override val events =
         object : ClockEvents {
-            override var isReactiveTouchInteractionEnabled = false
-
             override fun onLocaleChanged(locale: Locale) {
                 timespec.formatter.locale = locale
                 refreshTime()
