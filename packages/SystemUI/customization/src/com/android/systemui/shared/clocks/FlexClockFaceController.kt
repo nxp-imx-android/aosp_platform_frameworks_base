@@ -16,7 +16,6 @@
 
 package com.android.systemui.shared.clocks
 
-import android.graphics.Rect
 import android.icu.util.TimeZone
 import android.view.Gravity
 import android.view.View
@@ -38,10 +37,12 @@ import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.FontUtils.get
 import com.android.systemui.customization.clocks.utils.FontUtils.set
 import com.android.systemui.customization.clocks.utils.ViewUtils.computeLayoutDiff
+import com.android.systemui.customization.clocks.utils.ViewUtils.translation
 import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.customization.clocks.view.HorizontalAlignment
 import com.android.systemui.customization.clocks.view.VerticalAlignment
 import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
@@ -177,7 +178,7 @@ class FlexClockFaceController(
          * targetRegion passed to all customized clock applies counter translationY of Keyguard and
          * keyguard_large_clock_top_margin from default clock
          */
-        override fun onTargetRegionChanged(targetRegion: Rect?) {
+        override fun onTargetRegionChanged(targetRegion: VRect) {
             var maxWidth = 0f
             var maxHeight = 0f
 
@@ -186,16 +187,16 @@ class FlexClockFaceController(
             maxHeight = max(maxHeight, view.layoutParams.height.toFloat())
 
             val lp =
-                if (maxHeight <= 0 || maxWidth <= 0 || targetRegion == null) {
+                if (maxHeight <= 0 || maxWidth <= 0) {
                     // No specified width/height. Just match parent size.
                     FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 } else {
                     // Scale to fit in targetRegion based on largest child elements.
                     val ratio = maxWidth / maxHeight
-                    val targetRatio = targetRegion.width() / targetRegion.height().toFloat()
+                    val targetRatio = targetRegion.width / targetRegion.height
                     val scale =
-                        if (ratio > targetRatio) targetRegion.width() / maxWidth
-                        else targetRegion.height() / maxHeight
+                        if (ratio > targetRatio) targetRegion.width / maxWidth
+                        else targetRegion.height / maxHeight
 
                     FrameLayout.LayoutParams(
                         (maxWidth * scale).roundToInt(),
@@ -205,11 +206,7 @@ class FlexClockFaceController(
 
             lp.gravity = Gravity.CENTER
             view.layoutParams = lp
-            targetRegion?.let {
-                val diff = computeLayoutDiff(view, it, isLargeClock)
-                view.translationX = diff.x
-                view.translationY = diff.y
-            }
+            view.translation = view.computeLayoutDiff(targetRegion, isLargeClock)
         }
 
         override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}

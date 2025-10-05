@@ -16,7 +16,6 @@
 
 package com.android.systemui.shared.clocks
 
-import android.graphics.Rect
 import android.icu.util.TimeZone
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +28,7 @@ import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.data.model.ZenData
@@ -202,7 +202,7 @@ class FlexClockTextViewController(
                 refreshTime()
             }
 
-            override fun onTargetRegionChanged(targetRegion: Rect?) {}
+            override fun onTargetRegionChanged(targetRegion: VRect) {}
 
             override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}
         }
