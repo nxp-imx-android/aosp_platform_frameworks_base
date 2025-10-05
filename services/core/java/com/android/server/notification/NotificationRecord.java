@@ -1785,7 +1785,7 @@ public final class NotificationRecord {
             if (mShortcutInfo == null || isOnlyBots(mShortcutInfo.getPersons())) {
                 return false;
             }
-            if (Flags.notificationNoCustomViewConversations() && hasUndecoratedRemoteView()) {
+            if (hasUndecoratedRemoteView()) {
                 return false;
             }
         }

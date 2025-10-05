@@ -86,13 +86,6 @@ flag {
 }
 
 flag {
-  name: "notification_no_custom_view_conversations"
-  namespace: "systemui"
-  description: "Ensures that conversations are not allowed to use Custom Views."
-  bug: "368817201"
-}
-
-flag {
   name: "evenly_divided_call_style_action_layout"
   namespace: "systemui"
   description: "Evenly divides horizontal space for action buttons in CallStyle notifications."
