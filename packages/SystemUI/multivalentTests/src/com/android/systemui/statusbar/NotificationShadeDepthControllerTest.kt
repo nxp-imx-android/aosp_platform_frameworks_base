@@ -335,9 +335,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK,
-        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
-    )
+        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
     fun expandPanel_inSplitShade_notInDesktopMode_setsZoomValue() {
         enableSplitShade()
 
@@ -349,9 +347,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK,
-        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
-    )
+        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
     fun expandPanel_inSplitShade_inDesktopMode_setsZoomToZero() {
         enableSplitShade()
         `when`(desktopMode.isDisplayInDesktopMode(anyInt())).thenReturn(true)
@@ -364,9 +360,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK,
-        Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK,
-    )
+        Flags.FLAG_CHECK_DESKTOP_MODE_FOR_SPACIAL_MODEL_APP_PUSHBACK)
     fun expandPanel_notInSplitShade_inDesktopMode_setsZoomToZero() {
         disableSplitShade()
 
@@ -542,7 +536,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND)
-    @EnableFlags(Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK)
     fun brightnessMirror_hidesShadeBlur_withAppPushback() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)
@@ -565,7 +558,7 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP, Flags.FLAG_SPATIAL_MODEL_APP_PUSHBACK)
+    @EnableFlags(Flags.FLAG_BOUNCER_UI_REVAMP)
     fun brightnessMirror_hidesShadeBlur_withWindowBlurFlagAndAppPushback() {
         // Brightness mirror is fully visible
         `when`(brightnessSpring.ratio).thenReturn(1f)

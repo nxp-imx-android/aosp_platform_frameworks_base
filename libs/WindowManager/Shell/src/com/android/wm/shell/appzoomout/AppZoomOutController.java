@@ -19,7 +19,6 @@ package com.android.wm.shell.appzoomout;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 
-import static com.android.systemui.Flags.spatialModelAppPushback;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 
 import android.app.ActivityManager;
@@ -106,9 +105,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         mTopLevelDisplayAreaOrganizer = topLevelDisplayAreaOrganizer;
         mMainExecutor = mainExecutor;
 
-        if (spatialModelAppPushback() || enableLppAssistInvocationEffect()) {
-            shellInit.addInitCallback(this::onInit, this);
-        }
+        shellInit.addInitCallback(this::onInit, this);
     }
 
     private void onInit() {
@@ -118,9 +115,7 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         mDisplayController.addDisplayChangingController(this);
         updateDisplayLayout(mContext.getDisplayId());
 
-        if (spatialModelAppPushback()) {
-            mAppDisplayAreaOrganizer.registerOrganizer();
-        }
+        mAppDisplayAreaOrganizer.registerOrganizer();
         if (enableLppAssistInvocationEffect()) {
             mTopLevelDisplayAreaOrganizer.registerOrganizer();
         }

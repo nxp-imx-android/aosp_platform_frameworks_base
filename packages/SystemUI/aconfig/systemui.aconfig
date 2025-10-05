@@ -1416,13 +1416,6 @@ flag {
 }
 
 flag {
-    name: "spatial_model_app_pushback"
-    namespace: "systemui"
-    description: "Implement the depth push scaling effect on the current app when users pull down shade."
-    bug: "370560660"
-}
-
-flag {
     name: "spatial_model_pushback_in_shader"
     namespace: "systemui"
     description: "Change implementation of the depth push scaling effect on apps to use a fullscreen shader"

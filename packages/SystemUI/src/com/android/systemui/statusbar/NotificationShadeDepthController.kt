@@ -37,7 +37,6 @@ import com.android.app.tracing.coroutines.TrackTracer
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.Flags.checkDesktopModeForSpacialModelAppPushback
-import com.android.systemui.Flags.spatialModelAppPushback
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -377,9 +376,7 @@ constructor(
     private fun onZoomOutChanged(zoomOutFromShadeRadius: Float) {
         TrackTracer.instantForGroup("shade", "zoom_out", zoomOutFromShadeRadius)
         Log.v(TAG, "onZoomOutChanged $zoomOutFromShadeRadius")
-        if (spatialModelAppPushback()) {
-            keyguardInteractor.setZoomOut(zoomOutFromShadeRadius)
-        }
+        keyguardInteractor.setZoomOut(zoomOutFromShadeRadius)
     }
 
     private val applyZoomOutForFrame =
