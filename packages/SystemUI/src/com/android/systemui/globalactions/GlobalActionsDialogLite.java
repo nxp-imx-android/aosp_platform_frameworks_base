@@ -27,6 +27,7 @@ import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_USER_REQUEST;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -153,6 +154,7 @@ import com.android.systemui.util.EmergencyDialerConstants;
 import com.android.systemui.util.RingerModeTracker;
 import com.android.systemui.util.settings.GlobalSettings;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import dagger.Lazy;
 
@@ -281,6 +283,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private final GlobalActionsInteractor mInteractor;
     private final Lazy<DisplayWindowPropertiesRepository> mDisplayWindowPropertiesRepositoryLazy;
     private final PowerManager mPowerManager;
+    private final WindowRootViewBlurInteractor mBlurInteractor;
     private int mGlobalActionDialogTimeout;
     private final Handler mHandler;
 
@@ -418,7 +421,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             UserLogoutInteractor logoutInteractor,
             GlobalActionsInteractor interactor,
             Lazy<DisplayWindowPropertiesRepository> displayWindowPropertiesRepository,
-            PowerManager powerManager) {
+            PowerManager powerManager,
+            WindowRootViewBlurInteractor blurInteractor) {
         mContext = context;
         mWindowManagerFuncs = windowManagerFuncs;
         mAudioManager = audioManager;
@@ -457,6 +461,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mInteractor = interactor;
         mDisplayWindowPropertiesRepositoryLazy = displayWindowPropertiesRepository;
         mPowerManager = powerManager;
+        mBlurInteractor = blurInteractor;
 
         mHandler = new Handler(mMainHandler.getLooper()) {
             public void handleMessage(Message msg) {
@@ -834,7 +839,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 mShadeController,
                 mKeyguardUpdateMonitor,
                 mLockPatternUtils,
-                mSelectedUserInteractor) {
+                mSelectedUserInteractor,
+                mBlurInteractor) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
                 rescheduleBurninTimeout(mGlobalActionDialogTimeout);
@@ -2501,7 +2507,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             ColorExtractor.OnColorsChangedListener {
 
         protected final Context mContext;
-        protected MultiListLayout mGlobalActionsLayout;
+        protected GlobalActionsLayoutLite mGlobalActionsLayout;
         protected final MyAdapter mAdapter;
         protected final MyOverflowAdapter mOverflowAdapter;
         protected final MyPowerOptionsAdapter mPowerOptionsAdapter;
@@ -2523,6 +2529,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         private final ShadeController mShadeController;
         private KeyguardUpdateMonitor mKeyguardUpdateMonitor;
         private SelectedUserInteractor mSelectedUserInteractor;
+        private WindowRootViewBlurInteractor mBlurInteractor;
         private LockPatternUtils mLockPatternUtils;
         private float mWindowDimAmount;
 
@@ -2606,7 +2613,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 ShadeController shadeController,
                 KeyguardUpdateMonitor keyguardUpdateMonitor,
                 LockPatternUtils lockPatternUtils,
-                SelectedUserInteractor selectedUserInteractor) {
+                SelectedUserInteractor selectedUserInteractor,
+                WindowRootViewBlurInteractor blurInteractor) {
             // We set dismissOnDeviceLock to false because we have a custom broadcast receiver to
             // dismiss this dialog when the device is locked.
             super(context, themeRes, false /* dismissOnDeviceLock */);
@@ -2628,6 +2636,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mLockPatternUtils = lockPatternUtils;
             mGestureDetector = new GestureDetector(mContext, mGestureListener);
             mSelectedUserInteractor = selectedUserInteractor;
+            mBlurInteractor = blurInteractor;
         }
 
         @Override
@@ -2730,6 +2739,10 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mGlobalActionsLayout.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             mGlobalActionsLayout.setRotationListener(this::onRotate);
             mGlobalActionsLayout.setAdapter(mAdapter);
+            collectFlow(mGlobalActionsLayout, mBlurInteractor.isBlurCurrentlySupported(),
+                    mGlobalActionsLayout::setIsBlurSupported);
+            mGlobalActionsLayout.setIsBlurSupported(
+                    mBlurInteractor.isBlurCurrentlySupported().getValue());
             mContainer = findViewById(com.android.systemui.res.R.id.global_actions_container);
             mContainer.setOnTouchListener((v, event) -> {
                 mGestureDetector.onTouchEvent(event);
