@@ -109,6 +109,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -173,6 +174,10 @@ public class MediaSessionService extends SystemService implements Monitor {
             new ArrayList<SessionsListenerRecord>();
     @GuardedBy("mLock")
     private final List<Session2TokensListenerRecord> mSession2TokensListenerRecords =
+            new ArrayList<>();
+
+    @GuardedBy("mLock")
+    private final List<SessionsListenerForPackageRecord> mSessionsListenerForPackageRecords =
             new ArrayList<>();
 
     private KeyguardManager mKeyguardManager;
@@ -1090,6 +1095,17 @@ public class MediaSessionService extends SystemService implements Monitor {
         return -1;
     }
 
+    private int findIndexOfSessionsChangedForPackageListenerLocked(
+            IActiveSessionsListener listener) {
+        for (int i = mSessionsListenerForPackageRecords.size() - 1; i >= 0; i--) {
+            if (mSessionsListenerForPackageRecords.get(i).listener.asBinder()
+                    == listener.asBinder()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private void pushSession1Changed(int userId) {
         synchronized (mLock) {
             FullUserRecord user = getFullUserRecordLocked(userId);
@@ -1135,6 +1151,43 @@ public class MediaSessionService extends SystemService implements Monitor {
                 } catch (RemoteException e) {
                     Log.w(TAG, "Failed to notify Session2Token change. Removing listener.", e);
                     mSession2TokensListenerRecords.remove(i);
+                }
+            }
+        }
+    }
+
+    void pushSessionForPackageChanged(int userId, String packageNameFilter) {
+        synchronized (mLock) {
+            FullUserRecord user = getFullUserRecordLocked(userId);
+            if (user == null) {
+                Log.w(TAG, "pushSessionForPackageChanged failed. No user with id=" + userId);
+                return;
+            }
+            List<MediaSessionRecord> records = getActiveSessionsLocked(userId);
+            int size = records.size();
+            List<MediaSession.Token> tokens = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                MediaSessionRecord currRecord = records.get(i);
+                if (currRecord.getOwnerPackageName().equals(packageNameFilter)) {
+                    tokens.add(currRecord.getSessionToken());
+                }
+            }
+
+            int listenerSize = mSessionsListenerForPackageRecords.size();
+            for (int i = listenerSize - 1; i >= 0; i--) {
+                SessionsListenerForPackageRecord record = mSessionsListenerForPackageRecords.get(i);
+                if (record.packageName.equals(packageNameFilter)
+                        && (record.userId == ALL.getIdentifier() || record.userId == userId)) {
+                    try {
+                        record.listener.onActiveSessionsChanged(tokens);
+                    } catch (RemoteException e) {
+                        Log.w(
+                                TAG,
+                                "Dead ActiveSessionsListener in "
+                                        + "pushSessionChangedForPackage, removing",
+                                e);
+                        mSessionsListenerForPackageRecords.remove(i);
+                    }
                 }
             }
         }
@@ -1530,6 +1583,31 @@ public class MediaSessionService extends SystemService implements Monitor {
         }
     }
 
+    /**
+     * A class which encapsulates a {@link IActiveSessionsListener} for a package. Listeners
+     * registered via this class do not need permission and are eligible for updates related to
+     * {@code packageName} only.
+     */
+    final class SessionsListenerForPackageRecord implements IBinder.DeathRecipient {
+        public final IActiveSessionsListener listener;
+        public final int userId;
+        public final String packageName;
+
+        SessionsListenerForPackageRecord(
+                IActiveSessionsListener listener, int userId, String packageName) {
+            this.listener = listener;
+            this.userId = userId;
+            this.packageName = packageName;
+        }
+
+        @Override
+        public void binderDied() {
+            synchronized (mLock) {
+                mSessionsListenerForPackageRecords.remove(this);
+            }
+        }
+    }
+
     final class Session2TokensListenerRecord implements IBinder.DeathRecipient {
         public final ISession2TokensListener listener;
         public final int userId;
@@ -1624,18 +1702,29 @@ public class MediaSessionService extends SystemService implements Monitor {
         }
 
         @Override
-        public List<MediaSession.Token> getSessions(ComponentName componentName, int userId) {
+        public List<MediaSession.Token> getSessions(
+                ComponentName componentName, int userId, String packageNameFilter) {
             final int pid = Binder.getCallingPid();
             final int uid = Binder.getCallingUid();
             final long token = Binder.clearCallingIdentity();
 
             try {
-                int resolvedUserId = verifySessionsRequest(componentName, userId, pid, uid);
+                int resolvedUserId;
+                // If the caller is same as that of package filter, permission is not required.
+                if (MediaServerUtils.isSameApp(packageNameFilter, uid)) {
+                    resolvedUserId = handleIncomingUser(pid, uid, userId, packageNameFilter);
+                } else {
+                    resolvedUserId = verifySessionsRequest(componentName, userId, pid, uid);
+                }
+
                 ArrayList<MediaSession.Token> tokens = new ArrayList<>();
                 synchronized (mLock) {
                     List<MediaSessionRecord> records = getActiveSessionsLocked(resolvedUserId);
                     for (MediaSessionRecord record : records) {
-                        tokens.add(record.getSessionToken());
+                        if (packageNameFilter == null
+                                || packageNameFilter.equals(record.getOwnerPackageName())) {
+                            tokens.add(record.getSessionToken());
+                        }
                     }
                 }
                 return tokens;
@@ -1709,8 +1798,12 @@ public class MediaSessionService extends SystemService implements Monitor {
         }
 
         @Override
-        public void addSessionsListener(IActiveSessionsListener listener,
-                ComponentName componentName, int userId) throws RemoteException {
+        public void addSessionsListener(
+                IActiveSessionsListener listener,
+                ComponentName componentName,
+                int userId,
+                String packageNameFilter)
+                throws RemoteException {
             if (listener == null) {
                 Log.w(TAG, "addSessionsListener: listener is null, ignoring");
                 return;
@@ -1720,26 +1813,64 @@ public class MediaSessionService extends SystemService implements Monitor {
             final long token = Binder.clearCallingIdentity();
 
             try {
-                int resolvedUserId = verifySessionsRequest(componentName, userId, pid, uid);
+                boolean isSameApp = MediaServerUtils.isSameApp(packageNameFilter, uid);
+                int resolvedUserId;
+                if (isSameApp) {
+                    resolvedUserId = handleIncomingUser(pid, uid, userId, packageNameFilter);
+                } else {
+                    resolvedUserId = verifySessionsRequest(componentName, userId, pid, uid);
+                }
                 synchronized (mLock) {
-                    int index = findIndexOfSessionsListenerLocked(listener);
-                    if (index != -1) {
-                        Log.w(TAG, "ActiveSessionsListener is already added, ignoring");
-                        return;
+                    // Permissions have already been checked, continue with addition.
+                    if (packageNameFilter != null) {
+                        addPackageListener(listener, resolvedUserId, packageNameFilter);
+                    } else {
+                        addListener(listener, componentName, resolvedUserId, pid, uid);
                     }
-                    SessionsListenerRecord record = new SessionsListenerRecord(listener,
-                            componentName, resolvedUserId, pid, uid);
-                    try {
-                        listener.asBinder().linkToDeath(record, 0);
-                    } catch (RemoteException e) {
-                        Log.e(TAG, "ActiveSessionsListener is dead, ignoring it", e);
-                        return;
-                    }
-                    mSessionsListeners.add(record);
                 }
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
+        }
+
+        private void addListener(
+                IActiveSessionsListener listener,
+                ComponentName componentName,
+                int resolvedUserId,
+                int pid,
+                int uid) {
+            int index = findIndexOfSessionsListenerLocked(listener);
+            if (index != -1) {
+                Log.w(TAG, "ActiveSessionsListener is already added, ignoring");
+                return;
+            }
+            SessionsListenerRecord record =
+                    new SessionsListenerRecord(listener, componentName, resolvedUserId, pid, uid);
+            try {
+                listener.asBinder().linkToDeath(record, 0);
+            } catch (RemoteException e) {
+                Log.e(TAG, "ActiveSessionsListener is dead, ignoring it", e);
+                return;
+            }
+            mSessionsListeners.add(record);
+        }
+
+        private void addPackageListener(
+                IActiveSessionsListener listener, int resolvedUserId, String packageName) {
+            int index = findIndexOfSessionsChangedForPackageListenerLocked(listener);
+            if (index != -1) {
+                Log.w(TAG, "ActiveSessionsListener is already added, ignoring");
+                return;
+            }
+            SessionsListenerForPackageRecord record =
+                    new SessionsListenerForPackageRecord(listener, resolvedUserId, packageName);
+            try {
+                listener.asBinder().linkToDeath(record, 0);
+            } catch (RemoteException e) {
+                Log.e(TAG, "ActiveSessionsListener is dead, ignoring it", e);
+                return;
+            }
+            mSessionsListenerForPackageRecords.add(record);
         }
 
         @Override
@@ -1749,6 +1880,23 @@ public class MediaSessionService extends SystemService implements Monitor {
                 int index = findIndexOfSessionsListenerLocked(listener);
                 if (index != -1) {
                     SessionsListenerRecord record = mSessionsListeners.remove(index);
+                    try {
+                        record.listener.asBinder().unlinkToDeath(record, 0);
+                    } catch (Exception e) {
+                        // ignore exceptions, the record is being removed
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void removeSessionsListenerForPackage(IActiveSessionsListener listener)
+                throws RemoteException {
+            synchronized (mLock) {
+                int index = findIndexOfSessionsChangedForPackageListenerLocked(listener);
+                if (index != -1) {
+                    SessionsListenerForPackageRecord record =
+                            mSessionsListenerForPackageRecords.remove(index);
                     try {
                         record.listener.asBinder().unlinkToDeath(record, 0);
                     } catch (Exception e) {
@@ -3309,6 +3457,7 @@ public class MediaSessionService extends SystemService implements Monitor {
     final class MessageHandler extends Handler {
         private static final int MSG_SESSIONS_1_CHANGED = 1;
         private static final int MSG_SESSIONS_2_CHANGED = 2;
+        private static final int MSG_SESSIONS_FOR_PACKAGE_CHANGED = 3;
         private final SparseArray<Integer> mIntegerCache = new SparseArray<>();
 
         @Override
@@ -3319,6 +3468,13 @@ public class MediaSessionService extends SystemService implements Monitor {
                     break;
                 case MSG_SESSIONS_2_CHANGED:
                     pushSession2Changed((int) msg.obj);
+                    break;
+                case MSG_SESSIONS_FOR_PACKAGE_CHANGED:
+                    UserIdAndPackageNameMessage userIdAndPackageNameMessage =
+                            (UserIdAndPackageNameMessage) msg.obj;
+                    pushSessionForPackageChanged(
+                            userIdAndPackageNameMessage.mUserId,
+                            userIdAndPackageNameMessage.mPackageName);
                     break;
             }
         }
@@ -3335,6 +3491,43 @@ public class MediaSessionService extends SystemService implements Monitor {
                     ? MSG_SESSIONS_1_CHANGED : MSG_SESSIONS_2_CHANGED;
             removeMessages(msg, userIdInteger);
             obtainMessage(msg, userIdInteger).sendToTarget();
+            if (msg == MSG_SESSIONS_1_CHANGED) {
+                postSessionsForPackageChanged(record);
+            }
+        }
+
+        private void postSessionsForPackageChanged(MediaSessionRecordImpl record) {
+            UserIdAndPackageNameMessage userIdAndPackageNameMessage =
+                    new UserIdAndPackageNameMessage(
+                            record.getUserId(), record.getOwnerPackageName());
+            removeMessages(MSG_SESSIONS_FOR_PACKAGE_CHANGED, userIdAndPackageNameMessage);
+            obtainMessage(MSG_SESSIONS_FOR_PACKAGE_CHANGED, userIdAndPackageNameMessage)
+                    .sendToTarget();
+        }
+    }
+
+    /** Encapsulation of userId and package name for handler. */
+    private static final class UserIdAndPackageNameMessage {
+        final int mUserId;
+        final String mPackageName;
+
+        UserIdAndPackageNameMessage(int userId, String packageName) {
+            this.mUserId = userId;
+            this.mPackageName = packageName;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mUserId, mPackageName);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof UserIdAndPackageNameMessage message)) {
+                return false;
+            }
+            return this.mUserId == message.mUserId
+                    && this.mPackageName.equals(message.mPackageName);
         }
     }
 

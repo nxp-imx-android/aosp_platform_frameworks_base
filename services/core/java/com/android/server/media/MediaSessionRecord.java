@@ -350,6 +350,11 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
         return mPackageName;
     }
 
+    @Override
+    public String getOwnerPackageName() {
+        return mOverridePackageName == null ? mPackageName : mOverridePackageName;
+    }
+
     /**
      * Get the intent the app set for their media button receiver.
      *
