@@ -21,13 +21,6 @@ flag {
 }
 
 flag {
-    name: "certpininstaller_removal"
-    namespace: "network_security"
-    description: "Remove CertPinInstallReceiver from the platform"
-    bug: "391205997"
-}
-
-flag {
     name: "keystore_in_memory_cleanup"
     namespace: "desktop_security"
     description: "Keystore cleans up all components of the UserSuperKeys when the user credential encrypted storage is locked"
