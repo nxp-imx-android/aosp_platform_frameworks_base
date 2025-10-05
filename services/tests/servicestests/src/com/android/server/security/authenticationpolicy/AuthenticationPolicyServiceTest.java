@@ -218,7 +218,6 @@ public class AuthenticationPolicyServiceTest {
 
     @Test
     @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
-    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     public void testConfig_failedAuthLockToggle_whenDisabled() throws RemoteException {
         // The feature is enabled, but the toggle is disabled in config
         clearSettingsAndInitService(true /* featureEnabled */, false /* toggleEnabled */);
@@ -243,7 +242,6 @@ public class AuthenticationPolicyServiceTest {
 
     @Test
     @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
-    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     public void testConfig_failedAuthLockToggle_whenEnabled() throws RemoteException {
         // The feature and the toggle are enabled in config
         clearSettingsAndInitService(true /* featureEnabled */, true /* toggleEnabled */);
@@ -419,7 +417,6 @@ public class AuthenticationPolicyServiceTest {
     }
 
     @Test
-    @EnableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     public void testReportAuthAttempt_biometricAuthFailed_multiple_deviceCurrentlyNotLocked_deviceLockEnabled()
             throws RemoteException {
         testReportAuthAttempt_biometricAuthFailed_multiple_deviceCurrentlyNotLocked(
@@ -427,7 +424,6 @@ public class AuthenticationPolicyServiceTest {
     }
 
     @Test
-    @EnableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     public void testReportAuthAttempt_biometricAuthFailed_multiple_deviceCurrentlyNotLocked_deviceLockDisabled()
             throws RemoteException {
         toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, true /* disabled */);
@@ -487,7 +483,6 @@ public class AuthenticationPolicyServiceTest {
     }
 
     @Test
-    @EnableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     public void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_primaryUser_deviceLockEnabled()
             throws RemoteException {
         testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_primaryUser(
@@ -495,7 +490,6 @@ public class AuthenticationPolicyServiceTest {
     }
 
     @Test
-    @EnableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     public void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_primaryUser_deviceLockDisabled()
             throws RemoteException {
         toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, true /* disabled */);
@@ -504,7 +498,6 @@ public class AuthenticationPolicyServiceTest {
     }
 
     @Test
-    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
     public void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_primaryUserAndProfile_deviceLockDisabled()
             throws RemoteException {
@@ -541,7 +534,6 @@ public class AuthenticationPolicyServiceTest {
     }
 
     @Test
-    @DisableFlags({android.security.Flags.FLAG_DISABLE_ADAPTIVE_AUTH_COUNTER_LOCK})
     @EnableFlags({android.security.Flags.FLAG_FAILED_AUTH_LOCK_TOGGLE})
     public void testReportAuthAttempt_primaryAuthAndBiometricAuthFailed_profile_deviceLockEnabled()
             throws RemoteException {
