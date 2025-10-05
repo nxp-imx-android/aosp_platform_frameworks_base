@@ -53,6 +53,10 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromHomeScreenTrampolineTwiceTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest",
       "keywords": ["device"]
     },
@@ -88,6 +92,10 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleWithImeViaBubbleBarTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-ExpandTaskTrampolineBubbleAfterSecondLaunchTest",
       "keywords": ["device"]
     },
     {
