@@ -29,6 +29,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.UserManager;
+import android.service.notification.StatusBarNotification;
 import android.util.DebugUtils;
 
 import com.android.internal.annotations.Keep;
@@ -650,6 +651,11 @@ public abstract class UserManagerInternal {
     // mechanism is implemented, it should pass some sort of @HsuUiActionResult int result
     /** Logs an activity launched in the headless system user */
     public abstract void logLaunchedHsuActivity(ComponentName activity);
+
+    // TODO(b/414326600): for now it's only logging shown notifications, but once the allowlist
+    // mechanism is implemented, it should pass some sort of @HsuNotificationStatus
+    /** Logs a notification shown in the headless system user */
+    public abstract void logShownHsuNotification(StatusBarNotification sbn);
 
     /**
      * Sets the id of the {@code DeviceOwner}, if any.

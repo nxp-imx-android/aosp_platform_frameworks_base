@@ -138,6 +138,7 @@ import android.os.UserManager.QuietModeFlag;
 import android.os.UserManager.UserLogoutability;
 import android.os.storage.StorageManager;
 import android.provider.Settings;
+import android.service.notification.StatusBarNotification;
 import android.service.voice.VoiceInteractionManagerInternal;
 import android.stats.devicepolicy.DevicePolicyEnums;
 import android.telecom.TelecomManager;
@@ -9161,6 +9162,11 @@ public class UserManagerService extends IUserManager.Stub {
         @Override
         public void logLaunchedHsuActivity(ComponentName activity) {
             mNonComplianceLogger.logLaunchedHsuActivity(activity);
+        }
+
+        @Override
+        public void logShownHsuNotification(StatusBarNotification sbn) {
+            mNonComplianceLogger.logShownHsuNotification(sbn);
         }
 
         @Override

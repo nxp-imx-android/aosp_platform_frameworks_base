@@ -1601,6 +1601,12 @@ public class NotificationManagerService extends SystemService {
                         // Report to usage stats that notification was made visible
                         if (DBG) Slog.d(TAG, "Marking notification as visible " + nv.key);
                         reportSeen(r);
+
+                        // Also report to UserManagerService if this notification was shown on HSU
+                        // (headless system user)
+                        if (shouldLogHsuNotification(r)) {
+                            mUmInternal.logShownHsuNotification(r.getSbn());
+                        }
                     }
                     r.setVisibility(true, nv.rank, nv.count, mNotificationRecordLogger);
                     mAssistants.notifyAssistantVisibilityChangedLocked(r, true);
@@ -2001,6 +2007,21 @@ public class NotificationManagerService extends SystemService {
             }
         }
         return false;
+    }
+
+    private boolean shouldLogHsuNotification(NotificationRecord r) {
+        if (!android.multiuser.Flags.hsuAllowlistNotifications()
+                || !UserManager.isHeadlessSystemUserMode()) {
+            return false;
+        }
+        UserHandle user = r.getUser();
+        if (user.isSystem()) {
+            return true;
+        }
+        if (user.getIdentifier() != UserHandle.USER_ALL) {
+            return false;
+        }
+        return mAmi.getCurrentUserId() == UserHandle.USER_SYSTEM;
     }
 
     @VisibleForTesting

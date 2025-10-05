@@ -19,12 +19,16 @@ package com.android.server.pm;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
+import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.UserHandle;
+import android.service.notification.StatusBarNotification;
 import android.util.IndentingPrintWriter;
 
 import com.android.server.testutils.TestHandler;
@@ -70,6 +74,8 @@ public final class MultiuserNonComplianceLoggerTest {
                            0 activities blocked on HSU
 
                            0 activities launched on HSU
+
+                           0 notifications shown on HSU
                            """);
     }
 
@@ -104,6 +110,8 @@ public final class MultiuserNonComplianceLoggerTest {
                            0 activities blocked on HSU
 
                            0 activities launched on HSU
+
+                           0 notifications shown on HSU
                            """);
     }
 
@@ -123,6 +131,8 @@ public final class MultiuserNonComplianceLoggerTest {
                              some.pkg/.SomeActivity
 
                            0 activities launched on HSU
+
+                           0 notifications shown on HSU
                            """);
     }
 
@@ -142,6 +152,42 @@ public final class MultiuserNonComplianceLoggerTest {
 
                            1 activities launched on HSU
                              some.pkg/.SomeActivity
+
+                           0 notifications shown on HSU
+                           """);
+    }
+
+    @Test
+    public void testLogShownHsuNotification() {
+        Notification notification = mock(Notification.class);
+        notification.category = Notification.CATEGORY_SYSTEM;
+        notification.visibility = Notification.VISIBILITY_PUBLIC;
+        when(notification.getChannelId()).thenReturn("TEST");
+
+        StatusBarNotification sbn = mock(StatusBarNotification.class);
+        when(sbn.getPackageName()).thenReturn("test.pkg");
+        when(sbn.getTag()).thenReturn("TestTag");
+        when(sbn.getId()).thenReturn(42);
+        when(sbn.getUser()).thenReturn(UserHandle.ALL);
+        when(sbn.getNotification()).thenReturn(notification);
+
+        mLogger.logShownHsuNotification(sbn);
+        mHandler.flush();
+
+        assertWithMessage("dump() after logging a notification on HSU")
+                .that(dump(mLogger))
+                .isEqualTo("""
+                           0 apps called getMainUser()
+
+                           0 apps called isMainUser()
+
+                           0 activities blocked on HSU
+
+                           0 activities launched on HSU
+
+                           1 notifications shown on HSU
+                             [pkg=test.pkg, tag=TestTag, id=42, user=-1, vis=PUBLIC, category=sys, \
+                           channel=TEST]: 1 times
                            """);
     }
 
@@ -164,6 +210,8 @@ public final class MultiuserNonComplianceLoggerTest {
 
                            1 activities launched on HSU
                              some.pkg/.AwesomeActivity
+
+                           0 notifications shown on HSU
                            """);
     }
 
@@ -185,6 +233,8 @@ public final class MultiuserNonComplianceLoggerTest {
                            0 activities blocked on HSU
 
                            0 activities launched on HSU
+
+                           0 notifications shown on HSU
                            """);
     }
 
