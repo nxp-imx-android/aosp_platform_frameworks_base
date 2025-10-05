@@ -22,8 +22,6 @@ import static android.hardware.fingerprint.FingerprintSensorProperties.TYPE_REAR
 import static android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UNKNOWN;
 import static android.view.Display.INVALID_DISPLAY;
 
-import static com.android.systemui.Flags.contAuthPlugin;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
@@ -752,7 +750,7 @@ public class AuthController implements
         mActivityTaskManager = activityTaskManager;
         mFingerprintManager = fingerprintManager;
         mFaceManager = faceManager;
-        mContextPlugins = contAuthPlugin() ? contextPlugins.orElse(null) : null;
+        mContextPlugins = contextPlugins.orElse(null);
         mUdfpsControllerFactory = udfpsControllerFactory;
         mUdfpsLogger = udfpsLogger;
         mDisplayManager = displayManager;
