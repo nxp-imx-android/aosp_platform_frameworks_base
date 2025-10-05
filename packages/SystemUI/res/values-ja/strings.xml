@@ -367,6 +367,8 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"現在地リクエストがアクティブ"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"センサー OFF: 有効"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"通知をすべて消去。"</string>
+    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"他 <xliff:g id="NUMBER">%s</xliff:g> 件"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{グループ内にあと # 件の通知があります。}other{グループ内にあと # 件の通知があります。}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"画面は横向きにロックされています。"</string>
@@ -428,6 +430,14 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi-Fi またはイーサネットに接続されていません"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"接続を解除"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"現在のマイク入力:"</string>
+    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"画面の明るさ"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"色反転"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"色補正"</string>
@@ -1141,6 +1151,8 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"ページ <xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 機能を ON にしますか？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"アクション "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> は、<xliff:g id="ID_3">^3</xliff:g>機能を使用するためのキーボード ショートカットです。<xliff:g id="ID_4">^4</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> のキーボード ショートカットを ON にしますか？"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ON にしない"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ショートカットを ON にする"</string>

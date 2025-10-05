@@ -367,6 +367,8 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"Aktivní žádosti o polohu"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Vypnutí senzorů je aktivní"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Vymazat všechna oznámení."</string>
+    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"a ještě <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Skupina obsahuje ještě # oznámení.}few{Skupina obsahuje ještě # oznámení.}many{Skupina obsahuje ještě # oznámení.}other{Skupina obsahuje ještě # oznámení.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Obrazovka je uzamčena v orientaci na šířku."</string>
@@ -428,6 +430,14 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Žádná Wi-Fi ani ethernetové připojení"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Odpojit"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Aktuální mikrofon je"</string>
+    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Jas"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Převrácení barev"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Korekce barev"</string>
@@ -1141,6 +1151,8 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Stránka <xliff:g id="ID_1">%1$d</xliff:g> z <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Zapnout operátora <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Akční klávesa "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> je klávesová zkratka k použití funkce <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Zapnout klávesovou zkratku <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nezapínat"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Zapnout zkratku"</string>
