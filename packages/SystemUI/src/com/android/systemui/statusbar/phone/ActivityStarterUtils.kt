@@ -89,10 +89,11 @@ private fun createDefaultActivityOptions(
 ): ActivityOptions {
     val options =
         if (transition != null) {
-            ActivityOptions.makeRemoteTransition(transition).apply { launchCookie = cookie }
+            ActivityOptions.makeRemoteTransition(transition)
         } else {
             ActivityOptions.makeBasic()
         }
+    options.launchCookie = cookie
     options.splashScreenStyle = SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR
     return options
 }

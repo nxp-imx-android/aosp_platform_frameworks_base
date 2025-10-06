@@ -17,7 +17,6 @@
 package com.android.systemui.keyguard;
 
 import static android.provider.Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT;
-import static android.view.WindowManager.TRANSIT_OLD_KEYGUARD_GOING_AWAY;
 import static android.view.WindowManagerPolicyConstants.OFF_BECAUSE_OF_TIMEOUT;
 import static android.view.WindowManagerPolicyConstants.OFF_BECAUSE_OF_USER;
 
@@ -25,6 +24,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOM
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.systemui.Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION;
 import static com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR;
 import static com.android.systemui.Flags.FLAG_SIM_PIN_BOUNCER_RESET;
 import static com.android.systemui.keyguard.KeyguardViewMediator.DELAYED_KEYGUARD_ACTION;
@@ -53,22 +53,26 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
+import android.app.WindowConfiguration;
 import android.app.admin.DevicePolicyManager;
 import android.app.trust.TrustManager;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
 import android.telephony.TelephonyManager;
-import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-import android.view.IRemoteAnimationFinishedCallback;
 import android.view.RemoteAnimationTarget;
+import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
@@ -135,6 +139,8 @@ import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.wallpapers.data.repository.FakeWallpaperRepository;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.keyguard.KeyguardTransitions;
+import com.android.wm.shell.shared.compat.AnimatedSurface;
+import com.android.wm.shell.shared.compat.SurfaceTransition;
 
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.flow.Flow;
@@ -150,7 +156,12 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-@RunWith(AndroidTestingRunner.class)
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
+
+@RunWith(ParameterizedAndroidJunit4.class)
 @TestableLooper.RunWithLooper
 @SmallTest
 @DisableSceneContainer // Class is deprecated in flexi.
@@ -236,6 +247,16 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     private final int mDefaultUserId = 100;
     private boolean mUsePostAfterTraversalRunnable;
     private Runnable mPostAfterTraversalRunnable;
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getFlags() {
+        return FlagsParameterization.allCombinationsOf(FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION);
+    }
+
+    public KeyguardViewMediatorTest(FlagsParameterization flags) {
+        super();
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -372,15 +393,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         verify(result).run();
 
         // After that request has begun, have WM tell us to exit keyguard
-        RemoteAnimationTarget[] apps = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
-        };
-        RemoteAnimationTarget[] wallpapers = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
-        };
-        IRemoteAnimationFinishedCallback callback = mock(IRemoteAnimationFinishedCallback.class);
-        mViewMediator.startKeyguardExitAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY, apps, wallpapers,
-                null, callback);
+        mViewMediator.startKeyguardExitAnimation(buildSurfaceTransitionParams());
         processAllMessagesAndBgExecutorMessages();
 
         // Followed by a request to dismiss the keyguard completely, which needs to be rejected
@@ -416,15 +429,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         mViewMediator.showSurfaceBehindKeyguard();
 
         // WM will have started the exit animation...
-        RemoteAnimationTarget[] apps = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
-        };
-        RemoteAnimationTarget[] wallpapers = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
-        };
-        IRemoteAnimationFinishedCallback callback = mock(IRemoteAnimationFinishedCallback.class);
-        mViewMediator.startKeyguardExitAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY, apps, wallpapers,
-                null, callback);
+        mViewMediator.startKeyguardExitAnimation(buildSurfaceTransitionParams());
         processAllMessagesAndBgExecutorMessages();
 
         // Followed by a request to dismiss the keyguard completely
@@ -1319,21 +1324,26 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
         mViewMediator.setShowingLocked(true, "");
 
-        RemoteAnimationTarget[] apps = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
-        };
-        RemoteAnimationTarget[] wallpapers = new RemoteAnimationTarget[]{
-                mock(RemoteAnimationTarget.class)
-        };
-        IRemoteAnimationFinishedCallback callback = mock(IRemoteAnimationFinishedCallback.class);
-
         when(mKeyguardStateController.isKeyguardGoingAway()).thenReturn(true);
         mViewMediator.hideLocked();
         processAllMessagesAndBgExecutorMessages();
 
-        mViewMediator.startKeyguardExitAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY, apps, wallpapers,
-                null, callback);
+        mViewMediator.startKeyguardExitAnimation(buildSurfaceTransitionParams());
         processAllMessagesAndBgExecutorMessages();
+    }
+
+    private SurfaceTransition.Params buildSurfaceTransitionParams() {
+        AnimatedSurface[] apps = new AnimatedSurface[]{
+                mock(AnimatedSurface.class)
+        };
+        AnimatedSurface[] wallpapers = new AnimatedSurface[]{
+                mock(AnimatedSurface.class)
+        };
+
+        SurfaceTransition.Params params = mock(SurfaceTransition.Params.class);
+        when(params.getApps()).thenReturn(apps);
+        when(params.getWallpapers()).thenReturn(wallpapers);
+        return params;
     }
 
     /**
@@ -1672,6 +1682,27 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
         mViewMediator.registerCentralSurfaces(mCentralSurfaces, null, null, null, null);
         mViewMediator.onBootCompleted();
+    }
+
+    private RemoteAnimationTarget createTarget() {
+        SurfaceControl leash = mock(SurfaceControl.class);
+        return new RemoteAnimationTarget(
+                0,
+                0,
+                leash,
+                false,
+                new Rect(),
+                new Rect(),
+                0,
+                new Point(),
+                new Rect(),
+                new Rect(),
+                mock(WindowConfiguration.class),
+                false,
+                leash,
+                new Rect(),
+                mock(ActivityManager.RunningTaskInfo.class),
+                false);
     }
 
     private void captureKeyguardStateControllerCallback() {

@@ -19,9 +19,6 @@ package com.android.systemui.keyguard
 import android.app.IActivityTaskManager
 import android.os.RemoteException
 import android.util.Log
-import android.view.IRemoteAnimationFinishedCallback
-import android.view.RemoteAnimationTarget
-import android.view.WindowManager
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
@@ -35,6 +32,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.window.flags.Flags
 import com.android.wm.shell.keyguard.KeyguardTransitions
+import com.android.wm.shell.shared.compat.SurfaceTransition
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
@@ -120,8 +118,8 @@ constructor(
      */
     private var keyguardGoingAwayRequestedForUserId: Int = -1
 
-    /** Callback provided by WM to call once we're done with the going away animation. */
-    private var goingAwayRemoteAnimationFinishedCallback: IRemoteAnimationFinishedCallback? = null
+    /** Params for the going away animation, including the callback to use once it is complete. */
+    private var goingAwayRemoteAnimationParams: SurfaceTransition.Params? = null
 
     private val enableNewKeyguardShellTransitions: Boolean =
         Flags.ensureKeyguardDoesTransitionStartingBugFix()
@@ -184,20 +182,14 @@ constructor(
     }
 
     /**
-     * Called when the keyguard going away remote animation is started, and we have a
-     * RemoteAnimationTarget to animate.
+     * Called when the keyguard going away remote is started, and we have an AnimatedSurface to
+     * animate.
      *
      * This is triggered either by this class calling ATMS#keyguardGoingAway, or by WM directly,
      * such as when an activity with FLAG_DISMISS_KEYGUARD is launched over a dismissible keyguard.
      */
-    fun onKeyguardGoingAwayRemoteAnimationStart(
-        @WindowManager.TransitionOldType transit: Int,
-        apps: Array<RemoteAnimationTarget>,
-        wallpapers: Array<RemoteAnimationTarget>,
-        nonApps: Array<RemoteAnimationTarget>,
-        finishedCallback: IRemoteAnimationFinishedCallback,
-    ) {
-        goingAwayRemoteAnimationFinishedCallback = finishedCallback
+    fun onKeyguardGoingAwayRemoteAnimationStart(params: SurfaceTransition.Params) {
+        goingAwayRemoteAnimationParams = params
 
         if (maybeStartTransitionIfUserSwitchedDuringGoingAway()) {
             Log.d(TAG, "User switched during keyguard going away - ending remote animation.")
@@ -219,7 +211,7 @@ constructor(
                         "Dismiss transition was not started; we're already GONE. " +
                         "Ending remote animation.",
                 )
-                finishedCallback.onAnimationFinished()
+                params.invokeCallback(params.startTransaction)
                 isKeyguardGoingAway = false
             }
 
@@ -245,12 +237,13 @@ constructor(
             isKeyguardGoingAway = true
         }
 
-        if (apps.isNotEmpty()) {
+        val apps = params.apps
+        if (apps?.isNotEmpty() == true) {
             keyguardSurfaceBehindAnimator.applyParamsToSurface(apps[0])
         } else {
             // Nothing to do here if we have no apps, end the animation, which will cancel it and WM
             // will make *something* visible.
-            finishedCallback.onAnimationFinished()
+            params.invokeCallback(params.startTransaction)
         }
     }
 
@@ -353,8 +346,8 @@ constructor(
 
         executor.execute {
             Log.d(TAG, "Finishing remote animation.")
-            goingAwayRemoteAnimationFinishedCallback?.onAnimationFinished()
-            goingAwayRemoteAnimationFinishedCallback = null
+            goingAwayRemoteAnimationParams?.invokeCallback()
+            goingAwayRemoteAnimationParams = null
 
             isKeyguardGoingAway = false
 

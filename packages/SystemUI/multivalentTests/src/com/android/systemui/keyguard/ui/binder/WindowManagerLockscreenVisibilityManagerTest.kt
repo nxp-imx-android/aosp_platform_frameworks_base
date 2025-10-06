@@ -21,8 +21,7 @@ import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.view.IRemoteAnimationFinishedCallback
-import android.view.RemoteAnimationTarget
+import android.view.SurfaceControl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
@@ -37,6 +36,8 @@ import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.window.flags.Flags
 import com.android.wm.shell.keyguard.KeyguardTransitions
+import com.android.wm.shell.shared.compat.AnimatedSurface
+import com.android.wm.shell.shared.compat.SurfaceTransition
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
@@ -283,7 +284,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
 
     @Test
     fun remoteAnimationInstantlyFinished_ifDismissTransitionNotStarted() {
-        val mockedCallback = mock<IRemoteAnimationFinishedCallback>()
+        val mockedTransaction = mock<SurfaceControl.Transaction>()
 
         // Call the onAlreadyGone callback immediately.
         doAnswer { invocation -> (invocation.getArgument(1) as (() -> Unit)).invoke() }
@@ -296,16 +297,14 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
 
         whenever(selectedUserInteractor.getSelectedUserId()).thenReturn(-1)
 
-        underTest.onKeyguardGoingAwayRemoteAnimationStart(
-            transit = 0,
-            apps = arrayOf(mock<RemoteAnimationTarget>()),
-            wallpapers = emptyArray(),
-            nonApps = emptyArray(),
-            finishedCallback = mockedCallback,
-        )
+        val params = mock<SurfaceTransition.Params>()
+        whenever(params.apps).thenReturn(arrayOf(mock<AnimatedSurface>()))
+        whenever(params.startTransaction).thenReturn(mockedTransaction)
+        whenever(params.hasFinishedCallback()).thenReturn(true)
 
-        verify(mockedCallback).onAnimationFinished()
-        verifyNoMoreInteractions(mockedCallback)
+        underTest.onKeyguardGoingAwayRemoteAnimationStart(params)
+
+        verify(params).invokeCallback(eq(mockedTransaction))
     }
 
     @Test
