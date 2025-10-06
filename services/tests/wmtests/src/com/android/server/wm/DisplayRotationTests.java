@@ -73,7 +73,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManagerInternal;
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -326,8 +325,7 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
-    public void createDeviceStateAutoRotateDependencies_flagEnabled_settingControllerNotNull() {
+    public void createDeviceStateAutoRotateDependencies_autoRotateAvailable_controllerNotNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
                         /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ true);
@@ -336,17 +334,6 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
-    public void createDeviceStateAutoRotateDependencies_flagDisabled_settingControllerNull() {
-        final DeviceStateAutoRotateSettingController settingController =
-                createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
-                        /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ true);
-
-        assertNull(settingController);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
     public void createDeviceStateAutoRotateDependencies_notFoldable_settingControllerNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ false,
@@ -356,7 +343,6 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
     public void createDeviceStateAutoRotateDependencies_autoRotateDisabled_settingControllerNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
@@ -366,7 +352,6 @@ public class DisplayRotationTests {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
     public void createDeviceStateAutoRotateDependencies_dSAutoRotateConfigNull_settingControllerNull() {
         final DeviceStateAutoRotateSettingController settingController =
                 createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,

@@ -156,7 +156,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerInternal.OnWindowRemovedListener;
 import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListener;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
-import static com.android.window.flags.Flags.enableDeviceStateAutoRotateSettingRefactor;
 import static com.android.window.flags.Flags.multiCrop;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
@@ -4772,11 +4771,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 "setDeviceStateAutoRotateSetting()")) {
             throw new SecurityException("Requires SET_ORIENTATION permission");
         }
-        if (!enableDeviceStateAutoRotateSettingRefactor()) {
-            throw new UnsupportedOperationException(
-                    "API setDeviceStateAutoRotateSetting should not be used when "
-                            + "enableDeviceStateAutoRotateSettingRefactor is disabled");
-        }
         synchronized (mGlobalLock) {
             final DisplayContent display = mRoot.getDefaultDisplay();
             display.getDisplayRotation().requestDeviceStateAutoRotateSettingChange(deviceState,
@@ -4885,11 +4879,6 @@ public class WindowManagerService extends IWindowManager.Stub
         if (!checkCallingPermission(android.Manifest.permission.SET_ORIENTATION,
                 "setRotationAtAngleIfAllowed()")) {
             throw new SecurityException("Requires SET_ORIENTATION permission");
-        }
-        if (!enableDeviceStateAutoRotateSettingRefactor()) {
-            throw new UnsupportedOperationException(
-                    "API setRotationAtAngleIfAllowed should not be used when "
-                            + "enableDeviceStateAutoRotateSettingRefactor is disabled");
         }
         final long origId = Binder.clearCallingIdentity();
         try {
