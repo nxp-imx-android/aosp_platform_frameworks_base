@@ -39,7 +39,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.animation.Animator;
-import android.annotation.IdRes;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -52,8 +51,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityManager;
-
-import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
@@ -96,7 +93,6 @@ import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.plugins.ActivityStarter;
-import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.qs.composefragment.QSFragmentCompose;
@@ -675,71 +671,13 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
         }
     }
 
-    protected void triggerPositionClockAndNotifications() {
-        mNotificationPanelViewController.onQsSetExpansionHeightCalled(false);
-    }
-
-    protected FalsingManager.FalsingTapListener getFalsingTapListener() {
-        for (View.OnAttachStateChangeListener listener : mOnAttachStateChangeListeners) {
-            listener.onViewAttachedToWindow(mView);
-        }
-        assertThat(mFalsingManager.getTapListeners().size()).isEqualTo(1);
-        return mFalsingManager.getTapListeners().get(0);
-    }
-
-    protected void givenViewAttached() {
-        for (View.OnAttachStateChangeListener listener : mOnAttachStateChangeListeners) {
-            listener.onViewAttachedToWindow(mView);
-        }
-    }
-
-    protected ConstraintSet.Layout getConstraintSetLayout(@IdRes int id) {
-        ConstraintSet constraintSet = new ConstraintSet();
-        constraintSet.clone(mNotificationContainerParent);
-        return constraintSet.getConstraint(id).layout;
-    }
-
     protected void enableSplitShade(boolean enabled) {
         when(mResources.getBoolean(R.bool.config_use_split_notification_shade)).thenReturn(enabled);
         mNotificationPanelViewController.updateResources();
     }
 
-    protected void updateSmallestScreenWidth(int smallestScreenWidthDp) {
-        Configuration configuration = new Configuration();
-        configuration.smallestScreenWidthDp = smallestScreenWidthDp;
-        mConfigurationController.onConfigurationChanged(configuration);
-    }
-
     protected boolean onTouchEvent(MotionEvent ev) {
         return mNotificationPanelViewController.handleExternalTouch(ev);
-    }
-
-    protected void setDozing(boolean dozing, boolean dozingAlwaysOn) {
-        when(mDozeParameters.getAlwaysOn()).thenReturn(dozingAlwaysOn);
-        mNotificationPanelViewController.setDozing(
-                /* dozing= */ dozing,
-                /* animate= */ false
-        );
-    }
-
-    protected void setIsFullWidth(boolean fullWidth) {
-        float nsslWidth = fullWidth ? PANEL_WIDTH : PANEL_WIDTH / 2f;
-        when(mNotificationStackScrollLayoutController.getWidth()).thenReturn(nsslWidth);
-        triggerLayoutChange();
-    }
-
-    protected void triggerLayoutChange() {
-        mLayoutChangeListener.onLayoutChange(
-                mView,
-                /* left= */ 0,
-                /* top= */ 0,
-                /* right= */ 0,
-                /* bottom= */ 0,
-                /* oldLeft= */ 0,
-                /* oldTop= */ 0,
-                /* oldRight= */ 0,
-                /* oldBottom= */ 0
-        );
     }
 
     protected CoroutineDispatcher getMainDispatcher() {
