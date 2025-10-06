@@ -74,6 +74,7 @@ import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteracto
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
+import com.android.systemui.statusbar.pipeline.shared.StatusBarShowIconsInSecureCamera
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
@@ -505,15 +506,22 @@ constructor(
             .traceEach(trackGroup(TRACK_GROUP, "isHomeStatusBarAllowed"), logcat = true)
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
+    private val shouldHideStatusBarForSecureCamera =
+        if (StatusBarShowIconsInSecureCamera.isEnabled) {
+            homeStatusBarInteractor.shouldHideStatusBarForSecureCamera
+        } else {
+            keyguardInteractor.isSecureCameraActive
+        }
+
     private val shouldHomeStatusBarBeVisible =
         combine(
                 isHomeStatusBarAllowed,
-                keyguardInteractor.isSecureCameraActive,
+                shouldHideStatusBarForSecureCamera,
                 isTransitioningFromGoneToDream,
                 keyguardInteractor.isKeyguardVisible,
             ) {
                 isHomeStatusBarAllowed,
-                isSecureCameraActive,
+                shouldHideStatusBarForSecureCamera,
                 isGoneToDream,
                 isKeyguardVisible ->
                 // When launching the camera over the lockscreen, the status icons would typically
@@ -527,7 +535,7 @@ constructor(
                 // momentarily visible because the dream animation has finished, but SysUI has not
                 // been informed that the dream is full-screen. See b/273314977.
                 isHomeStatusBarAllowed &&
-                    !isSecureCameraActive &&
+                    !shouldHideStatusBarForSecureCamera &&
                     !isGoneToDream &&
                     // In legacy code, check if keyguard is visible to cover canceled
                     // transitions. In Flexi, the scene state is enough to cover this case.
@@ -560,10 +568,10 @@ constructor(
             .flowOn(bgDispatcher)
 
     override val canShowOngoingActivityChips: Flow<Boolean> =
-        combine(isHomeStatusBarAllowed, keyguardInteractor.isSecureCameraActive) {
+        combine(isHomeStatusBarAllowed, shouldHideStatusBarForSecureCamera) {
             isHomeStatusBarAllowed,
-            isSecureCameraActive ->
-            isHomeStatusBarAllowed && !isSecureCameraActive
+            shouldHideStatusBarForSecureCamera ->
+            isHomeStatusBarAllowed && !shouldHideStatusBarForSecureCamera
         }
 
     private val chipsVisibilityModel: StateFlow<ChipsVisibilityModel> =
