@@ -59,8 +59,8 @@ class BubbleEventHistoryLoggerTest {
         logger.logEvent("d: hey", timestamp = timestamp)
         val expectedOutput = """
             Bubbles events history:
-              $formattedTimeStamp d: hey
               $formattedTimeStamp e: test | eventData
+              $formattedTimeStamp d: hey
             """.trimIndent() + "\n"
         assertThat(getDumpOutput()).isEqualTo(expectedOutput)
     }
@@ -74,7 +74,7 @@ class BubbleEventHistoryLoggerTest {
     }
 
     @Test
-    fun dump_printsEventsInReverseChronologicalOrderStartingFromTheMostRecentEvent() {
+    fun dump_printsEventsInChronologicalOrderStartingFromTheOldestEvent() {
         val repetitions = MAX_EVENTS * 2
         repeat(repetitions) { repetition ->
             logger.logEvent(title = "", timestamp = repetition.toLong())
@@ -82,10 +82,9 @@ class BubbleEventHistoryLoggerTest {
         val lastEventDateTime = DATE_FORMATTER.format(repetitions - 1)
         val logLines = getTrimmedLogLines()
 
-        // reversed timestamps should be in chronological order
-        assertThat(logLines.reversed()).isInOrder()
-        // first log entry corresponds to the most recent event
-        assertThat(logLines.first()).contains(lastEventDateTime)
+        assertThat(logLines).isInOrder()
+        // last log entry corresponds to the most recent event
+        assertThat(logLines.last()).contains(lastEventDateTime)
     }
 
     @Test
@@ -99,12 +98,12 @@ class BubbleEventHistoryLoggerTest {
 
         val logLines = getTrimmedLogLines()
 
-        assertLogFormat(logLines[5], "r: test | dump record")
-        assertLogFormat(logLines[4], "d: test true | eventData")
-        assertLogFormat(logLines[3], "v: test 0 | eventData")
-        assertLogFormat(logLines[2], "i: test stringArgument | eventData")
-        assertLogFormat(logLines[1], "w: test")
-        assertLogFormat(logLines[0], "e: test | eventData")
+        assertLogFormat(logLines[0], "r: test | dump record")
+        assertLogFormat(logLines[1], "d: test true | eventData")
+        assertLogFormat(logLines[2], "v: test 0 | eventData")
+        assertLogFormat(logLines[3], "i: test stringArgument | eventData")
+        assertLogFormat(logLines[4], "w: test")
+        assertLogFormat(logLines[5], "e: test | eventData")
     }
 
     @Test

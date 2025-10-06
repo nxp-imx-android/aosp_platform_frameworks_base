@@ -85,7 +85,7 @@ class BubbleEventHistoryLogger : DebugLogger {
         if (!Flags.enableBubbleEventHistoryLogs()) return
         val recentEventsCopy = synchronized(this) { ArrayList(recentEvents) }
         pw.println("${prefix}Bubbles events history:")
-        recentEventsCopy.reversed().forEach { event ->
+        recentEventsCopy.forEach { event ->
             val eventFormattedTime = DATE_FORMATTER.format(event.timestamp)
             var eventData = ""
             if (!event.eventData.isNullOrBlank()) {
