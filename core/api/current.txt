@@ -16893,6 +16893,7 @@ package android.graphics {
   public static final class ImageDecoder.DecodeException extends java.io.IOException {
     method public int getError();
     method @NonNull public android.graphics.ImageDecoder.Source getSource();
+    field @FlaggedApi("com.android.graphics.hwui.flags.image_decoder_gainmap_fail") public static final int GAINMAP_EXTRACTION_FAILED = 4; // 0x4
     field public static final int SOURCE_EXCEPTION = 1; // 0x1
     field public static final int SOURCE_INCOMPLETE = 2; // 0x2
     field public static final int SOURCE_MALFORMED_DATA = 3; // 0x3

@@ -73,9 +73,10 @@ enum Allocator {
 
 // These need to stay in sync with ImageDecoder.java's Error constants.
 enum Error {
-    kSourceException     = 1,
-    kSourceIncomplete    = 2,
+    kSourceException = 1,
+    kSourceIncomplete = 2,
     kSourceMalformedData = 3,
+    kGainmapExtractionFailed = 4,
 };
 
 // These need to stay in sync with PixelFormat.java's Format constants.
@@ -359,17 +360,6 @@ static jobject ImageDecoder_nDecodeBitmap(JNIEnv* env, jobject /*clazz*/, jlong 
     jthrowable jexception = get_and_clear_exception(env);
     int onPartialImageError = jexception ? kSourceException : 0;  // No error.
 
-    // Only attempt to extract the gainmap if we're not post-processing, as we can't automatically
-    // mimic that to the gainmap and expect it to be meaningful. And also don't extract the gainmap
-    // if we're prioritizing RAM over quality, since the gainmap improves quality at the
-    // cost of RAM
-    if (result == SkCodec::kSuccess && !jpostProcess && !preferRamOverQuality) {
-        // The gainmap costs RAM to improve quality, so skip this if we're prioritizing RAM instead
-        result = decoder->extractGainmap(nativeBitmap.get(),
-                                         allocator == kSharedMemory_Allocator ? true : false);
-        jexception = get_and_clear_exception(env);
-    }
-
     switch (result) {
         case SkCodec::kSuccess:
             // Ignore the exception, since the decode was successful anyway.
@@ -391,6 +381,23 @@ static jobject ImageDecoder_nDecodeBitmap(JNIEnv* env, jobject /*clazz*/, jlong 
             msg.printf("getPixels failed with error %s", SkCodec::ResultToString(result));
             doThrowIOE(env, msg.c_str());
             return nullptr;
+    }
+
+    // Only attempt to extract the gainmap if we're not post-processing, as we can't automatically
+    // mimic that to the gainmap and expect it to be meaningful. And also don't extract the gainmap
+    // if we're prioritizing RAM over quality, since the gainmap improves quality at the
+    // cost of RAM
+    if (result == SkCodec::kSuccess && !jpostProcess && !preferRamOverQuality) {
+        // The gainmap costs RAM to improve quality, so skip this if we're prioritizing RAM instead
+        result = decoder->extractGainmap(nativeBitmap.get(),
+                                         allocator == kSharedMemory_Allocator ? true : false);
+        jexception = get_and_clear_exception(env);
+
+        if (result != SkCodec::kSuccess) {
+            if (!jexception) {
+                onPartialImageError = kGainmapExtractionFailed;
+            }
+        }
     }
 
     if (onPartialImageError) {
