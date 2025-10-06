@@ -91,7 +91,7 @@ import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconAppearSpec
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconDisappearSpec
 import com.android.systemui.brightness.ui.compose.InternalDimensions.IconPadding
 import com.android.systemui.brightness.ui.compose.InternalDimensions.IconSize
-import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundFrameSize
+import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundFrameWidth
 import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderTrackRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.ThumbTrackGapSize
@@ -340,8 +340,8 @@ fun BrightnessSlider(
     }
 }
 
-private fun Modifier.sliderBackground(color: Color) = drawWithCache {
-    val offsetAround = SliderBackgroundFrameSize.toSize()
+private fun Modifier.sliderBackground(backgroundFrameSize: DpSize, color: Color) = drawWithCache {
+    val offsetAround = backgroundFrameSize.toSize()
     val newSize = Size(size.width + 2 * offsetAround.width, size.height + 2 * offsetAround.height)
     val offset = Offset(-offsetAround.width, -offsetAround.height)
     val cornerRadius = CornerRadius(SliderBackgroundRoundedCorner.toPx())
@@ -381,10 +381,11 @@ fun BrightnessSliderContainer(
             if (dragging) containerColors.mirrorColor else containerColors.idleColor
         )
 
+    val backgroundFrameHeight = dimensions.verticalPadding
     Box(
         modifier =
             modifier
-                .padding(vertical = { SliderBackgroundFrameSize.height.roundToPx() })
+                .padding(vertical = { backgroundFrameHeight.roundToPx() })
                 .fillMaxWidth()
                 .sysuiResTag("brightness_slider")
     ) {
@@ -411,7 +412,13 @@ fun BrightnessSliderContainer(
                         cornerSize = CornerSize(SliderTrackRoundedCorner),
                     )
                     .then(if (viewModel.showMirror) Modifier.drawInOverlay() else Modifier)
-                    .sliderBackground(containerColor)
+                    .sliderBackground(
+                        DpSize(
+                            InternalDimensions.SliderBackgroundFrameWidth,
+                            backgroundFrameHeight
+                        ),
+                        containerColor,
+                    )
                     .fillMaxWidth()
                     .pointerInteropFilter {
                         if (
@@ -444,19 +451,21 @@ data class ContainerColors(val idleColor: Color, val mirrorColor: Color) {
 data class BrightnessSliderDimensions(
     val thumbHeight: Dp,
     val thumbWidth: Dp,
-    val trackHeight: Dp
+    val trackHeight: Dp,
+    val verticalPadding: Dp
 ) {
     companion object {
         val Default = BrightnessSliderDimensions(
             thumbHeight = 52.dp,
             thumbWidth = 4.dp,
-            trackHeight = 40.dp
+            trackHeight = 40.dp,
+            verticalPadding = 6.dp
         )
     }
 }
 
 private object InternalDimensions {
-    val SliderBackgroundFrameSize = DpSize(10.dp, 6.dp)
+    val SliderBackgroundFrameWidth = 10.dp
     val SliderBackgroundRoundedCorner = 24.dp
     val SliderTrackRoundedCorner = 12.dp
     val IconSize = DpSize(28.dp, 28.dp)

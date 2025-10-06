@@ -490,6 +490,7 @@ object QuickSettingsShade {
                 brightnessThumbHeight,
                 brightnessThumbWidth,
                 brightnessTrackHeight,
+                brightnessVerticalPadding,
             )
 
         val volumeSliderDimensions: VolumeSliderDimensions
@@ -502,10 +503,14 @@ object QuickSettingsShade {
                 volumeVerticalPadding,
             )
 
+        val ToolbarHeight: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_toolbar_height)
+
         // This is used around the header and toolbar
         val ShortPadding = 8.dp
         val Padding = 16.dp
-        val ToolbarHeight = 48.dp
 
         private val brightnessThumbHeight: Dp
             @Composable
@@ -521,6 +526,12 @@ object QuickSettingsShade {
             @Composable
             @ReadOnlyComposable
             get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_track_height)
+
+        private val brightnessVerticalPadding : Dp
+            @Composable
+            @ReadOnlyComposable
+            get() =
+                dimensionResource(id = R.dimen.overlay_qs_layout_brightness_vertical_padding)
 
         private val volumeVerticalPadding: Dp
             @Composable

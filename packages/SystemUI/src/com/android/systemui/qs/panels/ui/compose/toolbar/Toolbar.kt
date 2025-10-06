@@ -37,14 +37,15 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.android.compose.animation.Expandable
 import com.android.compose.theme.LocalAndroidColorScheme
@@ -58,6 +59,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 import com.android.systemui.qs.ui.compose.borderOnFocus
+import com.android.systemui.res.R
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -65,7 +67,6 @@ fun Toolbar(
     viewModel: ToolbarViewModel,
     isFullyVisible: () -> Boolean,
     modifier: Modifier = Modifier,
-    iconButtonDimensions: IconButtonDimensions = IconButtonDimensions.Defaults,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val securityInfoCollapsed = viewModel.securityInfoShowCollapsed
@@ -81,7 +82,6 @@ fun Toolbar(
                         animatedContentScope = this@AnimatedContent,
                         viewModel = viewModel,
                         isFullyVisible = isFullyVisible,
-                        iconButtonDimensions = iconButtonDimensions,
                     )
                 } else {
                     SecurityInfo(
@@ -100,7 +100,6 @@ fun Toolbar(
         IconButton(
             model = viewModel.powerButtonViewModel,
             modifier = Modifier.sysuiResTag("pm_lite"),
-            dimensions = iconButtonDimensions,
         )
     }
 }
@@ -112,7 +111,6 @@ private fun SharedTransitionScope.StandardToolbarLayout(
     viewModel: ToolbarViewModel,
     isFullyVisible: () -> Boolean,
     modifier: Modifier = Modifier,
-    iconButtonDimensions: IconButtonDimensions,
 ) {
     Row(modifier) {
         // User switcher button
@@ -121,7 +119,6 @@ private fun SharedTransitionScope.StandardToolbarLayout(
             Modifier.sysuiResTag("multi_user_switch"),
             iconColor = Color.Unspecified,
             useIconColorProtection = true,
-            dimensions = iconButtonDimensions,
         )
 
         // Edit mode button
@@ -133,7 +130,6 @@ private fun SharedTransitionScope.StandardToolbarLayout(
         IconButton(
             model = viewModel.settingsButtonViewModel,
             modifier = Modifier.sysuiResTag("settings_button_container"),
-            dimensions = iconButtonDimensions,
         )
 
         // Security info button
@@ -162,7 +158,6 @@ private fun IconButton(
     modifier: Modifier = Modifier,
     iconColor: Color = MaterialTheme.colorScheme.onSurface,
     useIconColorProtection: Boolean = false,
-    dimensions: IconButtonDimensions,
 ) {
     if (model == null) {
         return
@@ -173,7 +168,10 @@ private fun IconButton(
         onClick = model.onClick,
         modifier =
             modifier
-                .sizeIn(minHeight = dimensions.minimumSize, minWidth = dimensions.minimumSize)
+                .sizeIn(
+                    minHeight = IconButtonDimensions.MinimumSize,
+                    minWidth = IconButtonDimensions.MinimumSize
+                )
                 .aspectRatio(1.0F)
                 .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
                 .wrapContentSize(),
@@ -188,13 +186,13 @@ private fun IconButton(
         Box(
             modifier =
                 Modifier
-                    .size(dimensions.coloredBackgroundSize)
+                    .size(IconButtonDimensions.ColoredBackgroundSize)
                     .background(color = protectionColor, shape = CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             ToolbarIcon(
                 icon = model.icon,
-                modifier = Modifier.size(dimensions.iconSize),
+                modifier = Modifier.size(IconButtonDimensions.IconSize),
                 tint = iconColor
             )
         }
@@ -243,16 +241,20 @@ private object Toolbar {
     }
 }
 
-data class IconButtonDimensions(
-    val minimumSize: Dp,
-    val coloredBackgroundSize: Dp,
-    val iconSize: Dp,
-) {
-    companion object {
-        val Defaults = IconButtonDimensions(
-            minimumSize = 48.dp,
-            coloredBackgroundSize = 36.dp,
-            iconSize = 24.dp,
-        )
-    }
+object IconButtonDimensions {
+    val ColoredBackgroundSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.toolbar_button_colored_background_size)
+
+    val IconSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.toolbar_button_icon_size)
+
+    val MinimumSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() =
+            dimensionResource(id = R.dimen.toolbar_button_size)
 }
