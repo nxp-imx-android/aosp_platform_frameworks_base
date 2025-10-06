@@ -118,7 +118,6 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      * <p>
      * Output: Nothing.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_NOTIFICATION_ASSISTANT_FEEDBACK_SETTINGS =
             "android.service.notification.action.NOTIFICATION_ASSISTANT_FEEDBACK_SETTINGS";
@@ -128,7 +127,6 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      *
      * Extra for {@link #ACTION_NOTIFICATION_ASSISTANT_FEEDBACK_SETTINGS}.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final String EXTRA_NOTIFICATION_KEY
             = "android.service.notification.extra.NOTIFICATION_KEY";
 
@@ -418,7 +416,6 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      *
      * For backwards compatibility, we assume all Adjustment types are supported by the NAS.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public final void setAdjustmentTypeSupportedState(@NonNull @Adjustment.Keys String key,
             boolean supported) {
         if (!isBound()) return;

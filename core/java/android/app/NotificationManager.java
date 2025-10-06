@@ -20,7 +20,6 @@ import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.service.notification.Flags.notificationClassification;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -842,8 +841,7 @@ public class NotificationManager {
      */
     private boolean discardNotify(UserHandle user, String pkg, @Nullable String tag, int id,
             Notification notification) {
-        if (notificationClassification()
-                && NotificationChannel.SYSTEM_RESERVED_IDS.contains(notification.getChannelId())) {
+        if (NotificationChannel.SYSTEM_RESERVED_IDS.contains(notification.getChannelId())) {
             return true;
         }
 
@@ -1423,8 +1421,7 @@ public class NotificationManager {
      * had before it was deleted.
      */
     public void deleteNotificationChannel(String channelId) {
-        if (notificationClassification()
-                && NotificationChannel.SYSTEM_RESERVED_IDS.contains(channelId)) {
+        if (NotificationChannel.SYSTEM_RESERVED_IDS.contains(channelId)) {
             return;
         }
         INotificationManager service = service();
@@ -2236,7 +2233,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void allowAssistantAdjustment(@NonNull String capability) {
         INotificationManager service = service();
         try {
@@ -2250,7 +2246,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void disallowAssistantAdjustment(@NonNull String capability) {
         INotificationManager service = service();
         try {
@@ -2275,7 +2270,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void setAssistantAdjustmentKeyTypeState(@Adjustment.Types int type, boolean enabled) {
         setAssistantClassificationTypeState(type, enabled);
     }
@@ -2283,7 +2277,6 @@ public class NotificationManager {
     /**
      * @hide
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void setAssistantClassificationTypeState(@Adjustment.Types int type, boolean enabled) {
         INotificationManager service = service();
         try {
@@ -3593,7 +3586,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public @NonNull Set<String> getUnsupportedAdjustmentTypes() {
         INotificationManager service = service();
         try {

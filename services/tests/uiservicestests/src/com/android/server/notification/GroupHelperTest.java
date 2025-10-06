@@ -32,7 +32,6 @@ import static android.app.Notification.VISIBILITY_PUBLIC;
 import static android.app.Notification.VISIBILITY_SECRET;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL;
@@ -1044,7 +1043,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testAppStartsGroupingBundledNotification_doesNotUnAutogroup() {
         final String pkg = "package";
         final NotificationChannel socialChannel = new NotificationChannel(
@@ -2582,7 +2581,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testMoveAggregateGroups_updateChannel_multipleChannels_regroupOnClassifEnabled() {
         final String pkg = "package";
@@ -2660,7 +2658,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testMoveSections_notificationBundled() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2734,7 +2731,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     @DisableFlags(FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS)
     public void testBundleUngroupedConversations_notificationsBundled() {
@@ -2802,7 +2798,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testCacheAndCancelAppSummary_notificationBundled() {
         // check that the original app summary is canceled & cached on classification regrouping
@@ -2863,7 +2858,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testSingletonGroupsRegrouped_notificationBundledBeforeDelayTimeout() {
@@ -2940,7 +2934,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testSingletonGroupsRegrouped_notificationBundledAfterDelayTimeout() {
@@ -3014,8 +3007,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testValidGroupsRegrouped_notificationBundledWhileEnqueued() {
         // Check that valid group notifications are regrouped if classification is done
         // before onNotificationPostedWithDelay (within DELAY_FOR_ASSISTANT_TIME)
@@ -3072,8 +3064,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleNotification_originalSummaryMissing_autogroupInNewSection() {
         // Check that unbundled notifications are moved to the original section and aggregated
         // with existing autogrouped notifications
@@ -3170,8 +3161,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleNotification_originalSummaryMissing_autogroupInNewSectionOnly() {
         // Check that unbundled notifications are moved to the original section and aggregated
         // with existing autogrouped notifications
@@ -3266,8 +3256,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleNotification_originalSummaryExists() {
         // Check that unbundled notifications are moved to the original section and original group
         // when the original summary is still present
@@ -3380,8 +3369,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleByImportanceNotification_originalSummaryExists() {
         // Check that unbundled notifications are moved to the original section and original group
         // when the original summary is still present
@@ -3494,8 +3482,7 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_CLASSIFICATION})
+            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testUnbundleByImportanceNotification_originalSummaryRemoved() {
         // Check that unbundled notifications are moved to the original section and autogrouped
         // when the original summary is not present
@@ -3609,7 +3596,6 @@ public class GroupHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_CLASSIFICATION,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testClassifyWithAlertingImportance_doesNotBundle() {
         // Check that classified notifications are autogrouped when channel importance
@@ -4199,52 +4185,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
-    @DisableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
-    public void testGroupSectioners() {
-        final NotificationRecord notification_alerting = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, IMPORTANCE_DEFAULT);
-        assertThat(GroupHelper.getSection(notification_alerting).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationRecord notification_silent = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, IMPORTANCE_LOW);
-        assertThat(GroupHelper.getSection(notification_silent).mName).isEqualTo("SilentSection");
-
-        // Check that special categories are grouped by their importance
-        final NotificationChannel promoChannel = new NotificationChannel(
-                NotificationChannel.PROMOTIONS_ID, NotificationChannel.PROMOTIONS_ID,
-                IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_promotion = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, promoChannel);
-        assertThat(GroupHelper.getSection(notification_promotion).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationChannel newsChannel = new NotificationChannel(NotificationChannel.NEWS_ID,
-                NotificationChannel.NEWS_ID, IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_news = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, newsChannel);
-        assertThat(GroupHelper.getSection(notification_news).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationChannel socialChannel = new NotificationChannel(
-                NotificationChannel.SOCIAL_MEDIA_ID, NotificationChannel.SOCIAL_MEDIA_ID,
-                IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_social = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, socialChannel);
-        assertThat(GroupHelper.getSection(notification_social).mName).isEqualTo(
-                "AlertingSection");
-
-        final NotificationChannel recsChannel = new NotificationChannel(NotificationChannel.RECS_ID,
-                NotificationChannel.RECS_ID, IMPORTANCE_DEFAULT);
-        final NotificationRecord notification_recs = getNotificationRecord(mPkg, 0, "", mUser,
-                "", false, recsChannel);
-        assertThat(GroupHelper.getSection(notification_recs).mName).isEqualTo(
-                "AlertingSection");
-    }
-
-    @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testGroupSectioners_withClassificationSections() {
         final NotificationRecord notification_alerting = getNotificationRecord(mPkg, 0, "", mUser,
                 "", false, IMPORTANCE_DEFAULT);
@@ -4661,7 +4602,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testGroupSummaryAdded_doesnNotUnAggregateBundledNotifications() {
         // Scenario:
         //  * child notifications posted before summary and classified (bundled) and force-grouped

@@ -158,28 +158,26 @@ public class GroupHelper {
     private static List<NotificationSectioner> getNotificationShadeSections(int autogroupAtCount,
             int autogroupBundlesAtCount) {
         ArrayList<NotificationSectioner> sectionsList = new ArrayList<>();
-        if (android.service.notification.Flags.notificationClassification()) {
-            sectionsList.addAll(List.of(
+        sectionsList.addAll(List.of(
                 new NotificationSectioner("PromotionsSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.PROMOTIONS_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
                 new NotificationSectioner("SocialSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.SOCIAL_MEDIA_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
                 new NotificationSectioner("NewsSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.NEWS_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
                 new NotificationSectioner("RecsSection", 0,
                         autogroupBundlesAtCount, (record) ->
                         NotificationChannel.RECS_ID.equals(record.getChannel().getId())
-                        && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)
-                ));
+                                && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)
+        ));
 
-            NOTIFICATION_BUNDLE_SECTIONS = new ArrayList<>(sectionsList);
-        }
+        NOTIFICATION_BUNDLE_SECTIONS = new ArrayList<>(sectionsList);
 
         if (Flags.notificationForceGroupConversations()) {
             // add priority people section
@@ -875,18 +873,16 @@ public class GroupHelper {
 
                 boolean aggregated =
                         addToUngroupedAndMaybeAggregate(record, fullAggregateGroupKey, sectioner);
-                if (android.service.notification.Flags.notificationClassification()) {
-                    if (!aggregated && isSummaryWithAllChildrenBundled(record, notificationList,
-                            new ArrayList<>())) {
-                        // Cancel the summary and cache it if does not get aggregated
-                        // in order to avoid empty summaries
-                        if (DEBUG) {
-                            Slog.i(TAG,
-                                    "Empty group summary to be canceled and cached: " + record);
-                        }
-                        mCallback.removeAppProvidedSummary(record.getKey());
-                        cacheCanceledSummary(record);
+                if (!aggregated && isSummaryWithAllChildrenBundled(record, notificationList,
+                        new ArrayList<>())) {
+                    // Cancel the summary and cache it if does not get aggregated
+                    // in order to avoid empty summaries
+                    if (DEBUG) {
+                        Slog.i(TAG,
+                                "Empty group summary to be canceled and cached: " + record);
                     }
+                    mCallback.removeAppProvidedSummary(record.getKey());
+                    cacheCanceledSummary(record);
                 }
 
                 return;
@@ -894,8 +890,7 @@ public class GroupHelper {
 
             // Check if summary & child notifications are not part of the same section/bundle
             // Needs a check here if notification was bundled while enqueued
-            if (notificationRegroupOnClassification()
-                    && android.service.notification.Flags.notificationClassification()) {
+            if (notificationRegroupOnClassification()) {
                 if (isGroupChildBundled(record, summaryByGroupKey)) {
                     if (DEBUG) {
                         Slog.v(TAG, "isGroupChildInDifferentBundleThanSummary: " + record);
@@ -2168,11 +2163,7 @@ public class GroupHelper {
             if (!Flags.notificationForceGroupConversations()) {
                 if (record.isConversation()) {
                     // Bundled conversations are groupable
-                    if (android.service.notification.Flags.notificationClassification()) {
-                        if (!NOTIFICATION_BUNDLE_SECTIONS.contains(this)) {
-                            return false;
-                        }
-                    } else {
+                    if (!NOTIFICATION_BUNDLE_SECTIONS.contains(this)) {
                         return false;
                     }
                 }

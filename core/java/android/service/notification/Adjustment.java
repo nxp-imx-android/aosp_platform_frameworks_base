@@ -181,7 +181,6 @@ public final class Adjustment implements Parcelable {
      * notifications differently depending on the type, and may change the alerting level of the
      * notification.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final String KEY_TYPE = "key_type";
 
     /** @hide */
@@ -199,29 +198,24 @@ public final class Adjustment implements Parcelable {
      * This notification can be categorized, but not into one of the other categories known to the
      * OS at a given version.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final int TYPE_OTHER = 0;
     /**
      * The type of this notification is a promotion/deal.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final int TYPE_PROMOTION = 1;
     /**
      * The type of this notification is social media content that isn't a
      * {@link Notification.Builder#setShortcutId(String) conversation}.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final int TYPE_SOCIAL_MEDIA = 2;
     /**
      * The type of this notification is news.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final int TYPE_NEWS = 3;
     /**
      * The type of this notification is content recommendation, for example new videos or books the
      * user may be interested in.
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final int TYPE_CONTENT_RECOMMENDATION = 4;
 
     /**
@@ -229,7 +223,6 @@ public final class Adjustment implements Parcelable {
      * classification should be removed and the channel reverted to its original channel (provided).
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final String KEY_UNCLASSIFY = "key_unclassify";
 
     /**

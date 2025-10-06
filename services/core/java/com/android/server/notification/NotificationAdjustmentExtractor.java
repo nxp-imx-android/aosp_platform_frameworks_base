@@ -59,7 +59,6 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
         final boolean removedClassification = record.hasAdjustment(KEY_UNCLASSIFY);
 
         if (Flags.showNoisyBundledNotifications()
-                && android.service.notification.Flags.notificationClassification()
                 && hasAdjustedClassification && record.getLastAudiblyAlertedMs() > 0) {
             record.applyAdjustments(new ArraySet<>(new String[] {KEY_TYPE}));
 
@@ -68,8 +67,7 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
 
         record.applyAdjustments();
 
-        if (notificationForceGrouping()
-                && android.service.notification.Flags.notificationClassification()) {
+        if (notificationForceGrouping()) {
             // Classification adjustments trigger regrouping
             if (mGroupHelper != null && (hasAdjustedClassification || removedClassification)) {
                 return getRegroupReconsideration(

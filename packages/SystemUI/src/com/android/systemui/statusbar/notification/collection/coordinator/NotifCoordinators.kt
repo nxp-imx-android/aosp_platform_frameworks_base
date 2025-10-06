@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
-import com.android.systemui.statusbar.notification.collection.NotificationClassificationFlag
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
@@ -128,7 +127,7 @@ constructor(
         mOrderedSections.add(conversationCoordinator.priorityPeopleSectioner) // Priority People
         mOrderedSections.add(conversationCoordinator.peopleAlertingSectioner) // People Alerting
         mOrderedSections.add(rankingCoordinator.alertingSectioner) // Alerting
-        if (NotificationClassificationFlag.isEnabled && !NotificationBundleUi.isEnabled) {
+        if (!NotificationBundleUi.isEnabled) {
             mOrderedSections.add(bundleCoordinator.newsSectioner)
             mOrderedSections.add(bundleCoordinator.socialSectioner)
             mOrderedSections.add(bundleCoordinator.recsSectioner)
