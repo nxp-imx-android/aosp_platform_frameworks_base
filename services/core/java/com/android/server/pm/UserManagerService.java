@@ -9165,7 +9165,7 @@ public class UserManagerService extends IUserManager.Stub {
         public boolean isActivityAllowlistedForHsu(ComponentName activity) {
             Preconditions.checkState(mHam != null, "Called when flag is disabled or device is not "
                     + "HSUM");
-            return mHam.isActivityAllowed(ComponentName.flattenToShortString(activity));
+            return mHam.isActivityAllowed(activity);
         }
 
         @Override

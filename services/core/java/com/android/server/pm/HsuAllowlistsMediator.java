@@ -16,13 +16,20 @@
 
 package com.android.server.pm;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.util.Dumpable;
 import android.util.IndentingPrintWriter;
+import android.util.Log;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
+import com.android.server.utils.Slogf;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 /**
  * Class responsible for managing allowlists associated with the HSU (Headless System User).
@@ -31,20 +38,26 @@ import java.io.PrintWriter;
  */
 final class HsuAllowlistsMediator implements Dumpable {
 
+    private static final String TAG = HsuAllowlistsMediator.class.getSimpleName();
+
+    @VisibleForTesting
+    static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+
     // List of activities that are permanently allowed (i.e., they survive reboots).
     // NOTE: for now it's an array as they're just read from config, but should change to Set
     // once it supports APIs to change it (for example, from DPM).
     private final String[] mPermanentActivitiesAllowlist;
 
     HsuAllowlistsMediator(Context context) {
-        mPermanentActivitiesAllowlist = context.getResources()
-                .getStringArray(com.android.internal.R.array.config_hsu_allowlist_activitivies);
+        mPermanentActivitiesAllowlist = getValidComponentNames(context.getResources()
+                .getStringArray(com.android.internal.R.array.config_hsu_allowlist_activitivies));
     }
 
     /** Returns whether the given activity is allowed. */
-    public boolean isActivityAllowed(String componentName) {
-        return mPermanentActivitiesAllowlist.length == 0
-                || ArrayUtils.contains(mPermanentActivitiesAllowlist, componentName);
+    public boolean isActivityAllowed(ComponentName activity) {
+        Objects.requireNonNull(activity, "activity cannot be null");
+        return mPermanentActivitiesAllowlist.length == 0 || ArrayUtils
+                .contains(mPermanentActivitiesAllowlist, activity.flattenToShortString());
     }
 
     @Override
@@ -59,6 +72,8 @@ final class HsuAllowlistsMediator implements Dumpable {
     private void dump(IndentingPrintWriter writer) {
         writer.println("HsuAllowlistsMediator (HAM)");
         writer.increaseIndent();
+
+        writer.printf("DEBUG: %b\n", DEBUG);
 
         dumpActivitiesAllowlist(writer);
 
@@ -83,5 +98,27 @@ final class HsuAllowlistsMediator implements Dumpable {
             writer.println(mPermanentActivitiesAllowlist[i]);
         }
         writer.decreaseIndent();
+    }
+
+    private static String[] getValidComponentNames(String[] componentNames) {
+        // NOTE: must use LinkedHashSet to preserve order, otherwise test case would fail and dump()
+        // wouldn't show the same order as the config.xml
+        LinkedHashSet<String> set = new LinkedHashSet<>(componentNames.length);
+        for (String componentName : componentNames) {
+            var validComponentName = ComponentName.unflattenFromString(componentName);
+            if (validComponentName == null) {
+                Slogf.w(TAG, "Invalid component from config: %s", componentName);
+                continue;
+            }
+            // Must "normalize" the component into the flattened format, as the class part could
+            // have been expressed as FQCN (Fully-Qualified Class Name).
+            set.add(validComponentName.flattenToShortString());
+        }
+        String[] valid = new String[set.size()];
+        set.toArray(valid);
+        if (DEBUG) {
+            Slogf.d(TAG, "valid activity component names from config: %s", Arrays.toString(valid));
+        }
+        return valid;
     }
 }
