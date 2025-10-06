@@ -92,6 +92,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.connectivity.AccessPointController;
+import com.android.systemui.statusbar.core.NewStatusBarIcons;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.toast.SystemUIToast;
@@ -652,7 +653,9 @@ public class InternetDetailsContentController implements AccessPointController.A
         icons.setLayerGravity(0 /* index of networkDrawable */, Gravity.TOP | Gravity.LEFT);
         // Set the signal strength icon at the bottom right
         icons.setLayerGravity(1 /* index of SignalDrawable */, Gravity.BOTTOM | Gravity.RIGHT);
-        icons.setLayerSize(1 /* index of SignalDrawable */, iconSize, iconSize);
+        if (!NewStatusBarIcons.isEnabled()) {
+            icons.setLayerSize(1 /* index of SignalDrawable */, iconSize, iconSize);
+        }
         icons.setTintList(Utils.getColorAttr(context, android.R.attr.textColorTertiary));
         return icons;
     }
