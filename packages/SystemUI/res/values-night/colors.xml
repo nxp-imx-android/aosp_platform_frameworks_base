@@ -72,6 +72,8 @@
     <!-- Floating overlay actions -->
     <color name="overlay_background_protection_start">#80000000</color> <!-- 50% black -->
 
+    <color name="volume_dialog_view_background_blur_fallback">@android:color/system_accent1_800</color>
+
     <!-- Media -->
     <color name="media_divider">#85ffffff</color>
 
