@@ -325,7 +325,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             assertThat(bouncerMessage).isNotNull()
             assertThat(primaryResMessage(bouncerMessage))
-                .isEqualTo("Already tried this PIN. Try another.")
+                .isEqualTo("Already tried that PIN. Try another.")
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
