@@ -15,8 +15,6 @@
  */
 package com.android.wm.shell.bubbles.animation;
 
-import static com.android.wm.shell.Flags.FLAG_FIX_BUBBLES_CANCEL_ANIMATION;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assume.assumeTrue;
@@ -29,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.animation.AnimatorSet;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
@@ -173,7 +170,6 @@ public class ExpandedViewAnimationControllerTest extends ShellTestCase {
         assertThat(mController.shouldCollapse()).isTrue();
     }
 
-    @EnableFlags(FLAG_FIX_BUBBLES_CANCEL_ANIMATION)
     @Test
     public void testCollapseAnimation_canceledNotNotified() {
         Runnable stackCollapseRunnable = mock(Runnable.class);
