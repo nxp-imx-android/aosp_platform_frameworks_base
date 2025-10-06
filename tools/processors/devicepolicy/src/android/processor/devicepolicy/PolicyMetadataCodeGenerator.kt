@@ -88,9 +88,24 @@ object PolicyMetadataCodeGenerator {
         val javaFile =
             JavaFile.builder(METADATA_PACKAGE, policiesClass)
                 .indent("    ")
+                .addPolicyIdentifierImports(policies)
                 .build()
 
         return javaFile
+    }
+
+    private fun JavaFile.Builder.addPolicyIdentifierImports(policies: PolicyMetadataList): JavaFile.Builder {
+        policies.policyMetadataList.map {
+            ClassName.get(
+                it.identifier.packageName,
+                it.identifier.className
+            ) to it.identifier.fieldName
+        }.groupBy({ it.first }, { it.second })
+            .forEach { (className, fieldNames) ->
+                addStaticImport(className, *fieldNames.toTypedArray())
+            }
+
+        return this
     }
 
     private fun generateLoadPolicyMetadata(policies: PolicyMetadataList): MethodSpec {
@@ -166,7 +181,7 @@ object PolicyMetadataCodeGenerator {
     }
 
     private fun CodeBlock.Builder.addPolicyId(name: String) =
-        this.add("/* id= */ \$L,\n", name)
+        this.add("/* id= */ \$L,\n", name.substringAfterLast("."))
 
     private fun CodeBlock.Builder.addPolicyId(nameGenerator: CodeBlock) =
         this.add("/* id= */ \$L,\n", nameGenerator)
@@ -195,7 +210,7 @@ object PolicyMetadataCodeGenerator {
 
     private fun CodeBlock.Builder.addPolicyArguments(policy: PolicyMetadata): CodeBlock.Builder =
         this
-            .addPolicyId(policy.name)
+            .addPolicyId(policy.identifier.fieldName)
             .addPolicyInformation(policy)
 
     private fun genericPolicyAdder(policy: PolicyMetadata, type: ClassName) =
@@ -278,7 +293,7 @@ object PolicyMetadataCodeGenerator {
                 )
             )
             .indent()
-            .addPolicyId(policy.name)
+            .addPolicyId(policy.identifier.fieldName)
             .add("/* elementMetadata= */ new \$T(\n", elementMetadataType)
             .indent()
             .addPolicyId(
@@ -290,7 +305,7 @@ object PolicyMetadataCodeGenerator {
                             policyIdentifierType,
                             elementType
                         ),
-                        policy.name,
+                        policy.identifier.fieldName,
                         "#elements"
                     )
                     .build()

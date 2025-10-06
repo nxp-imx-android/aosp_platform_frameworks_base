@@ -16,6 +16,7 @@
 
 package android.processor.devicepolicy
 
+import android.processor.devicepolicy.protos.FullyQualifiedFieldName
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import com.sun.source.tree.IdentifierTree
 import com.sun.source.tree.MemberSelectTree
@@ -66,23 +67,25 @@ import javax.lang.model.type.TypeMirror
  *
  * We will use the following example to illustrate what we are doing:
  * {@snippet :
- *     public static final int ENUM_ENTRY_1 = 0;
- *     public static final int ENUM_ENTRY_2 = 1;
+ *      class ExampleClass {
+ *          public static final int ENUM_ENTRY_1 = 0;
+ *          public static final int ENUM_ENTRY_2 = 1;
  *
- *     @Retention(RetentionPolicy.SOURCE)
- *     @IntDef(prefix = { "ENUM_ENTRY_" }, value = {
- *             ENUM_ENTRY_1,
- *             ENUM_ENTRY_2,
- *     })
- *     public @interface PolicyEnum {}
+ *          @Retention(RetentionPolicy.SOURCE)
+ *          @IntDef(prefix = { "ENUM_ENTRY_" }, value = {
+ *                  ENUM_ENTRY_1,
+ *                  ENUM_ENTRY_2,
+ *          })
+ *          public @interface PolicyEnum {}
  *
- *     @PolicyDefinition
- *     @EnumPolicyDefinition(
- *             defaultValue = ENUM_ENTRY_2,
- *             intDef = PolicyEnum.class
- *     )
- *     public static final PolicyIdentifier<Integer> EXAMPLE_POLICY) = new PolicyIdentifier<>(
- *             "EXAMPLE_POLICY");
+ *          @PolicyDefinition
+ *          @EnumPolicyDefinition(
+ *                  defaultValue = ENUM_ENTRY_2,
+ *                  intDef = PolicyEnum.class
+ *          )
+ *          public static final PolicyIdentifier<Integer> EXAMPLE_POLICY) =
+ *                  new PolicyIdentifier<>("EXAMPLE_POLICY");
+ *      }
  * }
  */
 class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicyDefinition>(processingEnv) {
@@ -196,37 +199,79 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
         val trees = Trees.instance(processingEnv)
         val tree = trees.getTree(intDefElement, annotationMirror, annotationValue)
 
+        // In the class-level example above, these would be {"ENUM_ENTRY_1", "ENUM_ENTRY_2"}.
         val identifiers = ArrayList<String>()
         tree.accept(IdentifierVisitor(), identifiers)
 
-        // In the class-level example above, these would be {ENUM_ENTRY_1,ENUM_ENTRY_2}.
-        @Suppress("UNCHECKED_CAST") val values = annotationValue.value as List<AnnotationValue>
+        // Get the complete field names and the documentation for each entry.
+        val fields = getElementForIdentifier(identifiers, intDefElement)
+        val names = getFieldNames(fields)
+        val docs = getFieldDocumentations(fields)
 
-        val documentations: List<String> = identifiers.map { identifier ->
-            // TODO(b/442973945): Support identifiers outside of same class.
-            val doc = intDefElement.enclosingElement.enclosedElements.firstOrNull {
-                it.simpleName.toString() == identifier
-            } ?.let {
-                processingEnv.elementUtils.getDocComment(it)
-                    ?.trimIndent()
-            } ?: ""
-
-            if (doc.trim().isEmpty()) {
-                printError(intDefElement.enclosingElement, "Missing JavaDoc for $identifier")
+        // In the class-level example above, these would be {ENUM_ENTRY_1, ENUM_ENTRY_2}.
+        @Suppress("UNCHECKED_CAST") val values =
+            (annotationValue.value as List<AnnotationValue>)
+            .map {
+                it.value as Int
             }
 
-            doc
+        if (values.size < fields.size) {
+            // Should never be reached.
+            // We walk the same annotation definition and should find the same number of entries.
+            throw IllegalStateException("Annotation value $annotationValue for $intDefElement does not have enough values")
         }
 
-        return identifiers.mapIndexed { i, identifier ->
+        return fields.mapIndexed { i, field ->
             TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
                 .newBuilder()
-                .setName(identifier)
-                .setIntValue(values[i].value as Int)
-                .setDocumentation(documentations[i])
+                .setFieldName(names[i])
+                .setIntValue(values[i])
+                .setDocumentation(docs[i])
                 .build()
         }
     }
+
+    private fun getElementForIdentifier(
+        identifiers: List<String>,
+        intDefElement: TypeElement
+    ): List<Element> =
+
+        identifiers.mapNotNull { identifier ->
+            // TODO(b/442973945): Support identifiers outside of same class.
+            // Get the element pointing the field, ENUM_ENTRY_1 in our example.
+            val element = intDefElement.enclosingElement.enclosedElements.firstOrNull {
+                it.simpleName.toString() == identifier
+            }
+
+            if (element == null) {
+                // We skip fields if we can't find them.
+                // Continue processing to print all errors at once.
+                printError(intDefElement.enclosingElement, "Could not find $identifier")
+            }
+
+            element
+        }
+
+    private fun getFieldDocumentations(fields: List<Element>): List<String> =
+        fields.map { element ->
+            // Our example has no javadoc, but this would get ENUM_ENTRY_1's documentation.
+            val documentation =
+                processingEnv.elementUtils.getDocComment(element)
+                    ?.trimIndent()
+                    ?: ""
+
+            if (documentation.trim().isEmpty()) {
+                printError(element, "Missing JavaDoc")
+            }
+
+            documentation
+        }
+
+    private fun getFieldNames(fields: List<Element>): List<FullyQualifiedFieldName> =
+        fields.map { element ->
+            // In our example this would be {"ExampleClass", "ENUM_ENTRY_1"}.
+            getFullyQualifiedFieldName(element)
+        }
 
     private class IdentifierVisitor : SimpleTreeVisitor<Void, ArrayList<String>>() {
         override fun visitNewArray(node: NewArrayTree, identifiers: ArrayList<String>): Void? {
