@@ -373,21 +373,24 @@ private fun ContentScope.QuickSettingsLayout(
                 VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
             }
 
-            Box(
-                Modifier.systemGestureExclusionInShade(
-                    enabled = { layoutState.transitionState is TransitionState.Idle }
-                )
-            ) {
-                BrightnessSliderContainer(
-                    viewModel = qsContainerViewModel.brightnessSliderViewModel,
-                    containerColors =
-                        ContainerColors(
-                            idleColor = Color.Transparent,
-                            mirrorColor = OverlayShade.Colors.panelBackground(isTransparencyEnabled),
-                        ),
-                    modifier = Modifier.fillMaxWidth(),
-                    dimensions = QuickSettingsShade.Dimensions.brightnessSliderDimensions,
-                )
+            if (qsContainerViewModel.isBrightnessSliderVisible) {
+                Box(
+                    Modifier.systemGestureExclusionInShade(
+                        enabled = { layoutState.transitionState is TransitionState.Idle }
+                    )
+                ) {
+                    BrightnessSliderContainer(
+                        viewModel = qsContainerViewModel.brightnessSliderViewModel,
+                        containerColors =
+                            ContainerColors(
+                                idleColor = Color.Transparent,
+                                mirrorColor =
+                                    OverlayShade.Colors.panelBackground(isTransparencyEnabled),
+                            ),
+                        modifier = Modifier.fillMaxWidth(),
+                        dimensions = QuickSettingsShade.Dimensions.brightnessSliderDimensions,
+                    )
+                }
             }
 
             if (volumeSliderViewModel != null) {
@@ -486,22 +489,24 @@ object QuickSettingsShade {
         val brightnessSliderDimensions: BrightnessSliderDimensions
             @Composable
             @ReadOnlyComposable
-            get() = BrightnessSliderDimensions(
-                brightnessThumbHeight,
-                brightnessThumbWidth,
-                brightnessTrackHeight,
-                brightnessVerticalPadding,
-            )
+            get() =
+                BrightnessSliderDimensions(
+                    brightnessThumbHeight,
+                    brightnessThumbWidth,
+                    brightnessTrackHeight,
+                    brightnessVerticalPadding,
+                )
 
         val volumeSliderDimensions: VolumeSliderDimensions
             @Composable
             @ReadOnlyComposable
-            get() = VolumeSliderDimensions(
-                volumeThumbHeight,
-                volumeThumbWidth,
-                volumeTrackHeight,
-                volumeVerticalPadding,
-            )
+            get() =
+                VolumeSliderDimensions(
+                    volumeThumbHeight,
+                    volumeThumbWidth,
+                    volumeTrackHeight,
+                    volumeVerticalPadding,
+                )
 
         val ToolbarHeight: Dp
             @Composable
@@ -527,11 +532,10 @@ object QuickSettingsShade {
             @ReadOnlyComposable
             get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_track_height)
 
-        private val brightnessVerticalPadding : Dp
+        private val brightnessVerticalPadding: Dp
             @Composable
             @ReadOnlyComposable
-            get() =
-                dimensionResource(id = R.dimen.overlay_qs_layout_brightness_vertical_padding)
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_vertical_padding)
 
         private val volumeVerticalPadding: Dp
             @Composable
