@@ -6388,8 +6388,8 @@ public class Notification implements Parcelable
                     || resId == getCollapsedMessagingLayoutResource()
                     || resId == getCollapsedMediaLayoutResource()
                     || resId == getCollapsedConversationLayoutResource()
-                    || (apiMetricStyle()
-                    && resId == getCollapsedMetricLayoutResource())
+                    || (apiMetricStyle() && (resId == getCollapsedMetricLayoutResource()
+                    || resId == getCompactHeadsUpMetricLayoutResource()))
                     || (notificationsRedesignTemplates()
                     && resId == getCollapsedCallLayoutResource()));
             RemoteViews contentView = new BuilderRemoteViews(mContext.getApplicationInfo(), resId);
@@ -8263,6 +8263,9 @@ public class Notification implements Parcelable
             }
         }
 
+        private int getCompactHeadsUpMetricLayoutResource() {
+            return R.layout.notification_2025_template_compact_heads_up_metric;
+        }
         private int getCollapsedMetricLayoutResource() {
             return R.layout.notification_2025_template_collapsed_metric;
         }
@@ -12030,7 +12033,28 @@ public class Notification implements Parcelable
             final TemplateBindResult result = new TemplateBindResult();
             final RemoteViews contentView = getStandardView(
                     mBuilder.getCollapsedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */ false);
+            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */ false);
+        }
+
+        /** @hide */
+        @Override
+        public RemoteViews makeCompactHeadsUpContentView() {
+            final StandardTemplateParams p = mBuilder.mParams.reset()
+                    .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
+                    .fillTextsFrom(mBuilder)
+                    .text(null)
+                    .hideAppName(true).hideSubText(true).hideTime(true)
+                    .hideProgress(true)
+                    .hideRightIcon(true);
+            final TemplateBindResult result = new TemplateBindResult();
+            final RemoteViews contentView = getStandardView(
+                    mBuilder.getCompactHeadsUpMetricLayoutResource(), p, result);
+            return bindMetricStyleMetrics(contentView, p,
+                    getCompactHeadsUpMetrics(), /* isExpandedView = */false);
+        }
+
+        private List<Metric> getCompactHeadsUpMetrics() {
+            return mMetrics.size() > 0 ? mMetrics.subList(0, 1) : List.of();
         }
 
         /** @hide */
@@ -12062,16 +12086,17 @@ public class Notification implements Parcelable
             }
 
             final RemoteViews contentView = getStandardView(expandedLayoutRes, p, result);
-            return bindMetricStyleMetrics(contentView, p, /* isExpandedView = */true);
+            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */true);
         }
 
         private RemoteViews bindMetricStyleMetrics(
-                RemoteViews contentView, StandardTemplateParams p, boolean isExpandedView) {
+                RemoteViews contentView, StandardTemplateParams p,
+                List<Metric> metrics, boolean isExpandedView) {
             for (int i = 0; i < MAX_METRICS; i++) {
                 final MetricView metricView = MetricView.VIEWS.get(i);
-                if (i < mMetrics.size()) {
+                if (i < metrics.size()) {
                     contentView.setViewVisibility(metricView.containerId(), View.VISIBLE);
-                    final Metric metric = mMetrics.get(i);
+                    final Metric metric = metrics.get(i);
                     final Metric.MetricValue metricValue = metric.getValue();
                     final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
                             mBuilder.mContext);

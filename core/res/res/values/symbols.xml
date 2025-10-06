@@ -258,6 +258,7 @@
   <java-symbol type="id" name="phishing_alert" />
   <java-symbol type="id" name="profile_badge" />
   <java-symbol type="id" name="alerted_icon" />
+  <java-symbol type="id" name="extra_topline_content" />
   <java-symbol type="id" name="transitionPosition" />
   <java-symbol type="id" name="selection_start_handle" />
   <java-symbol type="id" name="selection_end_handle" />
@@ -2486,6 +2487,7 @@
   <java-symbol type="layout" name="notification_material_action_tombstone" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_base" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_metric" />
+  <java-symbol type="layout" name="notification_2025_template_compact_heads_up_metric" />
   <java-symbol type="layout" name="notification_2025_template_expanded_metric" />
   <java-symbol type="layout" name="notification_2025_template_expanded_single_metric" />
   <java-symbol type="layout" name="notification_2025_template_expanded_base" />
