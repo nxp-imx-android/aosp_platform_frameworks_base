@@ -158,7 +158,7 @@ public class KeyguardIndicationController {
     private static final long TRANSIENT_BIOMETRIC_ERROR_TIMEOUT = 1300;
     public static final long DEFAULT_MESSAGE_TIME = 3500;
     public static final long DEFAULT_HIDE_DELAY_MS =
-            DEFAULT_MESSAGE_TIME + KeyguardIndicationTextView.Y_IN_DURATION;
+            DEFAULT_MESSAGE_TIME + KeyguardIndicationTextView.Y_TRANSLATE_DURATION;
 
     private final Context mContext;
     private final BroadcastDispatcher mBroadcastDispatcher;

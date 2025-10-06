@@ -365,7 +365,7 @@
     <dimen name="shelf_transform_content_shift">32dp</dimen>
 
     <!-- The y translation for keyguard indication text animation for rotating text in/out -->
-    <dimen name="keyguard_indication_y_translation">24dp</dimen>
+    <dimen name="keyguard_indication_y_translation">40dp</dimen>
 
     <!-- The padding on the bottom of the notifications on the keyguard -->
     <dimen name="keyguard_indication_bottom_padding">16sp</dimen>
