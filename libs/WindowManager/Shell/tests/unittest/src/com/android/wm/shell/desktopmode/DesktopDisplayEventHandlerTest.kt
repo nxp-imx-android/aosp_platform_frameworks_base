@@ -479,14 +479,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION)
-    fun testDesktopModeEligibleChanged_performsDisconnect() {
-        desktopState.overrideDesktopModeSupportPerDisplay[externalDisplayId] = false
-        onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
-        verify(mockDesktopTasksController).disconnectDisplay(externalDisplayId)
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION)
     fun testDesktopModeEligibleChanged_performsReconnect() {
         desktopState.overrideDesktopModeSupportPerDisplay[externalDisplayId] = true

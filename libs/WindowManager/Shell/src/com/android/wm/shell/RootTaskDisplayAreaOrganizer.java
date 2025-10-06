@@ -254,6 +254,18 @@ public class RootTaskDisplayAreaOrganizer extends DisplayAreaOrganizer {
         return mDisplayAreasInfo.get(displayId);
     }
 
+    /**
+     * Returns the {@link DisplayAreaInfo} of the display containing the default task display area.
+     */
+    @Nullable
+    public DisplayAreaInfo getDefaultDisplayArea() {
+        for (int i = 0; i < mDisplayAreasInfo.size(); i++) {
+            DisplayAreaInfo info = mDisplayAreasInfo.valueAt(i);
+            if (info.featureId == FEATURE_DEFAULT_TASK_CONTAINER) return info;
+        }
+        return null;
+    }
+
     @Nullable
     public SurfaceControl getDisplayAreaLeash(int displayId) {
         return mLeashes.get(displayId);

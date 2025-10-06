@@ -85,11 +85,7 @@ class DesktopDisplayEventHandler(
 
     private val onDisplayAreaChangeListener = OnDisplayAreaChangeListener { displayId ->
         val keyguardLocked = keyguardManager.isKeyguardLocked
-        logV(
-            "displayAreaChanged in displayId=%d, keyguardLocked=%b",
-            displayId,
-            keyguardLocked
-        )
+        logV("displayAreaChanged in displayId=%d, keyguardLocked=%b", displayId, keyguardLocked)
         // Do not create default desk if keyguard is locked. It will be handled on unlock.
         if (!handlePotentialReconnect(displayId) && !keyguardLocked) {
             createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
@@ -321,21 +317,14 @@ class DesktopDisplayEventHandler(
             val keyguardLocked = keyguardManager.isKeyguardLocked
             logV(
                 "onDesktopModeEligibleChanged: keyguardLocked=%b, " +
-                        "displayId=%d has become desktop eligible",
+                    "displayId=%d has become desktop eligible",
                 displayId,
-                keyguardLocked
+                keyguardLocked,
             )
             // Do not create default desk if keyguard is locked. It will be handled on unlock.
             if (!handlePotentialReconnect(displayId) && !keyguardLocked) {
                 createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
             }
-        } else {
-            // A display has become desktop ineligible. Treat this as a potential disconnect.
-            logV(
-                "onDesktopModeEligibleChanged: displayId=%d has become desktop ineligible",
-                displayId,
-            )
-            desktopTasksController.disconnectDisplay(displayId)
         }
     }
 

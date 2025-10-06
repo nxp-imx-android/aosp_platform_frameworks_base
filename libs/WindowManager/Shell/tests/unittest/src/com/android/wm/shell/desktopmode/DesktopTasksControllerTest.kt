@@ -498,6 +498,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 transitions = transitions,
                 shellInit = shellInit,
                 desktopTasksController = Optional.of(controller),
+                displayController = displayController,
+                rootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
             )
 
         shellInit.init()

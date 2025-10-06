@@ -804,22 +804,6 @@ class DesktopTasksController(
             createDeskRoot(displayId, userId) { deskId -> cont.resumeWith(Result.success(deskId)) }
         }
 
-    /** Start a disconnect transition directly in Shell. */
-    fun disconnectDisplay(disconnectedDisplayId: Int) {
-        logD("disconnectDisplay: disconnectedDisplayId=$disconnectedDisplayId")
-        var disconnectReparentDisplay =
-            UserManager.get(userProfileContexts.userContext).mainDisplayIdAssignedToUser
-        // If user has no default display configured, fall back to DEFAULT_DISPLAY
-        if (disconnectReparentDisplay == INVALID_DISPLAY) {
-            disconnectReparentDisplay = DEFAULT_DISPLAY
-        }
-        val wct = WindowContainerTransaction()
-        val runOnTransitStart =
-            addOnDisplayDisconnectChanges(wct, disconnectedDisplayId, disconnectReparentDisplay)
-        val transition = transitions.startTransition(TRANSIT_CLOSE, wct, null)
-        runOnTransitStart(transition)
-    }
-
     /**
      * Returns a WindowContainerTransaction containing all the changes when a display is
      * disconnected.
