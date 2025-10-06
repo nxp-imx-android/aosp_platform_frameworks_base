@@ -122,7 +122,6 @@ public class ExternalDisplayPolicyTest {
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         mHandler = new TestHandler(/*callback=*/ null);
-        when(mMockedFlags.isConnectedDisplayErrorHandlingEnabled()).thenReturn(true);
         when(mMockedInjector.getFlags()).thenReturn(mMockedFlags);
         when(mMockedInjector.getLogicalDisplayMapper()).thenReturn(mMockedLogicalDisplayMapper);
         when(mMockedInjector.getThermalService()).thenReturn(mMockedThermalService);

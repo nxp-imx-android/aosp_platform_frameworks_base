@@ -148,14 +148,6 @@ class ExternalDisplayPolicy {
             handleMirrorBuiltInDisplaySettingChangeLocked(/*enableDisplays=*/ false);
         }
 
-        if (!mFlags.isConnectedDisplayErrorHandlingEnabled()) {
-            if (DEBUG) {
-                Slog.d(TAG, "ConnectedDisplayErrorHandlingEnabled is not enabled on your device:"
-                                    + " cannot register thermal listener.");
-            }
-            return;
-        }
-
         if (!registerThermalServiceListener(new SkinThermalStatusObserver())) {
             Slog.e(TAG, "Failed to register thermal listener");
         }
@@ -298,14 +290,6 @@ class ExternalDisplayPolicy {
     @GuardedBy("mSyncRoot")
     private void disableExternalDisplayLocked(@NonNull final LogicalDisplay logicalDisplay) {
         if (!isExternalDisplayLocked(logicalDisplay)) {
-            return;
-        }
-
-        if (!mFlags.isConnectedDisplayErrorHandlingEnabled()) {
-            if (DEBUG) {
-                Slog.d(TAG, "disableExternalDisplayLocked shouldn't be called when the"
-                                    + " error handling flag is off");
-            }
             return;
         }
 

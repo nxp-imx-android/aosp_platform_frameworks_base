@@ -61,14 +61,6 @@ flag {
 }
 
 flag {
-    name: "enable_connected_display_error_handling"
-    namespace: "display_manager"
-    description: "Feature flag for connected display error handling"
-    bug: "283461472"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "even_dimmer"
     namespace: "display_manager"
     description: "Feature flag for extending the brightness below traditional range"
