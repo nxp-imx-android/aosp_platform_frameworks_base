@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.approachLayout
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalConfiguration
@@ -46,6 +47,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -122,7 +124,35 @@ fun ContentScope.OverlayShade(
                             onBackgroundPlaced(bounds, topCornerRadius, bottomCornerRadius)
                         },
                 header = header.takeIf { isFullWidth },
-                content = content,
+                content = {
+                    Box(
+                        Modifier
+                            // Prevent this element from resizing during the container reveal
+                            // animation. The parent clips the content, so remeasuring the
+                            // children (especially text) on every frame is unnecessary and
+                            // can cause performance issues (jank).
+                            .approachLayout(
+                                isMeasurementApproachInProgress = { layoutState.isTransitioning() }
+                            ) { measurable, constraints ->
+                                if (layoutState.currentTransition == null) {
+                                    return@approachLayout measurable.measure(constraints).run {
+                                        layout(width, height) { place(0, 0) }
+                                    }
+                                }
+
+                                // Make sure that this layout node has the same size than when we
+                                // are at rest.
+                                val widthAtRest = lookaheadSize.width
+                                val fixedWidthConstraints =
+                                    constraints.copy(minWidth = widthAtRest, maxWidth = widthAtRest)
+                                measurable.measure(fixedWidthConstraints).run {
+                                    layout(width, height) { place(IntOffset.Zero) }
+                                }
+                            }
+                    ) {
+                        content()
+                    }
+                },
             )
         }
 
