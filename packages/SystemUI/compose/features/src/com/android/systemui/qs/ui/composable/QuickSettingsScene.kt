@@ -425,5 +425,6 @@ private fun ContentScope.QuickSettingsContent(
 }
 
 private fun shouldUseQuickSettingsHunBounds(layoutState: SceneTransitionLayoutState): Boolean {
-    return layoutState.isIdle(Scenes.QuickSettings)
+    return layoutState.isIdle(Scenes.QuickSettings) ||
+        layoutState.isTransitioning(to = Scenes.QuickSettings)
 }
