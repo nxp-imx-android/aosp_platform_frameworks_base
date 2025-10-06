@@ -174,9 +174,7 @@ public class PreparationCoordinator implements Coordinator {
                 () -> mNotifInflatingFilter.invalidateList("adjustmentProviderChanged"));
 
         pipeline.addCollectionListener(mNotifCollectionListener);
-        if (android.app.Flags.notificationsRedesignAppIcons()) {
-            pipeline.addOnBeforeTransformGroupsListener(this::purgeCaches);
-        }
+        pipeline.addOnBeforeTransformGroupsListener(this::purgeCaches);
         // Inflate after grouping/sorting since that affects what views to inflate.
         pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllRequiredViews);
         pipeline.addFinalizeFilter(mNotifInflationErrorFilter);

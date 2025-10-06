@@ -421,22 +421,13 @@ constructor(
     }
 
     private fun cacheIconDescriptor(entry: NotificationEntry, descriptor: StatusBarIcon) {
-        if (android.app.Flags.notificationsRedesignAppIcons()) {
-            // Although we're not actually using the app icon in the status bar, let's make sure
-            // we cache the icon all the time when the flag is on.
-            when (descriptor.type) {
-                StatusBarIcon.Type.PeopleAvatar -> entry.icons.peopleAvatarDescriptor = descriptor
-                // When notificationsUseAppIcon is enabled, the app icon overrides the small icon.
-                // But either way, it's a good idea to cache the descriptor.
-                else -> entry.icons.smallIconDescriptor = descriptor
-            }
-        } else if (isImportantConversation(entry)) {
-            // Old approach: cache only if important conversation.
-            if (descriptor.type == StatusBarIcon.Type.PeopleAvatar) {
-                entry.icons.peopleAvatarDescriptor = descriptor
-            } else {
-                entry.icons.smallIconDescriptor = descriptor
-            }
+        // Although we're not actually using the app icon in the status bar, let's make sure
+        // we cache the icon all the time.
+        when (descriptor.type) {
+            StatusBarIcon.Type.PeopleAvatar -> entry.icons.peopleAvatarDescriptor = descriptor
+            // When notificationsUseAppIcon is enabled, the app icon overrides the small icon.
+            // But either way, it's a good idea to cache the descriptor.
+            else -> entry.icons.smallIconDescriptor = descriptor
         }
     }
 

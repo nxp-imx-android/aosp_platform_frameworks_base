@@ -5,12 +5,6 @@ container: "system"
 # when appropriate, as it's not currently part of the namespace so it may not be obvious what the
 # flag relates to.
 
-flag {
-  name: "notifications_redesign_app_icons"
-  namespace: "systemui"
-  description: "Notifications Redesign: Use app icons in notification rows"
-  bug: "371174789"
-}
 
 flag {
   name: "notifications_redesign_themed_app_icons"

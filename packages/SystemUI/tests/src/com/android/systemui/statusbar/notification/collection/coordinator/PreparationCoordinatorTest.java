@@ -39,12 +39,10 @@ import static org.mockito.Mockito.when;
 
 import static java.util.Objects.requireNonNull;
 
-import android.app.Flags;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 import android.widget.RemoteViews;
 
@@ -188,14 +186,9 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
         mInflationErrorFilter = filters.get(0);
         mUninflatedFilter = filters.get(1);
 
-        if (android.app.Flags.notificationsRedesignAppIcons()) {
-            verify(mNotifPipeline).addOnBeforeTransformGroupsListener(
-                    mBeforeTransformGroupsListenerCaptor.capture());
-            mBeforeTransformGroupsListener = mBeforeTransformGroupsListenerCaptor.getValue();
-        } else {
-            verify(mNotifPipeline, never()).addOnBeforeTransformGroupsListener(
-                    mBeforeTransformGroupsListenerCaptor.capture());
-        }
+        verify(mNotifPipeline).addOnBeforeTransformGroupsListener(
+                mBeforeTransformGroupsListenerCaptor.capture());
+        mBeforeTransformGroupsListener = mBeforeTransformGroupsListenerCaptor.getValue();
 
         verify(mNotifPipeline).addCollectionListener(mCollectionListenerCaptor.capture());
         mCollectionListener = mCollectionListenerCaptor.getValue();
@@ -294,7 +287,6 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATIONS_REDESIGN_APP_ICONS)
     public void testPurgesAppIconProviderCache() {
         // GIVEN a notification list
         NotificationEntry entry1 = getNotificationEntryBuilder().setPkg("1").build();
@@ -341,7 +333,6 @@ public class PreparationCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATIONS_REDESIGN_APP_ICONS)
     public void testPurgesNotificationIconStyleProviderCache() {
         // GIVEN a notification list
         NotificationEntry entry1 = getNotificationEntryBuilder().setPkg("1").build();

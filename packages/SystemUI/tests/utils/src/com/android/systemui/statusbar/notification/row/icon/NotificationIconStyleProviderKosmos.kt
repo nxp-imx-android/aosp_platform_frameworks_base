@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row.icon
 
-import android.os.userManager
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.util.time.fakeSystemClock
@@ -26,4 +25,4 @@ val Kosmos.mockNotificationIconStyleProvider by
     Kosmos.Fixture { mock<NotificationIconStyleProvider>() }
 
 val Kosmos.notificationIconStyleProvider by
-    Kosmos.Fixture { NotificationIconStyleProviderImpl(userManager, dumpManager, fakeSystemClock) }
+    Kosmos.Fixture { NotificationIconStyleProviderImpl(dumpManager, fakeSystemClock) }
