@@ -120,6 +120,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
 
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
+    private Context mWindowContext;
     private int mCursorAreaSize;
     private final int mUserId;
     @VisibleForTesting
@@ -363,7 +364,9 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                 mWindowManager.removeView(mAutoclickIndicatorView);
                 mAutoclickTypePanel.hide();
                 mAutoclickScrollPanel.hide();
-                mContext.unregisterComponentCallbacks(this);
+                if (mWindowContext != null) {
+                    mWindowContext.unregisterComponentCallbacks(this);
+                }
 
                 mCurrentDisplayId = displayId;
                 initiateAutoclickUi(mHandler);
@@ -428,21 +431,31 @@ public class AutoclickController extends BaseEventStreamTransformation implement
     }
 
     private void initiateAutoclickUi(Handler handler) {
-        final Context context = getDisplayContext();
+        final Context displayContext = getDisplayContext();
 
         mAutoclickIndicatorScheduler = new AutoclickIndicatorScheduler(handler);
-        mAutoclickIndicatorView = new AutoclickIndicatorView(context);
         if (!mContext.getClass().getSimpleName().contains("Testable")) {
             // Production: Get WindowManager for the specific display.
-            mWindowManager = context.getSystemService(WindowManager.class);
+            mWindowManager = displayContext.getSystemService(WindowManager.class);
         } else {
             // Test: Get the mock WindowManager from the TestableContext.
             mWindowManager = mContext.getSystemService(WindowManager.class);
         }
+
+        if (Flags.enableAutoclickForConnectedDisplays()) {
+            mAutoclickIndicatorView = new AutoclickIndicatorView(
+                    displayContext.createWindowContext(
+                            WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY, null));
+            mWindowContext = displayContext.createWindowContext(
+                    WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL, null);
+        } else {
+            mAutoclickIndicatorView = new AutoclickIndicatorView(displayContext);
+            mWindowContext = displayContext;
+        }
         mAutoclickTypePanel = new AutoclickTypePanel(
-                context, mWindowManager, mUserId, clickPanelController);
+                mWindowContext, mWindowManager, mUserId, clickPanelController);
         mAutoclickScrollPanel = new AutoclickScrollPanel(
-                context, mWindowManager, mScrollPanelController);
+                mWindowContext, mWindowManager, mScrollPanelController);
 
         // Initialize continuous scroll handler and runnable.
         mContinuousScrollHandler = new Handler(handler.getLooper());
@@ -455,7 +468,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         };
 
         mAutoclickTypePanel.show();
-        mContext.registerComponentCallbacks(this);
+        mWindowContext.registerComponentCallbacks(this);
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
     }
 
@@ -491,7 +504,9 @@ public class AutoclickController extends BaseEventStreamTransformation implement
 
     @Override
     public void onDestroy() {
-        mContext.unregisterComponentCallbacks(this);
+        if (mWindowContext != null) {
+            mWindowContext.unregisterComponentCallbacks(this);
+        }
         if (mInputManagerWrapper != null) {
             mInputManagerWrapper.unregisterInputDeviceListener(mInputDeviceListener);
         }
@@ -715,7 +730,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         // When system configuration is changed, update the indicator view
         // and type panel configuration.
-        if (mAutoclickIndicatorView != null) {
+        if (mAutoclickIndicatorView != null && !Flags.enableAutoclickForConnectedDisplays()) {
             mAutoclickIndicatorView.onConfigurationChanged(newConfig);
         }
         if (mAutoclickTypePanel != null) {
