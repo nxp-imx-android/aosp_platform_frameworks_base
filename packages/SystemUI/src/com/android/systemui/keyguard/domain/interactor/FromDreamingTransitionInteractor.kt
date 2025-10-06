@@ -29,7 +29,6 @@ import com.android.systemui.communal.shared.model.CommunalTransitionKeys
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.DozeStateModel
@@ -63,7 +62,6 @@ constructor(
     powerInteractor: PowerInteractor,
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
     private val dreamManager: DreamManager,
-    private val deviceEntryInteractor: DeviceEntryInteractor,
 ) :
     TransitionInteractor(
         fromState = KeyguardState.DREAMING,
@@ -164,6 +162,12 @@ constructor(
                     }
                 }
             }
+        }
+    }
+
+    fun dismissFromDreaming() {
+        scope.launch {
+            startTransitionTo(KeyguardState.GONE, ownerReason = "Dismiss from dreaming")
         }
     }
 
