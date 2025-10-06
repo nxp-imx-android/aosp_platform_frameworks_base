@@ -24,6 +24,7 @@ import android.view.KeyEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.common.KeyGestureEventConstants
+import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
 import com.android.systemui.broadcast.broadcastDispatcher
@@ -67,7 +68,8 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
 
         underTest.enableShortcutsForTargets(enable = true, enabledTargetName)
 
-        verify(mockRepository).enableShortcutsForTargets(eq(true), eq(enabledTargetName))
+        verify(mockRepository)
+            .enableShortcutsForTargets(eq(true), eq(KEY_GESTURE), eq(enabledTargetName))
     }
 
     @Test

@@ -28,10 +28,13 @@ import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.hardware.input.Flags
-import com.android.internal.accessibility.common.ShortcutConstants
+import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
+import com.android.internal.accessibility.dialog.AccessibilityTarget
+import com.android.internal.accessibility.dialog.AccessibilityTargetHelper
 import com.android.internal.accessibility.util.FrameworkObjectProvider
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
+import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -43,7 +46,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-/** Provides data related to first-time dialog for key gesture to enable accessibility services. */
+/** Provides data for enabling and triggering accessibility feature shortcuts. */
 interface AccessibilityShortcutsRepository {
     suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
@@ -55,9 +58,43 @@ interface AccessibilityShortcutsRepository {
 
     fun createTtsPromptForText(text: CharSequence): TtsPrompt
 
-    fun enableShortcutsForTargets(enable: Boolean, targetName: String)
+    fun enableShortcutsForTargets(
+        enable: Boolean,
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    )
 
     fun enableMagnificationAndZoomIn(displayId: Int)
+
+    fun performAccessibilityShortcut(
+        displayId: Int,
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    )
+
+    /**
+     * Returns list of [AccessibilityTargetModel] of the installed accessibility service,
+     * accessibility activity, and allowlisting feature including accessibility feature's package
+     * name, component id, etc.
+     *
+     * @param shortcutType The shortcut type.
+     * @return The list of [AccessibilityTargetModel].
+     */
+    fun getAllAccessibilityTargetsInfo(
+        @UserShortcutType shortcutType: Int
+    ): List<AccessibilityTargetModel>
+
+    /**
+     * Returns list of [AccessibilityTargetModel] of assigned accessibility shortcuts from
+     * [AccessibilityTargetHelper.getTargets] including accessibility feature's package name,
+     * component id, etc.
+     *
+     * @param shortcutType The shortcut type.
+     * @return The list of [AccessibilityTargetModel].
+     */
+    fun getSelectedAccessibilityTargetsInfo(
+        @UserShortcutType shortcutType: Int
+    ): List<AccessibilityTargetModel>
 }
 
 @SysUISingleton
@@ -166,10 +203,14 @@ constructor(
     }
 
     @SuppressLint("MissingPermission") // android.permission.MANAGE_ACCESSIBILITY
-    override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
+    override fun enableShortcutsForTargets(
+        enable: Boolean,
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    ) {
         accessibilityManager.enableShortcutsForTargets(
             enable,
-            ShortcutConstants.UserShortcutType.KEY_GESTURE,
+            shortcutType,
             setOf(targetName),
             userTracker.userId,
         )
@@ -179,6 +220,42 @@ constructor(
     override fun enableMagnificationAndZoomIn(displayId: Int) {
         accessibilityManager.enableMagnificationAndZoomIn(displayId)
     }
+
+    @SuppressLint("MissingPermission") // android.permission.MANAGE_ACCESSIBILITY
+    override fun performAccessibilityShortcut(
+        displayId: Int,
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    ) {
+        accessibilityManager.performAccessibilityShortcut(displayId, shortcutType, targetName)
+    }
+
+    override fun getAllAccessibilityTargetsInfo(
+        @UserShortcutType shortcutType: Int
+    ): List<AccessibilityTargetModel> =
+        AccessibilityTargetHelper.getInstalledTargets(context, shortcutType).map {
+            it.toAccessibilityTargetModel(shortcutType)
+        }
+
+    override fun getSelectedAccessibilityTargetsInfo(
+        @UserShortcutType shortcutType: Int
+    ): List<AccessibilityTargetModel> =
+        AccessibilityTargetHelper.getTargets(context, shortcutType).map {
+            it.toAccessibilityTargetModel(shortcutType)
+        }
+
+    private fun AccessibilityTarget.toAccessibilityTargetModel(
+        @UserShortcutType shortcutType: Int
+    ): AccessibilityTargetModel =
+        AccessibilityTargetModel(
+            shortcutType,
+            targetName = id,
+            featureName = label.toString(),
+            icon = icon,
+            isAssigned = isShortcutEnabled,
+            isToggleable = isToggleable,
+            isToggleOn = if (isToggleable) isStateOn else null,
+        )
 
     private suspend fun getFeatureName(keyGestureType: Int, targetName: String): CharSequence? {
         return when (keyGestureType) {

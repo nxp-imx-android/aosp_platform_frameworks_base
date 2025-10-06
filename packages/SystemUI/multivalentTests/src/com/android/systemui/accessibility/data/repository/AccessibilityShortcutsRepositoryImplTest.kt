@@ -268,7 +268,11 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     fun enableShortcutsForTargets_targetNameForMagnification_enabled() {
         val targetName = getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION)
 
-        underTest.enableShortcutsForTargets(enable = true, targetName)
+        underTest.enableShortcutsForTargets(
+            enable = true,
+            ShortcutConstants.UserShortcutType.KEY_GESTURE,
+            targetName,
+        )
 
         verify(accessibilityManager)
             .enableShortcutsForTargets(
@@ -284,7 +288,11 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
         val targetName =
             getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK)
 
-        underTest.enableShortcutsForTargets(enable = true, targetName)
+        underTest.enableShortcutsForTargets(
+            enable = true,
+            ShortcutConstants.UserShortcutType.KEY_GESTURE,
+            targetName,
+        )
 
         verify(accessibilityManager)
             .enableShortcutsForTargets(
@@ -299,7 +307,11 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     fun enableShortcutsForTargets_targetNameForVoiceAccess_enabled() {
         val targetName = getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS)
 
-        underTest.enableShortcutsForTargets(enable = true, targetName)
+        underTest.enableShortcutsForTargets(
+            enable = true,
+            ShortcutConstants.UserShortcutType.KEY_GESTURE,
+            targetName,
+        )
 
         verify(accessibilityManager)
             .enableShortcutsForTargets(
@@ -314,7 +326,11 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     fun enableShortcutsForTargets_targetNameForTalkBack_enabled() {
         val targetName = getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER)
 
-        underTest.enableShortcutsForTargets(enable = true, targetName)
+        underTest.enableShortcutsForTargets(
+            enable = true,
+            ShortcutConstants.UserShortcutType.KEY_GESTURE,
+            targetName,
+        )
 
         verify(accessibilityManager)
             .enableShortcutsForTargets(
@@ -322,6 +338,24 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 eq(ShortcutConstants.UserShortcutType.KEY_GESTURE),
                 eq(setOf(targetName)),
                 anyInt(),
+            )
+    }
+
+    @Test
+    fun performAccessibilityShortcut_topRowKey_targetNameForTalkBack_performed() {
+        val targetName = getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER)
+
+        underTest.performAccessibilityShortcut(
+            DEFAULT_DISPLAY,
+            ShortcutConstants.UserShortcutType.TOP_ROW_KEY,
+            targetName,
+        )
+
+        verify(accessibilityManager)
+            .performAccessibilityShortcut(
+                eq(DEFAULT_DISPLAY),
+                eq(ShortcutConstants.UserShortcutType.TOP_ROW_KEY),
+                eq(targetName),
             )
     }
 

@@ -52,9 +52,12 @@ class ToggleAccessibilityServiceTarget extends AccessibilityServiceTarget {
                 AccessibilityFragmentType.TOGGLE,
                 serviceInfo);
 
-        final int statusResId = isAccessibilityServiceEnabled(getContext(), getId())
-                ? R.string.accessibility_shortcut_menu_item_status_on
-                : R.string.accessibility_shortcut_menu_item_status_off;
+        final boolean isStateOn = isAccessibilityServiceEnabled(getContext(), getId());
+        final int statusResId =
+                isStateOn
+                        ? R.string.accessibility_shortcut_menu_item_status_on
+                        : R.string.accessibility_shortcut_menu_item_status_off;
+        setIsStateOn(isStateOn);
         setStateDescription(getContext().getString(statusResId));
     }
 
@@ -71,5 +74,10 @@ class ToggleAccessibilityServiceTarget extends AccessibilityServiceTarget {
         holder.mStatusView.setText(getStateDescription());
         holder.mStatusView.setAlpha(isAllowed
                 ? StatusViewAlphaScale.OPAQUE : StatusViewAlphaScale.DISABLED);
+    }
+
+    @Override
+    public boolean isToggleable() {
+        return true;
     }
 }
