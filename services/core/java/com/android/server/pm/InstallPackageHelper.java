@@ -422,6 +422,11 @@ final class InstallPackageHelper {
         pkgSetting.getPkgState().setApexModuleName(request.getApexModuleName());
 
 
+        if (pkgAlreadyExists && oldPkgSetting.getPccId() > 0 && !parsedPackage.hasPccComponents()) {
+            mPm.mSettings.removePccIdLPw(oldPkgSetting.getPccId());
+            pkgSetting.setPccId(Process.INVALID_UID);
+        }
+
       if(android.content.pm.Flags.verifiedDexopt()){
             String packageName =pkgSetting.getPackageName();
             if (shouldVerifyCompilationArtifacts(packageName)) {
@@ -1345,7 +1350,7 @@ final class InstallPackageHelper {
                 if (isApex || (isSdkLibrary && disallowSdkLibsToBeApps())) {
                     request.getScannedPackageSetting().setAppId(Process.INVALID_UID);
                 } else {
-                    createdAppId.put(packageName, optimisticallyRegisterAppId(request));
+                    createdAppId.put(packageName, optimisticallyRegisterAppIds(request));
                 }
                 versionInfos.put(packageName,
                         mPm.getSettingsVersionForPackage(packageToScan));
@@ -1462,7 +1467,7 @@ final class InstallPackageHelper {
             for (InstallRequest installRequest : requests) {
                 if (installRequest.getParsedPackage() != null && createdAppId.getOrDefault(
                         installRequest.getParsedPackage().getPackageName(), false)) {
-                    cleanUpAppIdCreation(installRequest);
+                    cleanUpAppIdCreations(installRequest);
                 }
             }
             // TODO(b/194319951): create a more descriptive reason than unknown
@@ -4146,7 +4151,7 @@ final class InstallPackageHelper {
                                 mSharedLibraries, mPm.mSettings.getKeySetManagerService(),
                                 mPm.mSettings, mPm.mInjector.getSystemConfig());
                 if ((scanFlags & SCAN_AS_APEX) == 0) {
-                    appIdCreated = optimisticallyRegisterAppId(installRequest);
+                    appIdCreated = optimisticallyRegisterAppIds(installRequest);
                 } else {
                     installRequest.setScannedPackageSettingAppId(Process.INVALID_UID);
                 }
@@ -4154,7 +4159,7 @@ final class InstallPackageHelper {
                         mPm.mUserManager.getUserIds());
             } catch (PackageManagerException e) {
                 if (appIdCreated) {
-                    cleanUpAppIdCreation(installRequest);
+                    cleanUpAppIdCreations(installRequest);
                 }
                 throw e;
             }
@@ -4190,35 +4195,49 @@ final class InstallPackageHelper {
 
     /**
      * Prepares the system to commit a {@link ScanResult} in a way that will not fail by registering
-     * the app ID required for reconcile.
-     * @return {@code true} if a new app ID was registered and will need to be cleaned up on
+     * the app ID and potentially PCC app ID required for reconcile.
+     * @return {@code true} if any new app ID was registered and will need to be cleaned up on
      *         failure.
      */
-    private boolean optimisticallyRegisterAppId(@NonNull InstallRequest installRequest)
+    private boolean optimisticallyRegisterAppIds(@NonNull InstallRequest installRequest)
             throws PackageManagerException {
+        boolean created = false;
+        final PackageSetting ps = installRequest.getScannedPackageSetting();
         if (!installRequest.isExistingSettingCopied() || installRequest.needsNewAppId()) {
             synchronized (mPm.mLock) {
                 // THROWS: when we can't allocate a user id. add call to check if there's
                 // enough space to ensure we won't throw; otherwise, don't modify state
-                return mPm.mSettings.registerAppIdLPw(installRequest.getScannedPackageSetting(),
+                created |= mPm.mSettings.registerAppIdLPw(ps,
                         installRequest.needsNewAppId());
             }
         }
-        return false;
+        synchronized (mPm.mLock) {
+            created |= mPm.mSettings.registerPccIdLPw(ps);
+        }
+
+        return created;
     }
 
     /**
-     * Reverts any app ID creation that were made by
-     * {@link #optimisticallyRegisterAppId(InstallRequest)}. Note: this is only necessary if the
+     * Reverts any app ID creations that were made by
+     * {@link #optimisticallyRegisterAppIds(InstallRequest)}. Note: this is only necessary if the
      * referenced method returned true.
      */
-    private void cleanUpAppIdCreation(@NonNull InstallRequest installRequest) {
+    private void cleanUpAppIdCreations(@NonNull InstallRequest installRequest) {
         // iff we've acquired an app ID for a new package setting, remove it so that it can be
         // acquired by another request.
-        if (installRequest.getScannedPackageSetting() != null
-                && installRequest.getScannedPackageSetting().getAppId() > 0) {
+        PackageSetting pkgSetting = installRequest.getScannedPackageSetting();
+        if (pkgSetting != null) {
+            int appId = pkgSetting.getAppId();
+            int pccId = pkgSetting.getPccId();
+
             synchronized (mPm.mLock) {
-                mPm.mSettings.removeAppIdLPw(installRequest.getScannedPackageSetting().getAppId());
+                if (appId > 0) {
+                    mPm.mSettings.removeAppIdLPw(appId);
+                }
+                if (pccId > 0) {
+                    mPm.mSettings.removePccIdLPw(pccId);
+                }
             }
         }
     }

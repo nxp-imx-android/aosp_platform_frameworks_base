@@ -38,6 +38,7 @@ import android.content.pm.SigningInfo;
 import android.content.pm.UserInfo;
 import android.content.pm.UserPackage;
 import android.content.pm.overlay.OverlayPaths;
+import android.os.Process;
 import android.os.UserHandle;
 import android.os.incremental.IncrementalManager;
 import android.service.pm.PackageProto;
@@ -174,6 +175,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
     private String mRealName;
 
     private int mAppId;
+    private int mPccId;
 
     /**
      * It is expected that all code that uses a {@link PackageSetting} understands this inner field
@@ -305,6 +307,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         this.signatures = new PackageSignatures();
         this.installSource = InstallSource.EMPTY;
         this.mDomainSetId = domainSetId;
+        this.mPccId = Process.INVALID_UID;
         mSnapshot = makeCache();
     }
 
@@ -388,6 +391,22 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
 
     public PackageSetting setAppId(int appId) {
         this.mAppId = appId;
+        onChanged();
+        return this;
+    }
+
+    /**
+     * @return The PCC app ID of this package if it has one, {@link Process.INVALID_UID} otherwise
+     */
+    public int getPccId() {
+        return mPccId;
+    }
+
+    /**
+     * Sets the PCC app ID of this package
+     */
+    public PackageSetting setPccId(int pccId) {
+        this.mPccId = pccId;
         onChanged();
         return this;
     }
@@ -853,6 +872,7 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         mName = other.mName;
         mRealName = other.mRealName;
         mAppId = other.mAppId;
+        mPccId = other.mPccId;
         pkg = other.pkg;
         mPath = other.mPath;
         mPathString = other.mPathString;

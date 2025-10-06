@@ -47,6 +47,7 @@ import android.content.pm.ValidPurposeInfo;
 import android.content.pm.overlay.OverlayPaths;
 import android.os.Environment;
 import android.os.PatternMatcher;
+import android.os.Process;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -473,7 +474,7 @@ public class PackageInfoUtils {
 
         updateApplicationInfo(info, flags, state);
 
-        initForUser(info, pkg, userId, state);
+        initForUser(info, pkg, pkgSetting, userId, state);
 
         // TODO(b/135203078): Remove PackageParser1/toAppInfoWithoutState and clean all this up
         PackageStateUnserialized pkgState = pkgSetting.getTransientState();
@@ -1074,10 +1075,21 @@ public class PackageInfoUtils {
     }
 
     private static void initForUser(ApplicationInfo output, AndroidPackage input,
-            @UserIdInt int userId, PackageUserStateInternal state) {
+            PackageStateInternal pkgSetting, @UserIdInt int userId,
+            PackageUserStateInternal state) {
         PackageImpl pkg = ((PackageImpl) input);
         String packageName = input.getPackageName();
         output.uid = UserHandle.getUid(userId, UserHandle.getAppId(input.getUid()));
+        int pccId = pkgSetting.getPccId();
+        if (Process.isPccUid(pccId)) {
+            output.pccUid = UserHandle.getUid(userId, pccId);
+        } else {
+            // The only other expected value is INVALID_UID
+            if (pccId != Process.INVALID_UID) {
+                Slog.wtf(TAG, "Package " + packageName + " has a non-PCC uid assigned: " + pccId);
+            }
+            output.pccUid = Process.INVALID_UID;
+        }
 
         if ("android".equals(packageName)) {
             output.dataDir = SYSTEM_DATA_PATH;
