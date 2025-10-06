@@ -90,6 +90,8 @@ public class BubbleBarCaptionView extends FrameLayout {
 
     /** Sets the background color of the caption bar. */
     public void setBackgroundColor(int color) {
+        // Always enforce alpha channel to have 100% opacity.
+        color |= 0xFF000000;
         if (mBackgroundView != null && color != mBackgroundColor) {
             mBackgroundView.setBackgroundColor(color);
             mBackgroundColor = color;
