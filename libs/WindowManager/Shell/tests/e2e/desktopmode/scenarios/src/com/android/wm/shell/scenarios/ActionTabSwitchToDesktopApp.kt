@@ -17,7 +17,6 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
-import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -36,9 +35,6 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Base Test Class")
-@RequiresFlagsEnabled(
-    com.android.launcher3.Flags.FLAG_ENABLE_META_TAB_TOGGLE_IN_OVERVIEW
-)
 abstract class ActionTabSwitchToDesktopApp(
     val navigationMode: NavBar = NavBar.MODE_GESTURAL,
     val rotation: Rotation = Rotation.ROTATION_0
