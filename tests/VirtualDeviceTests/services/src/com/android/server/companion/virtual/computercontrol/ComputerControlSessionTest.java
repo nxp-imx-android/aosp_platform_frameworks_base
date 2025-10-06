@@ -33,6 +33,7 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -43,7 +44,6 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertThrows;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
@@ -430,8 +430,8 @@ public class ComputerControlSessionTest {
     @Test
     public void longPress_sendsTouchscreenEvents() throws Exception {
         when(mViewConfiguration.getLongPressTimeoutMillis()).thenReturn(
-                LONG_PRESS_STEP_COUNT *
-                        (int) (TOUCH_EVENT_DELAY_MS / LONG_PRESS_TIMEOUT_MULTIPLIER));
+                LONG_PRESS_STEP_COUNT
+                        * (int) (TOUCH_EVENT_DELAY_MS / LONG_PRESS_TIMEOUT_MULTIPLIER));
         createComputerControlSession(mDefaultParams);
 
         mSession.longPress(100, 200);
