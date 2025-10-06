@@ -111,7 +111,6 @@ import com.android.systemui.recents.Recents;
 import com.android.systemui.recordissue.RecordIssueModule;
 import com.android.systemui.retail.impl.RetailModeModule;
 import com.android.systemui.rotation.impl.RotationModule;
-import com.android.systemui.rotationlock.DeviceStateAutoRotateModule.BoundsDeviceStateAutoRotateModule;
 import com.android.systemui.scene.shared.model.SceneContainerConfig;
 import com.android.systemui.scene.shared.model.SceneDataSource;
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator;
@@ -159,7 +158,6 @@ import com.android.systemui.statusbar.phone.LetterboxModule;
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeDataLayerModule;
 import com.android.systemui.statusbar.pipeline.airplane.shared.impl.AirplaneModeSharedModule;
 import com.android.systemui.statusbar.pipeline.dagger.StatusBarPipelineModule;
-import com.android.systemui.statusbar.policy.DeviceStateRotationLockSettingController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.PolicyModule;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
@@ -423,11 +421,6 @@ public abstract class SystemUIModule {
     @BindsOptionalOf
     abstract LockscreenContent optionalLockscreenContent();
 
-    @BindsOptionalOf
-    @BoundsDeviceStateAutoRotateModule
-    abstract Optional<DeviceStateRotationLockSettingController>
-            optionalDeviceStateRotationLockSettingController();
-
     // TODO: This should provided by the WM component
 
     /** Provides Optional of BubbleManager */
@@ -499,16 +492,6 @@ public abstract class SystemUIModule {
     static SceneDataSourceDelegator providesSceneDataSourceDelegator(
             @Application CoroutineScope applicationScope, SceneContainerConfig config) {
         return new SceneDataSourceDelegator(applicationScope, config);
-    }
-
-    @Provides
-    @SysUISingleton
-    static Optional<DeviceStateRotationLockSettingController>
-            provideDeviceStateRotationLockSettingController(
-            @BoundsDeviceStateAutoRotateModule
-            Optional<Optional<DeviceStateRotationLockSettingController>> optionalOfOptional
-    ) {
-        return optionalOfOptional.orElseGet(Optional::empty);
     }
 
     @Binds
