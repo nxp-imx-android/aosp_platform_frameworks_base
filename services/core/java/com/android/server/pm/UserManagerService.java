@@ -5038,10 +5038,12 @@ public class UserManagerService extends IUserManager.Stub {
                 final String newUserType;
                 if (newHeadlessSystemUserMode) {
                     newUserType = UserManager.USER_TYPE_SYSTEM_HEADLESS;
-                    newSysFlags = oldSysFlags & ~UserInfo.FLAG_FULL & ~UserInfo.FLAG_MAIN;
+                    newSysFlags = oldSysFlags & ~UserInfo.FLAG_FULL & ~UserInfo.FLAG_MAIN
+                            & (android.multiuser.Flags.hsuNotAdmin() ? ~UserInfo.FLAG_ADMIN : ~0);
                 } else {
                     newUserType = UserManager.USER_TYPE_FULL_SYSTEM;
-                    newSysFlags = oldSysFlags | UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN;
+                    newSysFlags = oldSysFlags | UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN
+                            | (android.multiuser.Flags.hsuNotAdmin() ? UserInfo.FLAG_ADMIN : 0);
                 }
 
                 if (systemUserData.info.userType.equals(newUserType)) {
