@@ -24,7 +24,6 @@ import android.content.pm.PackageManager
 import android.content.pm.UserInfo
 import android.location.flags.Flags
 import android.os.UserHandle
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -720,8 +719,8 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_LOCATION_INDICATOR_DEFAULT_BACKGROUND)
-    fun testLocationOp_defaultForeground() {
+    @EnableFlags(Flags.FLAG_LOCATION_INDICATOR_GET_UID_IMPORTANCE_FALLBACK)
+    fun testLocationOp_getUidImportance_foreground() {
         setMapsToNonSystem()
 
         // Make the test uid not found
@@ -729,6 +728,10 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         process.uid = TEST_UID + 1
         process.importance = IMPORTANCE_CACHED
         doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
+
+        doReturn(IMPORTANCE_FOREGROUND_SERVICE)
+            .`when`(activityManager)
+            .getUidImportance(eq(TEST_UID))
 
         doReturn(
                 listOf(
@@ -781,8 +784,8 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LOCATION_INDICATOR_DEFAULT_BACKGROUND)
-    fun testLocationOp_defaultBackground() {
+    @EnableFlags(Flags.FLAG_LOCATION_INDICATOR_GET_UID_IMPORTANCE_FALLBACK)
+    fun testLocationOp_getUidImportance_background() {
         setMapsToNonSystem()
 
         // Make the test uid not found
@@ -790,6 +793,8 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         process.uid = TEST_UID + 1
         process.importance = IMPORTANCE_CACHED
         doReturn(listOf(process)).`when`(activityManager).runningAppProcesses
+
+        doReturn(IMPORTANCE_CACHED).`when`(activityManager).getUidImportance(eq(TEST_UID))
 
         doReturn(
                 listOf(

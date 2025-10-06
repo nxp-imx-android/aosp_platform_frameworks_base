@@ -112,9 +112,9 @@ flag {
 }
 
 flag {
-    name: "location_indicator_default_background"
+    name: "location_indicator_get_uid_importance_fallback"
     namespace: "location"
-    description: "Flag for treating the not-found process as background"
+    description: "Flag for using getUidImportance when a uid is not found"
     bug: "444299019"
     metadata {
         purpose: PURPOSE_BUGFIX
