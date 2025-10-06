@@ -61,7 +61,7 @@ class BottomHalfEnterPipOnUserLeaveHintTest(flicker: FlickerTest) :
     BottomHalfEnterPipTransition(flicker)
 {
     override val thisTransition: FlickerBuilder.() -> Unit = { transitions {
-        tapl.goHome()
+        device.pressHome()
         pipApp.waitForPip(wmHelper)
     } }
 

@@ -53,12 +53,12 @@ class QuickSwitchLauncherToLetterboxAppTest(flicker: FlickerTest) : BaseAppCompa
     /** {@inheritDoc} */
     override val transition: FlickerBuilder.() -> Unit = {
         setup {
-            tapl.setExpectedRotationCheckEnabled(false)
+            tapl.expectedRotationCheckEnabled = false
 
             tapl.setExpectedRotation(flicker.scenario.startRotation.value)
 
             letterboxApp.launchViaIntent(wmHelper)
-            tapl.goHome()
+            device.pressHome()
             wmHelper
                 .StateSyncBuilder()
                 .withHomeActivityVisible()
