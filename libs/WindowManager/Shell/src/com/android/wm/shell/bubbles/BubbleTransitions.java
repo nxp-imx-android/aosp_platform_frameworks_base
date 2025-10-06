@@ -2198,6 +2198,10 @@ public class BubbleTransitions {
                 return false;
             }
             BubbleLog.d("FloatingToBarConversion.startAnimation()");
+
+            // startTransaction must be applied by the handler.
+            startTransaction.apply();
+
             final TaskViewTaskController taskViewTaskController =
                     mBubble.getTaskView().getController();
             if (taskViewTaskController == null) {
