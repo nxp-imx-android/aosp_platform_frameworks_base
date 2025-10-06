@@ -46,7 +46,6 @@ constructor(
     displayRepository: DisplayRepository,
     private val factory: PrivacyDotViewControllerImpl.Factory,
     private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
-    private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) :
     PrivacyDotViewControllerStore,
@@ -57,12 +56,10 @@ constructor(
 
     override fun createInstanceForDisplay(displayId: Int): PrivacyDotViewController? {
         val displaySubcomponent = perDisplaySubcomponentRepo[displayId] ?: return null
-        val configurationController =
-            statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
         val displayScope = displayScopeRepository[displayId] ?: return null
         return factory.create(
             displayScope,
-            configurationController,
+            displaySubcomponent.statusBarConfigurationController,
             displaySubcomponent.statusBarContentInsetsProvider,
             displayId,
         )

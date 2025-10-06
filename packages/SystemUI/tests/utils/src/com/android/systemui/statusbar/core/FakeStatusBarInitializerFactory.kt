@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.core
 
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
@@ -28,7 +27,6 @@ class FakeStatusBarInitializerFactory : StatusBarInitializer.Factory {
     override fun create(
         statusBarWindowController: StatusBarWindowController,
         statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-        statusBarConfigurationController: StatusBarConfigurationController,
         collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
         statusBarRootFactory: StatusBarRootFactory,
         componentFactory: HomeStatusBarComponent.Factory,

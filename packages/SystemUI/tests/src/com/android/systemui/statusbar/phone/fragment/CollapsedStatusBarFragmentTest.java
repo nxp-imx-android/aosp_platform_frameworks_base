@@ -61,8 +61,6 @@ import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.OperatorNameViewController;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore;
 import com.android.systemui.statusbar.disableflags.DisableFlagsLogger;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder;
@@ -143,8 +141,6 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
     private KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     @Mock private StatusBarWindowController mStatusBarWindowController;
-    @Mock private StatusBarConfigurationControllerStore mStatusBarConfigurationControllerStore;
-    @Mock private StatusBarConfigurationController mStatusBarConfigurationController;
     @Mock private DarkIconDispatcher mDarkIconDispatcher;
     @Rule
     public final AnimatorTestRule mAnimatorTestRule = new AnimatorTestRule(this);
@@ -159,8 +155,6 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
     public void setup() {
         when(mStatusBarWindowControllerStore.forDisplay(anyInt()))
                 .thenReturn(mStatusBarWindowController);
-        when(mStatusBarConfigurationControllerStore.forDisplay(anyInt()))
-                .thenReturn(mStatusBarConfigurationController);
         injectLeakCheckedDependencies(ALL_SUPPORTED_CLASSES);
         mDependency.injectMockDependency(DarkIconDispatcher.class);
 
@@ -1080,12 +1074,11 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
                 mStatusBarWindowStateController,
                 mKeyguardUpdateMonitor,
                 mock(DemoModeController.class),
-                mStatusBarWindowControllerStore,
-                mStatusBarConfigurationControllerStore);
+                mStatusBarWindowControllerStore);
     }
 
     private void setUpDaggerComponent() {
-        when(mStatusBarFragmentComponentFactory.create(any(), any(), any()))
+        when(mStatusBarFragmentComponentFactory.create(any(), any()))
                 .thenReturn(mHomeStatusBarComponent);
         when(mHomeStatusBarComponent.getHeadsUpAppearanceController())
                 .thenReturn(mHeadsUpAppearanceController);

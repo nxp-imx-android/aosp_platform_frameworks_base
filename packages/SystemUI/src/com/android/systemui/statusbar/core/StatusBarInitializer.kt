@@ -23,7 +23,6 @@ import com.android.systemui.fragments.FragmentHostManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewUpdatedListener
 import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions
 import com.android.systemui.statusbar.phone.PhoneStatusBarView
@@ -81,7 +80,6 @@ interface StatusBarInitializer : CoreStartable {
         fun create(
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-            statusBarConfigurationController: StatusBarConfigurationController,
             collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
             statusBarRootFactory: StatusBarRootFactory,
             componentFactory: HomeStatusBarComponent.Factory,
@@ -94,7 +92,6 @@ class StatusBarInitializerImpl
 constructor(
     @Assisted private val statusBarWindowController: StatusBarWindowController,
     @Assisted private val statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-    @Assisted private val statusBarConfigurationController: StatusBarConfigurationController,
     @Assisted private val collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
     @Assisted private val statusBarRootFactory: StatusBarRootFactory,
     @Assisted private val componentFactory: HomeStatusBarComponent.Factory,
@@ -142,30 +139,23 @@ constructor(
                 ->
                 val phoneStatusBarView = cv.findViewById<PhoneStatusBarView>(R.id.status_bar)
                 component =
-                    componentFactory
-                        .create(
-                            phoneStatusBarView,
-                            statusBarConfigurationController,
-                            statusBarWindowController,
+                    componentFactory.create(phoneStatusBarView, statusBarWindowController).also {
+                        component ->
+                        // CollapsedStatusBarFragment used to be responsible initializing
+                        component.init()
+
+                        statusBarViewUpdatedListener?.onStatusBarViewUpdated(
+                            component.phoneStatusBarViewController,
+                            component.phoneStatusBarTransitions,
                         )
-                        .also { component ->
-                            // CollapsedStatusBarFragment used to be responsible initializing
-                            component.init()
 
-                            statusBarViewUpdatedListener?.onStatusBarViewUpdated(
-                                component.phoneStatusBarViewController,
-                                component.phoneStatusBarTransitions,
-                            )
-
-                            if (StatusBarConnectedDisplays.isEnabled) {
-                                statusBarModePerDisplayRepository.onStatusBarViewInitialized(
-                                    component
-                                )
-                            }
-                            lifecycleListeners.forEach { listener ->
-                                listener.onStatusBarViewInitialized(component)
-                            }
+                        if (StatusBarConnectedDisplays.isEnabled) {
+                            statusBarModePerDisplayRepository.onStatusBarViewInitialized(component)
                         }
+                        lifecycleListeners.forEach { listener ->
+                            listener.onStatusBarViewInitialized(component)
+                        }
+                    }
             }
 
         // Add the new compose view to the hierarchy because we don't use fragment transactions
@@ -221,7 +211,6 @@ constructor(
         override fun create(
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-            statusBarConfigurationController: StatusBarConfigurationController,
             collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
             statusBarRootFactory: StatusBarRootFactory,
             componentFactory: HomeStatusBarComponent.Factory,

@@ -169,7 +169,6 @@ import com.android.systemui.statusbar.StatusBarStateControllerImpl;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarInitializerImpl;
 import com.android.systemui.statusbar.data.repository.FakeStatusBarModeRepository;
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
@@ -544,7 +543,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 new StatusBarInitializerImpl(
                         mStatusBarWindowController,
                         mStatusBarModePerDisplayRepository,
-                        mock(StatusBarConfigurationController.class),
                         mCollapsedStatusBarFragmentProvider,
                         mock(StatusBarRootFactory.class),
                         mock(HomeStatusBarComponent.Factory.class),
