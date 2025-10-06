@@ -35,7 +35,19 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Represents a type safe identifier for a policy. Use it as a key for
- * {@link DevicePolicyManager.setPolicy setPolicy} and related APIs.
+ * {@link DevicePolicyManager#setPolicy setPolicy} and related APIs.
+ * <p>
+ * Policies should be structured as:
+ * <pre>
+ * {@code
+ *  {@literal @}TypePolicyDefinition
+ *  private static final PolicyIdentifier<Type> POLICY_NAME =
+ *      new PolicyIdentifier<>("POLICY_NAME");
+ * }
+ * </pre>
+ * <p>
+ * Currently policy definitions are restricted to fields of {@link PolicyIdentifier}. This
+ * restriction might be lifted in the future.
  *
  * @param <T> Represents the type of the value that is associated with this identifier.
  */
