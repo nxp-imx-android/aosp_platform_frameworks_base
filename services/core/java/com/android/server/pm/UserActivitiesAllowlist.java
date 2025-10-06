@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  *
  * <p>This class is thread safe.
  */
-final class UserActivitiesAllowlist {
+public final class UserActivitiesAllowlist {
 
     private static final String TAG = UserActivitiesAllowlist.class.getSimpleName();
 
@@ -120,7 +120,7 @@ final class UserActivitiesAllowlist {
     }
 
     /** Sets the temporary allowlist (or resets it when passed with {@code null}. */
-    public void setTemporaryAllowlist(@Nullable Collection<ComponentName> componentNames) {
+    void setTemporaryAllowlist(@Nullable Collection<ComponentName> componentNames) {
         if (DEBUG) {
             Slogf.d(TAG, "setTemporaryAllowList(%s)", componentNames);
         }

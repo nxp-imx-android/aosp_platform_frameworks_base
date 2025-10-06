@@ -5174,18 +5174,6 @@ public class UserManagerService extends IUserManager.Stub {
         allowlist.setTemporaryAllowlist(componentNames);
     }
 
-    boolean isActivityAllowlisted(@NonNull String userType, @NonNull ComponentName activity) {
-        final UserActivitiesAllowlist allowlist = getActivitiesAllowlist(userType);
-        if (allowlist == null) {
-            if (DBG) {
-                Slogf.d(LOG_TAG, "Allowing %s because allowlist for %s is not set",
-                        ComponentName.flattenToShortString(activity), userType);
-            }
-            return true;
-        }
-        return allowlist.isAllowed(activity);
-    }
-
     @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@NonNull String userType) {
         return mUserActivitiesAllowlist == null ? null : mUserActivitiesAllowlist.get(userType);
     }
@@ -9272,9 +9260,8 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public boolean isActivityAllowlistedForHsu(ComponentName activity) {
-            return UserManagerService.this
-                    .isActivityAllowlisted(UserManager.USER_TYPE_SYSTEM_HEADLESS, activity);
+        public UserActivitiesAllowlist getActivitiesAllowlist(String userType) {
+            return UserManagerService.this.getActivitiesAllowlist(userType);
         }
 
         @Override

@@ -1203,16 +1203,18 @@ class ActivityStarter {
             // This check is done as late as possible because it affects a very small number of the
             // occurrences (as few devices are HSUM, and most of them don't even allow switching to
             // the system user, so we want to minimize its impact.
+            var userType = UserManager.USER_TYPE_SYSTEM_HEADLESS;
             var compName = intent.getComponent();
             if (compName != null) {
                 var umi = mService.getUserManagerInternal();
-                if (!umi.isActivityAllowlistedForHsu(compName)) {
-                    Slogf.w(TAG, "Activity %s not allowed on headless system user",
-                            compName.flattenToShortString());
+                var allowlist = umi.getActivitiesAllowlist(userType);
+                if (allowlist != null && !allowlist.isAllowed(compName)) {
+                    Slogf.w(TAG, "Activity %s is not allowed for user type %s",
+                            compName.flattenToShortString(), userType);
                     // TODO(b/414326600): consolidate with the logLaunchedHsuActivity() on
                     // handleResult (once the final API for logging is defined)
                     umi.logBlockedHsuActivity(compName);
-                    err = ActivityManager.START_NOT_ALLOWED_FOR_HEADLESS_SYSTEM_USER;
+                    err = ActivityManager.START_NOT_ALLOWED_FOR_USER;
                 }
             } else {
                 // Should not be happen, but better be safe than sorry....
@@ -1930,7 +1932,7 @@ class ActivityStarter {
         if (android.multiuser.Flags.hsuAllowlistActivities()
                 && isStarted && mIsHeadlessSystemUserMode
                 &&  started.mUserId == UserHandle.USER_SYSTEM) {
-            // TODO(b/412177078): for now we're just logging activities launched on HSU, but once
+            // TODO(b/414326600): for now we're just logging activities launched on HSU, but once
             // the allowlist mechanism is in place, we'll need to change this call to log a
             // successful launch, but also log when it's blocked earlier on (probably before the
             // check for voice session on executeRequest(), as voice interaction is not supported

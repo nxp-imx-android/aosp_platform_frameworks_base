@@ -946,9 +946,9 @@ final class ActivityManagerShellCommand extends ShellCommand {
                             "Error: Not allowed to start background user activity"
                                     + " that shouldn't be displayed for all users.");
                     return 1;
-                case ActivityManager.START_NOT_ALLOWED_FOR_HEADLESS_SYSTEM_USER:
+                case ActivityManager.START_NOT_ALLOWED_FOR_USER:
                     out.println(
-                            "Error: Activity not started, not allowed for headless system user.");
+                            "Error: Activity not started, not allowed for the given user.");
                     return 1;
                 default:
                     out.println(
