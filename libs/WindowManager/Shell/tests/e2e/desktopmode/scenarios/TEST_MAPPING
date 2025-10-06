@@ -511,7 +511,7 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppScreenRecordingFromNotificationTest",
+      "name": "FunctionalTestsDesktopMode-mediaprojection-StartScreenRecordingAppSelectorFromQSTest",
       "keywords": [
         "device",
         "desktop"
