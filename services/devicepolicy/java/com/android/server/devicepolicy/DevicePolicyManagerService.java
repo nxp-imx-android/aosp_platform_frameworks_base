@@ -8347,7 +8347,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      *                     factory reset
      */
     private void wipeDataNoLock(@Nullable ComponentName admin, int flags, String internalReason,
-            String wipeReasonForUser, int userId, @Nullable Boolean factoryReset) {
+            String wipeReasonForUser, @UserIdInt int userId, @Nullable Boolean factoryReset) {
+        Slogf.i(LOG_TAG, "wipeDataNoLock(): admin=%s, flags=%d, internalReason=%s, "
+                + "wipeReasonForUser=%s, userId=%d, factoryReset=%s, Flags.deviceOwnerForAll()=%b",
+                admin, flags, internalReason, wipeReasonForUser, userId, factoryReset,
+                Flags.deviceOwnerForAll());
         wtfIfInLock();
         final String adminPackage;
         if (admin != null) {
@@ -8361,11 +8365,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
         mInjector.binderWithCleanCallingIdentity(() -> {
             // First check whether the admin is allowed to wipe the device/user/profile.
-            final String restriction;
-            boolean shouldFactoryReset = userId == UserHandle.USER_SYSTEM;
-            if (getHeadlessDeviceOwnerModeForDeviceOwner()
-                    == HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER) {
-                shouldFactoryReset = userId == getMainUserId();
+            String restriction;
+            boolean shouldFactoryReset;
+            boolean isSingleUserDoMode = getHeadlessDeviceOwnerModeForDeviceOwner()
+                    == HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER;
+            if (isSingleUserDoMode) {
+                shouldFactoryReset = Flags.deviceOwnerForAll()
+                        ? userId == getDeviceOwnerUserIdUnchecked()
+                        : userId == getMainUserId();
+            } else {
+                shouldFactoryReset = userId == UserHandle.USER_SYSTEM;
             }
             if (shouldFactoryReset) {
                 restriction = UserManager.DISALLOW_FACTORY_RESET;
@@ -8374,20 +8383,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             } else {
                 restriction = UserManager.DISALLOW_REMOVE_USER;
             }
+            Slogf.d(LOG_TAG, "wipeDataNoLock(): isSingleUserDoMode=%b, shouldFactoryReset=%b, "
+                    + "restriction=%s", isSingleUserDoMode, shouldFactoryReset, restriction);
             if (isAdminAffectedByRestriction(admin, restriction, userId)) {
                 throw new SecurityException("Cannot wipe data. " + restriction
                         + " restriction is set for user " + userId);
             }
 
             boolean isSystemUser = userId == UserHandle.USER_SYSTEM;
-            boolean isMainUser = userId == getMainUserId();
             boolean wipeDevice;
             if (factoryReset == null || !mInjector.isChangeEnabled(EXPLICIT_WIPE_BEHAVIOUR,
-                    adminPackage,
-                    userId)) {
+                    adminPackage, userId)) {
                 // Legacy mode
-                wipeDevice = getHeadlessDeviceOwnerModeForDeviceOwner()
-                        == HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER ? isMainUser : isSystemUser;
+                wipeDevice = shouldFactoryReset;
             } else {
                 // Explicit behaviour
                 if (factoryReset) {
@@ -8395,6 +8403,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 } else {
                     Preconditions.checkState(!isSystemUser,
                             "User %s is a system user and cannot be removed", userId);
+                    // TODO(b/419086491): refactor to use getUsers(filter);
                     boolean isLastNonHeadlessUser = getUserInfo(userId).isFull()
                             && mUserManager.getAliveUsers().stream()
                             .filter((it) -> it.getUserHandle().getIdentifier() != userId)
