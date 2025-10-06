@@ -534,6 +534,35 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(pendingTransition.mClaimed).isNull();
     }
 
+    @Test
+    public void transitionWithNoTaskViewChanges_shouldNotBeHandled() {
+        // Create an open transition for a task that is not in a taskView
+        IBinder transition = new Binder();
+        TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, /* flags= */ 0);
+        ActivityManager.RunningTaskInfo otherTask = createMockTaskInfo(8, new MockToken().token());
+        SurfaceControl taskLeash = new SurfaceControl.Builder().setName("otherLeash").build();
+        TransitionInfo.Change chg = new TransitionInfo.Change(otherTask.token, taskLeash);
+        chg.setTaskInfo(otherTask);
+        chg.setMode(TRANSIT_OPEN);
+        info.addChange(chg);
+        SurfaceControl rootLeash = new SurfaceControl.Builder().setName("rootLeash").build();
+        info.addRoot(new TransitionInfo.Root(0, rootLeash, 0, 0));
+
+        Boolean[] finishCalled = {false};
+        Transitions.TransitionFinishCallback finishCallback = wct -> {
+            finishCalled[0] = true;
+        };
+
+        // Check that TaskViewTransitions does not try to animate it
+        boolean handled = mTaskViewTransitions.startAnimation(transition, info,
+                new SurfaceControl.Transaction(),
+                new SurfaceControl.Transaction(),
+                finishCallback);
+
+        assertThat(handled).isFalse();
+        assertThat(finishCalled[0]).isFalse();
+    }
+
     private ActivityManager.RunningTaskInfo createMockTaskInfo(int taskId,
             WindowContainerToken token) {
         ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
