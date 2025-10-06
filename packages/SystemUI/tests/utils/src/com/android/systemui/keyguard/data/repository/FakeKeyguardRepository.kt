@@ -89,7 +89,7 @@ class FakeKeyguardRepository @Inject constructor() : KeyguardRepository {
     override val statusBarState: StateFlow<StatusBarState> = _statusBarState
 
     private val _dozeTransitionModel = MutableStateFlow(DozeTransitionModel())
-    override val dozeTransitionModel: Flow<DozeTransitionModel> = _dozeTransitionModel
+    override val dozeTransitionModel: StateFlow<DozeTransitionModel> = _dozeTransitionModel
 
     private val _isUdfpsSupported = MutableStateFlow(false)
 
