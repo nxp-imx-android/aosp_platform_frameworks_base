@@ -17,7 +17,6 @@
 package com.android.server.am;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
-import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE;
 
 import static com.android.internal.util.Preconditions.checkArgument;
@@ -1731,15 +1730,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             return;
         }
         synchronized (mService) {
-            if (mService.mProcessStateController.setRunningRemoteAnimation(this,
-                    runningRemoteAnimation)) {
-                if (Flags.autoTriggerOomadjUpdates()) {
-                    // Do nothing.
-                    // ProcessStateController handled the update in setRunningRemoteAnimation.
-                } else {
-                    mService.mProcessStateController.runUpdate(this, OOM_ADJ_REASON_UI_VISIBILITY);
-                }
-            }
+            mService.mProcessStateController.setRunningRemoteAnimation(this,
+                    runningRemoteAnimation);
         }
     }
 

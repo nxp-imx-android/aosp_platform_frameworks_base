@@ -553,12 +553,6 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         mProcessStateController.setRunningRemoteAnimation(app, true);
 
-        if (Flags.autoTriggerOomadjUpdates()) {
-            // Do not manually run the update.
-        } else {
-            updateOomAdj(app);
-        }
-
         assertProcStates(app, PROCESS_STATE_TOP_SLEEPING, VISIBLE_APP_ADJ, SCHED_GROUP_TOP_APP);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
     }

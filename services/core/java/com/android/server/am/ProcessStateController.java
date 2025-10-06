@@ -555,19 +555,15 @@ public class ProcessStateController {
      * @return true if the state changed, otherwise returns false.
      */
     @GuardedBy("mLock")
-    public boolean setRunningRemoteAnimation(@NonNull ProcessRecord proc,
+    public void setRunningRemoteAnimation(@NonNull ProcessRecord proc,
             boolean runningRemoteAnimation) {
-        if (proc.isRunningRemoteAnimation() == runningRemoteAnimation) return false;
+        if (proc.isRunningRemoteAnimation() == runningRemoteAnimation) return;
         if (DEBUG_OOM_ADJ) {
             Slog.i(TAG, "Setting runningRemoteAnimation=" + runningRemoteAnimation
                     + " for pid=" + proc.getPid());
         }
         proc.setIsRunningRemoteAnimation(runningRemoteAnimation);
-
-        if (Flags.autoTriggerOomadjUpdates()) {
-            runUpdate(proc, OOM_ADJ_REASON_UI_VISIBILITY);
-        }
-        return true;
+        runUpdate(proc, OOM_ADJ_REASON_UI_VISIBILITY);
     }
 
     /**
