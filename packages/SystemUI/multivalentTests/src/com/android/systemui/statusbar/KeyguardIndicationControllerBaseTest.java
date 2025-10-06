@@ -253,7 +253,8 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
         when(mDeviceEntryFingerprintAuthInteractor.isEngaged()).thenReturn(mock(StateFlow.class));
         StateFlow mockLogoutEnabledFlow = mock(StateFlow.class);
         when(mockLogoutEnabledFlow.getValue()).thenReturn(false);
-        when(mUserLogoutInteractor.isLogoutEnabled()).thenReturn(mockLogoutEnabledFlow);
+        when(mUserLogoutInteractor.isPolicyManagerLogoutEnabled())
+                .thenReturn(mockLogoutEnabledFlow);
 
         mIndicationHelper = new IndicationHelper(mKeyguardUpdateMonitor);
 
