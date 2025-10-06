@@ -16,11 +16,17 @@
 
 package com.android.systemui.qs.panels.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.qs.FakeQSTile
 import com.android.systemui.qs.pipeline.data.repository.tileSpecRepository
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
@@ -30,10 +36,6 @@ import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -41,93 +43,88 @@ import org.junit.runner.RunWith
 @SmallTest
 @EnableSceneContainer
 class DetailsViewModelTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
-    private lateinit var underTest: DetailsViewModel
+
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val spec = TileSpec.create("internet")
     private val specNoDetails = TileSpec.create("NoDetailsTile")
 
-    @Before
-    fun setUp() {
-        underTest = kosmos.detailsViewModel
-    }
+    private val Kosmos.underTest: DetailsViewModel by Kosmos.Fixture { detailsViewModel }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun changeTileDetailsViewModelWithDualShadeEnabled() =
-        with(kosmos) {
-            testScope.runTest {
-                kosmos.enableDualShade()
-                val specs = listOf(spec, specNoDetails)
-                tileSpecRepository.setTiles(0, specs)
-                runCurrent()
+        kosmos.runTest {
+            enableDualShade()
+            val specs = listOf(spec, specNoDetails)
+            tileSpecRepository.setTiles(userId = 0, specs)
 
-                val tiles = currentTilesInteractor.currentTiles.value
+            val tiles by collectLastValue(currentTilesInteractor.currentTiles)
 
-                assertThat(currentTilesInteractor.currentTilesSpecs.size).isEqualTo(2)
-                assertThat(tiles[1].spec).isEqualTo(specNoDetails)
-                (tiles[1].tile as FakeQSTile).hasDetailsViewModel = false
+            assertThat(currentTilesInteractor.currentTilesSpecs).hasSize(2)
 
-                assertThat(underTest.activeTileDetails).isNull()
+            val secondTile = checkNotNull(tiles)[1]
+            assertThat(secondTile.spec).isEqualTo(specNoDetails)
+            (secondTile.tile as FakeQSTile).hasDetailsViewModel = false
 
-                // Click on the tile who has the `spec`.
-                assertThat(underTest.onTileClicked(spec)).isTrue()
-                assertThat(underTest.activeTileDetails).isNotNull()
-                assertThat(underTest.activeTileDetails?.title).isEqualTo("internet")
+            assertThat(underTest.activeTileDetails).isNull()
 
-                // Click on a tile who dose not have a valid spec.
-                assertThat(underTest.onTileClicked(null)).isFalse()
-                assertThat(underTest.activeTileDetails).isNull()
+            // Click on the tile that has the `spec`.
+            assertThat(underTest.onTileClicked(spec)).isTrue()
+            assertThat(underTest.activeTileDetails).isNotNull()
+            assertThat(underTest.activeTileDetails?.title).isEqualTo("internet")
 
-                // Click again on the tile who has the `spec`.
-                assertThat(underTest.onTileClicked(spec)).isTrue()
-                assertThat(underTest.activeTileDetails).isNotNull()
-                assertThat(underTest.activeTileDetails?.title).isEqualTo("internet")
+            // Click on a tile that doesn't have a valid spec.
+            assertThat(underTest.onTileClicked(null)).isFalse()
+            assertThat(underTest.activeTileDetails).isNull()
 
-                // Click on a tile who dose not have a detailed view.
-                assertThat(underTest.onTileClicked(specNoDetails)).isFalse()
-                assertThat(underTest.activeTileDetails).isNull()
+            // Click again on the tile that has the `spec`.
+            assertThat(underTest.onTileClicked(spec)).isTrue()
+            assertThat(underTest.activeTileDetails).isNotNull()
+            assertThat(underTest.activeTileDetails?.title).isEqualTo("internet")
 
-                // Click on the volume settings button.
-                underTest.onVolumeSettingsButtonClicked(audioDetailsViewModelFactory.create())
-                assertThat(underTest.activeTileDetails).isNotNull()
-                assertThat(underTest.activeTileDetails?.title).isEqualTo("Volume")
+            // Click on a tile that doesn't have a detailed view.
+            assertThat(underTest.onTileClicked(specNoDetails)).isFalse()
+            assertThat(underTest.activeTileDetails).isNull()
 
-                underTest.closeDetailedView()
-                assertThat(underTest.activeTileDetails).isNull()
+            // Click on the volume settings button.
+            underTest.onVolumeSettingsButtonClicked(audioDetailsViewModelFactory.create())
+            assertThat(underTest.activeTileDetails).isNotNull()
+            assertThat(underTest.activeTileDetails?.title).isEqualTo("Volume")
 
-                assertThat(underTest.onTileClicked(null)).isFalse()
-            }
+            underTest.closeDetailedView()
+            assertThat(underTest.activeTileDetails).isNull()
+
+            assertThat(underTest.onTileClicked(null)).isFalse()
         }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun ignoreChangingTileDetailsViewModelWithDualShadeDisabled() =
-        with(kosmos) {
-            testScope.runTest {
-                kosmos.disableDualShade()
-                val specs = listOf(spec, specNoDetails)
-                tileSpecRepository.setTiles(0, specs)
-                runCurrent()
+        kosmos.runTest {
+            disableDualShade()
+            val specs = listOf(spec, specNoDetails)
+            tileSpecRepository.setTiles(userId = 0, specs)
 
-                val tiles = currentTilesInteractor.currentTiles.value
+            val tiles by collectLastValue(currentTilesInteractor.currentTiles)
 
-                assertThat(currentTilesInteractor.currentTilesSpecs.size).isEqualTo(2)
-                assertThat(tiles[1].spec).isEqualTo(specNoDetails)
-                (tiles[1].tile as FakeQSTile).hasDetailsViewModel = false
+            assertThat(currentTilesInteractor.currentTilesSpecs).hasSize(2)
 
-                assertThat(underTest.activeTileDetails).isNull()
+            val secondTile = checkNotNull(tiles)[1]
+            assertThat(secondTile.spec).isEqualTo(specNoDetails)
+            (secondTile.tile as FakeQSTile).hasDetailsViewModel = false
 
-                // Click on the tile who has the `spec`.
-                assertThat(underTest.onTileClicked(spec)).isFalse()
-                assertThat(underTest.activeTileDetails).isNull()
+            assertThat(underTest.activeTileDetails).isNull()
 
-                // Click on a tile who dose not have a valid spec.
-                assertThat(underTest.onTileClicked(null)).isFalse()
-                assertThat(underTest.activeTileDetails).isNull()
+            // Click on the tile that has the `spec`.
+            assertThat(underTest.onTileClicked(spec)).isFalse()
+            assertThat(underTest.activeTileDetails).isNull()
 
-                // Click on a tile who dose not have a detailed view.
-                assertThat(underTest.onTileClicked(specNoDetails)).isFalse()
-                assertThat(underTest.activeTileDetails).isNull()
-            }
+            // Click on a tile that doesn't have a valid spec.
+            assertThat(underTest.onTileClicked(null)).isFalse()
+            assertThat(underTest.activeTileDetails).isNull()
+
+            // Click on a tile that doesn't have a detailed view.
+            assertThat(underTest.onTileClicked(specNoDetails)).isFalse()
+            assertThat(underTest.activeTileDetails).isNull()
         }
 }

@@ -145,6 +145,7 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_DUAL_SHADE)
     fun showTooltip_onDualShade_waitsForNotificationShadeTooltip() =
         kosmos.runTest {
             enableDualShade()
