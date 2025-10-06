@@ -242,10 +242,6 @@ object Flags {
     val USER_TRACKER_BACKGROUND_CALLBACKS = unreleasedFlag("user_tracker_background_callbacks")
 
     // 2700 - unfold transitions
-    // TODO(b/265764985): Tracking Bug
-    @Keep
-    @JvmField
-    val ENABLE_DARK_VIGNETTE_WHEN_FOLDING = unreleasedFlag("enable_dark_vignette_when_folding")
 
     // TODO(b/316157842): Tracking Bug
     // Adds extra delay to notifications measure
