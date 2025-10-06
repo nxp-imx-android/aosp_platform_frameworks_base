@@ -67,7 +67,6 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
-import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.icon.domain.interactor.StatusBarNotificationIconsInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
@@ -268,7 +267,6 @@ constructor(
     notificationsInteractor: ActiveNotificationsInteractor,
     desktopInteractor: DesktopInteractor,
     darkIconInteractor: DarkIconInteractor,
-    headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     keyguardInteractor: KeyguardInteractor,
     statusBarNotificationIconsInteractor: StatusBarNotificationIconsInteractor,
@@ -520,13 +518,11 @@ constructor(
         combine(
                 isHomeStatusBarAllowed,
                 keyguardInteractor.isSecureCameraActive,
-                headsUpNotificationInteractor.statusBarHeadsUpStatus,
                 isTransitioningFromGoneToDream,
                 keyguardInteractor.isKeyguardVisible,
             ) {
                 isHomeStatusBarAllowed,
                 isSecureCameraActive,
-                headsUpState,
                 isGoneToDream,
                 isKeyguardVisible ->
                 // When launching the camera over the lockscreen, the status icons would typically
