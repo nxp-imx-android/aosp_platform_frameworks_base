@@ -2994,15 +2994,23 @@ public final class SystemServer implements Dumpable {
 
         // Anomaly Detector
         if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+            // Both AnomalyDetectorService and SignalCollectorService are build flagged
+            // behind RELEASE_ANOMALY_DETECTOR, beside being behind the above flag.
+            // Avoid crashing the system if the aconfig flag is enabled but the build flag is
+            // disabled (the services classes are not present in that case).
             t.traceBegin("StartAnomalyDetectorService");
-            mSystemServiceManager.startService(ANOMALY_DETECTOR_SERVICE_CLASS);
+            try {
+                mSystemServiceManager.startService(ANOMALY_DETECTOR_SERVICE_CLASS);
+            } catch (Throwable e) {
+                Slog.e(TAG, "Failed to start AnomalyDetectorService", e);
+            }
             t.traceEnd();
 
             t.traceBegin("StartSignalCollectorService");
             try {
                 mSystemServiceManager.startService(SIGNAL_COLLECTOR_SERVICE_CLASS);
             } catch (Throwable e) {
-                reportWtf("starting SignalCollectorService", e);
+                Slog.e(TAG, "Failed to start SignalCollectorService", e);
             }
             t.traceEnd();
         }
