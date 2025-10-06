@@ -18,6 +18,7 @@ package com.android.server.companion.virtual.computercontrol;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
@@ -32,7 +33,9 @@ import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
+import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
@@ -52,12 +55,15 @@ import android.content.pm.ResolveInfo;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IVirtualDisplayCallback;
+import android.hardware.display.VirtualDisplay;
 import android.hardware.display.VirtualDisplayConfig;
-import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.VirtualDpad;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyEvent;
+import android.hardware.input.VirtualKeyboard;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchEvent;
+import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
@@ -149,14 +155,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final String mOwnerPackageName;
 
     private final OnClosedListener mOnClosedListener;
-    private final IVirtualDevice mVirtualDevice;
+    private final VirtualDevice mVirtualDevice;
+    private final VirtualDisplay mVirtualDisplay;
     private final int mVirtualDisplayId;
     private final int mVirtualDeviceId;
     private final int mMainDisplayId;
-    private final IVirtualDisplayCallback mVirtualDisplayToken;
-    private final IVirtualInputDevice mVirtualTouchscreen;
-    private final IVirtualInputDevice mVirtualDpad;
-    private final IVirtualInputDevice mVirtualKeyboard;
+    private final VirtualTouchscreen mVirtualTouchscreen;
+    private final VirtualDpad mVirtualDpad;
+    private final VirtualKeyboard mVirtualKeyboard;
+    private final ComputerControlAudioCapture mAudioCapture;
+    private final ComputerControlAudioInjector mAudioInjector;
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
 
@@ -223,6 +231,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.getName())
+                .setDevicePolicy(POLICY_TYPE_AUDIO, DEVICE_POLICY_CUSTOM)
                 .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
                 .setDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS, DEVICE_POLICY_CUSTOM)
                 .setAllowedUsers(allowedUsers)
@@ -231,14 +240,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
-
-        // This is used as a death detection token to release the display upon app death. We're in
-        // the system process, so this won't happen, but this is OK because we already do death
-        // detection in the virtual device based on the app token and closing it will also release
-        // the display.
-        // The same applies to the input devices. We can't reuse the app token there because it's
-        // used as a map key for the virtual input devices.
-        mVirtualDisplayToken = new DisplayManagerGlobal.VirtualDisplayCallback(null, null);
 
         final DisplayInfo mainDisplayInfo = mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId);
         final int displayWidth = mainDisplayInfo.logicalWidth;
@@ -257,12 +258,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             applyActivityPolicy();
 
             // Create the display with a clean identity so it can be trusted.
-            mVirtualDisplayId = Binder.withCleanCallingIdentity(() -> {
-                int displayId = mVirtualDevice.createVirtualDisplay(virtualDisplayConfig,
-                        mVirtualDisplayToken);
-                mWindowManagerInternal.setAnimationsDisabledForDisplay(displayId, true);
-                return displayId;
+            mVirtualDisplay = Binder.withCleanCallingIdentity(() -> {
+                VirtualDisplay virtualDisplay = mVirtualDevice.createVirtualDisplay(
+                        virtualDisplayConfig, null, null);
+                mWindowManagerInternal.setAnimationsDisabledForDisplay(
+                        virtualDisplay.getDisplay().getDisplayId(), true);
+                return virtualDisplay;
             });
+            mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
 
             if (Flags.computerControlShowTouches()) {
                 mInputManagerInternal.setForceShowTouchesOnDisplay(mVirtualDisplayId,
@@ -283,8 +286,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             .setVendorId(VENDOR_ID)
                             .setProductId(PRODUCT_ID_DPAD)
                             .build();
-            mVirtualDpad = mVirtualDevice.createVirtualDpad(
-                    virtualDpadConfig, new Binder(dpadName));
+            mVirtualDpad = mVirtualDevice.createVirtualDpad(virtualDpadConfig);
 
             final String keyboardName = inputDeviceNamePrefix + "-kbrd";
             final VirtualKeyboardConfig virtualKeyboardConfig =
@@ -294,8 +296,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             .setVendorId(VENDOR_ID)
                             .setProductId(PRODUCT_ID_KEYBOARD)
                             .build();
-            mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(
-                    virtualKeyboardConfig, new Binder(keyboardName));
+            mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(virtualKeyboardConfig);
 
             final String touchscreenName = inputDeviceNamePrefix + "-tscr";
             final VirtualTouchscreenConfig virtualTouchscreenConfig =
@@ -305,8 +306,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             .setVendorId(VENDOR_ID)
                             .setProductId(PRODUCT_ID_TOUCHSCREEN)
                             .build();
-            mVirtualTouchscreen = mVirtualDevice.createVirtualTouchscreen(
-                    virtualTouchscreenConfig, new Binder(touchscreenName));
+            mVirtualTouchscreen = mVirtualDevice.createVirtualTouchscreen(virtualTouchscreenConfig);
+
+            // Take control of the audio streams
+            VirtualAudioDevice virtualAudioDevice = mVirtualDevice.createVirtualAudioDevice(
+                    mVirtualDisplay, null, null);
+            mAudioInjector = new ComputerControlAudioInjector(virtualAudioDevice);
+            mAudioInjector.startAudioInjection();
+            mAudioCapture = new ComputerControlAudioCapture(virtualAudioDevice);
+            mAudioCapture.startAudioCapture();
 
             mAppToken.linkToDeath(this, 0);
             startSessionCloseGlobalTimeout();
@@ -351,7 +359,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     IVirtualDisplayCallback getVirtualDisplayToken() {
-        return mVirtualDisplayToken;
+        return mVirtualDisplay.getToken();
     }
 
     String getName() {
@@ -551,7 +559,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         cancelOngoingKeyGestures();
         cancelOngoingTouchGestures();
         cancelPendingCloseSession();
-        mVirtualDevice.close();
+        mAudioInjector.stopAudioInjection();
+        mAudioCapture.stopAudioCapture();
+        mVirtualDevice.close(); // closes also the VirtualAudioDevice
         mAppToken.unlinkToDeath(this, 0);
         mOnClosedListener.onClosed(this);
     }
@@ -595,18 +605,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final int currentY = (int) (fromY + (toY - fromY) * easedFraction);
         final int nextStep = step + 1;
 
-        try {
-            mVirtualTouchscreen.sendTouchEvent(
-                    createTouchEvent(currentX, currentY, VirtualTouchEvent.ACTION_MOVE));
+        mVirtualTouchscreen.sendTouchEvent(
+                createTouchEvent(currentX, currentY, VirtualTouchEvent.ACTION_MOVE));
 
-            if (nextStep > stepCount) {
-                mVirtualTouchscreen.sendTouchEvent(
-                        createTouchEvent(toX, toY, VirtualTouchEvent.ACTION_UP));
-                mSwipeFuture = null;
-                return;
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        if (nextStep > stepCount) {
+            mVirtualTouchscreen.sendTouchEvent(
+                    createTouchEvent(toX, toY, VirtualTouchEvent.ACTION_UP));
+            mSwipeFuture = null;
+            return;
         }
 
         mSwipeFuture = mScheduler.schedule(
@@ -616,14 +622,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private void performKeyStep(List<VirtualKeyEvent> keysToSend, int currStep) {
         final int nextStep = currStep + 1;
-        try {
-            mVirtualKeyboard.sendKeyEvent(keysToSend.get(currStep));
-            if (nextStep >= keysToSend.size()) {
-                mInsertTextFuture = null;
-                return;
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        mVirtualKeyboard.sendKeyEvent(keysToSend.get(currStep));
+        if (nextStep >= keysToSend.size()) {
+            mInsertTextFuture = null;
+            return;
         }
 
         mInsertTextFuture = mScheduler.schedule(
