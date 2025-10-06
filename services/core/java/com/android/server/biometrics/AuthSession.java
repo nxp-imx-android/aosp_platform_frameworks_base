@@ -536,7 +536,7 @@ public final class AuthSession implements IBinder.DeathRecipient {
             case STATE_AUTH_STARTED:
             case STATE_AUTH_PENDING_CONFIRM:
             case STATE_AUTH_STARTED_UI_SHOWING: {
-                if (isAllowDeviceCredential() && errorLockout) {
+                if (errorLockout) {
                     // SystemUI handles transition from biometric to device credential.
                     mState = STATE_SHOWING_DEVICE_CREDENTIAL;
                     mStatusBarService.onBiometricError(modality, error, vendorCode);

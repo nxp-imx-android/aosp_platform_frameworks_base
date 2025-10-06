@@ -57,18 +57,14 @@ import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.jank.interactionJankMonitor
-import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
-import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.wakefulnessLifecycle
-import com.android.systemui.kosmos.runCurrent
-import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -106,6 +102,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     private val testScope = kosmos.testScope
     private val fakeExecutor = kosmos.fakeExecutor
+    private val fakeShadeRepository = kosmos.fakeShadeRepository
 
     private val defaultLogoIcon = context.getDrawable(R.drawable.ic_android)
 
@@ -635,15 +632,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
         addToView: Boolean,
     ): TestAuthContainerView {
         authContainer = view
-
-        kosmos.runTest {
-            // Ensure lockscreen is not showing
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.UNDEFINED,
-                testScope,
-            )
-        }
 
         if (addToView) {
             authContainer!!.addToView()
