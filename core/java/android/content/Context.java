@@ -6833,6 +6833,13 @@ public abstract class Context {
     public static final String REMOTE_PROVISIONING_SERVICE = "remote_provisioning";
 
     /**
+     * Binder service for {@link com.android.server.privatecompute.PccSandboxManagerService}.
+     *
+     * @hide
+     */
+    public static final String PCC_SANDBOX_SERVICE = "pcc_sandbox";
+
+    /**
      * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.hardware.lights.LightsManager} for controlling device lights.
      *
