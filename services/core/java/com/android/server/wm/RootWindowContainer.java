@@ -1696,70 +1696,35 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         final Task topFocusedRootTask =
                 dc != null ? dc.getFocusedRootTask() : getTopDisplayFocusedRootTask();
 
-        if (Flags.returnAllVisibleActivitiesForVis()) {
-            final ArrayList<ActivityAssistInfo> visibleActivitiesInFocusedRoot = new ArrayList<>();
-            final Consumer<ActivityRecord> collectFromFocusedRoot = activity -> {
-                if (activity.isVisibleRequested()) {
-                    visibleActivitiesInFocusedRoot.add(new ActivityAssistInfo(activity));
-                }
-            };
-            final Consumer<ActivityRecord> collectFromNonFocusedRoot = activity -> {
-                if (activity.isVisibleRequested()) {
-                    topVisibleActivities.add(new ActivityAssistInfo(activity));
-                }
-            };
-            final Consumer<Task> collectFromDisplay = rootTask -> {
-                if (!rootTask.isVisibleRequested()) {
-                    return;
-                }
-                if (rootTask == topFocusedRootTask) {
-                    rootTask.forAllActivities(collectFromFocusedRoot);
-                } else {
-                    rootTask.forAllActivities(collectFromNonFocusedRoot);
-                }
-            };
-
-            if (dc != null) {
-                dc.forAllRootTasks(collectFromDisplay);
-            } else {
-                // Traverse all displays.
-                forAllRootTasks(collectFromDisplay);
+        final ArrayList<ActivityAssistInfo> visibleActivitiesInFocusedRoot = new ArrayList<>();
+        final Consumer<ActivityRecord> collectFromFocusedRoot = activity -> {
+            if (activity.isVisibleRequested()) {
+                visibleActivitiesInFocusedRoot.add(new ActivityAssistInfo(activity));
             }
-            topVisibleActivities.addAll(0, visibleActivitiesInFocusedRoot);
+        };
+        final Consumer<ActivityRecord> collectFromNonFocusedRoot = activity -> {
+            if (activity.isVisibleRequested()) {
+                topVisibleActivities.add(new ActivityAssistInfo(activity));
+            }
+        };
+        final Consumer<Task> collectFromDisplay = rootTask -> {
+            if (!rootTask.isVisibleRequested()) {
+                return;
+            }
+            if (rootTask == topFocusedRootTask) {
+                rootTask.forAllActivities(collectFromFocusedRoot);
+            } else {
+                rootTask.forAllActivities(collectFromNonFocusedRoot);
+            }
+        };
+
+        if (dc != null) {
+            dc.forAllRootTasks(collectFromDisplay);
         } else {
-            final ArrayList<ActivityAssistInfo> activityAssistInfos = new ArrayList<>();
-            final Consumer<Task> collectVisibleActivities = rootTask -> {
-                // Get top activity from a visible root task and add it to the list.
-                if (rootTask.shouldBeVisible(null /* starting */)) {
-                    final ActivityRecord top = rootTask.getTopNonFinishingActivity();
-                    if (top != null) {
-                        activityAssistInfos.clear();
-                        activityAssistInfos.add(new ActivityAssistInfo(top));
-                        // Check if the activity on the split screen.
-                        top.getTask().forOtherAdjacentTasks(task -> {
-                            final ActivityRecord adjacentActivityRecord =
-                                    task.getTopNonFinishingActivity();
-                            if (adjacentActivityRecord != null) {
-                                activityAssistInfos.add(
-                                        new ActivityAssistInfo(adjacentActivityRecord));
-                            }
-                        });
-                        if (rootTask == topFocusedRootTask) {
-                            topVisibleActivities.addAll(0, activityAssistInfos);
-                        } else {
-                            topVisibleActivities.addAll(activityAssistInfos);
-                        }
-                    }
-                }
-            };
-
-            if (dc != null) {
-                dc.forAllRootTasks(collectVisibleActivities);
-            } else {
-                // Traverse all displays.
-                forAllRootTasks(collectVisibleActivities);
-            }
+            // Traverse all displays.
+            forAllRootTasks(collectFromDisplay);
         }
+        topVisibleActivities.addAll(0, visibleActivitiesInFocusedRoot);
 
         return topVisibleActivities;
     }

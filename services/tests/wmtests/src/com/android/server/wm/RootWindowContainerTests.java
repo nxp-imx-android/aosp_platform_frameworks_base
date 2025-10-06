@@ -41,7 +41,6 @@ import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
 import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_RECENT_TASKS_AND_RESTORE;
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
-import static com.android.window.flags.Flags.FLAG_RETURN_ALL_VISIBLE_ACTIVITIES_FOR_VIS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -1522,7 +1521,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
         assertEquals(splitActivity0.token, result.get(1).getActivityToken());
     }
 
-    @EnableFlags(FLAG_RETURN_ALL_VISIBLE_ACTIVITIES_FOR_VIS)
     @Test
     public void testGetTopVisibleActivities_rootTaskWithMultiLeafTasks() {
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
@@ -1541,7 +1539,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
         assertEquals(activity0.token, result.get(2).getActivityToken());
     }
 
-    @EnableFlags(FLAG_RETURN_ALL_VISIBLE_ACTIVITIES_FOR_VIS)
     @Test
     public void testGetTopVisibleActivities_activityEmbedding() {
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
@@ -1600,7 +1597,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
                 tda -> tda == displayWithHome.getDefaultTaskDisplayArea()));
     }
 
-    @EnableFlags(FLAG_RETURN_ALL_VISIBLE_ACTIVITIES_FOR_VIS)
     @Test
     public void testGetTopVisibleActivities_behindTranslucent() {
         final DisplayContent display = mRootWindowContainer.getDefaultDisplay();
