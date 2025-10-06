@@ -136,15 +136,13 @@ constructor(
                     }
                 )
             }
-            if (DesktopExperienceFlags.CLOSE_TASK_KEYBOARD_SHORTCUT.isTrue()) {
-                // Close focused task:
-                //  - Meta + Ctrl + W
-                add(
-                    shortcutInfo(resources.getString(R.string.system_desktop_mode_close_window)) {
-                        command(META_META_ON or META_CTRL_ON, KEYCODE_W)
-                    }
-                )
-            }
+            // Close focused task:
+            //  - Meta + Ctrl + W
+            add(
+                shortcutInfo(resources.getString(R.string.system_desktop_mode_close_window)) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_W)
+                }
+            )
             if (DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue) {
                 // Move between desktops
                 //  - Meta + Ctrl + [ or ]

@@ -42,7 +42,6 @@ import org.junit.Test
  */
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-    Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT,
 )
 abstract class CloseTaskViaKeyboardShortcut {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
