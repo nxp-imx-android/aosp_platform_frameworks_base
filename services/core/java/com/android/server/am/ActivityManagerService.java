@@ -1460,11 +1460,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     @GuardedBy("mOomAdjObserverLock")
     OomAdjObserver mCurOomAdjObserver;
 
-    @GuardedBy("mOomAdjObserverLock")
-    int mCurOomAdjUid;
-
     /**
-     * Dedicated lock for {@link #mCurOomAdjObserver} and {@link #mCurOomAdjUid}.
+     * Dedicated lock for {@link #mCurOomAdjObserver}.
      */
     final Object mOomAdjObserverLock = new Object();
 
@@ -3258,22 +3255,22 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     void setOomAdjObserver(int uid, OomAdjObserver observer) {
         synchronized (mOomAdjObserverLock) {
-            mCurOomAdjUid = uid;
             mCurOomAdjObserver = observer;
+            mProcessStateController.setDebugUid(uid);
         }
     }
 
     void clearOomAdjObserver() {
         synchronized (mOomAdjObserverLock) {
-            mCurOomAdjUid = -1;
             mCurOomAdjObserver = null;
+            mProcessStateController.clearDebugUid();
         }
     }
 
     void reportUidInfoMessageLocked(String tag, String msg, int uid) {
         Slog.i(TAG, msg);
         synchronized (mOomAdjObserverLock) {
-            if (mCurOomAdjObserver != null && uid == mCurOomAdjUid) {
+            if (mCurOomAdjObserver != null && uid == mProcessStateController.getDebugUid()) {
                 mUiHandler.obtainMessage(DISPATCH_OOM_ADJ_OBSERVER_MSG, msg).sendToTarget();
             }
         }

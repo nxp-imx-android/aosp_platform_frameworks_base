@@ -1233,7 +1233,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                     && mErrorState.getAnrAnnotation() != null) {
                 description = description + ": " + mErrorState.getAnrAnnotation();
             }
-            if (mService != null && (noisy || info.uid == mService.mCurOomAdjUid)) {
+            if (mService != null
+                    && (noisy || info.uid == mService.mProcessStateController.getDebugUid())) {
                 mService.reportUidInfoMessageLocked(TAG,
                         "Killing " + toShortString() + " (adj " + getSetAdj()
                         + "): " + reason, info.uid);
