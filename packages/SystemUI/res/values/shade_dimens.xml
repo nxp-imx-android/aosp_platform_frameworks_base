@@ -28,9 +28,11 @@
     <dimen name="overlay_shade_panel_shape_radius">46dp</dimen>
 
     <!-- QS shade overlay common tiles -->
+    <dimen name="common_tile_default_dual_target_end_padding">8dp</dimen>
     <dimen name="common_tile_default_icon_size">32dp</dimen>
     <dimen name="common_tile_default_inactive_corner_radius">50dp</dimen>
     <dimen name="common_tile_default_large_tile_icon_size">28dp</dimen>
+    <dimen name="common_tile_default_start_padding">8dp</dimen>
     <dimen name="common_tile_default_tile_height">72dp</dimen>
     <dimen name="common_tile_default_toggle_target_size">56dp</dimen>
 
