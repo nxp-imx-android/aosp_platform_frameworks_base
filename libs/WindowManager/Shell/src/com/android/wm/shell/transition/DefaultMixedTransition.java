@@ -291,6 +291,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
 
             // Dispatch the rest of the transition normally.
             if (mLeftoversHandler != null
+                    // PiP-specific parts of the transition are already dispatched by this point.
+                    && mLeftoversHandler != mPipHandler
                     && mLeftoversHandler.startAnimation(mTransition, info,
                     startTransaction, finishTransaction, finishCB)) {
                 return true;

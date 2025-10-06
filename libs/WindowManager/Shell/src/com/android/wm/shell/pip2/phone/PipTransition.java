@@ -348,6 +348,16 @@ public class PipTransition extends PipTransitionController implements
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        if (isPipTransitionAnimationOngoing()) {
+            // TODO (b/448837532): Mixed transitions can call into startAnimation directly.
+            // We should prevent direct calls into startAnimation from disrupting ongoing
+            // PiP transition animation being played.
+            Log.wtf(TAG, String.format("""
+                    PipTransition tried to startAnimation while another PiP animation was playing.
+                    callers=%s""", Debug.getCallers(4)));
+            return false;
+        }
+
         if (transition == mEnterTransition || info.getType() == TRANSIT_PIP) {
             mEnterTransition = null;
             // If we are in swipe PiP to Home transition we are ENTERING_PIP as a jumpcut transition
@@ -442,6 +452,12 @@ public class PipTransition extends PipTransitionController implements
         // i.e. corner and shadow radius.
         syncPipSurfaceState(info, startTransaction, finishTransaction);
         return false;
+    }
+
+    private boolean isPipTransitionAnimationOngoing() {
+        // There is a one-to-one mapping between when finish callback is still cached
+        // and when there is an ongoing transition animation.
+        return mFinishCallback != null;
     }
 
     private boolean startSubHandlerAnimation(Transitions.TransitionHandler handler,
