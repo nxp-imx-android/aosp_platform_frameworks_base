@@ -31,4 +31,10 @@ public @interface StringPolicyDefinition {
      * Base data for all policies.
      */
     PolicyDefinition base();
+
+    /**
+     * By default an empty string is not allowed as a policy value. Set it to true if it should
+     * be allowed.
+     */
+    boolean emptyStringAllowed() default false;
 }

@@ -72,6 +72,7 @@ policy_metadata {
   type_specific_metadata {
     list_of_string_metadata {
       element_metadata {
+        empty_string_allowed: true
       }
     }
   }

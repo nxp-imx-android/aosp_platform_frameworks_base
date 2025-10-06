@@ -58,10 +58,13 @@ message TypeSpecificPolicyMetadata {
     }
 
     message StringPolicyMetadata {
+        bool empty_string_allowed = 1;
     }
 
     message ListOfStringPolicyMetadata {
         StringPolicyMetadata element_metadata = 1;
+
+        bool empty_list_allowed = 2;
     }
 
     oneof type_metadata {

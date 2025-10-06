@@ -70,5 +70,7 @@ class StringProcessor(processingEnv: ProcessingEnvironment) : Processor<StringPo
 
     fun extractTypeSpecificMetadata(definition: StringPolicyDefinition):
             TypeSpecificPolicyMetadata.StringPolicyMetadata =
-        TypeSpecificPolicyMetadata.StringPolicyMetadata.getDefaultInstance()
+        TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
+            .setEmptyStringAllowed(definition.emptyStringAllowed)
+            .build()
 }
