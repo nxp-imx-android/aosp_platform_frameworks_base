@@ -54,6 +54,7 @@ import static android.window.DesktopExperienceFlags.ENABLE_FILTER_REMOVING_DISPL
 import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
 import static android.window.TransitionInfo.AnimationOptions;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
+import static android.window.TransitionInfo.FLAG_ALWAYS_ON_TOP;
 import static android.window.TransitionInfo.FLAG_CONFIG_AT_END;
 import static android.window.TransitionInfo.FLAG_DISPLAY_HAS_ALERT_WINDOWS;
 import static android.window.TransitionInfo.FLAG_FILLS_TASK;
@@ -3845,6 +3846,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         int mRotation = ROTATION_UNDEFINED;
         int mDisplayId = -1;
         @ActivityInfo.Config int mKnownConfigChanges;
+        boolean mIsAlwaysOnTop;
 
         /** Extra information about this change. */
         @ChangeInfoFlag int mFlags = FLAG_NONE;
@@ -3870,6 +3872,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             mRotation = origState.getWindowConfiguration().getRotation();
             mStartParent = origState.getParent();
             mDisplayId = getDisplayId(origState);
+            mIsAlwaysOnTop = origState.isAlwaysOnTop();
         }
 
         @VisibleForTesting
@@ -3915,7 +3918,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     // If we are restoring transient-hide containers, then we should consider them
                     // important for the transition as well (their requested visibilities would not
                     // have changed for the checks below to consider it).
-                    || mRestoringTransientHide;
+                    || mRestoringTransientHide
+                    // Always-on-top (AoT) tasks are excluded from order changes traversal, so it's
+                    // required to send such changes separately. Notifying about exiting AoT is not
+                    // necessary, because AoT will stay on top and order changes will catch up.
+                    || mIsAlwaysOnTop != mContainer.isAlwaysOnTop() && !mIsAlwaysOnTop;
         }
 
         @TransitionInfo.TransitionMode
@@ -3973,6 +3980,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 }
                 if (task.voiceSession != null) {
                     flags |= FLAG_IS_VOICE_INTERACTION;
+                }
+                if (!mIsAlwaysOnTop && task.isAlwaysOnTop()) {
+                    flags |= FLAG_ALWAYS_ON_TOP;
                 }
             }
             Task parentTask = null;
