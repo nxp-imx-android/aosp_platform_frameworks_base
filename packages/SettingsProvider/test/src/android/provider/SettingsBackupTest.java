@@ -609,7 +609,6 @@ public class SettingsBackupTest {
                     Settings.Global.Wearable.MASTER_GESTURES_ENABLED,
                     Settings.Global.Wearable.UNGAZE_ENABLED,
                     Settings.Global.Wearable.BURN_IN_PROTECTION_ENABLED,
-                    Settings.Global.Wearable.WRIST_ORIENTATION_MODE,
                     Settings.Global.Wearable.CLOCKWORK_SYSUI_PACKAGE,
                     Settings.Global.Wearable.CLOCKWORK_SYSUI_MAIN_ACTIVITY,
                     Settings.Global.Wearable.CLOCKWORK_LONG_PRESS_TO_ASSISTANT_ENABLED,
