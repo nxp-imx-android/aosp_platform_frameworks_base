@@ -612,6 +612,9 @@ public final class AssociationDiskStore {
                 parser, XML_ATTR_CUSTOM_DEVICE_ID);
         final MacAddress macAddress = stringToMacAddress(
                 readStringAttribute(parser, XML_ATTR_MAC_ADDRESS_DEVICE_ID));
+        if (customDeviceId == null && macAddress == null) {
+            return null;
+        }
         byte[] key = readByteArrayAttribute(parser, XML_ATTR_KEY_DEVICE_ID);
         if (key == null) {
             key = generateRandom128BitKey();
