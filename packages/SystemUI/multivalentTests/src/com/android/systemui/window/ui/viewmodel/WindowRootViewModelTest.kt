@@ -33,6 +33,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
+import com.android.systemui.wallpapers.domain.interactor.fakeWallpaperRepository
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.android.systemui.window.data.repository.windowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
@@ -69,8 +70,10 @@ class WindowRootViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun keyguardTransitionToAodEmitsLastBlurRadius() =
+    fun keyguardTransitionToAodEmitsLastBlurRadiusWhenAmbientAodEnabled() =
         testScope.runTest {
+            kosmos.fakeWallpaperRepository.setWallpaperSupportsAmbientMode(true)
+
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
             val blurRadii by collectValues(underTest.blurRadius)
             runCurrent()
@@ -85,6 +88,26 @@ class WindowRootViewModelTest : SysuiTestCase() {
 
             assertThat(blurRadii.size).isEqualTo(currentSize + 1)
             assertThat(blurRadii[currentSize]).isEqualTo(30)
+        }
+
+    @Test
+    fun keyguardTransitionToAodDoesNotEmitLastBlurRadiusWhenAmbientAodDisabled() =
+        testScope.runTest {
+            kosmos.fakeWallpaperRepository.setWallpaperSupportsAmbientMode(false)
+
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            val blurRadii by collectValues(underTest.blurRadius)
+            runCurrent()
+
+            kosmos.fakeBouncerTransitions.first().windowBlurRadius.value = 30.0f
+            runCurrent()
+
+            val currentSize = blurRadii.size
+            assertThat(blurRadii[currentSize - 1]).isEqualTo(30)
+
+            keyguardTransitionRepository.sendTransitionSteps(LOCKSCREEN, AOD, testScope)
+
+            assertThat(blurRadii.size).isEqualTo(currentSize)
         }
 
     @Test

@@ -26,6 +26,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.ui.transitions.GlanceableHubTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.transform
 
 /** View model for window root view. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -52,6 +54,7 @@ constructor(
     private val blurInteractor: WindowRootViewBlurInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    private val wallpaperInteractor: WallpaperInteractor,
     private val shadeInteractor: ShadeInteractor,
 ) {
 
@@ -100,13 +103,23 @@ constructor(
 
     private val _blurScale = merge(blurInteractor.blurScaleRequestedByShade, glanceableHubBlurScale)
 
+    private val reEmitBlurRadius: Flow<Unit> =
+        wallpaperInteractor.wallpaperSupportsAmbientMode.flatMapLatest {
+            wallpaperSupportsAmbientMode ->
+            if (wallpaperSupportsAmbientMode) {
+                keyguardTransitionInteractor
+                    .isFinishedIn(AOD)
+                    .transform { if (it) emit(Unit) }
+                    .onStart { emit(Unit) }
+            } else {
+                flowOf(Unit)
+            }
+        }
+
     val blurRadius: Flow<Float> =
         blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
             if (blurSupported) {
-                combine(
-                    keyguardTransitionInteractor.isFinishedIn(AOD).onStart { emit(false) },
-                    _blurRadius,
-                ) { _, _blurRadius ->
+                combine(reEmitBlurRadius, _blurRadius) { _, _blurRadius ->
                     _blurRadius
                 }
             } else {

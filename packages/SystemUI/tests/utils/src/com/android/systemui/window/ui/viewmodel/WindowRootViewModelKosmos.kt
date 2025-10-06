@@ -23,6 +23,7 @@ import com.android.systemui.keyguard.ui.transitions.FakeBouncerTransition
 import com.android.systemui.keyguard.ui.transitions.FakeGlanceableHubTransition
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractorFaked
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import org.mockito.internal.util.collections.Sets
 
@@ -45,6 +46,7 @@ val Kosmos.windowRootViewModel by
             windowRootViewBlurInteractor,
             keyguardInteractor,
             keyguardTransitionInteractor,
+            wallpaperInteractorFaked,
             shadeInteractor,
         )
     }
