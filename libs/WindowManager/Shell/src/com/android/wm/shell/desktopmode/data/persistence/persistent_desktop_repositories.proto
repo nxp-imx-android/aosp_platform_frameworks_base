@@ -29,6 +29,8 @@ message DesktopTask {
   // Tracks task bounds; used primarily for display restore functionality as
   // core will restore task bounds to the task itself on boot.
   optional Rect task_bounds = 4;
+  // Bounds of the task before it was snapped or maximized.
+  optional Rect bounds_before_snap_or_maximize = 5;
 }
 
 message Desktop {

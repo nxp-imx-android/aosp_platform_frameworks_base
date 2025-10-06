@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode.data.persistence
 
 import android.content.Context
+import android.graphics.Rect
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.util.ArrayMap
@@ -574,6 +575,79 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
             assertThat(preservedDisplayFound?.activeDeskId).isEqualTo(2)
             val preservedDesktop = preservedDisplayFound?.preservedDesktopMap?.values?.first()
             assertThat(preservedDesktop?.tasksByTaskIdMap?.keys).containsExactly(3, 4, 5)
+        }
+    }
+
+    @Test
+    fun addOrUpdateRepository_storesBoundsBeforeSnapOrMaximize() {
+        runTest(StandardTestDispatcher()) {
+            // Create a basic repository state
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(ArrayList(listOf(task)))
+            testDatastore.updateData { desktopPersistentRepositories }
+
+            // Create new state to be initialized
+            val bounds = Rect(10, 20, 110, 120)
+            val desk =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = ArraySet(listOf(1)),
+                    freeformTasksInZOrder = ArrayList(listOf(1)),
+                    uniqueDisplayId = UNIQUE_DISPLAY_ID,
+                )
+            // Set bounds before snap or maximize for task 1
+            desk.boundsBeforeSnapOrMaximizeByTaskId[1] = bounds
+
+            // Update with new state
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(desk),
+                activeDeskId = DEFAULT_DESKTOP_ID,
+                preservedDisplays = ArrayMap(),
+            )
+
+            val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            val actualTask = actualDesktop?.tasksByTaskIdMap?.get(1)
+            assertThat(actualTask?.hasBoundsBeforeSnapOrMaximize()).isTrue()
+            val actualBounds = actualTask?.boundsBeforeSnapOrMaximize
+            assertThat(actualBounds?.left).isEqualTo(bounds.left)
+            assertThat(actualBounds?.top).isEqualTo(bounds.top)
+            assertThat(actualBounds?.right).isEqualTo(bounds.right)
+            assertThat(actualBounds?.bottom).isEqualTo(bounds.bottom)
+        }
+    }
+
+    @Test
+    fun addOrUpdateRepository_noBoundsBeforeSnapOrMaximize_isEmptyInProto() {
+        runTest(StandardTestDispatcher()) {
+            // Create a basic repository state
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(ArrayList(listOf(task)))
+            testDatastore.updateData { desktopPersistentRepositories }
+
+            // Create new state to be initialized
+            val desk =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = ArraySet(listOf(1)),
+                    freeformTasksInZOrder = ArrayList(listOf(1)),
+                    uniqueDisplayId = UNIQUE_DISPLAY_ID,
+                )
+            // No need to set boundsBeforeSnapOrMaximizeByTaskId as it's empty by default
+
+            // Update with new state
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(desk),
+                activeDeskId = DEFAULT_DESKTOP_ID,
+                preservedDisplays = ArrayMap(),
+            )
+
+            val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            val actualTask = actualDesktop?.tasksByTaskIdMap?.get(1)
+            assertThat(actualTask?.hasBoundsBeforeSnapOrMaximize()).isFalse()
         }
     }
 

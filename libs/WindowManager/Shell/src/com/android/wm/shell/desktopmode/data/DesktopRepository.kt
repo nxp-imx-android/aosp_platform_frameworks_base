@@ -846,6 +846,9 @@ class DesktopRepository(
             desk.visibleTasks.remove(taskId)
         }
         taskBounds?.let { desk.boundsByTaskId[taskId] = it }
+        boundsBeforeSnapOrMaximizeByTaskId.get(taskId)?.let {
+            desk.boundsBeforeSnapOrMaximizeByTaskId[taskId] = it
+        }
         if (desk.transientDesk) return
         val newCount = getVisibleTaskCountInDesk(deskId)
         if (prevCount != newCount) {
@@ -1095,6 +1098,7 @@ class DesktopRepository(
         val desk = desktopData.getDesk(deskId) ?: return
         if (desk.freeformTasksInZOrder.remove(taskId)) {
             desk.boundsByTaskId.remove(taskId)
+            desk.boundsBeforeSnapOrMaximizeByTaskId.remove(taskId)
             logD(
                 "Remaining freeform tasks in desk: %d, tasks: %s",
                 desk.deskId,

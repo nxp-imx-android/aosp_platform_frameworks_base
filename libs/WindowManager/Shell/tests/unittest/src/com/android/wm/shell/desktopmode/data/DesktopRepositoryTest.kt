@@ -200,6 +200,30 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
+    fun addTask_withSavedBounds_updatesDeskObject() {
+        val taskId = 1
+        // Create a freeform task to and add it to the desk first.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+
+        // Assume the user adjusts the bounds of the task.
+        val boundsBeforeSnapOrMaximize = Rect(100, 200, 300, 400)
+
+        // Then, user snaps or maximizes this task.
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, boundsBeforeSnapOrMaximize)
+
+        // Calling addTask again will call updateTaskInDesk, which should copy the previous
+        // bounds to the desk object.
+        // taskBounds parameter below can be seen as the current bounds of the task in its maximized
+        // or snapped state.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = Rect(0, 0, 1280, 800))
+
+        val desk = repo.getAllDesks().find { it.deskId == DEFAULT_DESKTOP_ID }
+        assertNotNull(desk)
+        assertThat(desk.boundsBeforeSnapOrMaximizeByTaskId[taskId])
+            .isEqualTo(boundsBeforeSnapOrMaximize)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTask_deskDoesNotExist_throws() {
         repo.removeDesk(deskId = 0)
@@ -1460,13 +1484,34 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun removeTask_removesTaskBoundsBeforeSnapOrMaximize() {
-        val taskId = 1
-        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
-        repo.saveBoundsBeforeSnapOrMaximize(taskId, Rect(0, 0, 200, 200))
 
+        val taskId = 1
+        // Create a freeform task to and add it to the desk first.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+
+        // Assume the user adjusts the bounds of the task.
+        val boundsBeforeSnapOrMaximize = Rect(100, 200, 300, 400)
+
+        // Then, user snaps or maximizes this task.
+        repo.saveBoundsBeforeSnapOrMaximize(taskId, boundsBeforeSnapOrMaximize)
+
+        // Calling addTask again will call updateTaskInDesk, which should copy the previous
+        // bounds to the desk object.
+        // taskBounds parameter below can be seen as the current bounds of the task in its maximized
+        // or snapped state.
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = Rect(0, 0, 1280, 800))
+
+        // Task is removed due to drag-exit or other reasons like closing the app.
         repo.removeTask(taskId)
 
+        // Verify bounds are removed from repository's sparse array
+        // (boundsBeforeSnapOrMaximizeByTaskId)
         assertThat(repo.removeBoundsBeforeSnapOrMaximize(taskId)).isNull()
+
+        // Verify bounds are removed from desk object as well
+        val desk = repo.getAllDesks().find { it.deskId == DEFAULT_DESKTOP_ID }
+        assertNotNull(desk)
+        assertThat(desk.boundsBeforeSnapOrMaximizeByTaskId.containsKey(taskId)).isFalse()
     }
 
     @Test

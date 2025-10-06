@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.desktopmode.data
 
+import android.graphics.Rect
 import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
@@ -38,6 +39,7 @@ import com.android.wm.shell.desktopmode.data.persistence.DesktopTask
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskTilingState
 import com.android.wm.shell.desktopmode.data.persistence.PreservedDisplay
+import com.android.wm.shell.desktopmode.data.persistence.Rect as RectProto
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
@@ -498,6 +500,87 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                         ?.map { desk -> desk.deskId }
                 )
                 .containsExactly(DESKTOP_ID_4)
+        }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    fun initWithPersistence_boundsBeforeSnapOrMaximize_areRestored() =
+        runTest(StandardTestDispatcher()) {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+
+            // Task 1 with previous bounds
+            val taskId1 = 1
+            val bounds1 = Rect(10, 20, 110, 120)
+            val rectProto1 = RectProto.newBuilder()
+                .setLeft(bounds1.left).setTop(bounds1.top)
+                .setRight(bounds1.right).setBottom(bounds1.bottom)
+                .build()
+            val task1 = DesktopTask.newBuilder()
+                .setTaskId(taskId1)
+                .setDesktopTaskState(DesktopTaskState.VISIBLE)
+                .setBoundsBeforeSnapOrMaximize(rectProto1)
+                .build()
+
+            // Task 2 with previous bounds
+            val taskId2 = 2
+            val bounds2 = Rect(30, 40, 130, 140)
+            val rectProto2 = RectProto.newBuilder()
+                .setLeft(bounds2.left).setTop(bounds2.top)
+                .setRight(bounds2.right).setBottom(bounds2.bottom)
+                .build()
+            val task2 = DesktopTask.newBuilder()
+                .setTaskId(taskId2)
+                .setDesktopTaskState(DesktopTaskState.VISIBLE)
+                .setBoundsBeforeSnapOrMaximize(rectProto2)
+                .build()
+
+            // Task 3 without previous bounds
+            val taskId3 = 3
+            val bounds3 = Rect(50, 60, 150, 160)
+            val rectProto3 = RectProto.newBuilder()
+                .setLeft(bounds3.left).setTop(bounds3.top)
+                .setRight(bounds3.right).setBottom(bounds3.bottom)
+                .build()
+            val task3 = DesktopTask.newBuilder()
+                .setTaskId(taskId3)
+                .setDesktopTaskState(DesktopTaskState.VISIBLE)
+                .setTaskBounds(rectProto3)
+                .build()
+
+
+            val desktop = Desktop.newBuilder()
+                .setDesktopId(DESKTOP_ID_1)
+                .addZOrderedTasks(taskId1)
+                .addZOrderedTasks(taskId2)
+                .addZOrderedTasks(taskId3)
+                .putTasksByTaskId(taskId1, task1)
+                .putTasksByTaskId(taskId2, task2)
+                .putTasksByTaskId(taskId3, task3)
+                .build()
+
+            val repositoryState = DesktopRepositoryState.newBuilder()
+                .putDesktop(DESKTOP_ID_1, desktop)
+                .build()
+
+            whenever(persistentRepository.getUserDesktopRepositoryMap())
+                .thenReturn(mapOf(USER_ID_1 to repositoryState))
+            whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
+                .thenReturn(repositoryState)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_1)).thenReturn(desktop)
+
+            repositoryInitializer.initialize(desktopUserRepositories)
+
+            val repo = desktopUserRepositories.getProfile(USER_ID_1)
+
+            val restoredBounds1 = repo.removeBoundsBeforeSnapOrMaximize(taskId1)
+            assertThat(restoredBounds1).isEqualTo(bounds1)
+
+            val restoredBounds2 = repo.removeBoundsBeforeSnapOrMaximize(taskId2)
+            assertThat(restoredBounds2).isEqualTo(bounds2)
+
+            // Also verify that a task without persisted previous bounds does not have any restored.
+            val restoredBounds3 = repo.removeBoundsBeforeSnapOrMaximize(taskId3)
+            assertThat(restoredBounds3).isNull()
         }
 
     @After

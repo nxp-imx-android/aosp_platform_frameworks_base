@@ -225,6 +225,13 @@ class DesktopRepositoryInitializerImpl(
                     taskBounds = task.taskBounds.toRect(),
                 )
 
+                if (task.hasBoundsBeforeSnapOrMaximize()) {
+                    repository.saveBoundsBeforeSnapOrMaximize(
+                        task.taskId,
+                        task.boundsBeforeSnapOrMaximize.toRect(),
+                    )
+                }
+
                 if (isVisible) {
                     visibleTasksCount++
                 } else {
