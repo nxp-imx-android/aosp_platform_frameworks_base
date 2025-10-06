@@ -37,6 +37,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.ALTERNATE_BOUNCER
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
+import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GLANCEABLE_HUB
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
@@ -99,6 +100,7 @@ constructor(
     private val fromGoneTransitionInteractor: Provider<FromGoneTransitionInteractor>,
     private val fromLockscreenTransitionInteractor: Provider<FromLockscreenTransitionInteractor>,
     private val fromOccludedTransitionInteractor: Provider<FromOccludedTransitionInteractor>,
+    private val fromDreamingTransitionInteractor: Provider<FromDreamingTransitionInteractor>,
     private val fromAlternateBouncerTransitionInteractor:
         Provider<FromAlternateBouncerTransitionInteractor>,
     private val lockPatternUtils: LockPatternUtils,
@@ -545,6 +547,7 @@ constructor(
         when (keyguardTransitionInteractor.transitionState.value.to) {
             LOCKSCREEN -> fromLockscreenTransitionInteractor.get().dismissKeyguard()
             OCCLUDED -> fromOccludedTransitionInteractor.get().dismissFromOccluded()
+            DREAMING -> fromDreamingTransitionInteractor.get().dismissFromDreaming()
             ALTERNATE_BOUNCER ->
                 fromAlternateBouncerTransitionInteractor.get().dismissAlternateBouncer()
             else -> Log.v(TAG, "Keyguard was dismissed, no direct transition call needed")

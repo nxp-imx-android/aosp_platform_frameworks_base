@@ -188,4 +188,14 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
             // No transitions are directly started by this interactor.
             assertThat(transitionRepository).noTransitionsStarted()
         }
+
+    @Test
+    fun testDismissFromDreaming() =
+        kosmos.runTest {
+            underTest.dismissFromDreaming()
+            testScope.runCurrent()
+
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DREAMING, to = KeyguardState.GONE)
+        }
 }
