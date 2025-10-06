@@ -1,5 +1,3 @@
-# TODO(b/446226426): This needs a first-principles review by an expert.
-
 # This is the "summary-spec" file we provide to "trace_processor_shell".
 
 # Most critically, we collect instances of jank which we consider "failing"
