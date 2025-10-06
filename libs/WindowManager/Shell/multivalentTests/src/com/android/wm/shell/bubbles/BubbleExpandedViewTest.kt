@@ -19,6 +19,7 @@ package com.android.wm.shell.bubbles
 import android.content.ComponentName
 import android.content.Context
 import android.platform.test.annotations.EnableFlags
+import android.view.View
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.core.app.ApplicationProvider
@@ -27,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.MockToken
+import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
 import com.android.wm.shell.taskview.TaskView
@@ -69,6 +71,7 @@ class BubbleExpandedViewTest {
     private lateinit var taskView: TaskView
     private lateinit var bubbleTaskView: BubbleTaskView
     private lateinit var expandedView: BubbleExpandedView
+    private lateinit var pointerView: View
 
     @Before
     fun setUp() {
@@ -78,16 +81,23 @@ class BubbleExpandedViewTest {
         taskView = TaskView(context, taskViewController, taskViewTaskController)
         bubbleTaskView = BubbleTaskView(taskView, directExecutor(), bubbleController)
 
-        expandedView = BubbleExpandedView(context).apply {
-            initialize(
+        // The view must be properly inflated for tests to pass.
+        val view = TestableBubbleExpandedView(context)
+        // onFinishInflate needs a pointer_view to be present.
+        pointerView = View(context).apply { id = R.id.pointer_view }
+        view.addView(pointerView)
+        view.onFinishInflate()
+
+        expandedView = view
+        expandedView.initialize(
                 mock<BubbleExpandedViewManager>(),
                 mock<BubbleStackView>(),
                 mock<BubblePositioner>(),
                 false /* isOverflow */,
                 bubbleTaskView,
-            )
-            setAnimating(true) // Skips setContentVisibility for testing.
-        }
+        )
+        // Default to animating state for existing tests.
+        expandedView.setAnimating(true)
     }
 
     @Test
@@ -110,5 +120,79 @@ class BubbleExpandedViewTest {
             taskViewTaskToken.asBinder(),
             isAppBubble = false,
         )
+    }
+
+    @Test
+    fun setContentVisibility_true_notAnimating_setsAlphaToOne() {
+        // Pre-condition: not animating, and alpha is 0
+        expandedView.setAnimating(false)
+        taskView.alpha = 0f
+        pointerView.alpha = 0f
+
+        // Show the content
+        expandedView.setContentVisibility(true)
+
+        // Verify visibility is true and alpha is 1
+        assertThat(expandedView.contentVisibility).isTrue()
+        assertThat(taskView.alpha).isEqualTo(1f)
+        assertThat(pointerView.alpha).isEqualTo(1f)
+    }
+
+    @Test
+    fun setContentVisibility_false_notAnimating_setsAlphaToZero() {
+        // Pre-condition: not animating, and alpha is 1
+        expandedView.setAnimating(false)
+        taskView.alpha = 1f
+        pointerView.alpha = 1f
+
+        // Hide the content
+        expandedView.setContentVisibility(false)
+
+        // Verify visibility is false and alpha is 0
+        assertThat(expandedView.contentVisibility).isFalse()
+        assertThat(taskView.alpha).isEqualTo(0f)
+        assertThat(pointerView.alpha).isEqualTo(0f)
+    }
+
+    @Test
+    fun setContentVisibility_true_isAnimating_alphaUnchanged() {
+        // Pre-condition: is animating, and alpha is 0
+        expandedView.setAnimating(true)
+        taskView.alpha = 0f
+        pointerView.alpha = 0f
+
+        // Try to show the content
+        expandedView.setContentVisibility(true)
+
+        // Verify visibility is true, but alpha is unchanged because of animation
+        assertThat(expandedView.contentVisibility).isTrue()
+        assertThat(taskView.alpha).isEqualTo(0f)
+        assertThat(pointerView.alpha).isEqualTo(0f)
+    }
+
+    @Test
+    fun setContentVisibility_false_isAnimating_alphaUnchanged() {
+        // Pre-condition: is animating, and alpha is 1
+        expandedView.setAnimating(true)
+        taskView.alpha = 1f
+        pointerView.alpha = 1f
+
+        // Try to hide the content
+        expandedView.setContentVisibility(false)
+
+        // Verify visibility is false, but alpha is unchanged because of animation
+        assertThat(expandedView.contentVisibility).isFalse()
+        assertThat(taskView.alpha).isEqualTo(1f)
+        assertThat(pointerView.alpha).isEqualTo(1f)
+    }
+
+    /**
+     * Testable subclass of [BubbleExpandedView] to expose protected methods for testing.
+     */
+    private class TestableBubbleExpandedView(context: Context) : BubbleExpandedView(context) {
+        // Make onFinishInflate public so we can call it in the test.
+        public override fun onFinishInflate() {
+            super.onFinishInflate()
+        }
     }
 }
