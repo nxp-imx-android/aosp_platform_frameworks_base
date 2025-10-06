@@ -5254,7 +5254,7 @@ package android.graphics.fonts {
 
   public class FontManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public android.text.FontConfig getFontConfig();
-    method @FlaggedApi("com.android.text.flags.insert_font_family") public int insertFontFamilyBefore(@NonNull android.graphics.fonts.FontFamilyUpdateRequest, @NonNull String, @IntRange(from=0) int);
+    method @FlaggedApi("com.android.text.flags.insert_font_family") @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int insertFontFamilyBefore(@NonNull android.graphics.fonts.FontFamilyUpdateRequest, @NonNull String, @IntRange(from=0) int);
     method @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int updateFontFamily(@NonNull android.graphics.fonts.FontFamilyUpdateRequest, @IntRange(from=0) int);
     field public static final int RESULT_ERROR_DOWNGRADING = -5; // 0xfffffffb
     field public static final int RESULT_ERROR_FAILED_TO_WRITE_FONT_FILE = -1; // 0xffffffff

@@ -32,4 +32,8 @@ interface IFontManager {
     FontConfig getFontConfig();
 
     int updateFontFamily(in List<FontUpdateRequest> request, int baseVersion);
+
+    int insertFontFamilyBefore(in List<FontUpdateRequest> request,
+                               String fontFamilyNameToInsertBefore,
+                               int baseVersion);
 }
