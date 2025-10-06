@@ -20,29 +20,16 @@ import android.app.Activity;
 import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Trace;
 import android.util.Log;
 import android.view.Choreographer;
 import android.view.Display;
-import android.view.FrameMetrics;
 import android.view.Window;
 import android.view.WindowManager;
 
 import java.util.concurrent.Executors;
 
 public class BouncyBallActivity extends Activity {
-    // If true, log (to logcat) any frame drops detected in-app on a best-effort
-    // basis (trace results are the most solid approach).  Note mild perf impact
-    // as this requires an additional callback on the main loop.
-    private static final boolean LOG_DROPPED_FRAMES = false;
-
-    // If true, log every frame's duration.  Note the perf impact of an
-    // additional callback on the main loop and spewing to logcat.
-    // Setting this `true` implicitly sets LOG_DROPPED_FRAMES `true`.
-    private static final boolean LOG_EVERY_FRAME = false;
-
     // To help with debugging and verifying behavior when frames are dropped,
     // this will drop one in every 64 frames.
     private static final boolean FORCE_DROPPED_FRAMES = false;
@@ -136,46 +123,6 @@ public class BouncyBallActivity extends Activity {
                 }
             };
 
-    private final Window.OnFrameMetricsAvailableListener mFrameMetricsListener =
-            new Window.OnFrameMetricsAvailableListener() {
-
-                private int mNumFramesDropped = 0;
-
-                @Override
-                public void onFrameMetricsAvailable(Window window,
-                                                    FrameMetrics frameMetrics,
-                                                    int dropCountSinceLastInvocation) {
-
-                    if (!mWarmedUp) {
-                        // Ignore frame metrics before we're warmed up.
-                        return;
-                    }
-                    long totalDuration = frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION);
-                    long deadline = frameMetrics.getMetric(FrameMetrics.DEADLINE);
-                    String totalDurationStr = nanosToMillis(totalDuration) + "ms";
-                    String deadlineStr = nanosToMillis(deadline) + "ms";
-
-                    if (totalDuration > deadline) {
-                        mNumFramesDropped++;
-                        String msg =  "DROPPED FRAME (total " + mNumFramesDropped
-                                + "): Took " + totalDurationStr
-                                + ", exceeding deadline " + deadlineStr;
-                        Log.e(LOG_TAG, msg);
-                    } else if (LOG_EVERY_FRAME) {
-                        String msg = "Frame took " + totalDurationStr
-                                + " with deadline " + deadlineStr;
-                        Log.i(LOG_TAG, msg);
-                    }
-                    if (dropCountSinceLastInvocation != 0) {
-                        String msg = "onFrameMetricsAvailable() dropped "
-                                + dropCountSinceLastInvocation
-                                + " frames; we might miss frame drops in logcat "
-                                + "(but the trace will find them)";
-                        Log.w(LOG_TAG, msg);
-                    }
-                }
-            };
-
     private final Choreographer.FrameCallback mFrameCallback =
             new Choreographer.FrameCallback() {
 
@@ -236,10 +183,6 @@ public class BouncyBallActivity extends Activity {
         initFrameRate();
         mChoreographer = Choreographer.getInstance();
         mChoreographer.postFrameCallback(mFrameCallback);
-        if (LOG_DROPPED_FRAMES || LOG_EVERY_FRAME) {
-            Handler h = new Handler(Looper.getMainLooper());
-            getWindow().addOnFrameMetricsAvailableListener(mFrameMetricsListener, h);
-        }
         Trace.endSection();
     }
 
@@ -336,10 +279,6 @@ public class BouncyBallActivity extends Activity {
             Math.round(INITIAL_MIN_TIME_TO_IGNORE_IN_SECONDS * mFrameRateHz);
         mMaxFirstRelevantFrame =
             Math.round(INITIAL_MAX_TIME_TO_IGNORE_IN_SECONDS * mFrameRateHz);
-    }
-
-    private float nanosToMillis(long nanos) {
-        return nanos / (1_000_000.0f);
     }
 
     private void reportAssumptionFailure(String msg) {
