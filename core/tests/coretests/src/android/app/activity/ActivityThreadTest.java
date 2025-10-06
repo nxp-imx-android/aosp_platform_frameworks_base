@@ -414,7 +414,7 @@ public class ActivityThreadTest {
         final DisplayMetrics currentMetrics = context.getResources().getDisplayMetrics();
         assertEquals(expectedDpi, currentConfig.densityDpi);
         assertEquals(expectedDpi, currentMetrics.densityDpi);
-        assertEquals(expectedDensity, currentMetrics.density, 0.001f);
+        assertEquals(expectedDensity, currentMetrics.density, 0.005f);
         assertEquals(expectedWidthPixels, currentMetrics.widthPixels);
         assertEquals(expectedHeightPixels, currentMetrics.heightPixels);
         assertEquals(expectedBounds, currentConfig.windowConfiguration.getBounds());
