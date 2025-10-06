@@ -39,7 +39,6 @@ import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 import com.android.wm.shell.bubbles.BubbleExpandedView;
 import com.android.wm.shell.bubbles.BubblePositioner;
@@ -371,7 +370,7 @@ public class ExpandedViewAnimationControllerImpl implements ExpandedViewAnimatio
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationCancel(Animator animation) {
-                if (Flags.fixBubblesCancelAnimation() && !notified[0]) {
+                if (!notified[0]) {
                     notified[0] = true;
                     startStackCollapse.run();
                 }
