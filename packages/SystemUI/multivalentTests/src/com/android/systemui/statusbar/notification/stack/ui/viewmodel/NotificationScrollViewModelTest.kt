@@ -16,8 +16,10 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
@@ -50,6 +52,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
+@EnableFlags(FLAG_DUAL_SHADE)
 class NotificationScrollViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -155,7 +158,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun noDualShade_brightnessMirrorShowing_notInteractive() =
         kosmos.runTest {
-            disableDualShade()
+            disableDualShade(disabledBySetting = true)
             val interactive by collectLastValue(underTest.interactive)
 
             brightnessMirrorShowingInteractor.setMirrorShowing(false)

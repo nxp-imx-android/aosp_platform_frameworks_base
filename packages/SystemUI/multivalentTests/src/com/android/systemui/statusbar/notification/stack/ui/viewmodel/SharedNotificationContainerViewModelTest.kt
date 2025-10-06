@@ -17,10 +17,12 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX
@@ -88,10 +90,8 @@ import com.android.systemui.window.ui.viewmodel.fakeBouncerTransitions
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertIs
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -100,7 +100,6 @@ import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
@@ -142,6 +141,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
     }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun validateMarginStart_splitShade() =
         kosmos.runTest {
             enableSplitShade()
@@ -169,6 +169,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun validateMarginStart_dualShade_notificationShadeEndAligned() =
         kosmos.runTest {
             overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
@@ -219,6 +220,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun validateHorizontalPosition_sceneContainer_splitShade() =
         kosmos.runTest {
             enableSplitShade()
@@ -231,6 +233,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun validateHorizontalPosition_dualShade_narrowLayout() =
         kosmos.runTest {
             enableDualShade(wideLayout = false)
@@ -243,6 +246,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun validateHorizontalPosition_dualShade_wideLayout() =
         kosmos.runTest {
             enableDualShade(wideLayout = true)
@@ -256,6 +260,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun validateHorizontalPosition_dualShade_notificationShadeEndAligned() =
         kosmos.runTest {
             overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
@@ -270,6 +275,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun validatePaddingTop_splitShade_usesLargeHeaderHelper() =
         kosmos.runTest {
             enableSplitShade()
@@ -330,6 +336,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun validateMarginEnd_dualShade_isNotificationShadeEndAligned() =
         kosmos.runTest {
             overrideResource(R.bool.config_notificationShadeOnTopEnd, true)
