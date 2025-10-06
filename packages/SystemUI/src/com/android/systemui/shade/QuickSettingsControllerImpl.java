@@ -1171,10 +1171,6 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         if (getExpanded()) {
             onExpansionStarted();
         }
-        // Since there are QS tiles in the header now, we need to make sure we start listening
-        // immediately so they can be up to date.
-        if (mQs == null) return;
-        mQs.setHeaderListening(true);
     }
 
     /** Set animate next notification bounds. */

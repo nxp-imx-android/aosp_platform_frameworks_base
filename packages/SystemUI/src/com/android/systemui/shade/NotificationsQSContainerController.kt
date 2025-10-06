@@ -70,7 +70,6 @@ constructor(
     private var splitShadeEnabled = false
     private var isQSDetailShowing = false
     private var isQSCustomizing = false
-    private var isQSCustomizerAnimating = false
 
     private var shadeHeaderHeight = 0
     private var largeScreenShadeHeaderHeight = 0
@@ -202,13 +201,6 @@ constructor(
             2 * resources.getDimensionPixelSize(R.dimen.large_screen_shade_header_min_height) +
                 resources.getDimensionPixelSize(R.dimen.new_qs_header_non_clickable_element_height)
         return estimatedHeight.coerceAtLeast(minHeight)
-    }
-
-    override fun setCustomizerAnimating(animating: Boolean) {
-        if (isQSCustomizerAnimating != animating) {
-            isQSCustomizerAnimating = animating
-            mView.invalidate()
-        }
     }
 
     override fun setCustomizerShowing(showing: Boolean, animationDuration: Long) {
