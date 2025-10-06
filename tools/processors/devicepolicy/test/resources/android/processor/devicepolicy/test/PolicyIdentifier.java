@@ -41,6 +41,7 @@ public final class PolicyIdentifier<T> {
 
     /**
      * Test policy 1
+     * Second line
      */
     @BooleanPolicyDefinition(
             base = @PolicyDefinition(
