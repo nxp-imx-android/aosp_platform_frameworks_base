@@ -27,7 +27,10 @@ android_library {
     package_name: "com.android.systemui.headline.ui.viewmodel.api",
     srcs: ["src/api/kotlin/**/*.kt"],
     resource_dirs: [],
-    static_libs: [],
+    static_libs: [
+        "PlatformComposeSceneTransitionLayout",
+        "androidx.compose.ui_ui",
+    ],
     kotlincflags: [
         "-Xjvm-default=all",
         "-P plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true",
@@ -39,7 +42,10 @@ android_library {
     package_name: "com.android.systemui.headline.ui.viewmodel.fake",
     srcs: ["src/fake/kotlin/**/*.kt"],
     resource_dirs: [],
-    static_libs: ["com.android.systemui.headline.ui.viewmodel.api"],
+    static_libs: [
+        "com.android.systemui.headline.ui.viewmodel.api",
+        "androidx.compose.material_material-icons-core",
+    ],
     kotlincflags: [
         "-Xjvm-default=all",
         "-P plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true",

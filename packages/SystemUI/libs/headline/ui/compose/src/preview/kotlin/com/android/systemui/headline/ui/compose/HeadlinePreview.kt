@@ -16,11 +16,32 @@
 
 package com.android.systemui.headline.ui.compose
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import com.android.systemui.headline.ui.viewmodel.FakeHeadlineItem
 import com.android.systemui.headline.ui.viewmodel.FakeHeadlineViewModel
+import com.android.systemui.headline.ui.viewmodel.HeadlineItem
+import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
+import com.android.systemui.headline.ui.viewmodel.fakeHeadlineItems
 
 @Composable
 @Preview
@@ -31,6 +52,154 @@ fun HeadlinePreview() {
 }
 
 @Composable
-fun HeadlineScreen() {
-    Headline(remember { FakeHeadlineViewModel() })
+fun HeadlineScreen(items: List<HeadlineItem> = remember { fakeHeadlineItems() }) {
+    @Composable
+    fun rememberViewModel(
+        currentItemIndex: Int? = 0,
+        list: List<HeadlineItem> = items,
+    ): FakeHeadlineViewModel {
+        return remember(list) { FakeHeadlineViewModel(list, currentItemIndex?.let { list[it] }) }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // No item selected.
+        FakeHeadline(rememberViewModel(currentItemIndex = null))
+
+        // First item selected.
+        FakeHeadline(rememberViewModel())
+
+        // First item selected (RTL).
+        WithReversedLayoutDirection { FakeHeadline(rememberViewModel()) }
+
+        // Second item selected.
+        FakeHeadline(rememberViewModel(currentItemIndex = 1))
+
+        // Last item selected.
+        FakeHeadline(rememberViewModel(currentItemIndex = items.lastIndex))
+
+        // Icons and text.
+        FakeHeadline(rememberViewModel(list = rememberListWithIconAndTextItem()))
+
+        // Icons and text (RTL).
+        WithReversedLayoutDirection {
+            FakeHeadline(rememberViewModel(list = rememberListWithIconAndTextItem()))
+        }
+
+        // Only icons.
+        FakeHeadline(rememberViewModel(list = rememberListWithIconOnlyItem()))
+
+        // Only text.
+        FakeHeadline(rememberViewModel(list = rememberListWithTextOnlyItem()))
+
+        // Long item (has correct max size).
+        FakeHeadline(rememberViewModel(list = rememberListWithLongItem()))
+
+        // Empty item (has correct minimum size).
+        FakeHeadline(
+            rememberViewModel(
+                list = remember { listOf(FakeHeadlineItem("empty", emptyList(), emptyList())) }
+            )
+        )
+    }
+}
+
+@Composable
+private fun FakeHeadline(viewModel: FakeHeadlineViewModel, modifier: Modifier = Modifier) {
+    WithFakeCameraCutout(modifier) { Headline(viewModel, Modifier.height(36.dp)) }
+}
+
+@Composable
+private fun WithFakeCameraCutout(
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier.drawWithContent {
+            drawContent()
+            drawCircle(Color.White, radius = size.minDimension / 3f)
+        },
+        content = content,
+    )
+}
+
+@Composable
+private fun WithReversedLayoutDirection(content: @Composable () -> Unit) {
+    val layoutDirection =
+        when (LocalLayoutDirection.current) {
+            LayoutDirection.Ltr -> LayoutDirection.Rtl
+            LayoutDirection.Rtl -> LayoutDirection.Ltr
+        }
+    CompositionLocalProvider(LocalLayoutDirection provides layoutDirection, content = content)
+}
+
+@Composable
+private fun rememberListWithIconAndTextItem(): List<HeadlineItem> {
+    return remember {
+        buildList {
+            add(
+                FakeHeadlineItem(
+                    "icons",
+                    listOf(
+                        HeadlineItemContent.Icon(Icons.Default.Timer, contentDescription = null),
+                        HeadlineItemContent.Text("4:42"),
+                    ),
+                    listOf(
+                        HeadlineItemContent.Text("3 min"),
+                        HeadlineItemContent.Icon(
+                            Icons.Default.DirectionsCar,
+                            contentDescription = null,
+                        ),
+                    ),
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun rememberListWithIconOnlyItem(): List<HeadlineItem> {
+    return remember {
+        buildList {
+            val icons =
+                listOf(
+                        Icons.Default.Timer,
+                        Icons.Default.MusicNote,
+                        Icons.Default.Phone,
+                        Icons.Default.DirectionsCar,
+                    )
+                    .map { HeadlineItemContent.Icon(it, contentDescription = null) }
+            add(FakeHeadlineItem("icons", icons.take(2), icons.takeLast(2)))
+        }
+    }
+}
+
+@Composable
+private fun rememberListWithTextOnlyItem(): List<FakeHeadlineItem> {
+    return remember {
+        listOf(
+            FakeHeadlineItem(
+                "texts",
+                listOf("1", "2", "3").map { HeadlineItemContent.Text(it) },
+                listOf("c", "b", "a").map { HeadlineItemContent.Text(it) },
+            )
+        )
+    }
+}
+
+@Composable
+private fun rememberListWithLongItem(): List<HeadlineItem> {
+    return remember {
+        buildList {
+            add(
+                FakeHeadlineItem(
+                    key = "long",
+                    startContents =
+                        listOf(HeadlineItemContent.Text("A very very very loooooong text")),
+                    endContents = emptyList(),
+                )
+            )
+
+            add(FakeHeadlineItem("empty", emptyList(), emptyList()))
+        }
+    }
 }
