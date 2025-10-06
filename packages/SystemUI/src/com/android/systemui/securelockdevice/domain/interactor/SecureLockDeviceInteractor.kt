@@ -82,7 +82,7 @@ constructor(
     val isSecureLockDeviceEnabled: StateFlow<Boolean> =
         secureLockDeviceRepository.isSecureLockDeviceEnabled.stateIn(
             applicationScope,
-            SharingStarted.Eagerly,
+            started = SharingStarted.WhileSubscribed(),
             false,
         )
 
