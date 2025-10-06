@@ -19,7 +19,7 @@ import android.graphics.Typeface
 import android.os.Vibrator
 import android.view.LayoutInflater
 import com.android.systemui.customization.R
-import com.android.systemui.customization.clocks.ClockContext
+import com.android.systemui.customization.clocks.ClockContextImpl
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.TimeKeeper
 import com.android.systemui.customization.clocks.TimeKeeperImpl
@@ -75,7 +75,7 @@ constructor(
                 FLEX_TYPEFACE
             }
         return FlexClockController(
-            ClockContext(
+            ClockContextImpl(
                 ctx,
                 resources,
                 clockSettings,
@@ -83,6 +83,7 @@ constructor(
                 buffers.infraMessageBuffer,
                 vibrator,
                 timeKeeperFactory(),
+                isAnimationEnabled = true,
             ),
             buffers,
         )
@@ -117,7 +118,7 @@ constructor(
         // In practice, 30 looks good enough and limits our memory usage
         const val NUM_CLOCK_FONT_ANIMATION_STEPS = 30
 
-        val FLEX_TYPEFACE by lazy {
+        val FLEX_TYPEFACE: Typeface by lazy {
             // TODO(b/364680873): Move constant to config_clockFontFamily when shipping
             Typeface.create("google-sans-flex-clock", Typeface.NORMAL)
         }

@@ -16,6 +16,7 @@
 
 package com.android.systemui.customization.clocks
 
+import android.content.Context
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.ViewGroup
@@ -61,11 +62,11 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
 
     private inner class SmallClockElement : MovableLockscreenElement {
         override val key = LockscreenElementKeys.Clock.Small
-        override val context = view.context
+        override val context: Context = view.context
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
-            clockView(
+            ClockView(
                 view,
                 Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
                     .then(contentScope.smallClockModifier())
@@ -77,11 +78,11 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
 
     private inner class LargeClockElement : MovableLockscreenElement {
         override val key = LockscreenElementKeys.Clock.Large
-        override val context = view.context
+        override val context: Context = view.context
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
-            clockView(
+            ClockView(
                 view,
                 Modifier.wrapContentSize()
                     .then(contentScope.largeClockModifier())
@@ -93,7 +94,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
 
     companion object {
         @Composable
-        fun clockView(view: View?, modifier: Modifier = Modifier) {
+        fun ClockView(view: View?, modifier: Modifier = Modifier) {
             AndroidView(
                 factory = {
                     FrameLayout(it).apply {

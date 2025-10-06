@@ -31,9 +31,9 @@ import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DefaultClockFaceLayout
-import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
-import com.android.systemui.customization.clocks.FontTextStyle
+import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.FontUtils.get
 import com.android.systemui.customization.clocks.utils.FontUtils.set
@@ -92,17 +92,16 @@ class FlexClockFaceController(
     private val keyguardLargeClockTopMargin =
         clockCtx.resources.getDimensionPixelSize(R.dimen.keyguard_large_clock_top_margin)
     private val timeFormatter =
-        DigitalTimeFormatter("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
-    val layerController: FlexClockViewController
+        DigitalFormatter.Time("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
+    val layerController: FlexClockViewController =
+        if (isLargeClock) {
+            FlexClockViewGroupController(clockCtx)
+        } else {
+            val cfg = SMALL_LAYER_CONFIG.copy(timeFormatter = timeFormatter)
+            FlexClockTextViewController(clockCtx, cfg, isLargeClock)
+        }
 
     init {
-        layerController =
-            if (isLargeClock) {
-                FlexClockViewGroupController(clockCtx)
-            } else {
-                val cfg = SMALL_LAYER_CONFIG.copy(timeFormatter = timeFormatter)
-                FlexClockTextViewController(clockCtx, cfg, isLargeClock)
-            }
         layerController.view.layoutParams =
             FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT).apply { gravity = Gravity.CENTER }
     }
@@ -215,7 +214,7 @@ class FlexClockFaceController(
             lp.gravity = Gravity.CENTER
             view.layoutParams = lp
             targetRegion?.let {
-                val diff = view.computeLayoutDiff(it, isLargeClock)
+                val diff = computeLayoutDiff(view, it, isLargeClock)
                 view.translationX = diff.x
                 view.translationY = diff.y
             }
@@ -262,10 +261,10 @@ class FlexClockFaceController(
                 view.invalidate()
             }
 
-            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {
-                layerController.animations.onPositionAnimated(args)
+            override fun onPositionAnimated(anim: ClockPositionAnimationArgs) {
+                layerController.animations.onPositionAnimated(anim)
                 if (isLargeClock) {
-                    (view as? FlexClockViewGroup)?.offsetGlyphsForStepClockAnimation(args)
+                    (view as? FlexClockViewGroup)?.offsetGlyphsForStepClockAnimation(anim)
                 }
             }
 
@@ -274,7 +273,7 @@ class FlexClockFaceController(
             }
 
             override fun onFontAxesChanged(style: ClockAxisStyle) {
-                var axes = ClockAxisStyle(getDefaultAxes(clockCtx.settings).merge(style))
+                val axes = ClockAxisStyle(getDefaultAxes(clockCtx.settings).merge(style))
                 if (!isLargeClock && axes[GSFAxes.WIDTH] > SMALL_CLOCK_MAX_WDTH) {
                     axes[GSFAxes.WIDTH] = SMALL_CLOCK_MAX_WDTH
                 }
@@ -284,15 +283,16 @@ class FlexClockFaceController(
         }
 
     companion object {
-        val SMALL_CLOCK_MAX_WDTH = 120f
+        const val SMALL_CLOCK_MAX_WDTH = 120f
 
         val SMALL_LAYER_CONFIG =
             LayerConfig(
-                style = FontTextStyle(fontSizeScale = 0.98f),
+                style = FontTextStyleImpl(fontSizeScale = 0.98f, fontFeatureSettings = "pnum"),
                 aodStyle =
-                    FontTextStyle(
+                    FontTextStyleImpl(
                         transitionInterpolator = Interpolators.EMPHASIZED,
                         transitionDuration = FlexClockViewGroup.AOD_TRANSITION_DURATION,
+                        fontFeatureSettings = "pnum",
                     ),
                 alignment = DigitalAlignment(HorizontalAlignment.START, VerticalAlignment.CENTER),
                 timespec = DigitalTimespec.TIME_FULL_FORMAT,

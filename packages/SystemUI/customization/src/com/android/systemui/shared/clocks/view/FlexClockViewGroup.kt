@@ -16,78 +16,43 @@
 
 package com.android.systemui.shared.clocks.view
 
+import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Color
 import android.icu.text.NumberFormat
 import android.util.MathUtils.constrainedMap
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RelativeLayout
-import androidx.annotation.VisibleForTesting
 import androidx.core.view.children
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.clocks.ClockContext
-import com.android.systemui.customization.clocks.ClockLogger
-import com.android.systemui.customization.clocks.DigitTranslateAnimator
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
 import com.android.systemui.customization.clocks.utils.CanvasUtils.use
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
-import com.android.systemui.customization.clocks.view.DigitalClockTextViewParent
+import com.android.systemui.customization.clocks.utils.ViewUtils.position
+import com.android.systemui.customization.clocks.view.DigitalClockViewGroup
 import com.android.systemui.plugins.keyguard.VPointF
-import com.android.systemui.plugins.keyguard.VPointF.Companion.max
-import com.android.systemui.plugins.keyguard.VPointF.Companion.times
 import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import java.util.Locale
-import kotlin.collections.filterNotNull
 import kotlin.collections.map
 import kotlin.collections.max
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
 
-fun clamp(value: Float, minVal: Float, maxVal: Float): Float = max(min(value, maxVal), minVal)
-
+@SuppressLint("ViewConstructor")
 class FlexClockViewGroup(clockCtx: ClockContext) :
-    ViewGroup(clockCtx.context), DigitalClockTextViewParent {
-    protected val logger = ClockLogger(this, clockCtx.messageBuffer, this::class.simpleName!!)
-        get() = field ?: ClockLogger.INIT_LOGGER
-
-    @VisibleForTesting
-    var isAnimationEnabled = true
-        set(value) {
-            field = value
-            childViews.forEach { view -> view.isAnimationEnabled = value }
-        }
-
-    var dozeFraction: Float = 0F
-        set(value) {
-            field = value
-            childViews.forEach { view -> view.dozeFraction = field }
-        }
+    DigitalClockViewGroup<FlexClockTextView>(clockCtx) {
+    override val children: Sequence<FlexClockTextView>
+        get() = (this as ViewGroup).children.filterIsInstance<FlexClockTextView>()
 
     var isReactiveTouchInteractionEnabled = false
         set(value) {
             field = value
         }
 
-    var _childViews: List<FlexClockTextView>? = null
-    val childViews: List<FlexClockTextView>
-        get() {
-            return _childViews
-                ?: this.children
-                    .map { child -> child as? FlexClockTextView }
-                    .filterNotNull()
-                    .toList()
-                    .also { _childViews = it }
-        }
-
-    private var maxChildSize = VPointF(-1f)
-    private val lockscreenTranslate = VPointF.ZERO
+    private var lockscreenTranslate = VPointF.ZERO
     private var aodTranslate = VPointF.ZERO
 
     private var onAnimateDoze: (() -> Unit)? = null
@@ -95,210 +60,66 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
 
     // Does the current language have mono vertical size when displaying numerals
     private var isMonoVerticalNumericLineSpacing = true
+    private val digitOffsets = mutableMapOf<Int, Float>()
 
     init {
         setWillNotDraw(false)
-        layoutParams =
-            RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            )
         updateLocale(Locale.getDefault())
     }
 
-    var maxSize = VPointF(-1f)
-        private set
-
-    var onViewBoundsChanged: ((VRectF) -> Unit)? = null
-    var onViewMaxSizeChanged: ((VPointF) -> Unit)? = null
-    private val digitOffsets = mutableMapOf<Int, Float>()
-
-    protected fun calculateSize(
-        widthMeasureSpec: Int,
-        heightMeasureSpec: Int,
-        shouldMeasureChildren: Boolean,
-    ): VPointF {
-        maxChildSize = VPointF(-1f)
-        childViews.forEach { textView ->
-            if (shouldMeasureChildren) {
-                textView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-            }
-            maxChildSize = max(maxChildSize, textView.measuredSize)
-        }
-        aodTranslate = VPointF.ZERO
-        // TODO(b/364680879): Cleanup
-        /*
-        aodTranslate = VPointF(
-            maxChildSize.x * AOD_HORIZONTAL_TRANSLATE_RATIO,
-            maxChildSize.y * AOD_VERTICAL_TRANSLATE_RATIO
-        )
-        */
-
-        val xScale = if (childViews.size < 4) 1f else 2f
+    override fun calculateSize(widthMeasureSpec: Int, heightMeasureSpec: Int): VPointF {
+        val xScale = if (children.count() < 4) 1f else 2f
         val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
         return (maxChildSize + aodTranslate.abs()) * VPointF(xScale, 2f) + VPointF(0f, yBuffer)
     }
 
-    override fun onViewAdded(child: View?) {
-        if (child == null) return
-        logger.onViewAdded(child)
-        super.onViewAdded(child)
-        (child as? FlexClockTextView)?.let {
-            it.digitTranslateAnimator = DigitTranslateAnimator { invalidate() }
-            it.onViewMaxSizeChanged = { recomputeMaxTextSize() }
-        }
-        child.setWillNotDraw(true)
-        _childViews = null
-    }
-
-    override fun onViewRemoved(child: View?) {
-        super.onViewRemoved(child)
-        _childViews = null
-    }
-
-    fun refreshTime() {
-        logger.refreshTime()
-        childViews.forEach { textView -> textView.refreshText() }
-    }
-
-    override fun setVisibility(visibility: Int) {
-        logger.setVisibility(visibility)
-        super.setVisibility(visibility)
-    }
-
-    override fun setAlpha(alpha: Float) {
-        logger.setAlpha(alpha)
-        super.setAlpha(alpha)
-    }
-
-    override fun invalidate() {
-        logger.invalidate()
-        super.invalidate()
-    }
-
-    override fun requestLayout() {
-        logger.requestLayout()
-        super.requestLayout()
-    }
-
-    override fun updateMeasuredSize() {
-        updateMeasuredSize(
-            measuredWidthAndState,
-            measuredHeightAndState,
-            shouldMeasureChildren = false,
-        )
-    }
-
-    private fun updateMeasuredSize(
-        widthMeasureSpec: Int,
-        heightMeasureSpec: Int,
-        shouldMeasureChildren: Boolean,
-    ) {
-        val size = calculateSize(widthMeasureSpec, heightMeasureSpec, shouldMeasureChildren)
-        setMeasuredDimension(size.x.roundToInt(), size.y.roundToInt())
-    }
-
-    private fun recomputeMaxTextSize() {
-        var maxSize = VPointF(-1f)
-        childViews.forEach { child ->
-            maxSize =
-                max(
-                    maxSize,
-                    // This wil overmeasure if some child views may be larger than others at their
-                    // maximal size, however all child views should be equivalently configured which
-                    // means that we should not need a more complex approach here.
-                    when (child.id) {
-                        // Digit pairs should only need to be duplicated vertically
-                        ClockViewIds.HOUR_DIGIT_PAIR,
-                        ClockViewIds.MINUTE_DIGIT_PAIR -> child.maxSize * VPointF(1f, 2f)
-                        // Single digit views are duplicated in both the x & y direction
-                        ClockViewIds.HOUR_FIRST_DIGIT,
-                        ClockViewIds.HOUR_SECOND_DIGIT,
-                        ClockViewIds.MINUTE_FIRST_DIGIT,
-                        ClockViewIds.MINUTE_SECOND_DIGIT -> child.maxSize * 2f
-                        // Other clock view ids are not valid children
-                        else -> VPointF(-1)
-                    },
-                )
-        }
-        val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
-        this.maxSize = maxSize + VPointF(0f, yBuffer)
-        onViewMaxSizeChanged?.let { it(this.maxSize) }
-    }
-
-    override fun updateLocation() {
-        val layoutBounds = this.layoutBounds ?: return
-        val bounds = VRectF.fromCenter(layoutBounds.center, this.measuredSize)
-        setFrame(
-            bounds.left.roundToInt(),
-            bounds.top.roundToInt(),
-            bounds.right.roundToInt(),
-            bounds.bottom.roundToInt(),
-        )
-        updateChildFrames(isLayout = false)
-        onViewBoundsChanged?.let { it(bounds) }
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        logger.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        updateMeasuredSize(widthMeasureSpec, heightMeasureSpec, shouldMeasureChildren = true)
-
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         isDozeReadyToAnimate = true
         onAnimateDoze?.invoke()
         onAnimateDoze = null
     }
 
-    private var layoutBounds = VRectF.ZERO
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        logger.onLayout(changed, left, top, right, bottom)
-        layoutBounds = VRectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
-        updateChildFrames(isLayout = true)
-    }
-
-    private fun updateChildFrames(isLayout: Boolean) {
+    override fun getChildFrame(child: FlexClockTextView): VRectF {
         val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
-        childViews.forEach { child ->
-            var offset =
-                maxChildSize.run {
-                    when (child.id) {
-                        ClockViewIds.HOUR_DIGIT_PAIR -> VPointF.ZERO
-                        ClockViewIds.HOUR_FIRST_DIGIT -> VPointF.ZERO
-                        ClockViewIds.HOUR_SECOND_DIGIT -> VPointF(x, 0f)
-                        // Add a small vertical buffer for second line views
-                        ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(0f, y + yBuffer)
-                        ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)
-                        ClockViewIds.MINUTE_SECOND_DIGIT -> VPointF(x, y + yBuffer)
-                        else -> VPointF.ZERO
-                    }
+        var offset =
+            maxChildSize.run {
+                when (child.id) {
+                    ClockViewIds.HOUR_DIGIT_PAIR -> VPointF.ZERO
+                    ClockViewIds.HOUR_FIRST_DIGIT -> VPointF.ZERO
+                    ClockViewIds.HOUR_SECOND_DIGIT -> VPointF(x, 0f)
+                    // Add a small vertical buffer for second line views
+                    ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(0f, y + yBuffer)
+                    ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)
+                    ClockViewIds.MINUTE_SECOND_DIGIT -> VPointF(x, y + yBuffer)
+                    else -> VPointF.ZERO
                 }
+            }
 
-            val childSize = child.measuredSize
-            offset += aodTranslate.abs()
+        val childSize = child.measuredSize
+        offset += aodTranslate.abs()
 
-            // Horizontal offset to center each view in the available space
-            val midX = if (childViews.size < 4) measuredWidth / 2f else measuredWidth / 4f
-            offset += VPointF(midX - childSize.x / 2f, 0f)
+        // Horizontal offset to center each view in the available space
+        val midX = if (children.count() < 4) measuredWidth / 2f else measuredWidth / 4f
+        offset += VPointF(midX - childSize.x / 2f, 0f)
 
-            val setPos = if (isLayout) child::layout else child::setLeftTopRightBottom
-            setPos(
-                offset.x.roundToInt(),
-                offset.y.roundToInt(),
-                (offset.x + childSize.x).roundToInt(),
-                (offset.y + childSize.y).roundToInt(),
-            )
-        }
+        return VRectF.fromTopLeft(offset, childSize)
     }
 
     override fun onDraw(canvas: Canvas) {
         logger.onDraw()
-        childViews.forEach { child ->
+        children.forEach { child ->
             canvas.use { canvas ->
                 canvas.translate(digitOffsets.getOrDefault(child.id, 0f), 0f)
-                canvas.translate(child.left.toFloat(), child.top.toFloat())
+                canvas.translate(child.position)
                 child.draw(canvas)
             }
         }
+    }
+
+    override fun refreshTime() {
+        logger.refreshTime()
+        children.forEach { textView -> textView.refreshText() }
     }
 
     fun onLocaleChanged(locale: Locale) {
@@ -307,26 +128,26 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     }
 
     fun updateColor(lockscreenColor: Int, aodColor: Int = Color.WHITE) {
-        childViews.forEach { view -> view.updateColor(lockscreenColor, aodColor) }
+        children.forEach { view -> view.updateColor(lockscreenColor, aodColor) }
         invalidate()
     }
 
     fun updateAxes(axes: ClockAxisStyle, isAnimated: Boolean) {
-        childViews.forEach { view -> view.updateAxes(axes, isAnimated) }
+        children.forEach { view -> view.updateAxes(axes, isAnimated) }
         requestLayout()
     }
 
     fun onFontSettingChanged(fontSizePx: Float) {
-        childViews.forEach { view -> view.applyTextSize(fontSizePx) }
+        children.forEach { view -> view.applyTextSize(fontSizePx, constrainedByHeight = false) }
     }
 
     fun animateDoze(isDozing: Boolean, isAnimated: Boolean) {
         fun executeDozeAnimation() {
-            childViews.forEach { view -> view.animateDoze(isDozing, isAnimated) }
+            children.forEach { view -> view.animateDoze(isDozing, isAnimated) }
             if (maxChildSize.x < 0 || maxChildSize.y < 0) {
                 measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
             }
-            childViews.forEach { textView ->
+            children.forEach { textView ->
                 textView.digitTranslateAnimator?.let {
                     if (!isDozing) {
                         it.animatePosition(
@@ -354,8 +175,8 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     }
 
     fun animateCharge() {
-        childViews.forEach { view -> view.animateCharge() }
-        childViews.forEach { textView ->
+        children.forEach { view -> view.animateCharge() }
+        children.forEach { textView ->
             textView.digitTranslateAnimator?.let {
                 it.animatePosition(
                     animate = isAnimationEnabled,
@@ -397,7 +218,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
             }
         }
 
-        childViews.forEach { it.animateFidget(pt, enforceBounds = false) }
+        children.forEach { it.animateFidget(pt, enforceBounds = false) }
         return true
     }
 
@@ -419,7 +240,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         val isCentering = isLayoutRtl == (translation < 0)
         // A map of the delays for a given digit, keyed by digit index. Inverted for rtl motion.
         val delays = if (isLayoutRtl == isCentering) STEP_LEFT_DELAYS else STEP_RIGHT_DELAYS
-        childViews.forEachIndexed { index, child ->
+        children.forEachIndexed { index, child ->
             val digitFraction =
                 STEP_INTERPOLATOR.getInterpolation(
                     constrainedMap(
@@ -436,7 +257,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     }
 
     fun resetGlyphsOffsets() {
-        if (digitOffsets.size <= 0) return
+        if (digitOffsets.isEmpty()) return
         digitOffsets.clear()
         invalidate()
     }
@@ -456,7 +277,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         val translation = endX - startX
         // A map of the delays for a given digit, keyed by digit index
         val delays = if (translation > 0) STEP_RIGHT_DELAYS else STEP_LEFT_DELAYS
-        childViews.forEachIndexed { index, child ->
+        children.forEachIndexed { index, child ->
             val digitFraction =
                 constrainedMap(
                     /* rangeMin= */ 0.0f,
@@ -473,15 +294,13 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     }
 
     companion object {
-        val FORMAT_NUMBER = 1234567890
-        val AOD_TRANSITION_DURATION = 800L
-        val CHARGING_TRANSITION_DURATION = 300L
-
-        val AOD_HORIZONTAL_TRANSLATE_RATIO = -0.15F
-        val AOD_VERTICAL_TRANSLATE_RATIO = 0.075F
+        const val FORMAT_NUMBER = 1234567890
+        const val AOD_TRANSITION_DURATION = 800L
+        const val CHARGING_TRANSITION_DURATION = 300L
 
         private val STEP_INTERPOLATOR = Interpolators.EMPHASIZED
-        private val STEP_DIGIT_DELAY = 0.033f // Measured as fraction of total animation duration
+        // Measured as fraction of total animation duration
+        private const val STEP_DIGIT_DELAY = 0.033f
         private val STEP_LEFT_DELAYS = listOf(0, 1, 2, 3).map { it * STEP_DIGIT_DELAY }
         private val STEP_RIGHT_DELAYS = listOf(1, 0, 3, 2).map { it * STEP_DIGIT_DELAY }
         private val STEP_ANIMATION_TIME = 1.0f - STEP_LEFT_DELAYS.max()

@@ -19,7 +19,7 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
 import com.android.systemui.customization.clocks.DefaultClockFaceLayout
-import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.log.core.Logger
@@ -38,7 +38,7 @@ class SampleClockFaceController(
     private val hostCtx: Context,
     private val pluginCtx: Context,
     private val settings: ClockSettings,
-    private val timeFormatter: DigitalTimeFormatter,
+    private val timeFormatter: DigitalFormatter,
     private val messageBuffer: MessageBuffer,
     private val isLargeClock: Boolean,
 ) : ClockFaceController {

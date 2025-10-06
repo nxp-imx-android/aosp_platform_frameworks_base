@@ -20,7 +20,7 @@ import android.content.res.Resources
 import android.icu.util.TimeZone
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.R
-import com.android.systemui.customization.clocks.ClockContext
+import com.android.systemui.customization.clocks.ClockContextImpl
 import com.android.systemui.customization.clocks.utils.FontUtils.put
 import com.android.systemui.customization.clocks.utils.FontUtils.set
 import com.android.systemui.customization.clocks.utils.FontUtils.toClockAxis
@@ -45,7 +45,7 @@ import java.util.Locale
 
 /** Controller for the default flex clock */
 class FlexClockController(
-    private val clockCtx: ClockContext,
+    private val clockCtx: ClockContextImpl,
     private val messageBuffers: ClockMessageBuffers,
 ) : ClockController {
     override val smallClock =

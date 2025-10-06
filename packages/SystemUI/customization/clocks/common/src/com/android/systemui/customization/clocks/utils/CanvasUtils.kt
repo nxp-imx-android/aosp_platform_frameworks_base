@@ -17,8 +17,10 @@
 package com.android.systemui.customization.clocks.utils
 
 import android.graphics.Canvas
+import android.graphics.Paint
 import com.android.systemui.plugins.keyguard.VPoint
 import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRectF
 
 object CanvasUtils {
     fun Canvas.translate(pt: VPointF) = this.translate(pt.x, pt.y)
@@ -27,6 +29,13 @@ object CanvasUtils {
 
     fun <T> Canvas.use(func: (Canvas) -> T): T {
         val saveNum = save()
+        val result = func(this)
+        restoreToCount(saveNum)
+        return result
+    }
+
+    fun <T> Canvas.useLayer(rect: VRectF, paint: Paint? = null, func: (Canvas) -> T): T {
+        val saveNum = saveLayer(rect.left, rect.top, rect.right, rect.bottom, paint)
         val result = func(this)
         restoreToCount(saveNum)
         return result
