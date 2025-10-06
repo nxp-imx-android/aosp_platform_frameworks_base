@@ -12,6 +12,5 @@ java_library {
     ],
     static_libs: [
         "device_state_flags_lib",
-        "power_hint_flags_lib",
     ],
 }
