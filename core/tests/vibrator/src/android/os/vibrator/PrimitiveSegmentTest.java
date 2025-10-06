@@ -62,6 +62,8 @@ public class PrimitiveSegmentTest {
         original.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
         assertEquals(original, PrimitiveSegment.CREATOR.createFromParcel(parcel));
+        parcel.setDataPosition(0);
+        assertEquals(original, VibrationEffectSegment.CREATOR.createFromParcel(parcel));
     }
 
     @Test
