@@ -424,7 +424,7 @@ private fun addStartSideComposable(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                     )
                     .apply {
-                        if (showDate) {
+                        if (showDate || ClockModernization.isEnabled) {
                             gravity = android.view.Gravity.CENTER_VERTICAL
                         }
                     }
@@ -458,17 +458,19 @@ private fun addStartSideComposable(
                             clockViewModel = checkNotNull(clockViewModel),
                             textColor = tint,
                             modifier =
-                                Modifier.onGloballyPositioned { coordinates ->
-                                    val boundsInWindow = coordinates.boundsInWindow()
-                                    val bounds =
-                                        Rect(
-                                            boundsInWindow.left.toInt(),
-                                            boundsInWindow.top.toInt(),
-                                            boundsInWindow.right.toInt(),
-                                            boundsInWindow.bottom.toInt(),
-                                        )
-                                    statusBarBoundsViewModel.updateComposeClockBounds(bounds)
-                                },
+                                Modifier.padding(end = 2.dp)
+                                    .wrapContentSize()
+                                    .onGloballyPositioned { coordinates ->
+                                        val boundsInWindow = coordinates.boundsInWindow()
+                                        val bounds =
+                                            Rect(
+                                                boundsInWindow.left.toInt(),
+                                                boundsInWindow.top.toInt(),
+                                                boundsInWindow.right.toInt(),
+                                                boundsInWindow.bottom.toInt(),
+                                            )
+                                        statusBarBoundsViewModel.updateComposeClockBounds(bounds)
+                                    },
                         )
                     }
                 }
