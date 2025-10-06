@@ -557,6 +557,7 @@ package android.app.admin {
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void calculateHasIncompatibleAccounts();
     method @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void clearMultiUserDeviceManagement(@NonNull android.content.ComponentName);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void clearOrganizationId();
+    method public void clearPolicy(@NonNull String, int);
     method @RequiresPermission(android.Manifest.permission.CLEAR_FREEZE_PERIOD) public void clearSystemUpdatePolicyFreezePeriodRecord();
     method @RequiresPermission(android.Manifest.permission.FORCE_DEVICE_POLICY_MANAGER_LOGS) public long forceNetworkLogs();
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void forceRemoveActiveAdmin(@NonNull android.content.ComponentName, int);
