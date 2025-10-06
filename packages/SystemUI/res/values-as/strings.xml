@@ -365,6 +365,8 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"অৱস্থানৰ অনুৰোধ সক্ৰিয় হৈ আছে"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"ছেন্সৰ অফ সক্ৰিয় কৰা আছে"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"আটাইবোৰ জাননী মচক৷"</string>
+    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ভিতৰত আৰু # টা জাননী আছে।}one{ভিতৰত আৰু # টা জাননী আছে।}other{ভিতৰত আৰু # টা জাননী আছে।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"স্ক্ৰীন লেণ্ডস্কে\'প দিশত লক কৰা হ’ল।"</string>
@@ -426,6 +428,14 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"কোনো ৱাই-ফাই অথবা ইথাৰনেট সংযোগ নাই"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"সংযোগ বিচ্ছিন্ন কৰক"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"বৰ্তমানৰ মাইকটো হৈছে"</string>
+    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"উজ্জ্বলতা"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"ৰং বিপৰীতকৰণ"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"ৰং শুধৰণী"</string>
@@ -752,11 +762,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"আপোনাৰ ব্যক্তিগত এপ্‌সমূহ <xliff:g id="VPN_APP">%1$s</xliff:g>ৰ জৰিয়তে ইণ্টাৰনেটৰ সৈতে সংযুক্ত হৈ আছে। ইমেইল আৰু ব্ৰাউজিঙৰ ডেটাকে ধৰি আপোনাৰ নেটৱৰ্ক সম্পৰ্কীয় কাৰ্যকলাপ আপোনাৰ ভিপিএন প্ৰদানকাৰীয়ে দেখা পায়।"</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN ছেটিং খোলক"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"এই ডিভাইচটো আপোনাৰ অভিভাৱকে পৰিচালনা কৰে। আপোনাৰ অভিভাৱকে আপুনি ব্যৱহাৰ কৰা এপ্‌, আপোনাৰ অৱস্থান আৰু আপুনি ডিভাইচত অতিবাহিত কৰা সময়ৰ দৰে তথ্য চাব আৰু পৰিচালনা কৰিব পাৰে।"</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"আপোনাৰ ডিভাইচত দৈনিক সীমা আৰু ডাউনটাইমৰ দৰে কিছুমান নিয়ন্ত্ৰণ কেৱল এটা পিনৰ জৰিয়তে সলনি কৰিব পাৰি।"</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"কিছুমান নিয়ন্ত্ৰণ কেৱল আপোনাৰ অভিভাৱকেহে সলনি কৰিব পাৰে"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"ভিপিএন"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgentএ আনলক কৰি ৰাখিছে"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"স্ক্ৰীন লক কৰা হ’ল। অত্যধিক প্ৰমাণীকৰণৰ প্ৰয়াস।"</string>
@@ -813,8 +821,8 @@
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"<xliff:g id="MODE">%s</xliff:g> অন থকাৰ বাবে উপলব্ধ নহয়"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"উপলব্ধ নহয়"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s। আনমিউট কৰিবৰ বাবে টিপক।"</string>
-    <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s। কম্পনৰ বাবে টিপক। দিব্য়াংগসকলৰ বাবে থকা সেৱা মিউট হৈ থাকিব পাৰে।"</string>
-    <string name="volume_stream_content_description_mute" msgid="4079046784917920984">"%1$s। মিউট কৰিবলৈ টিপক। দিব্য়াংগসকলৰ বাবে থকা সেৱা মিউট হৈ থাকিব পাৰে।"</string>
+    <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s। কম্পনৰ বাবে টিপক। দিব্যাংগসকলৰ বাবে থকা সেৱা মিউট হৈ থাকিব পাৰে।"</string>
+    <string name="volume_stream_content_description_mute" msgid="4079046784917920984">"%1$s। মিউট কৰিবলৈ টিপক। দিব্যাংগসকলৰ বাবে থকা সেৱা মিউট হৈ থাকিব পাৰে।"</string>
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"%1$s। কম্পন অৱস্থাত ছেট কৰিবলৈ টিপক।"</string>
     <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"%1$s। মিউট কৰিবলৈ টিপক।"</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"কোলাহল নিয়ন্ত্ৰণ"</string>
@@ -980,7 +988,7 @@
     <string name="keyboard_key_move_home" msgid="3496502501803911971">"হ\'ম"</string>
     <string name="keyboard_key_move_end" msgid="99190401463834854">"সমাপ্ত"</string>
     <string name="keyboard_key_insert" msgid="4621692715704410493">"ভৰাওক"</string>
-    <string name="keyboard_key_num_lock" msgid="7209960042043090548">"সংখ্য়া লক"</string>
+    <string name="keyboard_key_num_lock" msgid="7209960042043090548">"সংখ্যা লক"</string>
     <string name="keyboard_key_numpad_template" msgid="7316338238459991821">"নামপেড <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="notif_inline_reply_remove_attachment_description" msgid="7954075334095405429">"সংলগ্নক আঁতৰাওক"</string>
     <string name="keyboard_shortcut_group_system" msgid="1583416273777875970">"ছিষ্টেম"</string>
@@ -1141,6 +1149,8 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>ৰ পৃষ্ঠা <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> অন কৰিবনে?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"কাৰ্য "<annotation id="action_key_icon">"চিহ্নটো"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> হৈছে <xliff:g id="ID_3">^3</xliff:g> ব্যৱহাৰ কৰিবলৈ লগা কীব’ৰ্ডৰ শ্বৰ্টকাট। <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> কীব’ৰ্ডৰ শ্বৰ্টকাট অন কৰিবনে?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"অন নকৰিব"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"শ্বৰ্টকাট অন কৰক"</string>

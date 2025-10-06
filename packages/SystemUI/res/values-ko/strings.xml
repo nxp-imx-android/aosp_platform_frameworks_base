@@ -365,6 +365,8 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"위치 요청 있음"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"센서 끄기 활성화"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"모든 알림 지우기"</string>
+    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -426,6 +428,14 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi‑Fi 또는 이더넷 연결 없음"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"연결 해제"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"현재 마이크:"</string>
+    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"밝기"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"색상 반전"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"색상 보정"</string>
@@ -752,11 +762,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"개인 앱은 <xliff:g id="VPN_APP">%1$s</xliff:g> 앱을 통해 인터넷에 연결됩니다. VPN 제공업체가 이메일, 인터넷 사용 기록 등 내 네트워크 활동을 볼 수 있습니다."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN 설정 열기"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"부모님이 관리하는 기기입니다. 부모님이 내가 사용하는 앱, 내 위치, 기기 사용 시간과 같은 정보를 확인하고 관리할 수 있습니다."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"일일 한도 및 다운타임과 같은 기기의 일부 제어 기능은 PIN을 사용해서만 변경할 수 있습니다."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"일부 설정은 부모님만 변경할 수 있습니다."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent가 잠금 해제함"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"인증 시도 횟수가 너무 많아서 기기가 잠겼습니다."</string>
@@ -1141,6 +1149,8 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>페이지 중 <xliff:g id="ID_1">%1$d</xliff:g>페이지"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 기능을 사용 설정하시겠습니까?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> 단축키를 사용 설정하시겠습니까?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"사용 설정하지 않음"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"단축키 사용 설정"</string>

@@ -365,6 +365,8 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"Yêu cầu về thông tin vị trí đang hoạt động"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Tùy chọn tắt cảm biến đang hoạt động"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Xóa tất cả thông báo."</string>
+    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# thông báo khác bên trong.}other{# thông báo khác bên trong.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Màn hình hiện bị khóa theo hướng ngang."</string>
@@ -426,6 +428,14 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Không có kết nối Wi-Fi hoặc Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Ngắt kết nối"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Micrô đang dùng là"</string>
+    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Độ sáng"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Đảo màu"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Chỉnh màu"</string>
@@ -752,11 +762,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Ứng dụng cá nhân được kết nối với Internet thông qua <xliff:g id="VPN_APP">%1$s</xliff:g>. Hoạt động mạng của bạn, bao gồm email và dữ liệu duyệt web, được hiển thị cho nhà cung cấp VPN."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Mở phần cài đặt VPN"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"Thiết bị này do cha mẹ bạn quản lý. Cha mẹ có thể có thể xem và quản lý những thông tin như ứng dụng bạn dùng, vị trí của bạn và thời gian bạn sử dụng thiết bị."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Bạn chỉ có thể thay đổi một số chế độ kiểm soát trên thiết bị bằng mã PIN, chẳng hạn như giới hạn hằng ngày và thời gian ngừng hoạt động."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"Chỉ cha mẹ bạn mới có thể thay đổi một số chế độ kiểm soát"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Luôn được TrustAgent mở khóa"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Đã khoá màn hình. Bạn đã thử xác thực quá nhiều lần."</string>
@@ -1141,6 +1149,8 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Trang <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Bật <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Thao tác "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> là phím tắt để dùng <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Bật phím tắt <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Không bật"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Bật phím tắt"</string>

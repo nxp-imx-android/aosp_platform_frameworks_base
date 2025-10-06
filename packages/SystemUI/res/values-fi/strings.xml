@@ -365,6 +365,8 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"Sijaintipyynnöt aktiiviset"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Anturit pois päältä aktiivinen"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Tyhjennä kaikki ilmoitukset."</string>
+    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{+# ilmoitus ryhmässä.}other{+# ilmoitusta ryhmässä.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ruutu on lukittu vaakasuuntaan."</string>
@@ -426,6 +428,14 @@
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ei Wi‑Fi- tai Ethernet-yhteyttä"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Katkaise yhteys"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Nykyinen mikrofoni on"</string>
+    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
+    <skip />
+    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
+    <skip />
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Kirkkaus"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Käänteiset värit"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Värinkorjaus"</string>
@@ -752,11 +762,9 @@
     <string name="monitoring_description_personal_profile_named_vpn" msgid="5083909710727365452">"Henkilökohtaiset sovelluksesi on yhdistetty internetiin tämän kautta: <xliff:g id="VPN_APP">%1$s</xliff:g>. Verkkotoimintasi, mukaan lukien sähköpostit ja selausdata, näkyy VPN-palveluntarjoajalle."</string>
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Avaa VPN-asetukset"</string>
-    <!-- no translation found for monitoring_description_parental_controls_legacy (3331029441820725897) -->
-    <skip />
+    <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"Vanhempasi ylläpitää tätä laitetta. Vanhempasi voi nähdä ja ylläpitää tietoja, esim. käyttämiäsi sovelluksia, sijaintiasi ja käyttöaikaasi."</string>
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Joitakin laitteen asetuksia, kuten päivärajoituksia ja laitepausseja, voi muuttaa vain PIN-koodilla."</string>
-    <!-- no translation found for monitoring_description_parental_controls (4255592993669461543) -->
-    <skip />
+    <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"Vain vanhempi voi muuttaa joitakin asetuksia"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent pitää lukitusta avattuna"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Näyttö lukittu. Liian monta todennusyritystä."</string>
@@ -1141,6 +1149,8 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Sivu <xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Laitetaanko <xliff:g id="ID_1">%1$s</xliff:g> päälle?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"<xliff:g id="ID_3">^3</xliff:g> on käytettävissä pikanäppäinyhdistelmällä "<annotation id="action_key_icon">"kuvake"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Laitetaanko pikanäppäinyhdistelmä (<xliff:g id="ID_1">%1$s</xliff:g>) päälle?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Älä laita päälle"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Laita pikanäppäinyhdistelmä päälle"</string>
