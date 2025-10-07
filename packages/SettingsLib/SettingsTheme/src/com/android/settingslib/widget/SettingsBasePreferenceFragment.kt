@@ -22,7 +22,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
 import androidx.recyclerview.widget.RecyclerView
 import com.android.settingslib.widget.theme.R
@@ -49,12 +51,54 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
                 listView?.addItemDecoration(MarginItemDecoration())
             }
         }
+
+        preferenceScreen?.let { screen ->
+            recursiveInitializePreferences(screen)
+        }
+    }
+
+    override fun setPreferenceScreen(preferenceScreen: PreferenceScreen?) {
+        super.setPreferenceScreen(preferenceScreen)
+        if (preferenceScreen != null && view != null) {
+            recursiveInitializePreferences(preferenceScreen)
+        }
+    }
+
+    /**
+     * Recursive helper to find preferences even inside Categories or nested Groups.
+     */
+    private fun recursiveInitializePreferences(group: PreferenceGroup) {
+        val count = group.preferenceCount
+        for (i in 0 until count) {
+            val preference = group.getPreference(i)
+
+            // 1. Initialize our custom preference
+            if (preference is FragmentAttachablePreference) {
+                preference.onFragmentViewCreated(viewLifecycleOwner)
+            }
+
+            // 2. If it's a group (like PreferenceCategory), dive deeper
+            if (preference is PreferenceGroup) {
+                recursiveInitializePreferences(preference)
+            }
+        }
     }
 
     override fun onCreateAdapter(preferenceScreen: PreferenceScreen): RecyclerView.Adapter<*> {
         if (SettingsThemeHelper.isExpressiveTheme(requireContext()))
             return SettingsPreferenceGroupAdapter(preferenceScreen)
         return super.onCreateAdapter(preferenceScreen)
+    }
+
+    /** Handles the display of custom dialogs for preferences. */
+    override fun onDisplayPreferenceDialog(preference: Preference) {
+        // Check if the preference implements the generic interface
+        if (preference is FragmentAttachablePreference) {
+            // Now ListDialogSwitcherPreference will execute its dialog-showing logic
+            preference.displayCustomDialog(this, preference.key)
+        } else {
+            super.onDisplayPreferenceDialog(preference)
+        }
     }
 
     internal class MarginItemDecoration() : RecyclerView.ItemDecoration() {
