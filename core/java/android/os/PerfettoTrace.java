@@ -37,6 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Debug#startMethodTracing} or {@link Trace}.
  *
  * @hide
+ *
+ * TODO(b/449768154) We don't really use this class on Ravenwood. Figure out a cleaner way
+ * to disable this class, rather than the scattered @RavenwoodIgnore's.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass(
         comment = "Most features are no-op on Ravenwood")
@@ -49,12 +52,23 @@ public final class PerfettoTrace {
     private static final int PERFETTO_TE_TYPE_INSTANT = 3;
     private static final int PERFETTO_TE_TYPE_COUNTER = 4;
 
-    private static final boolean IS_FLAG_ENABLED = android.os.Flags.perfettoSdkTracingV2();
+    private static final boolean IS_FLAG_ENABLED = isFlagEnabled();
+
+    @RavenwoodIgnore // Flag always false on Ravenwood
+    private static boolean isFlagEnabled() {
+        return android.os.Flags.perfettoSdkTracingV2();
+    }
 
     // To simplify migration to the newer API we use this flag both when invoke trace methods and
     // in this class to chose what API to initialize.
     public static final boolean IS_USE_SDK_TRACING_API_V3 =
-            IS_FLAG_ENABLED && android.os.Flags.perfettoSdkTracingV3();
+            IS_FLAG_ENABLED && isPerfettoSdkTracingV3();
+
+
+    @RavenwoodIgnore // Flag always false on Ravenwood
+    private static boolean isPerfettoSdkTracingV3() {
+        return android.os.Flags.perfettoSdkTracingV3();
+    }
 
     private static final AtomicBoolean sAttemptedSystemRegistration = new AtomicBoolean(false);
 
