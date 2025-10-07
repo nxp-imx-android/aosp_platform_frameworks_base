@@ -1208,7 +1208,7 @@ private fun AvailableTileGridCell(
     // Displays the tile as an icon tile with the label underneath
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(CommonTileDefaults.TileStartPadding, Alignment.Top),
+        verticalArrangement = spacedBy(CommonTileDefaults.StartPadding, Alignment.Top),
         modifier =
             modifier
                 .graphicsLayer { this.alpha = alpha }
@@ -1349,6 +1349,7 @@ fun EditTile(
     progress: () -> Float,
     colors: TileColors = EditModeTileDefaults.editTileColors(),
 ) {
+    val defaultStartPadding = CommonTileDefaults.StartPadding
     val iconSizeDiff = CommonTileDefaults.IconSize - CommonTileDefaults.LargeTileIconSize
     val toggleTargetSize = ToggleTargetSize
     Row(
@@ -1370,6 +1371,7 @@ fun EditTile(
                         if (currentProgress == 0f) {
                             // Find the center of the max width when the tile is icon only
                             iconHorizontalCenter(
+                                padding = defaultStartPadding,
                                 containerSize = constraints.maxWidth,
                                 toggleTargetSize = toggleTargetSize
                             )
@@ -1379,6 +1381,7 @@ fun EditTile(
                             val basePadding =
                                 min?.let {
                                     iconHorizontalCenter(
+                                        padding = defaultStartPadding,
                                         containerSize = it.roundToInt(),
                                         toggleTargetSize = toggleTargetSize
                                     )
@@ -1420,9 +1423,12 @@ fun EditTile(
     }
 }
 
-private fun MeasureScope.iconHorizontalCenter(containerSize: Int, toggleTargetSize: Dp): Float {
-    return (containerSize - toggleTargetSize.roundToPx()) / 2f -
-        CommonTileDefaults.TileStartPadding.toPx()
+private fun MeasureScope.iconHorizontalCenter(
+    padding: Dp,
+    containerSize: Int,
+    toggleTargetSize: Dp
+): Float {
+    return (containerSize - toggleTargetSize.roundToPx()) / 2f - padding.toPx()
 }
 
 private fun Modifier.tileBackground(

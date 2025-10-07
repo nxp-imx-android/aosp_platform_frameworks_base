@@ -569,6 +569,11 @@ constructor(
             val view =
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.bluetooth_device_item, parent, false)
+
+            if (!isInDialog) {
+                customizeDetailsTileDeviceLayout(view)
+            }
+
             return DeviceItemViewHolder(view)
         }
 
@@ -686,6 +691,63 @@ constructor(
                         DeviceItemClick(item, it, DeviceItemClick.Target.ACTION_ICON)
                 }
             }
+        }
+    }
+
+    // Applies specific dimensions for the Bluetooth details tile, overriding XML defaults.
+    private fun customizeDetailsTileDeviceLayout(view: View) {
+        val deviceStartPadding = view.resources.getDimensionPixelSize(
+            R.dimen.tile_details_entry_start_padding
+        )
+
+        view.findViewById<ViewGroup>(R.id.bluetooth_device_row).apply {
+            layoutParams = layoutParams.apply {
+                height =
+                    resources.getDimensionPixelSize(R.dimen.tile_details_entry_height)
+            }
+
+            setPadding(deviceStartPadding, paddingTop, paddingEnd, paddingBottom)
+        }
+
+        view.findViewById<ImageView>(R.id.bluetooth_device_icon).apply {
+            val iconSize = resources.getDimensionPixelSize(
+                R.dimen.tile_details_entry_icon_size
+            )
+
+            layoutParams = layoutParams.apply {
+                width = iconSize
+                height = iconSize
+            }
+        }
+
+        view.findViewById<TextView>(R.id.bluetooth_device_name).apply {
+            val top = resources.getDimensionPixelSize(
+                R.dimen.tile_details_entry_title_top_paddings
+            )
+
+            setPadding(
+                deviceStartPadding,
+                top,
+                paddingEnd,
+                paddingBottom,
+            )
+
+            setTextAppearance(R.style.TextAppearance_TileDetailsEntryTitle)
+        }
+
+        view.findViewById<TextView>(R.id.bluetooth_device_summary).apply {
+            val bottom = resources.getDimensionPixelSize(
+                R.dimen.tile_details_entry_subtitle_bottom_paddings
+            )
+
+            setPadding(
+                deviceStartPadding,
+                paddingTop,
+                paddingEnd,
+                bottom,
+            )
+
+            setTextAppearance(R.style.TextAppearance_TileDetailsEntrySubTitle)
         }
     }
 

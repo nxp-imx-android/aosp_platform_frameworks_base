@@ -2222,7 +2222,7 @@
     <dimen name="rear_display_progress_width">231dp</dimen>
     <!-- Rear display mode end -->
 
-    <!-- Tile Details start-->
+    <!-- Tile Details start -->
     <dimen name="tile_details_toggle_row_height">48dp</dimen>
     <dimen name="bluetooth_details_toggle_row_margin_start">32dp</dimen>
     <dimen name="bluetooth_details_toggle_row_margin_end">26dp</dimen>
@@ -2230,12 +2230,24 @@
     <dimen name="tile_details_switch_track_height">24dp</dimen>
     <dimen name="tile_details_button_row_height">40dp</dimen>
     <dimen name="tile_details_button_size">20dp</dimen>
-    <dimen name="tile_details_entry_gap">2dp</dimen>
     <dimen name="tile_details_bottom_padding">14dp</dimen>
     <dimen name="tile_details_horizontal_padding">14dp</dimen>
     <dimen name="tile_details_vertical_padding">8dp</dimen>
     <dimen name="tile_details_entry_start_margin">16dp</dimen>
     <!-- Tile Details end -->
+
+    <!-- Tile Details entry start -->
+    <dimen name="tile_details_entry_gap">2dp</dimen>
+    <dimen name="tile_details_entry_height">72dp</dimen>
+    <dimen name="tile_details_entry_icon_size">24dp</dimen>
+    <dimen name="tile_details_entry_start_padding">20dp</dimen>
+    <!-- tile_details_entry_subtitle_bottom_paddings used only when both the title and the subtitle exist -->
+    <dimen name="tile_details_entry_subtitle_bottom_paddings">@dimen/tile_details_entry_title_top_paddings</dimen>
+    <dimen name="tile_details_entry_subtitle_size">12sp</dimen>
+    <dimen name="tile_details_entry_title_size">13sp</dimen>
+    <!-- tile_details_entry_title_top_paddings used only when both the title and the subtitle exist -->
+    <dimen name="tile_details_entry_title_top_paddings">15dp</dimen>
+    <!-- Tile Details entry end -->
 
     <!-- Bouncer containerization on large screens -->
     <dimen name="bouncer_container_min_width">1280dp</dimen>

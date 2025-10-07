@@ -101,10 +101,8 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.SideIconWidth
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TILE_INITIAL_DELAY_MILLIS
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TILE_MARQUEE_ITERATIONS
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileDualTargetEndPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileEndPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileLabelBlurWidth
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileStartPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelSettings
 import com.android.systemui.qs.panels.ui.viewmodel.AccessibilityUiState
 import com.android.systemui.qs.ui.compose.borderOnFocus
@@ -382,10 +380,11 @@ fun Modifier.tileTestTag(iconOnly: Boolean): Modifier {
  * Large tiles have a different end padding based on the content, such as if it's a dual target tile
  * or if it has a side drawable.
  */
+@Composable
 fun Modifier.largeTilePadding(isDualTarget: Boolean = false): Modifier {
     return padding(
-        start = TileStartPadding,
-        end = if (isDualTarget) TileDualTargetEndPadding else TileEndPadding,
+        start = CommonTileDefaults.StartPadding,
+        end = if (isDualTarget) CommonTileDefaults.DualTargetEndPadding else TileEndPadding,
     )
 }
 
@@ -418,6 +417,11 @@ object TileBounceMotionTestKeys {
 }
 
 object CommonTileDefaults {
+    val DualTargetEndPadding: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_dual_target_end_padding)
+
     val IconSize: Dp
         @Composable
         @ReadOnlyComposable
@@ -433,6 +437,11 @@ object CommonTileDefaults {
         @ReadOnlyComposable
         get() = dimensionResource(id = R.dimen.common_tile_default_large_tile_icon_size)
 
+    val StartPadding: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.common_tile_default_start_padding)
+
     val TileHeight: Dp
         @Composable
         @ReadOnlyComposable
@@ -446,9 +455,7 @@ object CommonTileDefaults {
     val SideIconWidth = 32.dp
     val SideIconHeight = 20.dp
     val ChevronSize = 14.dp
-    val TileStartPadding = 8.dp
     val TileEndPadding = 12.dp
-    val TileDualTargetEndPadding = 8.dp
     val TileArrangementPadding = 6.dp
     val TileLabelBlurWidth = 32.dp
     const val TILE_MARQUEE_ITERATIONS = 1
