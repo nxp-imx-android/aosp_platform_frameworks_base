@@ -4,10 +4,13 @@ import android.content.res.mainResources
 import android.view.View
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.classifier.domain.interactor.falsingInteractor
+import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.keyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.lightRevealScrimViewModel
@@ -26,12 +29,17 @@ import com.android.systemui.scene.ui.composable.ConstantSceneContainerTransition
 import com.android.systemui.scene.ui.composable.SceneNavigationDistances
 import com.android.systemui.scene.ui.viewmodel.SceneContainerHapticsViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
+import com.android.systemui.scene.ui.viewmodel.SceneTransitionBlurViewModel
 import com.android.systemui.scene.ui.viewmodel.dualShadeEducationalTooltipsViewModelFactory
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.domain.interactor.remoteInputInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationContainerInteractor
+import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractor
+import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractorFaked
 import com.android.systemui.wallpapers.ui.viewmodel.wallpaperViewModel
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
+import com.android.systemui.window.ui.BlurChoreographer
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.mockito.kotlin.mock
 
@@ -83,6 +91,27 @@ val Kosmos.sceneContainerViewModel by Fixture {
         .apply { setTransitionState(transitionState) }
 }
 
+val Kosmos.blurChoreographer by Fixture { mock<BlurChoreographer>() }
+
+val Kosmos.sceneTransitionBlurViewModel by Fixture {
+    SceneTransitionBlurViewModel(
+        wallpaperInteractor = wallpaperInteractorFaked,
+        communalSettingsInteractor = communalSettingsInteractor,
+        windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+        keyguardTransitionInteractor = keyguardTransitionInteractor,
+        blurConfig = blurConfig,
+        blurChoreographer = blurChoreographer,
+    )
+}
+
+val Kosmos.sceneTransitionBlurViewModelFactory by Fixture {
+    object : SceneTransitionBlurViewModel.Factory {
+        override fun create(): SceneTransitionBlurViewModel {
+            return sceneTransitionBlurViewModel
+        }
+    }
+}
+
 val Kosmos.sceneContainerViewModelFactory by Fixture {
     object : SceneContainerViewModel.Factory {
         override fun create(
@@ -112,6 +141,7 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                 dualShadeEducationalTooltipsViewModelFactory =
                     dualShadeEducationalTooltipsViewModelFactory,
                 animateQsTilesViewModelFactory = animateQsTilesViewModelFactory,
+                sceneTransitionBlurViewModelFactory = sceneTransitionBlurViewModelFactory,
             )
     }
 }

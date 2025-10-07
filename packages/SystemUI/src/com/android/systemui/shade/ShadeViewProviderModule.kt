@@ -17,7 +17,6 @@
 package com.android.systemui.shade
 
 import android.annotation.SuppressLint
-import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.ViewStub
 import androidx.constraintlayout.motion.widget.MotionLayout
@@ -39,7 +38,6 @@ import com.android.systemui.scene.ui.view.SceneWindowRootView
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
-import com.android.systemui.statusbar.BlurUtils
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.NotificationInsetsController
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
@@ -48,17 +46,15 @@ import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificat
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.TapAgainView
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
-import com.android.systemui.window.ui.WindowRootViewBinder
-import com.android.systemui.window.ui.viewmodel.WindowRootViewModel
+import com.android.systemui.window.ui.BlurChoreographerModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import javax.inject.Named
 import javax.inject.Provider
-import kotlinx.coroutines.CoroutineDispatcher
 
 /** Module for providing views related to the shade. */
-@Module
+@Module(includes = [BlurChoreographerModule::class])
 abstract class ShadeViewProviderModule {
 
     @Binds
@@ -84,23 +80,12 @@ abstract class ShadeViewProviderModule {
             sceneDataSourceDelegator: Provider<SceneDataSourceDelegator>,
             sceneJankMonitorFactory: SceneJankMonitor.Factory,
             windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
-            windowRootViewModelFactory: WindowRootViewModel.Factory,
-            blurUtils: BlurUtils,
-            choreographer: Choreographer?,
-            @Main mainDispatcher: CoroutineDispatcher,
             tintedIconManagerFactory: TintedIconManager.Factory,
         ): WindowRootView {
             return if (SceneContainerFlag.isEnabled) {
                 checkNoSceneDuplicates(scenesProvider.get())
                 val sceneWindowRootView =
                     layoutInflater.inflate(R.layout.scene_window_root, null) as SceneWindowRootView
-                WindowRootViewBinder.bind(
-                    view = sceneWindowRootView,
-                    viewModelFactory = windowRootViewModelFactory,
-                    blurUtils = blurUtils,
-                    choreographer = choreographer,
-                    mainDispatcher = mainDispatcher,
-                )
                 sceneWindowRootView.init(
                     viewModelFactory = viewModelFactory,
                     containerConfig = containerConfigProvider.get(),
