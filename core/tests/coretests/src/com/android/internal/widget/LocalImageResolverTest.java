@@ -279,4 +279,12 @@ public class LocalImageResolverTest {
         // This drawable must not be loaded - if it was, the code ignored the package specification.
         assertThat(d).isNull();
     }
+
+    @Test(expected = IOException.class)
+    public void resolveImage_veryLargeResource_throwsException() throws IOException {
+        // Passing in an unreasonably large image should throw an exception.
+        Uri uri = Uri.parse("android.resource://"
+                + mContext.getPackageName() + "/" + R.drawable.test16000x16000);
+        LocalImageResolver.resolveImage(uri, mContext);
+    }
 }
