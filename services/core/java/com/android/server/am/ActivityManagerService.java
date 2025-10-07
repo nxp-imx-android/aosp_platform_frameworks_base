@@ -9338,11 +9338,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     /* Native crash reporting uses this inner version because it needs to be somewhat
      * decoupled from the AM-managed cleanup lifecycle
      */
-    void handleApplicationCrashInner(String eventType, ProcessRecord r, String processName,
-            ApplicationErrorReport.CrashInfo crashInfo) {
+    void handleApplicationCrashInner(String eventType, @Nullable ProcessRecord r,
+            String processName, ApplicationErrorReport.CrashInfo crashInfo) {
         CountDownLatch profilingRunningLatch = null;
         int profilingDelaySeconds = 0;
-        if (android.os.profiling.Flags.profilingTriggerOom()) {
+        if (android.os.profiling.Flags.profilingTriggerOom() && r != null) {
             profilingRunningLatch = new CountDownLatch(1);
             profilingDelaySeconds = ProfilingServiceHelper.getInstance().profileApplicationCrash(
                     r.uid,
