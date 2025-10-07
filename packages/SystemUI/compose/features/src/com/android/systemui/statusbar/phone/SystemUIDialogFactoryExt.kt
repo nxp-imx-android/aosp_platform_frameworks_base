@@ -227,7 +227,7 @@ fun SystemUIDialogFactory.createBottomSheet(
                     shape = RoundedCornerShape(topStart = radius, topEnd = radius),
                     color =
                         if (Flags.blurOnMoreSurfaces()) {
-                            LocalAndroidColorScheme.current.shadePanelScrim
+                            LocalAndroidColorScheme.current.surfaceEffect0
                         } else {
                             MaterialTheme.colorScheme.surfaceContainer
                         },
