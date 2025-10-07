@@ -899,8 +899,10 @@ public final class Message implements Parcelable {
 
     /**
      * Matches all messages.
+     *
+     * @hide
      */
-    static final class MatchAllMessages extends MessageCompare {
+    public static final class MatchAllMessages extends MessageCompare {
         @Override
         public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
