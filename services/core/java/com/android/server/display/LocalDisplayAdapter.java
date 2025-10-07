@@ -1582,6 +1582,13 @@ final class LocalDisplayAdapter extends DisplayAdapter {
     }
 
     /**
+     * Dispose of the allocated resources.
+     */
+    void stop() {
+        mInjector.mReceiver.dispose();
+    }
+
+    /**
      * Keeps track of a display mode.
      */
     static final class DisplayModeRecord {
