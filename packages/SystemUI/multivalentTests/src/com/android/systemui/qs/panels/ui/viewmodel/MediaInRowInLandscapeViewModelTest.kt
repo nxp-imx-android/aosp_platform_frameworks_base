@@ -83,6 +83,11 @@ class MediaInRowInLandscapeViewModelTest(
             "Skipping test: Dual shade mode requires DualShadeFlag to be enabled.",
             !DualShadeFlag.isEnabled && testData.shadeMode == ShadeMode.Dual,
         )
+        // Skip this test if DualShadeFlag is enabled and testData.shadeMode is Split
+        Assume.assumeFalse(
+            "Skipping test: Split shade mode requires DualShadeFlag to be disabled.",
+            DualShadeFlag.isEnabled && testData.shadeMode == ShadeMode.Split,
+        )
 
         when (testData.shadeMode) {
             ShadeMode.Single -> kosmos.enableSingleShade()
