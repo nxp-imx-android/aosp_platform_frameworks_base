@@ -18,13 +18,13 @@ package android.platform.test.ravenwood;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.ensureIsPublicVoidMethod;
 
-import static org.junit.Assume.assumeTrue;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.platform.test.annotations.RavenwoodTestRunnerInitializing;
 import android.platform.test.annotations.internal.InnerRunner;
 import android.util.Log;
+
+import junit.framework.TestCase;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -34,8 +34,8 @@ import org.junit.runner.manipulation.Filterable;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Suite;
+import org.junit.runners.model.RunnerBuilder;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
@@ -46,11 +46,11 @@ import java.util.function.BiConsumer;
 /**
  * A test runner used for Ravenwood.
  *
- * It will delegate to another runner specified with {@link InnerRunner}
- * (default = {@link BlockJUnit4ClassRunner}) with the following features.
+ * It delegates to another runner specified with {@link InnerRunner} with the following features.
  * - Add a called before the inner runner gets a chance to run. This can be used to initialize
  *   stuff used by the inner runner.
- * - Add hook points with help from the four test rules such as {@link #sImplicitClassOuterRule},
+ * - Add class hook points.
+ * - Add method hook points with help from the test rule {@link #sImplicitInstOuterRule},
  *   which are also injected by the ravenizer tool.
  *
  * We use this runner to:
@@ -79,7 +79,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     /** Keeps track of the runner on the current thread. */
     private static final ThreadLocal<RavenwoodAwareTestRunner> sCurrentRunner = new ThreadLocal<>();
 
-    private static RavenwoodAwareTestRunner getCurrentRunner() {
+    static RavenwoodAwareTestRunner getCurrentRunner() {
         var runner = sCurrentRunner.get();
         if (runner == null) {
             throw new RuntimeException("Current test runner not set!");
@@ -136,6 +136,19 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     @Override
     Runner getRealRunner() {
         return mRealRunner;
+    }
+
+    @Override
+    RunnerBuilder junit3Builder() {
+        return new RunnerBuilder() {
+            @Override
+            public Runner runnerForClass(Class<?> testClass) {
+                if (TestCase.class.isAssignableFrom(testClass)) {
+                    return new RavenwoodAwareJUnit3Runner(testClass);
+                }
+                return null;
+            }
+        };
     }
 
     private void runAnnotatedMethodsOnRavenwood(Class<? extends Annotation> annotationClass,
@@ -293,9 +306,6 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
             return new Statement() {
                 @Override
                 public void evaluate() throws Throwable {
-                    // If the method has @DisabledOnRavenwood, this will skip the execution.
-                    assumeTrue(RavenwoodEnablementChecker.getInstance()
-                            .shouldEnableOnRavenwood(methodDesc));
                     getCurrentRunner().mState.enterTestMethod(methodDesc);
                     try {
                         base.evaluate();

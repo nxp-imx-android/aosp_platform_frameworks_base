@@ -21,8 +21,12 @@ import android.platform.test.annotations.internal.InnerRunner;
 import android.util.Log;
 
 import com.android.ravenwood.common.RavenwoodInternalUtils;
+import com.android.ravenwood.common.SneakyThrow;
 
-import org.junit.internal.builders.AllDefaultPossibilitiesBuilder;
+import org.junit.internal.builders.IgnoredBuilder;
+import org.junit.internal.builders.JUnit3Builder;
+import org.junit.internal.builders.JUnit4Builder;
+import org.junit.internal.builders.SuiteMethodBuilder;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
@@ -33,50 +37,101 @@ import org.junit.runner.manipulation.Orderable;
 import org.junit.runner.manipulation.Orderer;
 import org.junit.runner.manipulation.Sortable;
 import org.junit.runner.manipulation.Sorter;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.RunnerBuilder;
 import org.junit.runners.model.TestClass;
+
+import java.util.Arrays;
+import java.util.List;
 
 abstract class RavenwoodAwareTestRunnerBase extends Runner implements Filterable, Orderable {
     public static final String TAG = RavenwoodInternalUtils.TAG;
 
+    private final RunnerBuilder mBuilder = new RavenwoodRunnerBuilder();
     boolean mRealRunnerTakesRunnerBuilder = false;
 
-    abstract Runner getRealRunner();
+    /**
+     * Inspired from {@link org.junit.internal.builders.AllDefaultPossibilitiesBuilder}
+     */
+    class RavenwoodRunnerBuilder extends RunnerBuilder {
+        private final List<RunnerBuilder> mRunnerBuilders = Arrays.asList(
+                ignoredBuilder(),
+                annotatedBuilder(),
+                suiteMethodBuilder(),
+                junit3Builder(),
+                junit4Builder());
 
-    final Runner instantiateRealRunner(TestClass testClass) {
-        // Find the real runner.
-        final Class<? extends Runner> runnerClass;
-        final InnerRunner innerRunnerAnnotation = testClass.getAnnotation(InnerRunner.class);
-        if (innerRunnerAnnotation != null) {
-            runnerClass = innerRunnerAnnotation.value();
-        } else {
-            // Default runner.
-            runnerClass = BlockJUnit4ClassRunner.class;
-        }
-
-        try {
-            if (RAVENWOOD_VERBOSE_LOGGING) {
-                Log.v(TAG, "Initializing the inner runner: " + runnerClass);
+        @Override
+        public Runner runnerForClass(Class<?> testClass) throws Throwable {
+            for (RunnerBuilder each : mRunnerBuilders) {
+                Runner runner = each.runnerForClass(testClass);
+                if (runner != null) {
+                    return runner;
+                }
             }
-            try {
-                return runnerClass.getConstructor(Class.class)
-                        .newInstance(testClass.getJavaClass());
-            } catch (NoSuchMethodException e) {
-                var constructor = runnerClass.getConstructor(Class.class, RunnerBuilder.class);
-                mRealRunnerTakesRunnerBuilder = true;
-                return constructor.newInstance(
-                        testClass.getJavaClass(), new AllDefaultPossibilitiesBuilder());
-            }
-        } catch (ReflectiveOperationException e) {
-            throw logAndFail("Failed to instantiate " + runnerClass, e);
+            return null;
         }
     }
 
-    final Error logAndFail(String message, Throwable exception) {
+    class RavenwoodAnnotatedBuilder extends RunnerBuilder {
+        @Override
+        public Runner runnerForClass(Class<?> testClass) throws Exception {
+            final InnerRunner innerRunnerAnnotation = testClass.getAnnotation(InnerRunner.class);
+            if (innerRunnerAnnotation != null) {
+                var clazz = innerRunnerAnnotation.value();
+                if (RAVENWOOD_VERBOSE_LOGGING) {
+                    Log.v(TAG, "Initializing the inner runner: " + clazz);
+                }
+                try {
+                    try {
+                        return clazz.getConstructor(Class.class).newInstance(testClass);
+                    } catch (NoSuchMethodException ignored) {
+                        var constructor = clazz.getConstructor(Class.class, RunnerBuilder.class);
+                        mRealRunnerTakesRunnerBuilder = true;
+                        return constructor.newInstance(testClass, mBuilder);
+                    }
+                } catch (Exception e) {
+                    throw logAndFail("Failed to instantiate " + clazz, e);
+                }
+            }
+            return null;
+        }
+    }
+
+    RunnerBuilder junit4Builder() {
+        return new JUnit4Builder();
+    }
+
+    RunnerBuilder junit3Builder() {
+        return new JUnit3Builder();
+    }
+
+    RunnerBuilder annotatedBuilder() {
+        return new RavenwoodAnnotatedBuilder();
+    }
+
+    RunnerBuilder ignoredBuilder() {
+        return new IgnoredBuilder();
+    }
+
+    RunnerBuilder suiteMethodBuilder() {
+        return new SuiteMethodBuilder();
+    }
+
+    static Error logAndFail(String message, Throwable exception) {
         Log.e(TAG, message, exception);
         return new AssertionError(message, exception);
     }
+
+    final Runner instantiateRealRunner(TestClass testClass) {
+        try {
+            return mBuilder.runnerForClass(testClass.getJavaClass());
+        } catch (Throwable e) {
+            SneakyThrow.sneakyThrow(e);
+            throw new RuntimeException();
+        }
+    }
+
+    abstract Runner getRealRunner();
 
     @Override
     public final Description getDescription() {
