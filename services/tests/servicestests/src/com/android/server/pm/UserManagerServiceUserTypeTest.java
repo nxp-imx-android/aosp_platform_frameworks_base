@@ -25,13 +25,20 @@ import static android.content.pm.UserInfo.FLAG_PROFILE;
 import static android.content.pm.UserInfo.FLAG_RESTRICTED;
 import static android.content.pm.UserInfo.FLAG_SYSTEM;
 
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
 
+import android.content.ComponentName;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
 import android.content.res.Resources;
@@ -69,6 +76,7 @@ public class UserManagerServiceUserTypeTest {
     public void setup() {
         mResources = InstrumentationRegistry.getTargetContext().getResources();
     }
+
     @Test
     public void testUserTypeBuilder_createUserType() {
         final Bundle restrictions = makeRestrictionsBundle("r1", "r2");
@@ -98,6 +106,8 @@ public class UserManagerServiceUserTypeTest {
                 .setProfileApiVisibility(34)
                 .setItemsRestrictedOnHomeScreen(true);
 
+
+        final int activitiesAllowlistResId = 42;
         final UserTypeDetails type = new UserTypeDetails.Builder()
                 .setName("a.name")
                 .setEnabled(1)
@@ -118,6 +128,7 @@ public class UserManagerServiceUserTypeTest {
                 .setDefaultSecureSettings(secureSettings)
                 .setDefaultCrossProfileIntentFilters(filters)
                 .setDefaultUserProperties(userProps)
+                .setActivitiesAllowlist(activitiesAllowlistResId)
                 .createUserTypeDetails();
 
         assertEquals("a.name", type.getName());
@@ -198,14 +209,19 @@ public class UserManagerServiceUserTypeTest {
         assertEquals(Resources.ID_NULL, type.getBadgeColor(-100));
 
         assertTrue(type.hasBadge());
+
+        final Resources mockResources = mock(Resources.class);
+        final String activity = "allowlisted/.I.am";
+        when(mockResources.getStringArray(activitiesAllowlistResId))
+                .thenReturn(new String[] {activity});
+        assertWithMessage("getActivitiesAllowlist()")
+                .that(type.getActivitiesAllowlist(mockResources).getEffectiveAllowlist())
+                .containsExactly(ComponentName.unflattenFromString(activity));
     }
 
     @Test
     public void testUserTypeBuilder_defaults() {
-        UserTypeDetails type = new UserTypeDetails.Builder()
-                .setName("name") // Required (no default allowed)
-                .setBaseType(FLAG_FULL) // Required (no default allowed)
-                .createUserTypeDetails();
+        UserTypeDetails type = getMinimalBuilder().createUserTypeDetails();
 
         assertTrue(type.isEnabled());
         assertEquals(android.multiuser.Flags.decoupleMaxUsersFromProfiles() ?
@@ -246,6 +262,7 @@ public class UserManagerServiceUserTypeTest {
                 props.getProfileApiVisibility());
 
         assertFalse(type.hasBadge());
+        assertNull(type.getActivitiesAllowlist());
     }
 
     @Test
@@ -311,6 +328,37 @@ public class UserManagerServiceUserTypeTest {
         // No type, which defaults to {@link UserManager#USER_TYPE_FULL_SECONDARY}.
         assertEquals(UserManager.USER_TYPE_FULL_SECONDARY,
                 UserInfo.getDefaultUserType(FLAG_EPHEMERAL));
+    }
+
+    @Test
+    public void testGetActivitiesAllowlist_notLazyLoadedWhenNotSet() {
+        Resources mockResources = mock(Resources.class);
+        UserTypeDetails type = getMinimalBuilder().createUserTypeDetails();
+
+        assertWithMessage("getActivitiesAllowlist()")
+                .that(type.getActivitiesAllowlist(mockResources)).isNull();
+    }
+
+    @Test
+    public void testGetActivitiesAllowlist_lazyLoadedJustOnce() {
+        int resId = 42;
+        Resources mockResources = mock(Resources.class);
+        UserTypeDetails type = getMinimalBuilder()
+                .setActivitiesAllowlist(resId)
+                .createUserTypeDetails();
+        when(mockResources.getStringArray(resId)).thenReturn(new String[0]);
+
+        var firstResult = type.getActivitiesAllowlist(mockResources);
+        assertWithMessage("result of 1st call to getActivitiesAllowlist()")
+                .that(firstResult).isNotNull();
+
+        var secondResult = type.getActivitiesAllowlist(mockResources);
+        assertWithMessage("result of 2nd call to getActivitiesAllowlist()")
+                .that(secondResult)
+                .isSameInstanceAs(firstResult);
+
+        // Verify it was called just once
+        verify(mockResources).getStringArray(resId);
     }
 
     /** Tests {@link UserTypeFactory#customizeBuilders} for a reasonable xml file. */

@@ -1007,9 +1007,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     private final UserVisibilityMediator mUserVisibilityMediator;
 
-    @Nullable // only set on HSUM devices
-    private final HsuAllowlistsMediator mHam;
-
     @GuardedBy("mUsersLock")
     private @CanBeNULL @UserIdInt int mBootUser = UserHandle.USER_NULL;
 
@@ -1171,13 +1168,6 @@ public class UserManagerService extends IUserManager.Stub {
         mUser0Allocations = DBG_ALLOCATION ? new AtomicInteger() : null;
         mPrivateSpaceAutoLockSettingsObserver = new SettingsObserver(mHandler);
         emulateSystemUserModeIfNeeded();
-        // TODO(b/412177078): change emulateSystemUserModeIfNeeded() to return isHsum and remove
-        // comment below
-        // Must be set after emulateSystemUserModeIfNeeded()
-        // TODO(b/412176703): flag-check for (hsuAllowlistActivities()||hsuAllowlistNotifications())
-        mHam = Flags.hsuAllowlistActivities() && isDefaultHeadlessSystemUserMode()
-                ? new HsuAllowlistsMediator(context)
-                : null;
         initPropertyInvalidatedCaches();
     }
 
@@ -4812,12 +4802,16 @@ public class UserManagerService extends IUserManager.Stub {
      * @param message used as message if SecurityException is thrown
      * @throws SecurityException if the caller lacks the required permissions.
      */
-    private static void checkManageHsuAllowlistsPermission(String message) {
+    private static void checkManageHsuAllowlistsPermission(String userType, String message) {
         if (!hasManageUsersOrPermission(
                 android.Manifest.permission.MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS)) {
             throw new SecurityException("You need MANAGE_USERS or "
                     + "MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS permission to: "
                     + message);
+        }
+        if (!UserManager.USER_TYPE_SYSTEM_HEADLESS.equals(userType)) {
+            throw new SecurityException("Only modifying the allowlists of the type "
+                    + "USER_TYPE_SYSTEM_HEADLESS is currently supported");
         }
     }
 
@@ -5157,26 +5151,39 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
-    public void setTemporaryHsuActivitiesAllowlist(@Nullable List<ComponentName> componentNames) {
-        checkManageHsuAllowlistsPermission("set temporary HSU activities allowlist");
-        checkHasHam();
-        Slogf.i(LOG_TAG, "Setting temporary HSU activities allowlist to %s", componentNames);
-        mHam.setTemporaryActivitiesAllowlist(componentNames);
+    public void setTemporaryActivitiesAllowlist(String userType,
+            List<ComponentName> componentNames) {
+        checkManageHsuAllowlistsPermission(userType, "set temporary HSU activities allowlist");
+        Objects.requireNonNull(userType, "userType cannot be null");
+        final UserActivitiesAllowlist allowlist = getActivitiesAllowlist(userType);
+        Preconditions.checkState(allowlist != null,
+                "activities allowlist not supported for type %s", userType);
+
+        Slogf.i(LOG_TAG, "Setting temporary activities allowlist for %s to %s", userType,
+                componentNames);
+        allowlist.setTemporaryAllowlist(componentNames);
     }
 
-    boolean hasHam() {
-        return mHam != null;
+    boolean isActivityAllowlisted(@NonNull String userType, @NonNull ComponentName activity) {
+        final UserActivitiesAllowlist allowlist = getActivitiesAllowlist(userType);
+        if (allowlist == null) {
+            if (DBG) {
+                Slogf.d(LOG_TAG, "Allowing %s because allowlist for %s is not set",
+                        ComponentName.flattenToShortString(activity), userType);
+            }
+            return true;
+        }
+        return allowlist.isAllowed(activity);
     }
 
-    // Used by shell cmd
-    List<ComponentName> getEffectiveHsuActivitiesAllowlist() {
-        checkManageHsuAllowlistsPermission("get effective HSU activities allowlist");
-        checkHasHam();
-        return mHam.getEffectiveActivitiesAllowlist();
-    }
-
-    private void checkHasHam() {
-        Preconditions.checkState(hasHam(), "not supported - HsuActivitiesMediator is disabled");
+    @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@NonNull String userType) {
+        final UserTypeDetails userDetails = mUserTypes.get(userType);
+        if (userDetails == null) {
+            Slogf.wtf(LOG_TAG, "getActivitiesAllowlist(%s): return null because type doesn't exist",
+                    userType);
+            return null;
+        }
+        return userDetails.getActivitiesAllowlist();
     }
 
     private ResilientAtomicFile getUserListFile() {
@@ -8332,11 +8339,14 @@ public class UserManagerService extends IUserManager.Stub {
                 case "--visibility-mediator":
                     mUserVisibilityMediator.dump(pw, args);
                     return;
-                case "--ham": // Hmmmm, ham!
-                    if (hasHam()) {
-                        mHam.dump(pw, args);
-                    } else {
-                        pw.println("Sorry, no ham on this device!");
+                case "--activities-allowlist":
+                    for (int i = 0; i < mUserTypes.size(); i++) {
+                        UserActivitiesAllowlist allowlist = mUserTypes.valueAt(i)
+                                .getActivitiesAllowlist();
+                        if (allowlist != null) {
+                            String  header = mUserTypes.keyAt(i);
+                            allowlist.dump(pw, /* prefix= */ "", header);
+                        }
                     }
                     return;
                 case "--non-compliance":
@@ -8463,11 +8473,6 @@ public class UserManagerService extends IUserManager.Stub {
         pw.println();
         mUserVisibilityMediator.dump(pw, args);
         pw.println();
-
-        if (hasHam()) {
-            mHam.dump(pw, args);
-            pw.println();
-        }
 
         // TODO(b/413464199): This confusing line is, regrettably, currently required by Tradefed.
         pw.println("Can add private profile: "+ canAddPrivateProfile(currentUserId));
@@ -9203,9 +9208,8 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public boolean isActivityAllowlistedForHsu(ComponentName activity) {
-            Preconditions.checkState(mHam != null, "Called when flag is disabled or device is not "
-                    + "HSUM");
-            return mHam.isActivityAllowed(activity);
+            return UserManagerService.this
+                    .isActivityAllowlisted(UserManager.USER_TYPE_SYSTEM_HEADLESS, activity);
         }
 
         @Override

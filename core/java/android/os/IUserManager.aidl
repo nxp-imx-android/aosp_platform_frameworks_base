@@ -159,5 +159,5 @@ interface IUserManager {
     int getBootUser();
     int[] getProfileIdsExcludingHidden(int userId, boolean enabledOnly);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(anyOf = {android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS})")
-    void setTemporaryHsuActivitiesAllowlist(in List<ComponentName> componentNames);
+    void setTemporaryActivitiesAllowlist(String userType, in List<ComponentName> componentNames);
 }
