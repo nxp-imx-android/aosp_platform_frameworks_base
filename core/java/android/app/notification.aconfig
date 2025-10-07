@@ -35,6 +35,13 @@ flag {
 }
 
 flag {
+  name: "headline_prototypes"
+  namespace: "notifications"
+  description: "This flag adds static control for enabling prototypes for the headline project"
+  bug: "449676256"
+}
+
+flag {
   name: "api_metric_style"
   is_exported: true
   namespace: "notifications"
