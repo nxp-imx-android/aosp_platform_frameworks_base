@@ -60,11 +60,16 @@ message TypeSpecificPolicyMetadata {
     message StringPolicyMetadata {
     }
 
+    message ListOfStringPolicyMetadata {
+        StringPolicyMetadata element_metadata = 1;
+    }
+
     oneof type_metadata {
         BooleanPolicyMetadata boolean_metadata = 1;
         IntegerPolicyMetadata integer_metadata = 2;
         EnumPolicyMetadata enum_metadata = 3;
         StringPolicyMetadata string_metadata = 4;
+        ListOfStringPolicyMetadata list_of_string_metadata = 5;
     }
 }
 

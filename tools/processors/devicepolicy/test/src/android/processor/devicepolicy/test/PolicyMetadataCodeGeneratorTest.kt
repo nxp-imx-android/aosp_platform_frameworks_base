@@ -308,6 +308,60 @@ class PolicyMetadataCodeGeneratorTest {
             )
         )
     }
+
+    private fun listOfStringTestPolicy(name: String): PolicyMetadata.Builder =
+        PolicyMetadata.newBuilder()
+            .setName(name)
+            .setTypeSpecificMetadata(
+                TypeSpecificPolicyMetadata.newBuilder()
+                    .setListOfStringMetadata(
+                        TypeSpecificPolicyMetadata.ListOfStringPolicyMetadata.newBuilder()
+                    )
+            )
+
+    @Test
+    fun test_listOfStringPolicy_outputMatches() {
+        val policyList = PolicyMetadataList.newBuilder()
+            .addPolicyMetadata(
+                listOfStringTestPolicy("test.package.MY_TEST_STRING_LIST_POLICY")
+                    .addAllAllowedScopes(listOf(
+                        PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE
+                    ))
+                    .setAffectedResource(
+                        PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
+                    )
+            )
+            .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile)).isEqualTo(
+            fillInFile(
+                includes = """
+                import android.app.admin.PolicyIdentifier;
+                import java.lang.String;
+                import java.util.ArrayList;
+                import java.util.List;
+                import java.util.Set;
+                """,
+                code = """
+                policies.add(new ListPolicyMetadata<String>(
+                    /* id= */ test.package.MY_TEST_STRING_LIST_POLICY,
+                    /* elementMetadata= */ new StringPolicyMetadata(
+                        /* id= */ new PolicyIdentifier<String>(test.package.MY_TEST_STRING_LIST_POLICY.getId() + "#elements"),
+                        /* allowedScopes= */ Set.of(
+                            2
+                        ),
+                        /* affectedResource= */ 1,
+                        /* requiredPermission= */ null,
+                        /* requiredCrossUserPermission= */ null
+                    )
+                ));
+                """
+            )
+        )
+    }
+
     @Test
     fun test_permissions_outputMatches() {
         val policyList = PolicyMetadataList.newBuilder()

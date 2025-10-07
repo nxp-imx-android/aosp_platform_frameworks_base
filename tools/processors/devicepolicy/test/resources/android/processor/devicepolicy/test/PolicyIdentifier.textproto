@@ -65,3 +65,16 @@ policy_metadata {
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
 }
+policy_metadata {
+  name: "android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY"
+  type: "java.util.List<java.lang.String>"
+  documentation: " Test policy 5\n"
+  type_specific_metadata {
+    list_of_string_metadata {
+      element_metadata {
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}

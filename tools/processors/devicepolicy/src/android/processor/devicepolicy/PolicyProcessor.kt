@@ -56,6 +56,7 @@ class PolicyProcessor : AbstractProcessor() {
         add(EnumPolicyDefinition::class.java.name)
         add(IntegerPolicyDefinition::class.java.name)
         add(StringPolicyDefinition::class.java.name)
+        add(ListOfStringPolicyDefinition::class.java.name)
 
         // Only processed to report errors.
         add(PolicyDefinition::class.java.name)
@@ -71,6 +72,7 @@ class PolicyProcessor : AbstractProcessor() {
             runProcessor(roundEnvironment, EnumProcessor(processingEnv)),
             runProcessor(roundEnvironment, IntegerProcessor(processingEnv)),
             runProcessor(roundEnvironment, StringProcessor(processingEnv)),
+            runProcessor(roundEnvironment, ListOfStringProcessor(processingEnv)),
         ).flatten()
 
         try {
