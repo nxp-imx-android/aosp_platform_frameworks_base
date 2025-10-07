@@ -195,6 +195,11 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         val drawableStateLayout = holder.itemView as? DrawableStateLayout
         if (position < mItemPositionStates.size &&
                 drawableStateLayout != null && mItemPositionStates[position] != 0) {
+            if (v.background == null) {
+                // Make sure the stateful drawable is set for expressive UI
+                v.setBackgroundResource(R.drawable.settingslib_round_background_stateful)
+            }
+
             val background = v.background
             if (background != null) {
                 val backgroundPadding = Rect()
