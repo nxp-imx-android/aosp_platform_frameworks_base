@@ -409,6 +409,13 @@ public final class MessageStack {
         return mSyncHeap.size() + mAsyncHeap.size();
     }
 
+    /**
+     * Returns the total capacity in the underlying MessageHeaps.
+     */
+    public int combinedHeapCapacitiesForTest() {
+        return mSyncHeap.capacity() + mAsyncHeap.capacity();
+    }
+
     @NeverCompile
     int dump(Printer pw, String prefix, Handler h) {
         final long now = SystemClock.uptimeMillis();
