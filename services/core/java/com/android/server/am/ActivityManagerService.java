@@ -153,6 +153,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_NETWORK;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_POWER;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESSES;
+import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESS_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_SERVICE;
 import static com.android.server.am.ActivityManagerDebugConfig.LOG_WRITER_INFO;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_BACKUP;
@@ -172,6 +173,7 @@ import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
 import static com.android.server.am.ProcessList.ProcStartHandler;
+import static com.android.server.am.ProcessList.TAG_PROCESS_OBSERVERS;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
@@ -19553,6 +19555,22 @@ public class ActivityManagerService extends IActivityManager.Stub
         public void onProcessGroupUpdated(ProcessRecordInternal app, int group) {
             setProcessGroup(app.getPid(), group, app.processName);
             mPhantomProcessList.setProcessGroupForPhantomProcessOfApp((ProcessRecord) app, group);
+        }
+
+        @Override
+        public void onProcessChanged(ProcessRecordInternal app, int changes) {
+            if (DEBUG_PROCESS_OBSERVERS) {
+                Slog.i(TAG_PROCESS_OBSERVERS, "Changes in " + app + ": " + changes);
+            }
+            mProcessList.enqueueProcessChangeItemLocked(app.getPid(), app.getApplicationUid(),
+                    changes, app.getHasRepForegroundActivities());
+            if (DEBUG_PROCESS_OBSERVERS) {
+                Slog.i(TAG_PROCESS_OBSERVERS, "Enqueued process change item for "
+                        + app.toShortString() + ": changes=" + changes
+                        + " foreground=" + app.getHasRepForegroundActivities()
+                        + " type=" + app.getAdjType() + " source=" + app.getAdjSource()
+                        + " target=" + app.getAdjTarget());
+            }
         }
 
         @Override
