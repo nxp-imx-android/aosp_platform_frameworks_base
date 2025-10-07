@@ -29,6 +29,7 @@ import android.widget.Button;
 
 import androidx.annotation.Nullable;
 
+import com.android.app.tracing.TraceUtils;
 import com.android.internal.logging.MetricsLogger;
 import com.android.systemui.accessibility.hearingaid.HearingDevicesChecker;
 import com.android.systemui.accessibility.hearingaid.HearingDevicesDialogManager;
@@ -97,7 +98,8 @@ public class HearingDevicesTile extends QSTileImpl<BooleanState> {
     @Override
     public boolean isAvailable() {
         if (mCachedSupportedProfiles == null) {
-            mCachedSupportedProfiles = getSupportedProfiles();
+            mCachedSupportedProfiles = TraceUtils.trace("HearingDevicesTile#getSupportedProfiles",
+                    this::getSupportedProfiles);
         }
 
         return mCachedSupportedProfiles.contains(BluetoothProfile.HEARING_AID)
