@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -69,7 +69,6 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
-import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
@@ -532,7 +531,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy).onStatusBarOrLauncherTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy)
+            .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), any())
     }
 
     @Test
@@ -542,7 +542,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarOrLauncherTouched(any(), any())
+        verify(statusBarTouchShadeDisplayPolicy, never())
+            .onStatusBarOrLauncherTouched(any(), any(), any())
     }
 
     @Test
@@ -553,7 +554,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         view.onInterceptTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy, never())
-            .onStatusBarOrLauncherTouched(eq(event), any())
+            .onStatusBarOrLauncherTouched(any(), any(), any())
     }
 
     @Test
@@ -566,7 +567,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy).onStatusBarOrLauncherTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy)
+            .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), any())
     }
 
     @Test
@@ -579,7 +581,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         val statusContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy).onStatusBarOrLauncherTouched(eq(event), any())
+        verify(statusBarTouchShadeDisplayPolicy)
+            .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), any())
     }
 
     @Test
@@ -593,7 +596,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         statusContainer.dispatchTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy, never())
-            .onStatusBarOrLauncherTouched(eq(event), any())
+            .onStatusBarOrLauncherTouched(any(), any(), any())
     }
 
     @Test

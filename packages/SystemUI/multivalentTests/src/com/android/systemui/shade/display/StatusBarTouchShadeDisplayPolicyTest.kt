@@ -19,7 +19,6 @@ package com.android.systemui.shade.display
 import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import android.view.Display.TYPE_EXTERNAL
-import android.view.MotionEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -39,8 +38,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -53,13 +50,6 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
 
     private val underTest = kosmos.statusBarTouchShadeDisplayPolicy
 
-    private fun createMotionEventForDisplay(displayId: Int, xCoordinate: Float = 0f): MotionEvent {
-        return mock<MotionEvent> {
-            on { getX() } doReturn xCoordinate
-            on { getDisplayId() } doReturn displayId
-        }
-    }
-
     @Test
     fun displayId_defaultToDefaultDisplay() {
         assertThat(underTest.displayId.value).isEqualTo(Display.DEFAULT_DISPLAY)
@@ -71,7 +61,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
             val displayId by collectLastValue(underTest.displayId)
 
             displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
-            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            touchStatusBar(displayId = 2)
 
             assertThat(displayId).isEqualTo(2)
         }
@@ -82,7 +72,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
             val displayIds by collectValues(underTest.displayId)
             assertThat(displayIds).isEqualTo(listOf(Display.DEFAULT_DISPLAY))
 
-            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            touchStatusBar(displayId = 2)
 
             // Never set, as 2 was not a display according to the repository.
             assertThat(displayIds).isEqualTo(listOf(Display.DEFAULT_DISPLAY))
@@ -94,7 +84,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
             val displayId by collectLastValue(underTest.displayId)
 
             displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
-            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            touchStatusBar(displayId = 2)
 
             assertThat(displayId).isEqualTo(2)
 
@@ -106,10 +96,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
     @Test
     fun onStatusBarOrLauncherTouched_leftSide_intentSetToNotifications() =
         testScope.runTest {
-            underTest.onStatusBarOrLauncherTouched(
-                createMotionEventForDisplay(2, STATUS_BAR_WIDTH * 0.1f),
-                STATUS_BAR_WIDTH,
-            )
+            touchStatusBar(displayId = 2, x = LEFT_SIDE_X)
 
             assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.notificationElement)
         }
@@ -117,10 +104,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
     @Test
     fun onStatusBarOrLauncherTouched_rightSide_intentSetToQs() =
         testScope.runTest {
-            underTest.onStatusBarOrLauncherTouched(
-                createMotionEventForDisplay(2, STATUS_BAR_WIDTH * 0.95f),
-                STATUS_BAR_WIDTH,
-            )
+            touchStatusBar(displayId = 2, x = RIGHT_SIDE_X)
 
             assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.qsElement)
         }
@@ -128,10 +112,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
     @Test
     fun onStatusBarOrLauncherTouched_nullAfterConsumed() =
         testScope.runTest {
-            underTest.onStatusBarOrLauncherTouched(
-                createMotionEventForDisplay(2, STATUS_BAR_WIDTH * 0.1f),
-                STATUS_BAR_WIDTH,
-            )
+            touchStatusBar(displayId = 2, x = LEFT_SIDE_X)
             assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.notificationElement)
 
             assertThat(underTest.consumeExpansionIntent()).isNull()
@@ -201,7 +182,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
 
             displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
             displayRepository.addDisplays(display(id = 3, type = TYPE_EXTERNAL))
-            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            touchStatusBar(displayId = 2)
 
             assertThat(displayId).isEqualTo(2)
 
@@ -275,7 +256,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
 
             displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
             displayRepository.addDisplays(display(id = 3, type = TYPE_EXTERNAL))
-            underTest.onStatusBarOrLauncherTouched(createMotionEventForDisplay(2), STATUS_BAR_WIDTH)
+            touchStatusBar(displayId = 2)
 
             assertThat(displayId).isEqualTo(2)
 
@@ -285,7 +266,18 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
             assertThat(displayId).isEqualTo(3)
         }
 
+    /** Simulates a touch event on the status bar for a given display. */
+    private fun touchStatusBar(
+        displayId: Int,
+        x: Float = 0f,
+        statusBarWidth: Int = STATUS_BAR_WIDTH,
+    ) {
+        underTest.onStatusBarOrLauncherTouched(x, displayId, statusBarWidth)
+    }
+
     companion object {
         private const val STATUS_BAR_WIDTH = 100
+        private const val LEFT_SIDE_X = STATUS_BAR_WIDTH * 0.1f
+        private const val RIGHT_SIDE_X = STATUS_BAR_WIDTH * 0.95f
     }
 }

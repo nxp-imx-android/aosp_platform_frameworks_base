@@ -371,10 +371,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             subject.mSysUiProxy.onStatusBarTrackpadEvent(event)
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == event.displayId },
-                    anyInt(),
-                )
+                .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), anyInt())
         }
 
     @Test
@@ -399,10 +396,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == event.displayId },
-                    anyInt(),
-                )
+                .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), anyInt())
         }
 
     @Test
@@ -444,7 +438,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(argThat<MotionEvent> { displayId == 0 }, anyInt())
+                .onStatusBarOrLauncherTouched(eq(event.x), eq(0), anyInt())
         }
 
     @Test
@@ -465,15 +459,9 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == shadeDisplayId },
-                    anyInt(),
-                )
+                .onStatusBarOrLauncherTouched(eq(event.x), eq(shadeDisplayId), anyInt())
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == event.displayId },
-                    anyInt(),
-                )
+                .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), anyInt())
         }
 
     private fun createLauncherProxyService(ctx: Context): LauncherProxyService {

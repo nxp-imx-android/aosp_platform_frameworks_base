@@ -258,7 +258,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 final DisplayInfo displayInfo = new DisplayInfo();
                 mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
                 int displayWidth = displayInfo.logicalWidth;
-                mShadeDisplayPolicy.onStatusBarOrLauncherTouched(event, displayWidth);
+                mShadeDisplayPolicy.onStatusBarOrLauncherTouched(
+                        event.getX(), event.getDisplayId(), displayWidth);
                 Trace.endSection();
             }
         }

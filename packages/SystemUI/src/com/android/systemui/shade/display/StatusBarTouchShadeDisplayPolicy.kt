@@ -18,7 +18,6 @@ package com.android.systemui.shade.display
 
 import android.util.Log
 import android.view.Display
-import android.view.MotionEvent
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -70,10 +69,10 @@ constructor(
     private var removalListener: Job? = null
 
     /** Called when the status bar or launcher homescreen on the given display is touched. */
-    fun onStatusBarOrLauncherTouched(event: MotionEvent, statusBarWidth: Int) {
+    fun onStatusBarOrLauncherTouched(eventX: Float, displayId: Int, statusBarWidth: Int) {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
-        updateShadeDisplayIfNeeded(event.displayId)
-        val element = classifyStatusBarEvent(event, statusBarWidth)
+        updateShadeDisplayIfNeeded(displayId)
+        val element = classifyStatusBarEvent(eventX, statusBarWidth)
         updateExpansionIntent(element)
     }
 
@@ -117,11 +116,8 @@ constructor(
         }
     }
 
-    private fun classifyStatusBarEvent(
-        motionEvent: MotionEvent,
-        statusbarWidth: Int,
-    ): ShadeElement {
-        val xPercentage = motionEvent.x / statusbarWidth
+    private fun classifyStatusBarEvent(eventX: Float, statusBarWidth: Int): ShadeElement {
+        val xPercentage = eventX / statusBarWidth
         return if (xPercentage < 0.5f) notificationElement.get() else qsShadeElement.get()
     }
 
