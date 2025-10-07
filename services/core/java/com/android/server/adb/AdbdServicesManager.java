@@ -24,6 +24,7 @@ import android.os.SystemProperties;
 import android.provider.Settings;
 import android.util.Slog;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -99,7 +100,7 @@ public class AdbdServicesManager {
     }
 
     void unregisterAll() {
-        for (AdbdRegistrationListener service : mRegisteredServices.values()) {
+        for (AdbdRegistrationListener service : new ArrayList<>(mRegisteredServices.values())) {
             unregisterService(service.mInstanceName, service.mServiceType);
         }
     }
