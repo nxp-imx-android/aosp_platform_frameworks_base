@@ -200,7 +200,6 @@ public class AppWidgetServiceImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PLAY_STORE_PIN_WIDGETS)
     public void testRequestPinAppWidget_otherProvider_installPackagesPermission() {
         mUiAutomation.adoptShellPermissionIdentity(Manifest.permission.INSTALL_PACKAGES);
         ComponentName otherProvider = null;

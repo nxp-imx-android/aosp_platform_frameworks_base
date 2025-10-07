@@ -17,7 +17,6 @@
 package com.android.server.appwidget;
 
 import static android.appwidget.AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL;
-import static android.appwidget.flags.Flags.playStorePinWidgets;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
@@ -2643,7 +2642,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         boolean hasClearAppUserData = mContext.checkPermission(
                 Manifest.permission.CLEAR_APP_USER_DATA, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED;
-        boolean hasInstallPackages = playStorePinWidgets() && mContext.checkPermission(
+        boolean hasInstallPackages = mContext.checkPermission(
                 Manifest.permission.INSTALL_PACKAGES, callingPid, callingUid)
                 == PackageManager.PERMISSION_GRANTED;
         return hasClearAppUserData || hasInstallPackages;
