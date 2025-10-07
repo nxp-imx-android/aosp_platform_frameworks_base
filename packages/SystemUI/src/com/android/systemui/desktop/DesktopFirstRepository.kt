@@ -16,6 +16,7 @@
 
 package com.android.systemui.desktop
 
+import android.window.DesktopExperienceFlags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.wm.shell.desktopmode.DesktopMode
 import com.android.wm.shell.shared.desktopmode.DesktopFirstListener
@@ -38,7 +39,9 @@ class DesktopFirstRepository @Inject constructor(desktopMode: Optional<DesktopMo
     private val _isDisplayDesktopFirst: MutableMap<Int, Boolean> = mutableMapOf()
 
     init {
-        desktopMode.ifPresent { desktopMode.get().registerDesktopFirstListener(this) }
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_LISTENER.isTrue) {
+            desktopMode.ifPresent { desktopMode.get().registerDesktopFirstListener(this) }
+        }
     }
 
     /**
