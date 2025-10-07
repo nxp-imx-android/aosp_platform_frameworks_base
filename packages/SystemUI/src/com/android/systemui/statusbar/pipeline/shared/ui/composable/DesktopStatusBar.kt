@@ -16,10 +16,8 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.composable
 
-import android.graphics.Rect
 import android.view.ContextThemeWrapper
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,14 +28,11 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
@@ -313,39 +308,5 @@ private fun QuickSettingsChip(
                 modifier = Modifier.height(batteryHeight),
             )
         }
-    }
-}
-
-/**
- * A helper composable that calculates the correct tint for UI elements.
- *
- * It manages its own bounds state and provides the calculated tint and a modifier to its content,
- * abstracting away the boilerplate of tint calculation.
- */
-@Composable
-private fun WithAdaptiveTint(
-    isDarkProvider: (Rect) -> Boolean,
-    isHighlighted: Boolean,
-    modifier: Modifier = Modifier,
-    content: @Composable (tint: Color) -> Unit,
-) {
-    var bounds by remember { mutableStateOf(Rect()) }
-    val tint =
-        if (isHighlighted) {
-            ChipHighlightModel.Strong.foregroundColor
-        } else if (isDarkProvider(bounds)) {
-            Color.White
-        } else {
-            Color.Black
-        }
-
-    Box(
-        propagateMinConstraints = true,
-        modifier =
-            modifier.onLayoutRectChanged { layoutCoordinates ->
-                bounds = with(layoutCoordinates.boundsInScreen) { Rect(left, top, right, bottom) }
-            },
-    ) {
-        content(tint)
     }
 }
