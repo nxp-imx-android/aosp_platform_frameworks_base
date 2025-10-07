@@ -63,7 +63,6 @@ import com.android.systemui.statusbar.notification.ConversationNotificationProce
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
-import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
@@ -332,7 +331,7 @@ class ExpandableNotificationRowBuilder(
 
     fun createRowGroup(childCount: Int = 4): ExpandableNotificationRow {
         val children = ArrayList<NotificationEntry>()
-        for (i in 0..< childCount) {
+        for (i in 0..<childCount) {
             val childEntry =
                 kosmos.buildNotificationEntry {
                     Notification.Builder(context, "channel")
@@ -343,12 +342,15 @@ class ExpandableNotificationRowBuilder(
             children.add(childEntry)
         }
         val summary =
-            kosmos.buildSummaryNotificationEntry(children, {
-                Notification.Builder(context, "channel")
-                    .setSmallIcon(R.drawable.ic_person)
-                    .setGroupSummary(true)
-                    .setGroup("group")
-            })
+            kosmos.buildSummaryNotificationEntry(
+                children,
+                {
+                    Notification.Builder(context, "channel")
+                        .setSmallIcon(R.drawable.ic_person)
+                        .setGroupSummary(true)
+                        .setGroup("group")
+                },
+            )
         summary.row = kosmos.createRowWithEntry(summary)
         for (child in children) {
             summary.row.addChildNotification(child.row)
@@ -382,6 +384,14 @@ class ExpandableNotificationRowBuilder(
         )
     }
 
+    fun createCompactHUN(notification: Notification): ExpandableNotificationRow {
+        whenever(mHeadsUpStyleProvider.shouldApplyCompactStyle()).thenReturn(true)
+        val row = createRow(notification)
+        row.isHeadsUp = true
+        Mockito.reset(mHeadsUpStyleProvider)
+        return row
+    }
+
     fun createRow(notification: Notification): ExpandableNotificationRow {
         val channel =
             NotificationChannel(
@@ -391,8 +401,7 @@ class ExpandableNotificationRowBuilder(
             )
         channel.isBlockable = true
 
-        val promoted = notification.isOngoingEvent
-                && notification.isRequestPromotedOngoing
+        val promoted = notification.isOngoingEvent && notification.isRequestPromotedOngoing
         val entry =
             NotificationEntryBuilder()
                 .setPkg(PKG)
@@ -404,10 +413,7 @@ class ExpandableNotificationRowBuilder(
                 .setUser(USER_HANDLE)
                 .setPostTime(System.currentTimeMillis())
                 .setChannel(channel)
-                .setFlag(
-                    context,
-                    Notification.FLAG_PROMOTED_ONGOING,
-                    promoted)
+                .setFlag(context, Notification.FLAG_PROMOTED_ONGOING, promoted)
                 .build()
 
         // it is for mitigating Rank building process.
