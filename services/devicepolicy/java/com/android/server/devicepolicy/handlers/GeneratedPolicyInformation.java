@@ -23,7 +23,6 @@ import android.app.admin.PolicyIdentifier;
 import android.util.ArrayMap;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * TODO(433951394): Generate this file.
@@ -38,9 +37,6 @@ public class GeneratedPolicyInformation {
         addPolicy(
                 new EnumPolicyInformation(
                         PolicyIdentifier.SCREEN_CAPTURE,
-                        Set.of(
-                                PolicyIdentifier.SCREEN_CAPTURE_ALLOWED,
-                                PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED),
                         android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE,
                         android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS));
     }

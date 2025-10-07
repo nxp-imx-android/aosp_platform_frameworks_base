@@ -105,6 +105,7 @@ public class PolicyHandler<T> {
     private final PolicyIdentifier<T> mKey;
     private final PolicyInformation<T> mPolicyInformation;
     private final PolicyMetadata<T> mPolicyMetadata;
+    private final PolicyValidator<T> mValidator;
 
     /**
      * Helper class that provides access to methods used while processing policies. Must be
@@ -119,6 +120,7 @@ public class PolicyHandler<T> {
         mKey = key;
         mPolicyInformation = policyInformation;
         mPolicyMetadata = policyMetadata;
+        mValidator = PolicyValidator.getInstance(mPolicyMetadata);
     }
 
     /** Constructor that uses the generated {@link PolicyInformation} and {@link PolicyMetadata} */
@@ -249,7 +251,7 @@ public class PolicyHandler<T> {
      */
     protected void validateValue(@NonNull CallerIdentity caller, @Nullable T value) {
         if (value != null) {
-            getPolicyInformation().validateValue(value);
+            getValidator().validate(value, getPolicyMetadata());
         }
     }
 
@@ -276,6 +278,10 @@ public class PolicyHandler<T> {
         return "["
                 + scopes.stream().map(s -> scopeToString(s)).collect(Collectors.joining(", "))
                 + "]";
+    }
+
+    protected final @NonNull PolicyValidator<T> getValidator() {
+        return mValidator;
     }
 
     /** Helper class that provides access to helper methods used while processing policies. */

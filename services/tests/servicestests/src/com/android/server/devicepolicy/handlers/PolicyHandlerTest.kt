@@ -38,8 +38,9 @@ import org.mockito.Mockito
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 
-/** A {@link PolicyHandler} that doesn't store the resulting policy value in the
- * {@link DevicePolicyEngine} but instead stores it locally in {@link resultValue}.
+/**
+ * A {@link PolicyHandler} that doesn't store the resulting policy value in the {@link
+ * DevicePolicyEngine} but instead stores it locally in {@link resultValue}.
  */
 open class HandlerThatStoresValue<T>(
     key: PolicyIdentifier<T>,
@@ -77,7 +78,6 @@ class PolicyHandlerTest {
         val information =
             EnumPolicyInformation(
                 key,
-                setOf(VALUE_1, VALUE_2),
                 permission,
                 crossUserPermission,
             )
@@ -132,13 +132,11 @@ class PolicyHandlerTest {
     fun copyOf(
         source: EnumPolicyInformation,
         key: PolicyIdentifier<Int>? = null,
-        values: Set<Int>? = null,
         requiredPermission: String? = null,
         requiredCrossUserPermission: String? = null,
     ): EnumPolicyInformation {
         return EnumPolicyInformation(
             key ?: source.key,
-            values ?: source.values,
             requiredPermission ?: source.requiredPermission,
             requiredCrossUserPermission ?: source.requiredCrossUserPermission,
         )
@@ -266,12 +264,12 @@ class PolicyHandlerTest {
     @Test
     fun setPolicy_enum_shouldHandleValidValues() {
         val enumValues = setOf(123, 456, 789)
-        val enumInformation = copyOf(EnumPolicy.information, values = enumValues)
+        val metadata = copyOf(EnumPolicy.metadata, allowedValues = enumValues)
         val handler =
             HandlerThatStoresValue<Int>(
                 EnumPolicy.key,
-                enumInformation,
-                EnumPolicy.metadata,
+                EnumPolicy.information,
+                metadata,
                 delegate,
             )
 
@@ -298,10 +296,10 @@ class PolicyHandlerTest {
     @Test
     fun setPolicy_enum_shouldThrowWhenValueIsOutOfRange() {
         val validEnumValues = setOf(555, 666)
-        val enumInformation = copyOf(EnumPolicy.information, values = validEnumValues)
+        val metadata = copyOf(EnumPolicy.metadata, allowedValues = validEnumValues)
 
         val handler =
-            PolicyHandler<Int>(EnumPolicy.key, enumInformation, EnumPolicy.metadata, delegate)
+            PolicyHandler<Int>(EnumPolicy.key, EnumPolicy.information, metadata, delegate)
 
         val invalidEnumValues = setOf(0, 1, 554, 556, 665, 667, 1000)
 

@@ -60,13 +60,4 @@ public abstract class PolicyInformation<T> {
      */
     @Nullable
     public abstract T valueFromTransportValue(@Nullable PolicyValueTransport transportValue);
-
-    /**
-     * Validate the given value, using the information available in the {@code PolicyDefinition}
-     * annotation.
-     *
-     * @throws IllegalArgumentException if the value is invalid.
-     */
-    @Nullable
-    public abstract void validateValue(@NonNull T value);
 }

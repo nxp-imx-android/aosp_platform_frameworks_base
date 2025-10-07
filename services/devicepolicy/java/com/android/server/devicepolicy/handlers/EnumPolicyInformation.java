@@ -21,26 +21,16 @@ import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
 
-import java.util.Set;
-
 /**
  * Represents information about an enum policy.
  */
 public class EnumPolicyInformation extends PolicyInformation<Integer> {
-    private final Set<Integer> mValues;
 
     public EnumPolicyInformation(
             @NonNull PolicyIdentifier<Integer> key,
-            @NonNull Set<Integer> values,
             @NonNull String requiredPermission,
             @NonNull String requiredCrossUserPermission) {
         super(key, requiredPermission, requiredCrossUserPermission);
-        mValues = Set.copyOf(values);
-    }
-
-    @NonNull
-    public Set<Integer> getValues() {
-        return mValues;
     }
 
     @Override
@@ -54,13 +44,5 @@ public class EnumPolicyInformation extends PolicyInformation<Integer> {
             throw new IllegalArgumentException(getKey().getId() + " requires an Enum value");
         }
         return value.getIntegerField();
-    }
-
-    @Override
-    public void validateValue(Integer value) {
-        if (!mValues.contains(value)) {
-            throw new IllegalArgumentException(
-                    "Unsupported value " + value + " for policy " + getKey().getId());
-        }
     }
 }
