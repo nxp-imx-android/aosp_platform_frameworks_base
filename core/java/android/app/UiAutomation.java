@@ -856,7 +856,7 @@ public final class UiAutomation {
 
     /**
      * Gets the windows on the screen associated with the {@link UiAutomation} context (usually the
-     * {@link android.view.Display#DEFAULT_DISPLAY default display).
+     * {@link android.view.Display#DEFAULT_DISPLAY default display}.
      *
      * <p>
      * This method returns only the windows that a sighted user can interact with, as opposed to

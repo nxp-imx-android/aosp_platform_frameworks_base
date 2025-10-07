@@ -308,7 +308,7 @@ public final class MultiResolutionStreamConfigurationMap {
      *
      * <p>{@code "MultiResolutionStreamConfigurationMap(Outputs([format1: [w:%d, h:%d, id:%s], ...
      * ... [w:%d, h:%d, id:%s]), [format2: [w:%d, h:%d, id:%s], ... [w:%d, h:%d, id:%s]], ...),
-     * Inputs([format1: [w:%d, h:%d, id:%s], ... [w:%d, h:%d, id:%s], ...).</p>
+     * Inputs([format1: [w:%d, h:%d, id:%s], ... [w:%d, h:%d, id:%s], ...)))"}.</p>
      *
      * @return string representation of {@link MultiResolutionStreamConfigurationMap}
      */

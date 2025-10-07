@@ -88,7 +88,7 @@ public class ServiceInfo extends ComponentInfo
      * apps from different vendors.
      *
      * Shared isolated processes are created when using the
-     * {@link android.content.Context#BIND_SHARED_ISOLATED_PROCESS) during service binding.
+     * {@link android.content.Context#BIND_SHARED_ISOLATED_PROCESS} during service binding.
      *
      * Note that when this flag is used, the {@link android.R.attr#process} attribute is
      * ignored when the process is bound into a shared isolated process by a client.

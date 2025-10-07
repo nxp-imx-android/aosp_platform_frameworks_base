@@ -121,7 +121,7 @@ public abstract class NotificationListenerService extends Service {
      * integer notification types or "ongoing", "conversations", "alerting", or "silent"
      * that should be provided to this listener. See
      * {@link #FLAG_FILTER_TYPE_ONGOING},
-     * {@link #FLAG_FILTER_TYPE_CONVERSATIONS}, {@link #FLAG_FILTER_TYPE_ALERTING),
+     * {@link #FLAG_FILTER_TYPE_CONVERSATIONS}, {@link #FLAG_FILTER_TYPE_ALERTING},
      * and {@link #FLAG_FILTER_TYPE_SILENT}.
      * <p>This value will only be read if the app has not previously specified a default type list,
      * and if the user has not overridden the allowed types.</p>
@@ -136,7 +136,7 @@ public abstract class NotificationListenerService extends Service {
      * The name of the {@code meta-data} tag containing a comma separated list of default
      * integer notification types that this listener never wants to receive. See
      * {@link #FLAG_FILTER_TYPE_ONGOING},
-     * {@link #FLAG_FILTER_TYPE_CONVERSATIONS}, {@link #FLAG_FILTER_TYPE_ALERTING),
+     * {@link #FLAG_FILTER_TYPE_CONVERSATIONS}, {@link #FLAG_FILTER_TYPE_ALERTING},
      * and {@link #FLAG_FILTER_TYPE_SILENT}.
      * <p>Types provided in this list will appear as 'off' and 'disabled' in the user interface,
      * so users don't enable a type that the listener will never bridge to their paired devices.</p>

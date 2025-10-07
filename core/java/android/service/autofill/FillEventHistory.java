@@ -599,7 +599,7 @@ public final class FillEventHistory implements Parcelable {
 
         /**
          * Returns fill suggestion ui presentation type which corresponds to types
-         * defined in {@link android.service.autofill.Presentations).
+         * defined in {@link android.service.autofill.Presentations}.
          *
          * <p><b>Note: </b>Only set on events of type {@link #TYPE_DATASETS_SHOWN} and
          * {@link #TYPE_DATASET_SELECTED}. For the other event types, the type is set to

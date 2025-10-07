@@ -70,7 +70,7 @@ import java.util.function.Consumer;
  *        mSearchSession.close();
  *    }
  *
- * }</pre>
+ * }}</pre>
  *
  * @hide
  */

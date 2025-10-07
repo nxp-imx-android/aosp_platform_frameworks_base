@@ -7816,7 +7816,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * logical OR of the desired types. If multiple types are specified, they
      * will all be set to the same enabled state.
      * <p>
-     * For example, to enable the top scroll indicatorExample: {@code setScrollIndicators
+     * For example, to enable the top scroll indicatorExample: {@code setScrollIndicators}
      *
      * @param indicators the indicator direction, or the logical OR of multiple
      *             indicator directions. One or more of:

@@ -168,7 +168,7 @@ public final class ProtoOutputStream extends ProtoStream {
     }
 
     /**
-     * Construct a {@link ProtoOutputStream with the given chunk size.
+     * Construct a {@link ProtoOutputStream} with the given chunk size.
      *
      * <p>This is for an in-memory proto. The caller should use {@link #getBytes()} for the result.
      */

@@ -1005,7 +1005,7 @@ public class NotificationManager {
      *
      * @param targetPackage The package to cancel the notification as. If this package is not your
      *                      package, you can only cancel notifications you posted with
-     *                      {@link #notifyAsPackage(String, String, int, Notification).
+     *                      {@link #notifyAsPackage(String, String, int, Notification)}.
      * @param tag A string identifier for this notification.  May be {@code null}.
      * @param id An identifier for this notification.
      */
