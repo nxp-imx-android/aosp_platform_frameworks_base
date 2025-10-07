@@ -6291,15 +6291,19 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
         }
         updateMagnificationConnectionIfNeeded(userState);
-        // Remove magnification button UI when the magnification capability is not all mode or
-        // magnification is disabled.
-        if (!(userState.isMagnificationSingleFingerTripleTapEnabledLocked()
+
+        final boolean magnificationEnabled =
+                userState.isMagnificationSingleFingerTripleTapEnabledLocked()
                 || (Flags.enableMagnificationMultipleFingerMultipleTapGesture()
                 && userState.isMagnificationTwoFingerTripleTapEnabledLocked())
-                || userState.isShortcutMagnificationEnabledLocked())
-                || userState.getMagnificationCapabilitiesLocked()
-                != Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL) {
-
+                || userState.isShortcutMagnificationEnabledLocked();
+        final int capabilities = userState.getMagnificationCapabilitiesLocked();
+        final boolean capabilitiesAllOrFullscreen = capabilities
+                == Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL
+                || capabilities == Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
+        // Remove magnification button UI when magnification is disabled or the capability is not
+        // all or fullscreen mode.
+        if (!magnificationEnabled || !capabilitiesAllOrFullscreen) {
             for (int i = 0; i < displays.size(); i++) {
                 final int displayId = displays.get(i).getDisplayId();
                 getMagnificationConnectionManager().removeMagnificationButton(displayId);
@@ -6366,11 +6370,16 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 mContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CAPABILITY,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN, userState.mUserId);
-        if (capabilities != userState.getMagnificationCapabilitiesLocked()) {
+
+        // The magnification capabilities in UserState and MagnificationController might be out of
+        // sync. Check them both to ensure the value is updated correctly.
+        if (capabilities != userState.getMagnificationCapabilitiesLocked()
+                || capabilities != mMagnificationController.getMagnificationCapabilities()) {
             userState.setMagnificationCapabilitiesLocked(capabilities);
             mMagnificationController.setMagnificationCapabilities(capabilities);
             return true;
         }
+
         return false;
     }
 

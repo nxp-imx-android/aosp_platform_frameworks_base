@@ -243,6 +243,19 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
+    public void showSettingPanel_fullScreenOnlyCapability_showMagnifyKeyboardAndFollowTyping() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        mWindowMagnificationSettings.showSettingPanel();
+
+        final View magnifyKeyboard = getInternalView(R.id.magnifier_keyboard_view);
+        assertThat(magnifyKeyboard.getVisibility()).isEqualTo(View.VISIBLE);
+        final View followTyping = getInternalView(R.id.magnifier_typing_view);
+        assertThat(followTyping.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void showSettingPanel_windowOnlyCapability_hideMagnifyKeyboard_showFollowTyping() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
