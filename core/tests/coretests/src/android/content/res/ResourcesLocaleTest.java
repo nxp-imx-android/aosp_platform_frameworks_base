@@ -24,6 +24,7 @@ import android.app.LocaleConfig;
 import android.content.Context;
 import android.os.FileUtils;
 import android.os.LocaleList;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.DisplayMetrics;
@@ -47,8 +48,6 @@ import java.util.Locale;
 @Presubmit
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.DisabledOnRavenwood(bug = 406548877,
-        blockedBy = android.content.pm.ApplicationInfo.class)
 public class ResourcesLocaleTest {
 
     @Rule
@@ -141,16 +140,24 @@ public class ResourcesLocaleTest {
     @Test
     public void testDeprecatedISOLanguageCode() {
         assertResGetString(Locale.US, R.string.locale_test_res_1, "Testing ID");
-        assertResGetString(Locale.forLanguageTag("id"), R.string.locale_test_res_2, "Pengujian IN");
         assertResGetString(Locale.forLanguageTag("id"), R.string.locale_test_res_3, "Testing EN");
-        assertResGetString(new Locale("id"), R.string.locale_test_res_2, "Pengujian IN");
         assertResGetString(new Locale("id"), R.string.locale_test_res_3, "Testing EN");
         // The new ISO code "id" isn't supported yet, and thus the values-id are ignored.
         assertResGetString(new Locale("id"), R.string.locale_test_res_1, "Testing ID");
         assertResGetString(Locale.forLanguageTag("id"), R.string.locale_test_res_1, "Testing ID");
     }
 
+    /** These checks won't pass on Ravenwood yet. */
     @Test
+    @DisabledOnRavenwood(bug = 406548877)
+    public void testDeprecatedISOLanguageCode_failOnRavenwood() {
+        assertResGetString(Locale.forLanguageTag("id"), R.string.locale_test_res_2, "Pengujian IN");
+        assertResGetString(new Locale("id"), R.string.locale_test_res_2, "Pengujian IN");
+    }
+
+    /** These checks won't pass on Ravenwood yet. */
+    @Test
+    @DisabledOnRavenwood(bug = 406548877)
     public void testMultiLocale() {
         Locale[] locales = new Locale[]{Locale.forLanguageTag("es"), Locale.forLanguageTag("de") };
         assertResGetString(locales, R.string.multilocale_test_res_1, "ES1");
