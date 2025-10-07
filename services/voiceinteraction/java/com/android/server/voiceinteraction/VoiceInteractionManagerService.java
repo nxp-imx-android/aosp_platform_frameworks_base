@@ -22,6 +22,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION;
 import static android.content.Intent.FLAG_ACTIVITY_NO_USER_ACTION;
 
+import static com.android.server.pm.UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS;
 import static com.android.server.voiceinteraction.flags.Flags.disableStartingContextualSearchViaVims;
 
 import android.Manifest;
@@ -34,6 +35,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.AppGlobals;
+import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
@@ -249,6 +251,7 @@ public class VoiceInteractionManagerService extends SystemService {
             mShortcutServiceInternal = Objects.requireNonNull(
                     LocalServices.getService(ShortcutServiceInternal.class));
             mSoundTriggerInternal = LocalServices.getService(SoundTriggerInternal.class);
+            mServiceStub.systemServicesReady();
         } else if (phase == PHASE_THIRD_PARTY_APPS_CAN_START) {
             mServiceStub.systemRunning(isSafeMode());
         } else if (phase == PHASE_BOOT_COMPLETED) {
@@ -761,6 +764,12 @@ public class VoiceInteractionManagerService extends SystemService {
             String interactorPackage = res.getString(
                     com.android.internal.R.string.config_forceVoiceInteractionServicePackage);
             return TextUtils.isEmpty(interactorPackage) ? null : interactorPackage;
+        }
+
+        public void systemServicesReady() {
+            if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
+                new AssistStructureAppOpObserver(mContext.getMainExecutor());
+            }
         }
 
         public void systemRunning(boolean safeMode) {
@@ -2449,6 +2458,56 @@ public class VoiceInteractionManagerService extends SystemService {
             }
         }
 
+        private boolean isAssistStructureEnabledInternal(int userId) {
+            RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+            List<String> roleHolders =
+                    roleManager.getRoleHoldersAsUser(RoleManager.ROLE_ASSISTANT,
+                            UserHandle.of(userId));
+            if (roleHolders.isEmpty()) {
+                if (DEBUG) {
+                    Slog.i(TAG, "Can not get assist structure enabled. No role holder found.");
+                }
+                return false;
+            }
+            String packageName = roleHolders.get(0);
+            int uid;
+            try {
+                uid = mContext.getPackageManager().getPackageUidAsUser(packageName, userId);
+            } catch (PackageManager.NameNotFoundException e) {
+                if (DEBUG) {
+                    Slog.e(TAG, "Can not get assist structure enabled. No role holder package"
+                            + " found.");
+                }
+                return false;
+            }
+            AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
+            int mode = appOpsManager.checkOpNoThrow(
+                    AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE, uid, packageName);
+            if (DEBUG) {
+                Slog.i(TAG, "isAssistStructureEnabledInternal: packageName:" + packageName
+                        + ", uid:" + uid + " -> " + mode);
+            }
+            return mode == AppOpsManager.MODE_ALLOWED || mode == AppOpsManager.MODE_DEFAULT;
+        }
+
+        private void updateAssistStructureSecureSettingsForUser(int userId) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                boolean enabled = isAssistStructureEnabledInternal(userId);
+
+                if (DEBUG) {
+                    Log.d(TAG, "updateAssistStructureSecureSettingsForUser userId:" + userId
+                            + ", enabled:" + enabled);
+                }
+                Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                Settings.Secure.ASSIST_STRUCTURE_ENABLED, enabled ? 1 : 0, userId);
+                Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                                Settings.Secure.ASSIST_SCREENSHOT_ENABLED, enabled ? 1 : 0, userId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
         @Override
         public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) return;
@@ -2614,7 +2673,7 @@ public class VoiceInteractionManagerService extends SystemService {
                             roleHolders);
                 }
 
-                // TODO(b/226201975): this method is beling called when a pre-created user is added,
+                // TODO(b/226201975): this method is being called when a pre-created user is added,
                 // at which point it doesn't have any role holders. But it's not called again when
                 // the actual user is added (i.e., when the  pre-created user is converted), so we
                 // need to save the user id and call this method again when it's converted
@@ -2632,6 +2691,9 @@ public class VoiceInteractionManagerService extends SystemService {
                 }
 
                 int userId = user.getIdentifier();
+                if (android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled()) {
+                    updateAssistStructureSecureSettingsForUser(userId);
+                }
                 if (roleHolders.isEmpty()) {
                     Settings.Secure.putStringForUser(getContext().getContentResolver(),
                             Settings.Secure.ASSISTANT, "", userId);
@@ -2678,7 +2740,6 @@ public class VoiceInteractionManagerService extends SystemService {
 
                     for (ResolveInfo resolveInfo : activities) {
                         ActivityInfo activityInfo = resolveInfo.activityInfo;
-
                         Settings.Secure.putStringForUser(getContext().getContentResolver(),
                                 Settings.Secure.ASSISTANT,
                                 activityInfo.getComponentName().flattenToShortString(), userId);
@@ -2704,6 +2765,39 @@ public class VoiceInteractionManagerService extends SystemService {
                 synchronized (VoiceInteractionManagerServiceStub.this) {
                     switchImplementationIfNeededLocked(false);
                 }
+            }
+        }
+
+        private final class AssistStructureAppOpObserver implements
+                AppOpsManager.OnOpChangedListener {
+            private final Executor mExecutor;
+
+            AssistStructureAppOpObserver(@NonNull @CallbackExecutor Executor executor) {
+                mExecutor = executor;
+
+                // Do an initial sync of ASSIST_STRUCTURE app ops mode for all users
+                for (UserInfo user : mUserManagerInternal.getUsers(
+                        USER_FILTER_WITH_ALL_COMPLETE_USERS)) {
+                    updateAssistStructureSecureSettingsForUser(user.id);
+                }
+
+                AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
+                appOpsManager.startWatchingMode(
+                        AppOpsManager.OPSTR_VOICE_INTERACTION_ASSIST_STRUCTURE,
+                        null /* all packages */, this);
+            }
+
+            @Override
+            public void onOpChanged(String op, String packageName) {}
+
+            @Override
+            public void onOpChanged(@NonNull String op, @NonNull String packageName, int userId) {
+                if (DEBUG) {
+                    Slog.i(TAG, "onOpChanged with op: " + op + ", packageName: " + packageName
+                            + ", userId: " + userId);
+                }
+
+                mExecutor.execute(() -> updateAssistStructureSecureSettingsForUser(userId));
             }
         }
 
