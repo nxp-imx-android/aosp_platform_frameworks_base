@@ -10,10 +10,4 @@ flag {
     bug: "389744739"
 }
 
-flag {
-    name: "cont_auth_plugin"
-    namespace: "biometrics_framework"
-    description: "Plugin and related API hooks for contextual auth plugins"
-    bug: "373600589"
-}
 
