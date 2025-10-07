@@ -37,7 +37,7 @@ import com.android.server.display.DisplayBrightnessState;
 import com.android.server.display.DisplayDeviceConfig;
 import com.android.server.display.ScreenOffBrightnessSensorController;
 import com.android.server.display.brightness.strategy.AutoBrightnessFallbackStrategy;
-import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy2;
+import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy;
 import com.android.server.display.brightness.strategy.DisplayBrightnessStrategy;
 import com.android.server.display.feature.DisplayManagerFlags;
 
@@ -465,7 +465,7 @@ public final class DisplayBrightnessController {
     /**
      * TODO(b/253226419): Remove once auto-brightness is a fully-functioning strategy.
      */
-    public AutomaticBrightnessStrategy2 getAutomaticBrightnessStrategy() {
+    public AutomaticBrightnessStrategy getAutomaticBrightnessStrategy() {
         return mDisplayBrightnessStrategySelector.getAutomaticBrightnessStrategy();
     }
 
@@ -699,7 +699,7 @@ public final class DisplayBrightnessController {
      * TODO(b/253226419): Remove once auto-brightness is a fully-functioning strategy.
      */
     private DisplayBrightnessState addAutomaticBrightnessState(DisplayBrightnessState state) {
-        AutomaticBrightnessStrategy2 autoStrat = getAutomaticBrightnessStrategy();
+        AutomaticBrightnessStrategy autoStrat = getAutomaticBrightnessStrategy();
 
         DisplayBrightnessState.Builder builder = DisplayBrightnessState.Builder.from(state);
         builder.setShouldUseAutoBrightness(

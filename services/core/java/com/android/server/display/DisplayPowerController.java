@@ -86,7 +86,7 @@ import com.android.server.display.brightness.BrightnessReason;
 import com.android.server.display.brightness.BrightnessUtils;
 import com.android.server.display.brightness.DisplayBrightnessController;
 import com.android.server.display.brightness.clamper.BrightnessClamperController;
-import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy2;
+import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy;
 import com.android.server.display.brightness.strategy.DisplayBrightnessStrategy;
 import com.android.server.display.brightness.strategy.DisplayBrightnessStrategyConstants;
 import com.android.server.display.color.ColorDisplayService.ColorDisplayServiceInternal;
@@ -467,7 +467,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     // Responsible for evaluating and tracking the automatic brightness relevant states.
     // Todo: This is a temporary workaround. Ideally DPC2 should never talk to the strategies
-    private final AutomaticBrightnessStrategy2 mAutomaticBrightnessStrategy;
+    private final AutomaticBrightnessStrategy mAutomaticBrightnessStrategy;
 
     // A record of state for skipping brightness ramps.
     private int mSkipRampState = RAMP_STATE_SKIP_NONE;

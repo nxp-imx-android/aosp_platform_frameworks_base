@@ -48,8 +48,7 @@ import java.io.PrintWriter;
  * that it is being executed from the power thread, and hence doesn't synchronize
  * any of its resources
  */
-public class AutomaticBrightnessStrategy extends AutomaticBrightnessStrategy2
-        implements DisplayBrightnessStrategy{
+public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
     private final Context mContext;
     // The DisplayId of the associated logical display
     private final int mDisplayId;
@@ -111,7 +110,6 @@ public class AutomaticBrightnessStrategy extends AutomaticBrightnessStrategy2
     @VisibleForTesting
     AutomaticBrightnessStrategy(Context context, int displayId, Injector injector,
             DisplayManagerFlags displayManagerFlags) {
-        super(context, displayId);
         mContext = context;
         mDisplayId = displayId;
         mAutoBrightnessAdjustment = getAutoBrightnessAdjustmentSetting();
