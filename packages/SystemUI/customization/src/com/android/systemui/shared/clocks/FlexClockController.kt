@@ -39,7 +39,6 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockFontAxis.Companion.m
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
-import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.io.PrintWriter
 import java.util.Locale
 
@@ -70,13 +69,6 @@ class FlexClockController(
 
     override val events =
         object : ClockEvents {
-            override var isReactiveTouchInteractionEnabled = false
-                set(value) {
-                    field = value
-                    val view = largeClock.view as FlexClockViewGroup
-                    view.isReactiveTouchInteractionEnabled = value
-                }
-
             override fun onTimeZoneChanged(timeZone: TimeZone) {
                 smallClock.events.onTimeZoneChanged(timeZone)
                 largeClock.events.onTimeZoneChanged(timeZone)

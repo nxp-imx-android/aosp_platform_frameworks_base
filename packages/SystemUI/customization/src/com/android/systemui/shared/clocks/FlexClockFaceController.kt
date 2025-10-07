@@ -138,15 +138,7 @@ class FlexClockFaceController(
 
     override val events = FlexClockFaceEvents()
 
-    // TODO(b/364680879): Remove ClockEvents
     inner class FlexClockFaceEvents : ClockEvents, ClockFaceEvents {
-        override var isReactiveTouchInteractionEnabled = false
-            get() = field
-            set(value) {
-                field = value
-                layerController.events.isReactiveTouchInteractionEnabled = value
-            }
-
         override fun onTimeTick() {
             clockCtx.timeKeeper.updateTime()
             view.contentDescription = timeFormatter.getContentDescription()
