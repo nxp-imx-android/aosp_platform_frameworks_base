@@ -142,13 +142,6 @@ public abstract class ProcessRecordInternal {
         void onHasStartedServicesChanged(boolean hasStartedServices);
 
         /**
-         * Called when the broadcast-receiving state changes.
-         *
-         * @param isReceivingBroadcast The new isReceivingBroadcast value.
-         */
-        void onIsReceivingBroadcastChanged(boolean isReceivingBroadcast);
-
-        /**
          * Called when the activity-hosting state changes.
          *
          * @param hasActivities The new hasActivities value.
@@ -196,15 +189,6 @@ public abstract class ProcessRecordInternal {
 
     /** Retrieves the last reported RSS (Resident Set Size) for this process. */
     public abstract long getLastRss();
-
-    /**
-     * Checks if the process is currently receiving a broadcast.
-     *
-     * @param outSchedGroup An output array of size 1 where the scheduling group associated
-     *                      with the broadcast will be placed if one is active.
-     * @return {@code true} if the process is receiving a broadcast.
-     */
-    public abstract boolean isReceivingBroadcast(int[] outSchedGroup);
 
     /**
      * Checks if a specific compatibility change is enabled for the process.
@@ -805,8 +789,6 @@ public abstract class ProcessRecordInternal {
     private int mCachedIsPreviousProcess = VALUE_INVALID;
     @GuardedBy("mServiceLock")
     private int mCachedHasRecentTasks = VALUE_INVALID;
-    @GuardedBy("mServiceLock")
-    private int mCachedIsReceivingBroadcast = VALUE_INVALID;
 
     /**
      * Cache the return value of PlatformCompat.isChangeEnabled().
@@ -1492,7 +1474,6 @@ public abstract class ProcessRecordInternal {
         mCachedIsHomeProcess = VALUE_INVALID;
         mCachedIsPreviousProcess = VALUE_INVALID;
         mCachedHasRecentTasks = VALUE_INVALID;
-        mCachedIsReceivingBroadcast = VALUE_INVALID;
         mCachedAdj = INVALID_ADJ;
         mCachedForegroundActivities = false;
         mCachedProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
@@ -1614,28 +1595,6 @@ public abstract class ProcessRecordInternal {
         } else {
             return getCachedHasRecentTasks();
         }
-    }
-
-    /**
-     * Returns whether the process is currently receiving a broadcast, using a cached value or
-     * pulling it. The scheduling group associated with the broadcast will be placed in
-     * {@code outSchedGroup} if active.
-     *
-     * @param outSchedGroup An output array of size 1 where the scheduling group associated
-     *                      with the broadcast will be placed if one is active.
-     * @return True if the process is receiving a broadcast, false otherwise.
-     */
-    @GuardedBy("mServiceLock")
-    public boolean getCachedIsReceivingBroadcast(int[] outSchedGroup) {
-        if (mCachedIsReceivingBroadcast == VALUE_INVALID) {
-            final boolean isReceivingBroadcast = isReceivingBroadcast(outSchedGroup);
-            mCachedIsReceivingBroadcast = isReceivingBroadcast ? VALUE_TRUE : VALUE_FALSE;
-            if (isReceivingBroadcast) {
-                mCachedSchedGroup = outSchedGroup[0];
-            }
-            mStartedServiceObserver.onIsReceivingBroadcastChanged(isReceivingBroadcast);
-        }
-        return mCachedIsReceivingBroadcast == VALUE_TRUE;
     }
 
     /**
