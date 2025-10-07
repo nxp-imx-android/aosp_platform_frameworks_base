@@ -177,6 +177,16 @@ flag {
 }
 
 flag {
+  name: "fix_avd_wrong_resources"
+  namespace: "core_graphics"
+  description: "Fix that AVD loads from the wrong Resources instance in applyTheme"
+  bug: "448274242"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "add_surfacecontrol_constants"
   namespace: "core_graphics"
   description: "Add two helper constants to SurfaceControl to improve @IntDef lint"
