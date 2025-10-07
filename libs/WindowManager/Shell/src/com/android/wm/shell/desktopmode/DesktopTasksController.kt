@@ -6404,7 +6404,8 @@ class DesktopTasksController(
                             destDisplayLayout,
                             taskInfo.isResizeable,
                             inputCoordinate.x,
-                            captionInsets)
+                            captionInsets,
+                        )
 
                     moveToDisplay(
                         taskInfo,

@@ -47,11 +47,9 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createRecentTaskInfo
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskMinimizationRoot
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskRoot
-import com.android.wm.shell.freeform.TaskChangeListener
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
-import java.util.Optional
 import kotlin.coroutines.suspendCoroutine
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
@@ -83,7 +81,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     private val mockShellCommandHandler = mock<ShellCommandHandler>()
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val mockTDAOrganizer = mock<RootTaskDisplayAreaOrganizer>()
-    private val mockTaskChangeListener = mock<TaskChangeListener>()
 
     private val launchAdjacentController = LaunchAdjacentController(mock())
     private val taskInfoChangedListener = mock<(ActivityManager.RunningTaskInfo) -> Unit>()
@@ -100,7 +97,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 mockShellTaskOrganizer,
                 launchAdjacentController,
                 mockTDAOrganizer,
-                Optional.of(mockTaskChangeListener),
             )
         organizer.addOnDesktopTaskInfoChangedListener(taskInfoChangedListener)
         organizer.addOnDesktopTaskVanishedListener(taskVanishedListener)
@@ -345,8 +341,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
         organizer.onTaskAppeared(child, SurfaceControl())
         organizer.onTaskVanished(child)
-
-        verify(mockTaskChangeListener, times(1)).onNonTransitionTaskClosing(any())
     }
 
     @Test

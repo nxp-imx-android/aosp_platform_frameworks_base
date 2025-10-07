@@ -26,6 +26,7 @@ import androidx.annotation.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.server.am.Flags
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.freeform.TaskChangeListener
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -38,8 +39,16 @@ class DesktopTaskChangeListener(
     private val desktopState: DesktopState,
     private val shellController: ShellController,
     private val pinnedController: PinnedLayerController?,
+    private val desksOrganizer: DesksOrganizer,
 ) : TaskChangeListener {
     private val perceptibleTasks: MutableSet<Int> = mutableSetOf()
+
+    init {
+        // This is used to propagate task close signals since not all task close events are
+        // propagated from [TransitionObserver] in [onTaskClosing]. It is recommended to
+        // use [onTaskClosing] instead of this method where possible.
+        desksOrganizer.addOnDesktopTaskVanishedListener { task -> onNonTransitionTaskClosing(task) }
+    }
 
     override fun onTaskOpening(taskInfo: RunningTaskInfo) {
         val desktopRepository: DesktopRepository =
@@ -84,13 +93,7 @@ class DesktopTaskChangeListener(
                 )
                 return
             }
-            addTask(
-                desktopRepository,
-                taskInfo.displayId,
-                taskInfo.taskId,
-                taskInfo.isVisible,
-                taskInfo.configuration.windowConfiguration.bounds,
-            )
+            addTask(desktopRepository, taskInfo)
         }
     }
 
@@ -160,13 +163,7 @@ class DesktopTaskChangeListener(
             }
             // If the task is already active in the repository, then moves task to the front,
             // else adds the task.
-            addTask(
-                desktopRepository,
-                taskInfo.displayId,
-                taskInfo.taskId,
-                taskInfo.isVisible,
-                taskInfo.configuration.windowConfiguration.bounds,
-            )
+            addTask(desktopRepository, taskInfo)
         }
     }
 
@@ -188,7 +185,8 @@ class DesktopTaskChangeListener(
     // to [DesktopTaskChangeListener#onTaskClosing] via [TransitionsObserver].
     // Any changes to [DesktopRepository] from this method should be made carefully to minimize risk
     // of race conditions and possible duplications with [onTaskClosing].
-    override fun onNonTransitionTaskClosing(taskInfo: RunningTaskInfo) {
+    @VisibleForTesting
+    fun onNonTransitionTaskClosing(taskInfo: RunningTaskInfo) {
         logD(
             "onNonTransitionTaskClosing for taskId=%d, displayId=%d",
             taskInfo.taskId,
@@ -258,13 +256,7 @@ class DesktopTaskChangeListener(
             }
             // If the task is already active in the repository, then it only moves the task to the
             // front.
-            addTask(
-                desktopRepository,
-                taskInfo.displayId,
-                taskInfo.taskId,
-                taskInfo.isVisible,
-                taskInfo.configuration.windowConfiguration.bounds,
-            )
+            addTask(desktopRepository, taskInfo)
         }
     }
 
@@ -366,14 +358,20 @@ class DesktopTaskChangeListener(
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
-    private fun addTask(
-        desktopRepository: DesktopRepository,
-        displayId: Int,
-        taskId: Int,
-        isVisible: Boolean,
-        taskBounds: Rect,
-    ) {
-        desktopRepository.addTask(displayId, taskId, isVisible, taskBounds)
+    private fun addTask(desktopRepository: DesktopRepository, taskInfo: RunningTaskInfo) {
+        val taskId = taskInfo.taskId
+        val displayId = taskInfo.displayId
+        val deskId =
+            desksOrganizer.getDeskIdFromTaskInfo(taskInfo)
+                ?: desktopRepository.getActiveDeskId(displayId)
+                ?: error("Expected desk for displayId=$displayId")
+        desktopRepository.addTaskToDesk(
+            displayId,
+            deskId,
+            taskId,
+            taskInfo.isVisible,
+            taskInfo.configuration.windowConfiguration.bounds,
+        )
 
         // Enables the task as a perceptible task (i.e. OOM adj is boosted)
         if (Flags.perceptibleTasks() && !isTaskPerceptible(taskId)) {

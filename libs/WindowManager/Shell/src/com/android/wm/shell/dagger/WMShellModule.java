@@ -929,11 +929,9 @@ public abstract class WMShellModule {
             @NonNull ShellCommandHandler shellCommandHandler,
             @NonNull ShellTaskOrganizer shellTaskOrganizer,
             @NonNull LaunchAdjacentController launchAdjacentController,
-            @NonNull RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            @NonNull Optional<TaskChangeListener> taskChangeListener) {
+            @NonNull RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer) {
         return new RootTaskDesksOrganizer(shellInit, shellCommandHandler, shellTaskOrganizer,
-                launchAdjacentController, rootTaskDisplayAreaOrganizer,
-                taskChangeListener);
+                launchAdjacentController, rootTaskDisplayAreaOrganizer);
     }
 
     @WMSingleton
@@ -1106,7 +1104,8 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopState desktopState,
             ShellController shellController,
-            Optional<PinnedLayerController> pinnedLayerController) {
+            Optional<PinnedLayerController> pinnedLayerController,
+            DesksOrganizer desksOrganizer) {
         if (ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
             return Optional.of(
@@ -1114,7 +1113,8 @@ public abstract class WMShellModule {
                             desktopUserRepositories,
                             desktopState,
                             shellController,
-                            pinnedLayerController.orElse(null)));
+                            pinnedLayerController.orElse(null),
+                            desksOrganizer));
         }
         return Optional.empty();
     }
