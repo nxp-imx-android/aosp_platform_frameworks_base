@@ -526,8 +526,7 @@ public class NotificationShelf extends ActivatableNotificationView {
                     colorOfViewBeforeLast = ownColorUntinted;
                     expandableRow.setOverrideTintColor(NO_COLOR, 0 /* overrideAmount */);
                 }
-                final boolean isTracked = child == mAmbientState.getTrackedHeadsUpRowActual();
-                if (!isTracked && (notGoneIndex != 0 || !aboveShelf)) {
+                if (notGoneIndex != 0 || !aboveShelf) {
                     expandableRow.setAboveShelf(false);
                 }
 
