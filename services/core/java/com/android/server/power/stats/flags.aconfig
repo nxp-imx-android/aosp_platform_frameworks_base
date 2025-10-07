@@ -33,16 +33,6 @@ flag {
 }
 
 flag {
-    name: "report_out_of_order_battery_history_events"
-    namespace: "backstage_power"
-    description: "Generate a Log.wtf when an out-of-order event is written to battery history"
-    bug: "407828438"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
      namespace: "backstage_power"
      name: "configure_power_stats_log_frequency"
      description: "Add a configurable value for power stats logging frequency"
