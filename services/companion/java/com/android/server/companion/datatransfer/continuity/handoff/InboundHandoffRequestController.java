@@ -63,7 +63,7 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
     public InboundHandoffRequestController(
-        @NonNull TaskContinuityMessenger taskContinuityMessenger) {
+            @NonNull TaskContinuityMessenger taskContinuityMessenger) {
         Objects.requireNonNull(taskContinuityMessenger);
 
         mActivityTaskManagerInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
@@ -72,15 +72,13 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
 
     @Override
     public void onHandoffTaskDataRequestSucceeded(
-        int taskId,
-        List<HandoffActivityData> handoffActivityData) {
+            int taskId, List<HandoffActivityData> handoffActivityData) {
         final long ident = Binder.clearCallingIdentity();
         try {
             Slog.v(TAG, "onHandoffTaskDataRequestSucceeded for " + taskId);
-            finishRequest(new HandoffRequestResultMessage(
-                taskId,
-                HANDOFF_REQUEST_RESULT_SUCCESS,
-                handoffActivityData));
+            finishRequest(
+                    new HandoffRequestResultMessage(
+                            taskId, HANDOFF_REQUEST_RESULT_SUCCESS, handoffActivityData));
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -91,25 +89,23 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
         final long ident = Binder.clearCallingIdentity();
         try {
             Slog.v(TAG, "onHandoffTaskDataRequestFailed for " + taskId);
-            finishRequest(new HandoffRequestResultMessage(
-                taskId,
-                getStatusCodeFromHandoffTaskDataReceiverCode(errorCode),
-                List.of()));
+            finishRequest(
+                    new HandoffRequestResultMessage(
+                            taskId,
+                            getStatusCodeFromHandoffTaskDataReceiverCode(errorCode),
+                            List.of()));
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
     }
 
     public void onHandoffRequestMessageReceived(
-        int associationId,
-        HandoffRequestMessage handoffRequestMessage) {
+            int associationId, HandoffRequestMessage handoffRequestMessage) {
 
         synchronized (mPendingHandoffRequests) {
             if (mPendingHandoffRequests.containsKey(handoffRequestMessage.taskId())) {
                 // Add this request to the list of pending requests for this task.
-                mPendingHandoffRequests
-                    .get(handoffRequestMessage.taskId())
-                    .add(associationId);
+                mPendingHandoffRequests.get(handoffRequestMessage.taskId()).add(associationId);
             } else {
                 // Track this as a new request.
                 List<Integer> associationIds = new ArrayList<>();
@@ -117,8 +113,7 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
                 mPendingHandoffRequests.put(handoffRequestMessage.taskId(), associationIds);
                 Slog.i(TAG, "Requesting handoff data for task " + handoffRequestMessage.taskId());
                 mActivityTaskManagerInternal.requestHandoffTaskData(
-                    handoffRequestMessage.taskId(),
-                    this);
+                        handoffRequestMessage.taskId(), this);
             }
         }
     }
@@ -126,14 +121,16 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
     private void finishRequest(HandoffRequestResultMessage handoffRequestResultMessage) {
         synchronized (mPendingHandoffRequests) {
             if (!mPendingHandoffRequests.containsKey(handoffRequestResultMessage.taskId())) {
-                Slog.w(TAG, "Received HandoffActivityData for task "
-                    + handoffRequestResultMessage.taskId()
-                    + ", but no pending request were found.");
+                Slog.w(
+                        TAG,
+                        "Received HandoffActivityData for task "
+                                + handoffRequestResultMessage.taskId()
+                                + ", but no pending request were found.");
                 return;
             }
 
-            List<Integer> associationIds = mPendingHandoffRequests
-                .get(handoffRequestResultMessage.taskId());
+            List<Integer> associationIds =
+                    mPendingHandoffRequests.get(handoffRequestResultMessage.taskId());
             mPendingHandoffRequests.remove(handoffRequestResultMessage.taskId());
 
             int[] associationIdsArray = new int[associationIds.size()];
@@ -147,7 +144,7 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
     }
 
     private static int getStatusCodeFromHandoffTaskDataReceiverCode(
-        int handoffTaskDataReceiverCode) {
+            int handoffTaskDataReceiverCode) {
 
         switch (handoffTaskDataReceiverCode) {
             case HANDOFF_FAILURE_TIMEOUT:

@@ -30,9 +30,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Objects;
 
-/**
- * Tracks remote tasks currently available on a specific remote device.
- */
+/** Tracks remote tasks currently available on a specific remote device. */
 class RemoteDeviceTaskList {
 
     private static final String TAG = "RemoteDeviceTaskList";
@@ -43,69 +41,61 @@ class RemoteDeviceTaskList {
     private final PriorityQueue<RemoteTaskInfo> mTasks;
 
     RemoteDeviceTaskList(
-        int associationId,
-        @NonNull String deviceName,
-        @NonNull Consumer<RemoteTask> onMostRecentTaskChangedListener) {
+            int associationId,
+            @NonNull String deviceName,
+            @NonNull Consumer<RemoteTask> onMostRecentTaskChangedListener) {
 
         mAssociationId = associationId;
         mDeviceName = Objects.requireNonNull(deviceName);
         mOnMostRecentTaskChangedListener = Objects.requireNonNull(onMostRecentTaskChangedListener);
-        mTasks = new PriorityQueue<>(new Comparator<RemoteTaskInfo>() {
-            @Override
-            public int compare(RemoteTaskInfo task1, RemoteTaskInfo task2) {
-                long lastUsedTime1 = task1.lastUsedTimeMillis();
-                long lastUsedTime2 = task2.lastUsedTimeMillis();
-                if (lastUsedTime1 < lastUsedTime2) {
-                    return 1;
-                } else if (lastUsedTime1 > lastUsedTime2) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        mTasks =
+                new PriorityQueue<>(
+                        new Comparator<RemoteTaskInfo>() {
+                            @Override
+                            public int compare(RemoteTaskInfo task1, RemoteTaskInfo task2) {
+                                long lastUsedTime1 = task1.lastUsedTimeMillis();
+                                long lastUsedTime2 = task2.lastUsedTimeMillis();
+                                if (lastUsedTime1 < lastUsedTime2) {
+                                    return 1;
+                                } else if (lastUsedTime1 > lastUsedTime2) {
+                                    return -1;
+                                } else {
+                                    return 0;
+                                }
+                            }
+                        });
     }
 
-    /**
-     * Returns the association ID of the remote device.
-     */
+    /** Returns the association ID of the remote device. */
     int getAssociationId() {
         return mAssociationId;
     }
 
-    /**
-     * Returns the device name of the remote device.
-     */
+    /** Returns the device name of the remote device. */
     @NonNull
     String getDeviceName() {
         return mDeviceName;
     }
 
-    /**
-     * Adds a task to the list of tasks currently available on the remote
-     * device.
-     */
+    /** Adds a task to the list of tasks currently available on the remote device. */
     void addTask(@NonNull RemoteTaskInfo taskInfo) {
         Objects.requireNonNull(taskInfo);
 
         synchronized (mTasks) {
             Slog.v(TAG, "Adding task: " + taskInfo.id() + " to association: " + mAssociationId);
-            int previousTopTaskId
-                = mTasks.peek() == null ? -1 : mTasks.peek().id();
+            int previousTopTaskId = mTasks.peek() == null ? -1 : mTasks.peek().id();
 
             mTasks.add(taskInfo);
             if (taskInfo.id() != previousTopTaskId) {
                 Slog.v(
-                    TAG,
-                    "Notifying most recent task changed for association: " + mAssociationId);
+                        TAG,
+                        "Notifying most recent task changed for association: " + mAssociationId);
                 mOnMostRecentTaskChangedListener.accept(getMostRecentTask());
             }
         }
     }
 
-    /**
-     * Sets the list of tasks currently available on the remote device.
-     */
+    /** Sets the list of tasks currently available on the remote device. */
     void setTasks(@NonNull Collection<RemoteTaskInfo> tasks) {
         Objects.requireNonNull(tasks);
 
@@ -117,19 +107,16 @@ class RemoteDeviceTaskList {
         }
     }
 
-    /**
-     * Removes a task from the list of tasks currently available on the remote device.
-     */
+    /** Removes a task from the list of tasks currently available on the remote device. */
     void removeTask(int taskId) {
         synchronized (mTasks) {
             Slog.v(TAG, "Removing task: " + taskId + " for association: " + mAssociationId);
-            boolean shouldNotifyListeners
-                = (mTasks.peek() != null && mTasks.peek().id() == taskId);
+            boolean shouldNotifyListeners = (mTasks.peek() != null && mTasks.peek().id() == taskId);
             mTasks.removeIf(task -> task.id() == taskId);
             if (shouldNotifyListeners) {
                 Slog.v(
-                    TAG,
-                    "Notifying most recent task changed for association: " + mAssociationId);
+                        TAG,
+                        "Notifying most recent task changed for association: " + mAssociationId);
                 mOnMostRecentTaskChangedListener.accept(getMostRecentTask());
             }
         }
@@ -139,31 +126,24 @@ class RemoteDeviceTaskList {
     void updateTask(@NonNull RemoteTaskInfo taskInfo) {
         Objects.requireNonNull(taskInfo);
 
-        synchronized(mTasks) {
-            Slog.v(
-                TAG,
-                "Updating task: " + taskInfo.id() + " for association: " + mAssociationId);
-            int previousTopTaskId
-                = mTasks.peek() == null ? -1 : mTasks.peek().id();
+        synchronized (mTasks) {
+            Slog.v(TAG, "Updating task: " + taskInfo.id() + " for association: " + mAssociationId);
+            int previousTopTaskId = mTasks.peek() == null ? -1 : mTasks.peek().id();
             mTasks.removeIf(task -> task.id() == taskInfo.id());
             mTasks.add(taskInfo);
             boolean isTopTaskDifferent = previousTopTaskId != mTasks.peek().id();
-            boolean didTopTaskChange
-                = mTasks.peek() != null && mTasks.peek().id() == taskInfo.id();
+            boolean didTopTaskChange = mTasks.peek() != null && mTasks.peek().id() == taskInfo.id();
             boolean shouldNotifyListeners = isTopTaskDifferent || didTopTaskChange;
             if (shouldNotifyListeners) {
                 Slog.v(
-                    TAG,
-                    "Notifying most recent task changed for association: " + mAssociationId);
+                        TAG,
+                        "Notifying most recent task changed for association: " + mAssociationId);
                 mOnMostRecentTaskChangedListener.accept(getMostRecentTask());
             }
         }
     }
 
-    /**
-     * Gets the most recently used task on this device, or null if there are no
-     * tasks.
-     */
+    /** Gets the most recently used task on this device, or null if there are no tasks. */
     @Nullable
     RemoteTask getMostRecentTask() {
         synchronized (mTasks) {

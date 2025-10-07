@@ -51,17 +51,17 @@ public class RunningTaskFetcher {
 
     public RunningTaskFetcher(@NonNull Context context) {
         this(
-            Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
-            Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
-            Objects.requireNonNull(context).getPackageManager(),
-            new PackageMetadataCache(Objects.requireNonNull(context).getPackageManager()));
+                Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
+                Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
+                Objects.requireNonNull(context).getPackageManager(),
+                new PackageMetadataCache(Objects.requireNonNull(context).getPackageManager()));
     }
 
     public RunningTaskFetcher(
-        @NonNull ActivityTaskManager activityTaskManager,
-        @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-        @NonNull PackageManager packageManager,
-        @NonNull PackageMetadataCache packageMetadataCache) {
+            @NonNull ActivityTaskManager activityTaskManager,
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull PackageManager packageManager,
+            @NonNull PackageMetadataCache packageMetadataCache) {
 
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
@@ -71,11 +71,11 @@ public class RunningTaskFetcher {
 
     @Nullable
     public RemoteTaskInfo getRunningTaskById(int taskId) {
-        RemoteTaskInfo taskInfo = getRunningTasks()
-            .stream()
-            .filter(info -> info.id() == taskId)
-            .findFirst()
-            .orElse(null);
+        RemoteTaskInfo taskInfo =
+                getRunningTasks().stream()
+                        .filter(info -> info.id() == taskId)
+                        .findFirst()
+                        .orElse(null);
 
         if (taskInfo == null) {
             Slog.w(TAG, "Could not find RunningTaskInfo for taskId: " + taskId);
@@ -87,12 +87,11 @@ public class RunningTaskFetcher {
 
     @NonNull
     public List<RemoteTaskInfo> getRunningTasks() {
-        return getRunningTaskInfos()
-            .stream()
-            .filter(this::shouldTaskBeSynced)
-            .map(this::createRemoteTaskInfo)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        return getRunningTaskInfos().stream()
+                .filter(this::shouldTaskBeSynced)
+                .map(this::createRemoteTaskInfo)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Nullable
@@ -113,21 +112,21 @@ public class RunningTaskFetcher {
             return null;
         }
 
-        boolean isHandoffEnabled
-            = mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId);
+        boolean isHandoffEnabled =
+                mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId);
 
         return new RemoteTaskInfo(
-            taskInfo.taskId,
-            packageMetadata.label(),
-            taskInfo.lastActiveTime,
-            packageMetadata.icon(),
-            isHandoffEnabled);
+                taskInfo.taskId,
+                packageMetadata.label(),
+                taskInfo.lastActiveTime,
+                packageMetadata.icon(),
+                isHandoffEnabled);
     }
 
     @NonNull
     private List<RunningTaskInfo> getRunningTaskInfos() {
-        List<RunningTaskInfo> runningTaskInfos
-            = mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
+        List<RunningTaskInfo> runningTaskInfos =
+                mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
         if (runningTaskInfos == null) {
             return new ArrayList<>();
         }
@@ -142,10 +141,10 @@ public class RunningTaskFetcher {
 
         Intent intent = new Intent("android.intent.action.MAIN");
         intent.addCategory("android.intent.category.HOME");
-        String defaultLauncherPackage = mPackageManager
-            .resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            .activityInfo
-            .packageName;
+        String defaultLauncherPackage =
+                mPackageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                        .activityInfo
+                        .packageName;
         if (defaultLauncherPackage == null) {
             Slog.w(TAG, "Could not get default launcher package");
             return true;
