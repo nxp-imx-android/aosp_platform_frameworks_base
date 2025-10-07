@@ -83,6 +83,7 @@ import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.media.audio.Flags.ringMyCar;
 import static com.android.media.audio.Flags.ringerModeAffectsAlarm;
+import static com.android.media.audio.Flags.stereoSpatializationBinauralTransaural;
 import static com.android.media.audio.Flags.streamAssistantNotAliasedToMusic;
 import static com.android.media.audio.Flags.updatePreferredDevicesForStrategy;
 import static com.android.media.flags.Flags.enableAudioInputDeviceRoutingAndVolumeControl;
@@ -5588,6 +5589,8 @@ public class AudioService extends IAudioService.Stub
                 + updatePreferredDevicesForStrategy());
         pw.println("\tandroid.media.audiopolicy.Flags.multi_zone_audio:"
                 + multiZoneAudio());
+        pw.println("\tcom.android.media.audio.Flags.stereoSpatializationBinauralTransaural:"
+                + stereoSpatializationBinauralTransaural());
     }
 
     private void dumpAudioMode(PrintWriter pw) {
@@ -12601,7 +12604,8 @@ public class AudioService extends IAudioService.Stub
     }
 
     void onInitAdiDeviceStates() {
-        mDeviceBroker.onReadAudioDeviceSettings();
+        mDeviceBroker.onReadAudioDeviceSettings(mSpatializerHelper.mBinauralEnabledDefault,
+                mSpatializerHelper.mTransauralEnabledDefault);
         mSoundDoseHelper.initCachedAudioDeviceCategories(
                 mDeviceBroker.getImmutableDeviceInventory());
     }

@@ -32,6 +32,7 @@ import static android.media.AudioSystem.isBluetoothScoOutDevice;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.media.audio.Flags.asDeviceConnectionFailure;
+import static com.android.media.audio.Flags.stereoSpatializationBinauralTransaural;
 import static com.android.media.audio.Flags.updatePreferredDevicesForStrategy;
 
 import android.annotation.NonNull;
@@ -107,6 +108,9 @@ public class AudioDeviceInventory {
 
     private static final String SETTING_DEVICE_SEPARATOR_CHAR = "|";
     private static final String SETTING_DEVICE_SEPARATOR = "\\|";
+
+    private static final String SETTING_STEREO_BINAURAL_ENABLED = "stereo_binaural_enabled";
+    private static final String SETTING_STEREO_TRANSAURAL_ENABLED = "stereo_transaural_enabled";
 
     /** Max String length that can be persisted within the Settings. */
     // LINT.IfChange(settings_max_length_per_string)
@@ -676,6 +680,16 @@ public class AudioDeviceInventory {
                 "Audio product strategies must not be null");
         mBluetoothDualModeEnabled = SystemProperties.getBoolean(
                 "persist.bluetooth.enable_dual_mode_audio", false);
+
+        if (stereoSpatializationBinauralTransaural()) {
+            mStereoBinauralEnabled = SystemProperties.getBoolean(
+                    "ro.audio.stereo_spatialization_binaural_enabled", false);
+            mStereoTransauralEnabled = SystemProperties.getBoolean(
+                    "ro.audio.stereo_spatialization_transaural_enabled", false);
+        } else {
+            mStereoBinauralEnabled = false;
+            mStereoTransauralEnabled = false;
+        }
     }
     /*package*/ void setDeviceBroker(@NonNull AudioDeviceBroker broker) {
         mDeviceBroker = broker;
@@ -3241,13 +3255,47 @@ public class AudioDeviceInventory {
         return addresses;
     }
 
+    /* *
+     * Indicates that system property ro.audio.stereo_spatialization_binaural_enabled is true
+     * and that the persisted spatial audio state for each device must be reset to
+     * ro.audio.spatializer_binaural_enabled_default when loaded for the first time.
+     */
+    final boolean mStereoBinauralEnabled;
+    /* *
+     * Indicates that system property ro.audio.stereo_spatialization_transaural_enabled is true
+     * and that the persisted spatial audio state for each device must be reset to
+     * ro.audio.spatializer_transaural_enabled_default when loaded for the first time.
+     */
+    final boolean mStereoTransauralEnabled;
+
     /*package*/ String getDeviceSettings() {
         int deviceCatalogSize = 0;
         synchronized (mDeviceInventoryLock) {
             deviceCatalogSize = mDeviceInventory.size();
 
-            final StringBuilder settingsBuilder = new StringBuilder(
-                    deviceCatalogSize * AdiDeviceState.getPeristedMaxSize());
+            StringBuilder settingsBuilder;
+            if (stereoSpatializationBinauralTransaural()) {
+                settingsBuilder = new StringBuilder(
+                        deviceCatalogSize * AdiDeviceState.getPeristedMaxSize()
+                        + SETTING_STEREO_BINAURAL_ENABLED.length() + 1
+                        + SETTING_STEREO_TRANSAURAL_ENABLED.length() + 1);
+
+                // The check must have happened already when setDeviceSettings() was initially
+                // called by onInitAdiDeviceStates(), so mark the setting strings as checked.
+                // If the property is disabled, the settings are not marked as checked so that the
+                // verification can happen next time the property is found true.
+                if (mStereoBinauralEnabled) {
+                    settingsBuilder.append(
+                            SETTING_STEREO_BINAURAL_ENABLED + SETTING_DEVICE_SEPARATOR_CHAR);
+                }
+                if (mStereoTransauralEnabled) {
+                    settingsBuilder.append(
+                            SETTING_STEREO_TRANSAURAL_ENABLED + SETTING_DEVICE_SEPARATOR_CHAR);
+                }
+            } else {
+                settingsBuilder = new StringBuilder(
+                        deviceCatalogSize * AdiDeviceState.getPeristedMaxSize());
+            }
 
             Iterator<AdiDeviceState> iterator = mDeviceInventory.values().iterator();
             if (iterator.hasNext()) {
@@ -3261,21 +3309,55 @@ public class AudioDeviceInventory {
         }
     }
 
-    /*package*/ void setDeviceSettings(String settings) {
+
+    /*package*/ boolean setDeviceSettings(String settings,
+            boolean binauralEnabledDefault, boolean transauralEnabledDefault) {
         clearDeviceInventory();
         String[] devSettings = TextUtils.split(Objects.requireNonNull(settings),
                 SETTING_DEVICE_SEPARATOR);
         // small list, not worth overhead of Arrays.stream(devSettings)
+
+        boolean binauralEnabledPersisted = false;
+        boolean transauralEnabledPersisted = false;
+
         for (String setting : devSettings) {
+            // This works because SETTING_STEREO_BINAURAL_ENABLED and
+            // SETTING_STEREO_TRANSAURAL_ENABLED are always at the beginning of the persisted string
+
+            if (SETTING_STEREO_BINAURAL_ENABLED.equals(setting)) {
+                if (stereoSpatializationBinauralTransaural()) {
+                    binauralEnabledPersisted = true;
+                }
+                continue;
+            }
+            if (SETTING_STEREO_TRANSAURAL_ENABLED.equals(setting)) {
+                if (stereoSpatializationBinauralTransaural()) {
+                    transauralEnabledPersisted = true;
+                }
+                continue;
+            }
+
             AdiDeviceState devState = AdiDeviceState.fromPersistedString(setting);
             // Note if the device is not compatible with spatialization mode or the device
             // type is not canonical, it will be ignored in {@link SpatializerHelper}.
             if (devState != null
                     && devState.getInternalDeviceType() != AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+                if (stereoSpatializationBinauralTransaural()) {
+                    if (!binauralEnabledPersisted && mStereoBinauralEnabled) {
+                        devState.setSAEnabled(binauralEnabledDefault);
+                    } else if (!transauralEnabledPersisted && mStereoTransauralEnabled) {
+                        devState.setSAEnabled(transauralEnabledDefault);
+                    }
+                }
+
                 addOrUpdateDeviceSAStateInInventory(devState, false /*syncInventory*/);
                 addOrUpdateAudioDeviceCategoryInInventory(devState, false /*syncInventory*/);
             }
         }
+        // we must persist the new settings if a change was detected between the persisted state
+        // and current state of binaural or transaural stereo spatialization
+        return mStereoBinauralEnabled != binauralEnabledPersisted
+                || mStereoTransauralEnabled != transauralEnabledPersisted;
     }
 
     //----------------------------------------------------------
