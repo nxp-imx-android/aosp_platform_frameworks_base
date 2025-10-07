@@ -1402,6 +1402,7 @@ public interface WindowManager extends ViewManager {
      * {@link android.R.attr#maxAspectRatio min aspect ratio}
      * {@link android.R.attr#resizeableActivity unresizable} on large screen devices with the
      * ignore orientation request display setting enabled since Android 16 (API level 36) or higher.
+     * <p>This property is ignored if the app's target SDK is Android 17 (API level 37) or higher.
      *
      * <p>The default value is {@code false}.
      *
@@ -1422,7 +1423,6 @@ public interface WindowManager extends ViewManager {
      * </pre>
      * @hide
      */
-    // TODO(b/357141415): Remove this from sdk 37
     String PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY =
             "android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY";
 
