@@ -48,7 +48,6 @@ import android.window.WindowContext;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.communal.domain.interactor.CommunalInteractor;
@@ -553,12 +552,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private boolean isExpanded(NotificationShadeWindowState state) {
-        boolean areScrimsNotTransparent = state.scrimsVisibility != ScrimController.TRANSPARENT;
-        boolean shouldScrimVisibilityKeepWindowVisible = !Flags.scrimFix();
         boolean isExpanded = !state.forceWindowCollapsed && (state.isKeyguardShowingAndNotOccluded()
                 || state.panelVisible || state.keyguardFadingAway || state.bouncerShowing
-                || state.headsUpNotificationShowing
-                || (shouldScrimVisibilityKeepWindowVisible && areScrimsNotTransparent))
+                || state.headsUpNotificationShowing)
                 || state.launchingActivityFromNotification;
 
         if (state.launchingActivityFromNotification && state.forceHideAfterActivityLaunch) {
