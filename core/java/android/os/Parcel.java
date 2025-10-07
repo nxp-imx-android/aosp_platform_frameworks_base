@@ -5528,6 +5528,16 @@ public final class Parcel {
                             + clazz.getName() + " provided in the parameter");
                 }
             }
+            if (Build.IS_DEBUGGABLE && UserHandle.getAppId(Process.myUid())
+                    < Process.FIRST_APPLICATION_UID) {
+                Slog.wtfStack(TAG, "System process called readSerializableInternal"
+                        + "; uid=" + Process.myUid()
+                        + "; processName=" + Process.myProcessName()
+                        + "; clazz=" + (clazz == null ? "null" : clazz.getName())
+                        + "; name=" + name
+                        + "; callingUid=" + Binder.getCallingUid()
+                );
+            }
             byte[] serializedData = createByteArray();
             ByteArrayInputStream bais = new ByteArrayInputStream(serializedData);
             ObjectInputStream ois = new ObjectInputStream(bais) {
