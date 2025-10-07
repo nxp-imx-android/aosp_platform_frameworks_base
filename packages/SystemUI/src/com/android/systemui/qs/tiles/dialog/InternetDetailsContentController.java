@@ -341,12 +341,7 @@ public class InternetDetailsContentController implements AccessPointController.A
             Log.d(TAG, "onStart");
         }
         mCallback = callback;
-        mCanConfigWifi = canConfigWifi;
         mKeyguardUpdateMonitor.registerCallback(mKeyguardUpdateCallback);
-        mWorkerHandler.post(this::initSystemService);
-    }
-
-    void initSystemService() {
         mAccessPointController.addAccessPointCallback(this);
         mBroadcastDispatcher.registerReceiver(mConnectionStateReceiver, mConnectionStateFilter,
                 mExecutor);
@@ -365,6 +360,7 @@ public class InternetDetailsContentController implements AccessPointController.A
         registerInternetTelephonyCallback(mTelephonyManager, mDefaultDataSubId);
         // Listen the connectivity changes
         mConnectivityManager.registerDefaultNetworkCallback(mConnectivityManagerNetworkCallback);
+        mCanConfigWifi = canConfigWifi;
         scanWifiAccessPoints();
 
         if (mSatelliteManager != null) {
@@ -463,12 +459,6 @@ public class InternetDetailsContentController implements AccessPointController.A
 
     @Nullable
     CharSequence getSubtitleText(boolean isProgressBarVisible) {
-        if (mConfig == null) {
-            if (DEBUG) {
-                Log.d(TAG, "MobileMappings.Config is null");
-            }
-            return null;
-        }
         if (mCanConfigWifi && !isWifiEnabled()) {
             // When Wi-Fi is disabled.
             //   Sub-Title: Wi-Fi is off
