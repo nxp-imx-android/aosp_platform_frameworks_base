@@ -9085,7 +9085,7 @@
         android:featureFlag="android.permission.flags.health_connect_backup_restore_permission_enabled" />
 
     <!-- @hide @SystemApi Allows an app to write device level data to Health Connect.
-             <p>Protection level: privileged
+             <p>Protection level: signature|privileged
          @FlaggedApi(android.permission.flags.Flags.FLAG_HEALTH_CONNECT_PROVIDE_DEVICE_DATA_PERMISSION_ENABLED)
     -->
     <permission
