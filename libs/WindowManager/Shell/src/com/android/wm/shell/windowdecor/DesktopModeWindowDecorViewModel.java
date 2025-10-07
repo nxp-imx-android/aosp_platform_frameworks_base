@@ -1767,7 +1767,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 mMultiDisplayDragMoveIndicatorController,
                 mShellDesktopState,
                 mDesktopConfig,
-                mDesktopTasksController);
+                mDesktopTasksController,
+                mDesktopUserRepositories);
         windowDecoration.setTaskDragResizer(taskPositioner);
 
         final DesktopModeTouchEventListener touchEventListener =
@@ -2161,7 +2162,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
                 DesktopState desktopState,
                 DesktopConfig desktopConfig,
-                DesktopTasksController desktopTasksController) {
+                DesktopTasksController desktopTasksController,
+                DesktopUserRepositories desktopUserRepositories) {
             final TaskPositioner taskPositioner = desktopConfig.isVeiledResizeEnabled()
                     // TODO(b/383632995): Update when the flag is launched.
                     ? (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
@@ -2174,7 +2176,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             handler,
                             multiDisplayDragMoveIndicatorController,
                             desktopState,
-                            desktopTasksController)
+                            desktopTasksController,
+                            desktopUserRepositories)
                         : new VeiledResizeTaskPositioner(
                             taskOrganizer,
                             windowDecoration,

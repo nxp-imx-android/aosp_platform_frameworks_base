@@ -176,6 +176,7 @@ object WindowDecorationTestHelper {
                     mock<MultiDisplayDragMoveIndicatorController>(),
                 desktopState = desktopState,
                 desktopTasksController = desktopTasksController,
+                desktopUserRepositories = desktopUserRepositories,
             )
         val touchEventListener =
             DesktopModeTouchEventListener(
