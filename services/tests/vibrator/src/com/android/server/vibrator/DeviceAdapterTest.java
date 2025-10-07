@@ -425,8 +425,7 @@ public class DeviceAdapterTest {
     }
 
     @Test
-    @EnableFlags(value = {Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_DECOUPLE_FREQUENCY_PROFILE_FROM_RESONANCE})
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testPwleSegment_withEmptyProfile_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 new PwleSegment(1, 0.2f, 30, 60, 20),
@@ -435,26 +434,6 @@ public class DeviceAdapterTest {
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_EMPTY_PROFILE_VIBRATOR_ID, effect)).isNull();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
-    @DisableFlags(Flags.FLAG_DECOUPLE_FREQUENCY_PROFILE_FROM_RESONANCE)
-    public void testPwleSegment_withEmptyProfile_flagDisabled_returnsAdaptedSegments() {
-        VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(1, 0.2f, 30, 60, 20),
-                new PwleSegment(0.8f, 0.2f, 60, 100, 100),
-                new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
-                /* repeatIndex= */ 1);
-
-        VibrationEffect.Composed expected = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(1, 0.2f, 30, 60, 20),
-                new PwleSegment(0.8f, 0.2f, 60, 100, 100),
-                new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
-                /* repeatIndex= */ 1);
-
-        assertThat(mAdapter.adaptToVibrator(PWLE_V2_EMPTY_PROFILE_VIBRATOR_ID, effect)).isEqualTo(
-                expected);
     }
 
     @Test
@@ -491,8 +470,7 @@ public class DeviceAdapterTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS,
-            Flags.FLAG_DECOUPLE_FREQUENCY_PROFILE_FROM_RESONANCE})
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testBasicPwleSegment_withEmptyProfile_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 new BasicPwleSegment(0.0f, 0.5f, 0.0f, 0.5f, 20),

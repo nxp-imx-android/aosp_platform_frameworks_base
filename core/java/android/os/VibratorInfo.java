@@ -692,14 +692,8 @@ public class VibratorInfo implements Parcelable {
 
             boolean isValid = (frequenciesHz != null && outputAccelerationsGs != null)
                     && (frequenciesHz.length == outputAccelerationsGs.length)
-                    && (frequenciesHz.length > 0);
-
-            if (Flags.decoupleFrequencyProfileFromResonance()) {
-                isValid = isValid
-                        && (Float.isNaN(resonantFrequencyHz) || (resonantFrequencyHz > 0));
-            } else {
-                isValid = isValid && !Float.isNaN(resonantFrequencyHz) && (resonantFrequencyHz > 0);
-            }
+                    && (frequenciesHz.length > 0)
+                    && (Float.isNaN(resonantFrequencyHz) || (resonantFrequencyHz > 0));
 
             if (!isValid) {
                 Slog.e(TAG, "Invalid frequency profile received from HAL."
