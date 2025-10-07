@@ -28,11 +28,11 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
-import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -53,7 +53,6 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
-import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayContentViewModel
 import com.android.systemui.statusbar.core.StatusBarForDesktop
@@ -70,8 +69,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@EnableSceneContainer
-@EnableFlags(FLAG_DUAL_SHADE)
+@EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
 class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -313,53 +311,6 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
             enableSingleShade()
             assertThat(currentScene).isEqualTo(Scenes.Shade)
             assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
-        }
-
-    @Test
-    fun shadeModeChanged_split_switchesToShadeScene() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
-            enableDualShade()
-            shadeInteractor.expandNotificationsShade("test")
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
-
-            enableSplitShade()
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
-        }
-
-    @Test
-    fun shadeModeChanged_betweenNonDualModes_remainsOnShadeScene() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
-            // GIVEN the shade is an overlay in dual shade mode
-            enableDualShade()
-            shadeInteractor.expandNotificationsShade("test")
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
-
-            // WHEN switching to a non-dual (single) shade mode
-            enableSingleShade()
-
-            // THEN the scene snaps to Shade
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
-
-            // WHEN switching to another non-dual (split) shade mode
-            enableSplitShade()
-
-            // THEN the scene remains on Shade
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-
-            // WHEN switching back to the first non-dual (single) shade mode
-            enableSingleShade()
-
-            // THEN the scene still remains on Shade
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
         }
 
     private fun Kosmos.lockDevice() {

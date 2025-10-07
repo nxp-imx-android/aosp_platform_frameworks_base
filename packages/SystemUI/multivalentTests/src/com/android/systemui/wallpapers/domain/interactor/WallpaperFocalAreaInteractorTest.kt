@@ -29,6 +29,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
@@ -382,8 +383,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun shouldNotCollectFocalArea_isIdleInLockscreenWithDualShadeOverlays() =
         kosmos.runTest {
             enableDualShade()
