@@ -297,6 +297,10 @@ constructor(
      */
     @SuppressLint("WrongConstant", "RegisterReceiverViaContext")
     private fun registerBroadcastReceiver() {
+        if (!KeyguardWmStateRefactor.isEnabled) {
+            return
+        }
+
         val delayedActionFilter = IntentFilter()
         delayedActionFilter.addAction(KeyguardViewMediator.DELAYED_KEYGUARD_ACTION)
         // TODO(b/346803756): Listen for DELAYED_LOCK_PROFILE_ACTION.

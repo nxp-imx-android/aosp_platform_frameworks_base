@@ -75,7 +75,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     private val testScope = kosmos.testScope
-    private val underTest = kosmos.keyguardWakeDirectlyToGoneInteractor
+    private val underTest by lazy { kosmos.keyguardWakeDirectlyToGoneInteractor }
     private val lockPatternUtils = kosmos.lockPatternUtils
     private val repository = kosmos.fakeKeyguardRepository
     private val transitionRepository = kosmos.fakeKeyguardTransitionRepository
