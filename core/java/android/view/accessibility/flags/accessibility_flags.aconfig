@@ -234,6 +234,16 @@ flag {
 }
 
 flag {
+    name: "prevent_volume_shortcut_ringtone_exhaustion"
+    namespace: "accessibility"
+    description: "Prevents audio resource exhaustion by stopping the previous ringtone before a new one is played when the accessibility shortcut is repeatedly triggered."
+    bug: "429376017"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "reduce_window_content_changed_event_throttle"
     namespace: "accessibility"
     description: "Reduces the throttle of AccessibilityEvent of TYPE_WINDOW_CONTENT_CHANGED"

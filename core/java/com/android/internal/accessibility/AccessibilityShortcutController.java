@@ -18,6 +18,7 @@ package com.android.internal.accessibility;
 
 import static android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK;
 import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
+import static android.view.accessibility.Flags.preventVolumeShortcutRingtoneExhaustion;
 
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.dialog.AccessibilityTargetHelper.getTargets;
@@ -141,6 +142,8 @@ public class AccessibilityShortcutController {
     private boolean mIsShortcutEnabled;
     private boolean mEnabledOnLockScreen;
     private int mUserId;
+    @VisibleForTesting
+    public Ringtone mCurrentRingtone;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
@@ -482,10 +485,25 @@ public class AccessibilityShortcutController {
         return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
     }
 
-    private void playNotificationTone() {
-        Ringtone tone =
-                mFrameworkObjectProvider.getDefaultAccessibilityNotificationRingtone(mContext);
-        AccessibilityUtils.playNotificationTone(mContext, tone);
+    /**
+     * Play notification tone
+     * <p>
+     * This method is public solely for testing purposes.
+     */
+    @VisibleForTesting
+    public void playNotificationTone() {
+        if (preventVolumeShortcutRingtoneExhaustion()) {
+            if (mCurrentRingtone != null) {
+                mCurrentRingtone.stop();
+            }
+            mCurrentRingtone =
+                    mFrameworkObjectProvider.getDefaultAccessibilityNotificationRingtone(mContext);
+            AccessibilityUtils.playNotificationTone(mContext, mCurrentRingtone);
+        } else {
+            Ringtone tone =
+                    mFrameworkObjectProvider.getDefaultAccessibilityNotificationRingtone(mContext);
+            AccessibilityUtils.playNotificationTone(mContext, tone);
+        }
     }
 
     /**
