@@ -226,7 +226,7 @@ public final class DisplayManagerGlobal {
      * before the display manager has been fully initialized.
      */
     @UnsupportedAppUsage
-    @android.ravenwood.annotation.RavenwoodIgnore
+    @android.ravenwood.annotation.RavenwoodKeep
     public static DisplayManagerGlobal getInstance() {
         synchronized (DisplayManagerGlobal.class) {
             if (sInstance == null) {

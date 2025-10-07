@@ -40,6 +40,10 @@ class android.net.UriCodec keepclass  # no-pta
 # Telephony
 class android.telephony.PinResult keepclass  # no-pta
 
+# Display manager
+class android.hardware.display.DisplayManagerGlobal allow-annotation
+    method getInstance ()Landroid/hardware/display/DisplayManagerGlobal; allow-annotation
+
 # Just enough to support mocking, no further functionality
 class android.content.BroadcastReceiver allow-annotation
     method <init> ()V allow-annotation
@@ -65,6 +69,9 @@ package android.widget exp
 package android.window exp
 package com.android.internal exp
 
+# Classes we know that won't work
+class android.app.Notification throw
+
 # The above package-level policies won't overide class or method level
 # annotations. In order to override these annotations, we need to
 # set "exp" to individual classes and methods.
@@ -74,6 +81,7 @@ class android.app.ContextImpl exp
 class android.content.Context exp
 
 class android.app.ActivityThread exp
+class android.app.ActivityThread$H exp
 class android.app.Instrumentation exp
 class android.app.LoadedApk exp
 class android.hardware.display.DisplayManagerGlobal exp
@@ -90,33 +98,13 @@ class android.view.animation.AnimationUtils exp
 
 class android.view.Display exp
 
-# This one is tricky:
-# ResourceManger would be unhappy if DisplayManagerGlobal.getInstance()
-# throws, so we make it to return null. But if experimental APIs are
-# are enabled, we want this to work.
-# This one is tricky.
-# It officially has a "@RavenwoodIgnore", so it needs to have "allow-annotation".
-# But we actually internally keep is with this policy.
-# However, the method will still return null, as long as
-# ServiceManager.getService(Context.DISPLAY_SERVICE) returns null, which
-# would return an instance when experimental APIs are enabled.
-# We keep the @RavenwoodIgnore annotation is just for documentation purposes.
-# (and it's okay for the same method to have a "regular" policy such as "keep",
-# with "allow-annotation", because "allow-annotation" is handled differently.)
-class android.hardware.display.DisplayManagerGlobal allow-annotation
-   method getInstance ()Landroid/hardware/display/DisplayManagerGlobal; allow-annotation
-   method getInstance keep
-
-## Prevent <clinit> from throwing...
-#class android.app.ActivityManager
-#    method <clinit> ignore
-
 class android.os.UserManager exp
 class android.os.UserManagerCache exp
 class android.os.GraphicsEnvironment exp
 class android.os.StrictMode
     method trackActivity exp
     method assertConfigurationContext exp
+    method vmRegistrationLeaksEnabled ignore
 
 class android.os.StrictMode$InstanceTracker exp
 
@@ -127,28 +115,26 @@ class android.content.res.AssetManager
     method getLoaders exp # let it return an empty loader
 
 class android.view.SurfaceControl
-    method nativeGetNativeSurfaceControlFinalizer i #exprimental -- ignore native methods
-    method nativeGetNativeTransactionFinalizer i #exprimental -- ignore native methods
-    method nativeCreateTransaction i #exprimental -- ignore native methods
+    method nativeGetNativeSurfaceControlFinalizer i #experimental -- ignore native methods
+    method nativeGetNativeTransactionFinalizer i    #experimental -- ignore native methods
+    method nativeCreateTransaction i                #experimental -- ignore native methods
 
 class android.graphics.HardwareRenderer exp
-    method nSetHighContrastText i #exprimental -- ignore native methods
-    method preInitBufferAllocator i #exprimental -- ignore native methods
+    method nSetHighContrastText i   #experimental -- ignore native methods
+    method preInitBufferAllocator i #experimental -- ignore native methods
 
 class android.hardware.input.InputSettings
     method isStylusPointerIconEnabled exp
 
 class android.tracing.perfetto.DataSource exp
-    method nativeCreate i #exprimental -- ignore native methods
-
-class android.tracing.perfetto.DataSource exp
-    method nativeRegisterDataSource i #exprimental -- ignore native methods
+    method nativeCreate i             #experimental -- ignore native methods
+    method nativeRegisterDataSource i #experimental -- ignore native methods
 
 class android.tracing.perfetto.Producer exp
-    method nativePerfettoProducerInit i #exprimental -- ignore native methods
+    method nativePerfettoProducerInit i #experimental -- ignore native methods
 
 class android.view.SurfaceControl exp
-    method nativeSetTransformHint i #exprimental -- ignore native methods
+    method nativeSetTransformHint i #experimental -- ignore native methods
 
 # Experimental APIs
 class android.app.Instrumentation

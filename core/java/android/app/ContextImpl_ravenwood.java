@@ -18,15 +18,23 @@ package android.app;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.onExperimentalApiCalled;
 
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Binder;
 import android.os.FileUtils;
 import android.os.IBinder;
+import android.platform.test.ravenwood.RavenwoodEnvironment;
 import android.platform.test.ravenwood.RavenwoodPackageManager;
 
 import java.io.File;
 
 public class ContextImpl_ravenwood {
     private static final String TAG = "ContextImpl_ravenwood";
+
+    // TODO(b/450069205): support setting custom properties to opt-in as system
+    static boolean isSystemOrSystemUI(Context context) {
+        return "SystemUiRavenTests".equals(RavenwoodEnvironment.getInstance().getTestModuleName());
+    }
 
     static PackageManager getPackageManagerInner(ContextImpl contextImpl) {
         return RavenwoodPackageManager.create(contextImpl);

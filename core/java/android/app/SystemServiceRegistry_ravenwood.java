@@ -23,6 +23,7 @@ import android.app.SystemServiceRegistry.ServiceFetcher;
 import android.app.admin.DevicePolicyManager;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.hardware.display.DisplayManager;
 import android.hardware.input.InputManager;
 import android.media.AudioManager;
 import android.os.IBinder;
@@ -178,6 +179,13 @@ public class SystemServiceRegistry_ravenwood {
                 return new AutofillManager(ctx.getOuterContext(), service);
             }});
 
+        registerService(Context.DISPLAY_SERVICE, DisplayManager.class,
+                new CachedServiceFetcher<>() {
+            @Override
+            public DisplayManager createService(ContextImpl ctx) {
+                return new DisplayManager(ctx.getOuterContext());
+            }});
+
         registerStubServices();
     }
 
@@ -223,6 +231,13 @@ public class SystemServiceRegistry_ravenwood {
                     @Override
                     public PowerManager createService(ContextImpl ctx) {
                         return objenesis.newInstance(PowerManager.class);
+                    }
+                });
+        registerService(Context.WALLPAPER_SERVICE, WallpaperManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public WallpaperManager createService(ContextImpl ctx) {
+                        return DisabledWallpaperManager.getInstance();
                     }
                 });
     }

@@ -2468,7 +2468,7 @@ class ContextImpl extends Context {
      * TODO(b/147647877): Fix usages and remove.
      */
     @SuppressWarnings("AndroidFrameworkClientSidePermissionCheck")
-    @RavenwoodIgnore // Always false on Ravenwood.
+    @RavenwoodRedirect
     private static boolean isSystemOrSystemUI(Context context) {
         return ActivityThread.isSystem() || context.checkPermission(
                 "android.permission.STATUS_BAR_SERVICE",

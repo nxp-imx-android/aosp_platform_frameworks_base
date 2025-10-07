@@ -34,6 +34,7 @@ import android.ravenwood.example.BlueManager;
 import android.ravenwood.example.RedManager;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IWindowManager;
 import android.view.IWindowSession;
@@ -184,6 +185,7 @@ public class RavenwoodSystemServer {
                 new BinderHelper<>(IUserManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getUserRestrictionSources" -> Collections.emptyList();
+                        case "isHeadlessSystemUserMode" -> false;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };
                 });
@@ -199,6 +201,7 @@ public class RavenwoodSystemServer {
                 new BinderHelper<>(IDisplayManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getDisplayInfo" -> new DisplayInfo();
+                        case "getDisplayIds" -> new int[]{Display.DEFAULT_DISPLAY};
                         case "getOverlaySupport",
                              "getPreferredWideGamutColorSpaceId",
                              "registerCallbackWithEventMask" ->
@@ -214,19 +217,18 @@ public class RavenwoodSystemServer {
     public static class IInputManager_ravenwood {
         private static final String TAG = "IInputManager_ravenwood";
 
-        private static final int VIRTUAL_KEYBOARD = -1;
-
         private static InputDevice getDefaultInputDevice() {
             return new InputDevice.Builder()
-                    .setId(VIRTUAL_KEYBOARD)
-                    .setKeyCharacterMap(KeyCharacterMap.obtainEmptyMap(VIRTUAL_KEYBOARD))
+                    .setId(KeyCharacterMap.VIRTUAL_KEYBOARD)
+                    .setKeyCharacterMap(
+                            KeyCharacterMap.obtainEmptyMap(KeyCharacterMap.VIRTUAL_KEYBOARD))
                     .build();
         }
 
         public static final BinderHelper<IInputManager> sIBinder =
                 new BinderHelper<>(IInputManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
-                        case "getInputDeviceIds" -> new int[]{VIRTUAL_KEYBOARD};
+                        case "getInputDeviceIds" -> new int[]{KeyCharacterMap.VIRTUAL_KEYBOARD};
                         case "getInputDevice" -> getDefaultInputDevice(); // TODO Cache it?
                         case "getVelocityTrackerStrategy",
                              "injectInputEventToTarget",

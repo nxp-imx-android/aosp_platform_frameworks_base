@@ -82,7 +82,6 @@ public final class RavenwoodRunnerState {
             Log.v(TAG, "exitTestClass: " + mRunner.mTestJavaClass.getName());
         }
         assertTrue(RAVENWOOD_RULE_ERROR, sActiveProperties.isEmpty());
-        RavenwoodErrorHandler.exitTestClass();
     }
 
     /** Called when a test method is about to start */
