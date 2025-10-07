@@ -699,11 +699,11 @@ constructor(
                 !taskInfo.isVisibleRequested ||
                 !taskInfo.isFreeform
         ) {
+            closeDragResizeListener()
             if (taskPositionChanged) {
                 // We still want to track caption bar's exclusion region on a non-resizeable task.
                 updateExclusionRegion()
             }
-            closeDragResizeListener()
             return
         }
         updateDragResizeListener(containerSurface) { geometryChanged ->
@@ -789,12 +789,7 @@ constructor(
      * this task.
      */
     private fun getGlobalExclusionRegion(): Region {
-        val exclusionRegion =
-            if (taskInfo.isDragResizable(inFullImmersive)) {
-                dragResizeListener?.cornersRegion ?: Region()
-            } else {
-                Region()
-            }
+        val exclusionRegion = dragResizeListener?.cornersRegion ?: Region()
         if (inFullImmersive) {
             // Task can't be moved in full immersive, so skip excluding the caption region.
             return exclusionRegion
