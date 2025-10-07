@@ -2780,9 +2780,6 @@
     <!-- Instructions telling the user how to unlock the phone. -->
     <string name="keyguard_label_text">To unlock, press Menu then 0.</string>
 
-    <!-- This can be used in any application wanting to disable the text "Emergency number" -->
-    <string name="emergency_call_dialog_number_for_display">Emergency number</string>
-
     <!--
        *** touch based lock / unlock ***
                                           --> <skip />
