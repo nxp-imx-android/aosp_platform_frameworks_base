@@ -16,8 +16,6 @@
 
 package com.android.server.devicepolicy.handlers;
 
-import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
-import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -43,7 +41,6 @@ public class GeneratedPolicyInformation {
                         Set.of(
                                 PolicyIdentifier.SCREEN_CAPTURE_ALLOWED,
                                 PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED),
-                        Set.of(POLICY_SCOPE_DEVICE, POLICY_SCOPE_USER),
                         android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE,
                         android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS));
     }
