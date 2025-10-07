@@ -195,7 +195,8 @@ class SceneContainerHapticsViewModelTest : SysuiTestCase() {
             verify(view).performHapticFeedback(eq(HapticFeedbackConstants.GESTURE_START))
         }
 
-    @DisableFlags(Flags.FLAG_MSDL_FEEDBACK, Flags.FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_DUAL_SHADE)
+    @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
     @Test
     fun onInValidOverlayTransition_withoutMSDL_doesNotPlayHapticConstantForShadePullHaptics() =
         kosmos.runTest {
@@ -212,11 +213,12 @@ class SceneContainerHapticsViewModelTest : SysuiTestCase() {
             verifyNoMoreInteractions(view)
         }
 
-    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK, Flags.FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
+    @DisableFlags(Flags.FLAG_DUAL_SHADE)
     @Test
     fun onRemoteUserInteraction_withValidSceneTransition_playsMSDLShadePullHaptics() =
         kosmos.runTest {
-            kosmos.disableDualShade()
+            disableDualShade()
             val isUserInteracting by collectLastValue(shadeInteractor.isUserInteracting)
 
             // GIVEN a valid scene transition to play haptics that initiated remotely

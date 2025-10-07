@@ -28,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.keyguard.trustManager
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.CameraInfo
@@ -634,8 +635,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun faceAuthIsRequestedWhenDualShadeExpansionIsStarted() =
         kosmos.runTest {
             enableDualShade()
@@ -665,8 +665,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun faceAuthIsRequestedOnlyOnceWhenDualShadeExpansionStarts() =
         kosmos.runTest {
             enableDualShade()

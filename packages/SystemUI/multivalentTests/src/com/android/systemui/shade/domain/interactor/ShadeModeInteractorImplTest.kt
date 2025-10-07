@@ -49,6 +49,7 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
     private val Kosmos.underTest by Kosmos.Fixture { shadeModeInteractor }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun legacyShadeMode_narrowScreen_singleShade() =
         kosmos.runTest {
             val shadeMode by collectLastValue(underTest.shadeMode)
@@ -58,6 +59,7 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun legacyShadeMode_narrowLargeScreen_singleShade() =
         kosmos.runTest {
             val shadeMode by collectLastValue(underTest.shadeMode)
@@ -69,6 +71,7 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun legacyShadeMode_wideScreen_singleShade() =
         kosmos.runTest {
             val shadeMode by collectLastValue(underTest.shadeMode)
@@ -85,21 +88,6 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
             enableSplitShade()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Split)
-        }
-
-    @Test
-    @EnableFlags(FLAG_DUAL_SHADE)
-    fun defaultShadeMode_splitShadeOverridden_dualShade() =
-        kosmos.runTest {
-            enableSplitShade()
-            val shadeMode by collectLastValue(underTest.shadeMode)
-            assertThat(shadeMode).isEqualTo(ShadeMode.Split)
-
-            overrideResource(com.android.settingslib.R.bool.config_useDualShadeSetting, false)
-            overrideResource(R.bool.config_dualShadeEnabledByDefault, true)
-            fakeConfigurationRepository.onConfigurationChange()
-
-            assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
         }
 
     @Test

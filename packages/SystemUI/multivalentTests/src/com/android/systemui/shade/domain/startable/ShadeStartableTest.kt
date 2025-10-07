@@ -24,6 +24,7 @@ import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
@@ -108,6 +109,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_DUAL_SHADE)
     fun hydrateShadeMode_dualShadeDisabled() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
@@ -128,8 +130,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun hydrateShadeMode_dualShadeEnabled() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
@@ -239,8 +240,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun hydrateFullWidth_dualShade_narrowScreen() =
         kosmos.runTest {
             enableDualShade(wideLayout = false)
@@ -250,8 +250,7 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun hydrateFullWidth_dualShade_wideScreen() =
         kosmos.runTest {
             enableDualShade(wideLayout = true)

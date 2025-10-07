@@ -25,6 +25,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.OverlayKey
 import com.android.internal.policy.SystemBarUtils
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
@@ -141,8 +142,7 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun entireScreenTouchable_desktopMode() =
         kosmos.runTest {
             enableStatusBarForDesktop()
@@ -152,8 +152,7 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun calculateTouchableRegionForDesktop_sceneGone_withShadeBounds() =
         kosmos.runTest {
             val bounds = Rect(0, 0, 100, 100)
@@ -169,8 +168,7 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun calculateTouchableRegionForDesktop_sceneVisible_withoutShadeBounds() =
         kosmos.runTest {
             enableStatusBarForDesktop()
