@@ -24,7 +24,6 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.fakeFalsingManager
 import com.android.systemui.flags.DisableSceneContainer
-import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
@@ -144,8 +143,7 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(Flags.FLAG_DUAL_SHADE)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun showTooltip_onDualShade_waitsForNotificationShadeTooltip() =
         kosmos.runTest {
             enableDualShade()
