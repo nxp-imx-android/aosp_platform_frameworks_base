@@ -80,7 +80,7 @@ class MediaOutputComponentInteractorTest : SysuiTestCase() {
                 addOverride(R.string.media_transfer_this_device_name, builtInDeviceName)
             }
 
-            underTest = mediaOutputComponentInteractor
+            underTest = mockedMediaOutputComponentInteractor
         }
 
     @Test
