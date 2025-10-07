@@ -71,7 +71,7 @@ public final class TaskContinuityManagerService extends SystemService
     public TaskContinuityManagerService(Context context) {
         super(context);
 
-        mTaskContinuityMessenger = new TaskContinuityMessenger(context, this);
+        mTaskContinuityMessenger = new TaskContinuityMessenger(context);
         mTaskBroadcaster = new TaskBroadcaster(context, mTaskContinuityMessenger);
         mRemoteTaskStore = new RemoteTaskStore();
         mOutboundHandoffRequestController =
@@ -84,7 +84,7 @@ public final class TaskContinuityManagerService extends SystemService
     @Override
     public void onStart() {
         mTaskContinuityManagerService = new TaskContinuityManagerServiceImpl();
-        mTaskContinuityMessenger.enable();
+        mTaskContinuityMessenger.addListener(this);
         publishBinderService(Context.TASK_CONTINUITY_SERVICE, mTaskContinuityManagerService);
     }
 

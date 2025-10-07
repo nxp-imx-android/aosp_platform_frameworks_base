@@ -25,10 +25,13 @@ import android.content.Context;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.internal.annotations.GuardedBy;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.concurrent.Executor;
 import java.util.Objects;
@@ -45,7 +48,9 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     private final CompanionDeviceManager mCompanionDeviceManager;
     private final ConnectedAssociationStore mConnectedAssociationStore;
     private final Executor mExecutor;
-    private final Listener mListener;
+
+    @GuardedBy("mListeners")
+    private final Set<Listener> mListeners = new HashSet<>();
 
     private BiConsumer<Integer, byte[]> mIncomingMessageConsumer;
 
@@ -58,17 +63,35 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         void onMessageReceived(int associationId, @NonNull TaskContinuityMessage message);
     }
 
-    public TaskContinuityMessenger(@NonNull Context context, @NonNull Listener listener) {
+    public TaskContinuityMessenger(@NonNull Context context) {
 
         Objects.requireNonNull(context);
-        Objects.requireNonNull(listener);
 
         mContext = context;
         mExecutor = context.getMainExecutor();
-        mListener = listener;
         mCompanionDeviceManager = context.getSystemService(CompanionDeviceManager.class);
         mConnectedAssociationStore =
                 new ConnectedAssociationStore(mCompanionDeviceManager, mExecutor, this);
+    }
+
+    public void addListener(@NonNull Listener listener) {
+        synchronized (mListeners) {
+            boolean shouldEnable = mListeners.isEmpty();
+            mListeners.add(Objects.requireNonNull(listener));
+            if (shouldEnable) {
+                enable();
+            }
+        }
+    }
+
+    public void removeListener(@NonNull Listener listener) {
+        synchronized (mListeners) {
+            boolean shouldDisable = mListeners.size() == 1;
+            mListeners.remove(Objects.requireNonNull(listener));
+            if (shouldDisable) {
+                disable();
+            }
+        }
     }
 
     public void enable() {
@@ -169,7 +192,11 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     public void onTransportConnected(@NonNull AssociationInfo associationInfo) {
         Objects.requireNonNull(associationInfo);
 
-        mListener.onAssociationConnected(associationInfo);
+        synchronized (mListeners) {
+            for (Listener listener : mListeners) {
+                listener.onAssociationConnected(associationInfo);
+            }
+        }
     }
 
     @Override
@@ -178,7 +205,11 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
         Objects.requireNonNull(connectedAssociations);
 
-        mListener.onAssociationDisconnected(associationId, connectedAssociations);
+        synchronized (mListeners) {
+            for (Listener listener : mListeners) {
+                listener.onAssociationDisconnected(associationId, connectedAssociations);
+            }
+        }
     }
 
     private void onMessageReceived(int associationId, byte[] data) {
@@ -186,7 +217,11 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         try {
             TaskContinuityMessage taskContinuityMessage =
                     TaskContinuityMessageSerializer.deserialize(data);
-            mListener.onMessageReceived(associationId, taskContinuityMessage);
+            synchronized (mListeners) {
+                for (Listener listener : mListeners) {
+                    listener.onMessageReceived(associationId, taskContinuityMessage);
+                }
+            }
         } catch (IOException e) {
             Slog.e(TAG, "Failed to parse task continuity message", e);
         }
