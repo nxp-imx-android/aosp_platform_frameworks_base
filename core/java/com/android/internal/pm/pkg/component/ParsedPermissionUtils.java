@@ -141,7 +141,7 @@ public class ParsedPermissionUtils {
             final boolean isPlatform = "android".equals(permission.getPackageName());
 
             // For now only platform permissions can be purpose guarded.
-            if (Flags.purposeDeclarationEnabled() && isPlatform) {
+            if (Flags.ppdInstallTimeEnabled() && isPlatform) {
                 final boolean requiresPurpose =
                         sa.getBoolean(
                                 R.styleable.AndroidManifestPermission_requiresPurpose,

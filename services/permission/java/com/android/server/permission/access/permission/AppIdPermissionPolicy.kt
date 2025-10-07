@@ -163,7 +163,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
             // The removed package could be the reason why other packages sharing the same UID might
             // have been granted a permission. As a result, all permissions requested by the app ID
             // must be re-evaluated.
-            if (Flags.purposeDeclarationEnabled()) {
+            if (Flags.ppdInstallTimeEnabled()) {
                 evaluateAllPermissionStatesForAppId(appId)
             }
         }
@@ -1038,7 +1038,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
             // declare at least one valid purpose in its manifest before it can be granted. Note
             // that a flag state may have INSTALL_GRANTED and PURPOSE_REVOKED bits set, in which
             // case the permission will not be granted.
-            if (Flags.purposeDeclarationEnabled() && permission.requiresPurpose) {
+            if (Flags.ppdInstallTimeEnabled() && permission.requiresPurpose) {
                 val hasValidPurpose =
                     requestingPackageStates.anyIndexed { _, it ->
                         hasValidPurposeForPackage(it.androidPackage!!, permission)
