@@ -181,10 +181,6 @@ data_sources {
       sampling_interval_bytes: 16384
       shmem_size_bytes: 67108864
       all_heaps: false
-      # Continuously dump profiles to see changes over time
-      continuous_dump_config {
-        dump_interval_ms: 50 # Dump every 50 ms
-      }
     }
   }
 }
