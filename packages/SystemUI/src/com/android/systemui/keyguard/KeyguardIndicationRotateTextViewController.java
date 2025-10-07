@@ -61,9 +61,9 @@ public class KeyguardIndicationRotateTextViewController extends
     public static String TAG = "KgIndicationRotatingCtrl";
     private static final long DEFAULT_INDICATION_SHOW_LENGTH =
             KeyguardIndicationController.DEFAULT_HIDE_DELAY_MS
-                    - KeyguardIndicationTextView.Y_IN_DURATION;
+                    - KeyguardIndicationTextView.Y_TRANSLATE_DURATION;
     public static final long IMPORTANT_MSG_MIN_DURATION =
-            2000L + KeyguardIndicationTextView.Y_IN_DURATION;
+            2000L + KeyguardIndicationTextView.Y_TRANSLATE_DURATION;
 
     private final StatusBarStateController mStatusBarStateController;
     private final KeyguardLogger mLogger;
