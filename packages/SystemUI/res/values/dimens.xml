@@ -2234,6 +2234,9 @@
     <dimen name="tile_details_horizontal_padding">14dp</dimen>
     <dimen name="tile_details_vertical_padding">8dp</dimen>
     <dimen name="tile_details_entry_start_margin">16dp</dimen>
+    <dimen name="tile_details_title_row_button_size">48dp</dimen>
+    <dimen name="tile_details_title_row_start">2dp</dimen>
+    <dimen name="tile_details_title_row_end">8dp</dimen>
     <!-- Tile Details end -->
 
     <!-- Tile Details entry start -->
