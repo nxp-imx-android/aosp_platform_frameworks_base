@@ -62,6 +62,7 @@ import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.IKeyboardBacklightListener;
 import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
+import android.hardware.input.IVirtualGamepad;
 import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputGestureData;
@@ -74,6 +75,7 @@ import android.hardware.input.KeyboardLayout;
 import android.hardware.input.KeyboardLayoutSelectionResult;
 import android.hardware.input.TouchCalibration;
 import android.hardware.input.VirtualDpadConfig;
+import android.hardware.input.VirtualGamepadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualMouseConfig;
 import android.hardware.input.VirtualNavigationTouchpadConfig;
@@ -1063,7 +1065,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @NonNull
-    @Override
+    @Override // Binder call
     @EnforcePermission(anyOf = {
             Manifest.permission.INJECT_KEY_EVENTS,
             Manifest.permission.INJECT_EVENTS
@@ -1072,22 +1074,23 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull VirtualKeyboardConfig config) {
         super.createVirtualKeyboard_enforcePermission();
 
-        int displayId = config.getAssociatedDisplayId();
-        if (displayId != Display.INVALID_DISPLAY && displayId != Display.DEFAULT_DISPLAY) {
-            DisplayInfo displayInfo =
-                    mDisplayManagerInternal.getDisplayInfo(displayId);
-            int callingUid = Binder.getCallingUid();
-            // Explicit display association requires either the caller to own the display or if
-            // it's from the system.
-            if (callingUid != displayInfo.ownerUid && callingUid != Process.SYSTEM_UID
-                    && callingUid != 0) {
-                throw new SecurityException(
-                        "Explicit display association requires caller to own the display");
-            }
-        }
+        checkDisplayAssociationPermission(config.getAssociatedDisplayId(), Binder.getCallingUid());
 
         return createVirtualKeyboardInternal(token, config);
     }
+
+    @NonNull
+    @Override // Binder call
+    @EnforcePermission(Manifest.permission.INJECT_EVENTS)
+    public IVirtualGamepad createVirtualGamepad(
+            @NonNull IBinder token, @NonNull VirtualGamepadConfig config) {
+        super.createVirtualGamepad_enforcePermission();
+
+        checkDisplayAssociationPermission(config.associatedDisplayId, Binder.getCallingUid());
+
+        return createVirtualGamepadInternal(token, config);
+    }
+
 
     @Override // Binder call
     public VerifiedInputEvent verifyInputEvent(@NonNull InputEvent event) {
@@ -1985,6 +1988,15 @@ public class InputManagerService extends IInputManager.Stub
                 InputManagerService.this.getTargetDisplayIdForInput(
                         config.getAssociatedDisplayId()),
                 config.getLanguageTag(), config.getLayoutType());
+    }
+
+    @NonNull
+    IVirtualGamepad createVirtualGamepadInternal(@NonNull IBinder token,
+            @NonNull VirtualGamepadConfig config) {
+        return mVirtualInputDeviceController.createGamepad(config.name,
+                config.vendorId, config.productId, token,
+                InputManagerService.this.getTargetDisplayIdForInput(
+                        config.associatedDisplayId));
     }
 
     @Override // Binder call
@@ -3331,6 +3343,20 @@ public class InputManagerService extends IInputManager.Stub
 
     private void handleCurrentUserChanged(@UserIdInt int userId) {
         mKeyGestureController.setCurrentUserId(userId);
+    }
+
+    private void checkDisplayAssociationPermission(int displayId, int callingUid) {
+        if (displayId != Display.INVALID_DISPLAY && displayId != Display.DEFAULT_DISPLAY) {
+            DisplayInfo displayInfo =
+                    mDisplayManagerInternal.getDisplayInfo(displayId);
+            // Explicit display association requires either the caller to own the display or if
+            // it's from the system.
+            if (callingUid != displayInfo.ownerUid && callingUid != Process.SYSTEM_UID
+                    && callingUid != 0) {
+                throw new SecurityException(
+                        "Explicit display association requires caller to own the display");
+            }
+        }
     }
 
     /**

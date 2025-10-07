@@ -55,6 +55,13 @@ static jlong nativeOpenUinputKeyboard(JNIEnv* env, jobject thiz, jstring name, j
     return fd.ok() ? reinterpret_cast<jlong>(new VirtualKeyboard(std::move(fd))) : INVALID_PTR;
 }
 
+static jlong nativeOpenUinputGamepad(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
+                                     jint productId, jstring phys) {
+    auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::GAMEPAD,
+                            /* screenSize= */ std::nullopt);
+    return fd.ok() ? reinterpret_cast<jlong>(new VirtualGamepad(std::move(fd))) : INVALID_PTR;
+}
+
 static jlong nativeOpenUinputMouse(JNIEnv* env, jobject thiz, jstring name, jint vendorId,
                                    jint productId, jstring phys) {
     auto fd = openUinputJni(env, name, vendorId, productId, phys, DeviceType::MOUSE,
@@ -102,6 +109,41 @@ static bool nativeWriteKeyEvent(JNIEnv* env, jobject thiz, jlong ptr, jint andro
     VirtualKeyboard* virtualKeyboard = reinterpret_cast<VirtualKeyboard*>(ptr);
     return virtualKeyboard->writeKeyEvent(androidKeyCode, action,
                                           std::chrono::nanoseconds(eventTimeNanos));
+}
+
+// Native methods for VirtualGamepad
+static bool nativeWriteGamepadKeyEvent(JNIEnv* env, jobject thiz, jlong ptr, jint androidKeyCode,
+                                       jint action, jlong eventTimeNanos) {
+    VirtualGamepad* virtualGamepad = reinterpret_cast<VirtualGamepad*>(ptr);
+    return virtualGamepad->writeKeyEvent(androidKeyCode, action,
+                                         std::chrono::nanoseconds(eventTimeNanos));
+}
+
+static bool nativeWriteGamepadMotionEvent(JNIEnv* env, jobject thiz, jlong ptr, jfloat x, jfloat y,
+                                          jfloat z, jfloat rz, jfloat hatX, jfloat hatY,
+                                          jlong eventTimeNanos) {
+    std::map<int, float> axisValues;
+    if (!isnan(x)) {
+        axisValues[AMOTION_EVENT_AXIS_X] = x;
+    }
+    if (!isnan(y)) {
+        axisValues[AMOTION_EVENT_AXIS_Y] = y;
+    }
+    if (!isnan(z)) {
+        axisValues[AMOTION_EVENT_AXIS_Z] = z;
+    }
+    if (!isnan(rz)) {
+        axisValues[AMOTION_EVENT_AXIS_RZ] = rz;
+    }
+    if (!isnan(hatX)) {
+        axisValues[AMOTION_EVENT_AXIS_HAT_X] = hatX;
+    }
+    if (!isnan(hatY)) {
+        axisValues[AMOTION_EVENT_AXIS_HAT_Y] = hatY;
+    }
+
+    VirtualGamepad* virtualGamepad = reinterpret_cast<VirtualGamepad*>(ptr);
+    return virtualGamepad->writeMotionEvent(axisValues, std::chrono::nanoseconds(eventTimeNanos));
 }
 
 // Native methods for VirtualTouchscreen
@@ -164,6 +206,8 @@ static JNINativeMethod methods[] = {
          (void*)nativeOpenUinputDpad},
         {"nativeOpenUinputKeyboard", "(Ljava/lang/String;IILjava/lang/String;)J",
          (void*)nativeOpenUinputKeyboard},
+        {"nativeOpenUinputGamepad", "(Ljava/lang/String;IILjava/lang/String;)J",
+         (void*)nativeOpenUinputGamepad},
         {"nativeOpenUinputMouse", "(Ljava/lang/String;IILjava/lang/String;)J",
          (void*)nativeOpenUinputMouse},
         {"nativeOpenUinputTouchscreen", "(Ljava/lang/String;IILjava/lang/String;II)J",
@@ -175,6 +219,8 @@ static JNINativeMethod methods[] = {
         {"nativeCloseUinput", "(J)V", (void*)nativeCloseUinput},
         {"nativeWriteDpadKeyEvent", "(JIIJ)Z", (void*)nativeWriteDpadKeyEvent},
         {"nativeWriteKeyEvent", "(JIIJ)Z", (void*)nativeWriteKeyEvent},
+        {"nativeWriteGamepadKeyEvent", "(JIIJ)Z", (void*)nativeWriteGamepadKeyEvent},
+        {"nativeWriteGamepadMotionEvent", "(JFFFFFFJ)Z", (void*)nativeWriteGamepadMotionEvent},
         {"nativeWriteButtonEvent", "(JIIJ)Z", (void*)nativeWriteButtonEvent},
         {"nativeWriteTouchEvent", "(JIIIFFFFJ)Z", (void*)nativeWriteTouchEvent},
         {"nativeWriteRelativeEvent", "(JFFJ)Z", (void*)nativeWriteRelativeEvent},
