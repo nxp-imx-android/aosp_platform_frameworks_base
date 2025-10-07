@@ -27,10 +27,10 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -40,6 +40,7 @@ import com.android.systemui.media.remedia.data.repository.MediaPipelineRepositor
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
@@ -283,8 +284,9 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
     private fun TestScope.setDeviceEntered(isEntered: Boolean) {
         if (isEntered) {
             // Unlock the device, marking the device as entered
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
         }

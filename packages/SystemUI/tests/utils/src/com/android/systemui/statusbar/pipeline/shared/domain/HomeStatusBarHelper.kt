@@ -20,19 +20,19 @@ import android.app.StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP
 import android.content.applicationContext
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.window.data.repository.fakeStatusBarWindowStateRepositoryStore
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
 import com.google.common.truth.Truth.assertThat
@@ -82,8 +82,9 @@ object HomeStatusBarHelper {
     }
 
     private fun Kosmos.setDeviceEntered() {
-        fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-            SuccessFingerprintAuthenticationStatus(0, true)
+        biometricUnlockInteractor.setBiometricUnlockState(
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
 
         sceneInteractor.changeScene(Scenes.Gone, "HomeStatusBarHelper#setDeviceEntered")

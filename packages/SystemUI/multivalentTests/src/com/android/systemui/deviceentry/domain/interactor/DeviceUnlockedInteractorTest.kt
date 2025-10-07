@@ -17,7 +17,6 @@
 package com.android.systemui.deviceentry.domain.interactor
 
 import android.content.pm.UserInfo
-import android.hardware.face.FaceManager
 import android.os.PowerManager
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
@@ -30,19 +29,16 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryBypassRepository
 import com.android.systemui.deviceentry.shared.model.DeviceEntryRestrictionReason
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
-import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
 import com.android.systemui.flags.fakeSystemPropertiesHelper
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
@@ -51,6 +47,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -65,7 +62,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -98,8 +94,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
 
@@ -115,8 +112,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val isInLockdown by collectLastValue(underTest.isInLockdown)
 
             authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             kosmos.fakeBiometricSettingsRepository.setAuthenticationFlags(
                 AuthenticationFlags(
@@ -138,8 +136,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Sim)
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
 
@@ -182,13 +181,15 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
             kosmos.powerInteractor.setAwakeForTest()
 
-            kosmos.fakeDeviceEntryFaceAuthRepository.isAuthenticated.value = true
-            kosmos.fakeDeviceEntryBypassRepository.setBypassEnabled(true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
+            )
             runCurrent()
 
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
             assertThat(deviceUnlockStatus?.deviceUnlockSource)
-                .isEqualTo(DeviceUnlockSource.FaceWithBypass)
+                .isEqualTo(DeviceUnlockSource.FaceWithBypassOrUnlockIntent)
         }
 
     @Test
@@ -196,8 +197,10 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFaceAuthRepository.isAuthenticated.value = true
-            kosmos.fakeDeviceEntryBypassRepository.setBypassEnabled(false)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_NONE,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
+            )
             runCurrent()
 
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -210,8 +213,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
 
@@ -244,8 +248,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.fakePowerButtonInstantlyLocks = false
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -264,8 +269,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.fakePowerButtonInstantlyLocks = false
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -285,8 +291,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.fakePowerButtonInstantlyLocks = true
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -306,8 +313,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.fakePowerButtonInstantlyLocks = true
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -328,8 +336,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.fakePowerButtonInstantlyLocks = true
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -355,8 +364,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -665,8 +675,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.fakePowerButtonInstantlyLocks = false
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -688,8 +699,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             kosmos.fakeTrustRepository.setCurrentUserTrusted(true)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
             assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -812,8 +824,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             assertThat(deviceUnlockStatus?.deviceUnlockSource).isNull()
 
             // Mock successful strong fingerprint auth
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-                SuccessFingerprintAuthenticationStatus(0, true)
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
             // Mock secure lock device auth flags cleared, secure lock device disabled
@@ -910,12 +923,10 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             assertThat(deviceUnlockStatus?.deviceUnlockSource).isNull()
 
             // Mock successful strong face auth
-            kosmos.fakeDeviceEntryFaceAuthRepository.setAuthenticationStatus(
-                SuccessFaceAuthenticationStatus(
-                    successResult = mock(FaceManager.AuthenticationResult::class.java)
-                )
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
-            kosmos.fakeDeviceEntryFaceAuthRepository.isAuthenticated.value = true
             runCurrent()
 
             // Assert device is still locked while pending confirmation
@@ -934,8 +945,9 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
     private fun TestScope.unlockDevice() {
         val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
-        kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-            SuccessFingerprintAuthenticationStatus(0, true)
+        kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
         kosmos.sceneInteractor.changeScene(Scenes.Gone, "reason")

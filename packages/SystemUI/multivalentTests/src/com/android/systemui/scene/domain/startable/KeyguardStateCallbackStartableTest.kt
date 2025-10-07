@@ -23,13 +23,14 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.policy.IKeyguardStateCallback
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -215,8 +216,9 @@ class KeyguardStateCallbackStartableTest : SysuiTestCase() {
     }
 
     private fun unlockDevice() {
-        kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-            SuccessFingerprintAuthenticationStatus(0, true)
+        kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+            biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Gone))
         kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
@@ -235,11 +237,6 @@ class KeyguardStateCallbackStartableTest : SysuiTestCase() {
     )
 
     companion object {
-        private val selectedUser =
-            UserInfo(
-                /* id= */ 100,
-                /* name= */ "First user",
-                /* flags= */ 0,
-            )
+        private val selectedUser = UserInfo(/* id= */ 100, /* name= */ "First user", /* flags= */ 0)
     }
 }
