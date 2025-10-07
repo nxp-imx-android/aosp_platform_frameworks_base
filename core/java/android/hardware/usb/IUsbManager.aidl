@@ -20,6 +20,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.hardware.usb.IBc12TypeListener;
 import android.hardware.usb.IDisplayPortAltModeInfoListener;
+import android.hardware.usb.IPowerProfileInfoListener;
 import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
@@ -248,4 +249,14 @@ interface IUsbManager
     @JavaPassthrough(annotation=
             "@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_USB)")
     void unregisterForBc12TypeEvents(IBc12TypeListener listener);
+
+    /* Registers callback for PowerProfileInfo events */
+    @JavaPassthrough(annotation=
+            "@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_USB)")
+    boolean registerForPowerProfileInfoEvents(IPowerProfileInfoListener listener);
+
+    /* Unregisters PowerOpMode event callback */
+    @JavaPassthrough(annotation=
+            "@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_USB)")
+    void unregisterForPowerProfileInfoEvents(IPowerProfileInfoListener listener);
 }

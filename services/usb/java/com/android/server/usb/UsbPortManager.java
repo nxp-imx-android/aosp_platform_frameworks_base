@@ -47,6 +47,7 @@ import android.content.res.Resources;
 import android.hardware.usb.IBc12TypeListener;
 import android.hardware.usb.DisplayPortAltModeInfo;
 import android.hardware.usb.IDisplayPortAltModeInfoListener;
+import android.hardware.usb.IPowerProfileInfoListener;
 import android.hardware.usb.IUsbOperationInternal;
 import android.hardware.usb.ParcelableUsbPort;
 import android.hardware.usb.PowerProfileInfo;
@@ -160,6 +161,12 @@ public class UsbPortManager implements IBinder.DeathRecipient {
     private final Object mBc12TypeListenerLock = new Object();
     private final ArrayMap<IBinder, IBc12TypeListener> mBc12TypeListeners =
             new ArrayMap<IBinder, IBc12TypeListener>();
+
+    // Maintains a list of PowerProfileInfo event listeners.
+    // protected by mPowerProfileInfoListenerLock for broadcasts/register/unregister events
+    private final Object mPowerProfileInfoListenerLock = new Object();
+    private final ArrayMap<IBinder, IPowerProfileInfoListener> mPowerProfileInfoListeners =
+            new ArrayMap<IBinder, IPowerProfileInfoListener>();
 
     /**
      * If there currently is a notification related to contaminated USB port management
@@ -710,6 +717,13 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 Slog.d(TAG, "Bc12TypeDispatcherListener died at " + deadBinder);
             }
         }
+
+        synchronized (mPowerProfileInfoListenerLock) {
+            if (mPowerProfileInfoListeners.containsKey(deadBinder)) {
+                mPowerProfileInfoListeners.remove(deadBinder);
+                Slog.d(TAG, "PowerProfileInfoDispatcherListener died at " + deadBinder);
+            }
+        }
     }
 
     public boolean registerForDisplayPortEvents(
@@ -750,6 +764,31 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                     return false;
                 }
                 mBc12TypeListeners.put(listener.asBinder(), listener);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void unregisterForPowerProfileInfoEvents(@NonNull IPowerProfileInfoListener listener) {
+        synchronized (mPowerProfileInfoListenerLock) {
+            if (mPowerProfileInfoListeners.remove(listener.asBinder()) != null) {
+                listener.asBinder().unlinkToDeath(this, 0);
+            }
+        }
+    }
+
+    public boolean registerForPowerProfileInfoEvents(@NonNull IPowerProfileInfoListener listener) {
+        synchronized (mPowerProfileInfoListenerLock) {
+            if (!mPowerProfileInfoListeners.containsKey(listener.asBinder())) {
+                try {
+                    listener.asBinder().linkToDeath(this, 0);
+                } catch (RemoteException e) {
+                    logAndPrintException(null, "Caught RemoteException in " +
+                            "registerForPowerProfileInfoEvents: ", e);
+                    return false;
+                }
+                mPowerProfileInfoListeners.put(listener.asBinder(), listener);
                 return true;
             }
         }
@@ -1072,6 +1111,9 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             if (portInfo.mBc12TypeChanged == portInfo.BC12_TYPE_CHANGED) {
                 handleBc12TypeChangedLocked(portInfo, pw);
             }
+            if (portInfo.mPowerProfileInfoChanged == portInfo.POWER_PROFILE_INFO_CHANGED) {
+                handlePowerProfileInfoChangedLocked(portInfo, pw);
+            }
         }
     }
 
@@ -1256,6 +1298,17 @@ public class UsbPortManager implements IBinder.DeathRecipient {
         sendBc12TypeCallbackLocked(portInfo, pw);
     }
 
+    private void handlePowerProfileInfoChangedLocked(PortInfo portInfo, IndentingPrintWriter pw) {
+        UsbPortStatus portStatus = portInfo.mUsbPortStatus;
+        StringBuilder mString = new StringBuilder("USB port power profiles changed: portId=");
+        mString.append(portInfo.mUsbPort.getId());
+        mString.append(", ");
+        mString.append(portStatus.getPowerProfileInfoString());
+
+        logAndPrint(Log.INFO, pw, mString.toString());
+        sendPowerProfileInfoCallbackLocked(portInfo, pw);
+    }
+
     private void handlePortRemovedLocked(PortInfo portInfo, IndentingPrintWriter pw) {
         logAndPrint(Log.INFO, pw, "USB port removed: " + portInfo);
         handlePortLocked(portInfo, pw);
@@ -1382,6 +1435,21 @@ public class UsbPortManager implements IBinder.DeathRecipient {
                 } catch (RemoteException e) {
                     logAndPrintException(pw, "Caught RemoteException at "
                             + "sendPowerOpModeCallbackLocked", e);
+                }
+            }
+        }
+    }
+
+    private void sendPowerProfileInfoCallbackLocked(PortInfo portInfo, IndentingPrintWriter pw) {
+        ParcelableUsbPort parcelablePort = ParcelableUsbPort.of(portInfo.mUsbPort);
+
+        synchronized (mPowerProfileInfoListenerLock) {
+            for (IPowerProfileInfoListener mListener : mPowerProfileInfoListeners.values()) {
+                try {
+                    mListener.onPowerProfileInfoChanged(parcelablePort, portInfo.mUsbPortStatus);
+                } catch (RemoteException e) {
+                    logAndPrintException(pw, "Caught RemoteException at "
+                            + "sendPowerProfileInfoCallbackLocked", e);
                 }
             }
         }
@@ -1535,6 +1603,9 @@ public class UsbPortManager implements IBinder.DeathRecipient {
         public static final int BC12_TYPE_UNCHANGED = 0;
         public static final int BC12_TYPE_CHANGED = 1;
 
+        public static final int POWER_PROFILE_INFO_UNCHANGED = 0;
+        public static final int POWER_PROFILE_INFO_CHANGED = 1;
+
         public final UsbPort mUsbPort;
         public UsbPortStatus mUsbPortStatus;
         public boolean mCanChangeMode;
@@ -1552,6 +1623,9 @@ public class UsbPortManager implements IBinder.DeathRecipient {
         public int mDisplayPortAltModeChange;
         // default initialized to 0 which means unchanged
         public int mBc12TypeChanged;
+        // default initialized to 0 which means unchanged
+        public int mPowerProfileInfoChanged;
+
 
         PortInfo(@NonNull UsbManager usbManager, @NonNull String portId, int supportedModes,
                 int supportedContaminantProtectionModes,
@@ -1625,6 +1699,24 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             }
 
             mBc12TypeChanged = BC12_TYPE_UNCHANGED;
+            return false;
+        }
+
+        public boolean powerProfileInfoChanged(List<PowerProfileInfo> oldInfo,
+                List<PowerProfileInfo> newInfo) {
+
+            if (oldInfo.size() != newInfo.size()) {
+                mPowerProfileInfoChanged = POWER_PROFILE_INFO_CHANGED;
+                return true;
+            }
+
+            for (int i = 0; i < oldInfo.size(); i++) {
+                if (!oldInfo.get(i).equals(newInfo.get(i))) {
+                    mPowerProfileInfoChanged = POWER_PROFILE_INFO_CHANGED;
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -1733,12 +1825,29 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             boolean complianceChanged = false;
             boolean displayPortChanged = false;
             boolean bc12TypeChanged = false;
+            boolean powerProfileInfoChanged = false;
             UsbPortStatus.Builder builder = new UsbPortStatus.Builder();
+
+            mPowerProfileInfoChanged = POWER_PROFILE_INFO_UNCHANGED;
 
             if (mUsbPortStatus != null) {
                 complianceChanged = complianceWarningsChanged(complianceWarnings);
                 displayPortChanged = displayPortAltModeChanged(displayPortAltModeInfo);
                 bc12TypeChanged = bc12TypeChanged(partnerBc12Type);
+                powerProfileInfoChanged = powerProfileInfoChanged(
+                        mUsbPortStatus.getPortSinkPowerProfiles(), portSinkPowerProfiles);
+                if (!powerProfileInfoChanged) {
+                    powerProfileInfoChanged = powerProfileInfoChanged(
+                        mUsbPortStatus.getPortSourcePowerProfiles(), portSourcePowerProfiles);
+                }
+                if (!powerProfileInfoChanged) {
+                    powerProfileInfoChanged = powerProfileInfoChanged(
+                        mUsbPortStatus.getPartnerSinkPowerProfiles(), partnerSinkPowerProfiles);
+                }
+                if (!powerProfileInfoChanged) {
+                    powerProfileInfoChanged = powerProfileInfoChanged(
+                        mUsbPortStatus.getPartnerSourcePowerProfiles(), partnerSourcePowerProfiles);
+                }
             }
 
             mCanChangeMode = canChangeMode;
@@ -1786,7 +1895,8 @@ public class UsbPortManager implements IBinder.DeathRecipient {
             // Case used in order to send compliance warning broadcast or signal DisplayPort
             // listeners. These targeted broadcasts don't use dispositionChanged to broadcast to
             // general ACTION_USB_PORT_CHANGED.
-            } else if (complianceChanged || displayPortChanged || bc12TypeChanged) {
+            } else if (complianceChanged || displayPortChanged || bc12TypeChanged ||
+                       powerProfileInfoChanged) {
                 builder.setCurrentMode(currentMode);
                 builder.setCurrentRoles(currentPowerRole, currentDataRole);
                 builder.setSupportedRoleCombinations(supportedRoleCombinations);

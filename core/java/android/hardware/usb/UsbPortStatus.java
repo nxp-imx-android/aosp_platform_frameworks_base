@@ -857,35 +857,10 @@ public final class UsbPortStatus implements Parcelable {
         return Collections.unmodifiableList(mPartnerSourcePowerProfiles);
     }
 
+    /** @hide */
     @NonNull
-    @Override
-    public String toString() {
-        StringBuilder mString = new StringBuilder("UsbPortStatus{connected=" + isConnected()
-                + ", currentMode=" + UsbPort.modeToString(mCurrentMode)
-                + ", currentPowerRole=" + UsbPort.powerRoleToString(mCurrentPowerRole)
-                + ", currentDataRole=" + UsbPort.dataRoleToString(mCurrentDataRole)
-                + ", supportedRoleCombinations="
-                        + UsbPort.roleCombinationsToString(mSupportedRoleCombinations)
-                + ", contaminantDetectionStatus="
-                        + getContaminantDetectionStatus()
-                + ", contaminantProtectionStatus="
-                        + getContaminantProtectionStatus()
-                + ", usbDataStatus="
-                        + UsbPort.usbDataStatusToString(getUsbDataStatus())
-                + ", isPowerTransferLimited="
-                        + isPowerTransferLimited()
-                + ", powerBrickConnectionStatus="
-                        + UsbPort
-                            .powerBrickConnectionStatusToString(getPowerBrickConnectionStatus())
-                + ", complianceWarnings="
-                        + UsbPort.complianceWarningsToString(getComplianceWarnings())
-                + ", plugState="
-                        + getPlugState()
-                + ", displayPortAltModeInfo="
-                        + mDisplayPortAltModeInfo
-                + ", bc12Type="
-                        + UsbPort.bc12TypeToString(mPartnerBc12Type));
-        mString.append(", mPortSinkPowerProfiles={");
+    public String getPowerProfileInfoString() {
+        StringBuilder mString = new StringBuilder(" mPortSinkPowerProfiles={");
         for (PowerProfileInfo profile : mPortSinkPowerProfiles) {
             mString.append(profile.toString());
             mString.append(", ");
@@ -916,6 +891,40 @@ public final class UsbPortStatus implements Parcelable {
             mString.append(", ");
         }
         mString.append("}");
+
+        return mString.toString();
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        StringBuilder mString = new StringBuilder("UsbPortStatus{connected=" + isConnected()
+                + ", currentMode=" + UsbPort.modeToString(mCurrentMode)
+                + ", currentPowerRole=" + UsbPort.powerRoleToString(mCurrentPowerRole)
+                + ", currentDataRole=" + UsbPort.dataRoleToString(mCurrentDataRole)
+                + ", supportedRoleCombinations="
+                        + UsbPort.roleCombinationsToString(mSupportedRoleCombinations)
+                + ", contaminantDetectionStatus="
+                        + getContaminantDetectionStatus()
+                + ", contaminantProtectionStatus="
+                        + getContaminantProtectionStatus()
+                + ", usbDataStatus="
+                        + UsbPort.usbDataStatusToString(getUsbDataStatus())
+                + ", isPowerTransferLimited="
+                        + isPowerTransferLimited()
+                + ", powerBrickConnectionStatus="
+                        + UsbPort
+                            .powerBrickConnectionStatusToString(getPowerBrickConnectionStatus())
+                + ", complianceWarnings="
+                        + UsbPort.complianceWarningsToString(getComplianceWarnings())
+                + ", plugState="
+                        + getPlugState()
+                + ", displayPortAltModeInfo="
+                        + mDisplayPortAltModeInfo
+                + ", bc12Type="
+                        + UsbPort.bc12TypeToString(mPartnerBc12Type)
+                + ", "
+                        + getPowerProfileInfoString());
         return mString.toString();
     }
 
