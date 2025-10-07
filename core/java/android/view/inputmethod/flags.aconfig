@@ -245,3 +245,13 @@ flag {
   bug: "417788162"
   is_exported: true
 }
+
+flag {
+  name: "compute_ime_parent_null_ime_window"
+  namespace: "input_method"
+  description: "Allows computeImeParent to return a non-null value (i.e. the parent of the IME Container) even when the IME window is set to null."
+  bug: "446170643"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
