@@ -173,7 +173,7 @@ public class ComputerControlSessionProcessorTest {
                 .thenReturn(PACKAGE_NAME_PERMISSION_CONTROLLER);
         when(mPackageManager.getLaunchIntentForPackage(TARGET_PACKAGE)).thenReturn(new Intent());
 
-        when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any(), any()))
+        when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
 
         when(mVirtualDevice.createVirtualDisplay(any(), any(), any())).thenReturn(mVirtualDisplay);
