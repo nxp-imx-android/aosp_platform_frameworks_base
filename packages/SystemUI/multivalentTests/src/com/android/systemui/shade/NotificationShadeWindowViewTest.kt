@@ -207,7 +207,7 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
                 shadeViewController,
                 ShadeAnimationInteractorLegacyImpl(
                     ShadeAnimationRepository(),
-                    ShadeRepositoryImpl(testScope),
+                    ShadeRepositoryImpl(testScope, dumpManager),
                 ),
                 panelExpansionInteractor,
                 ShadeExpansionStateManager(),
