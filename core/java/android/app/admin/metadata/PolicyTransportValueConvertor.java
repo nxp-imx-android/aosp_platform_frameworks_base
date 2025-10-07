@@ -69,6 +69,27 @@ public abstract class PolicyTransportValueConvertor<T> {
                     return transport.getIntegerField();
                 }
             };
+    private static final PolicyTransportValueConvertor<String> STRING_CONVERTOR =
+            new PolicyTransportValueConvertor<>() {
+                @Override
+                @NonNull
+                public PolicyValueTransport toTransport(@NonNull String value) {
+                    return PolicyValueTransport.stringField(value);
+                }
+
+                @NonNull
+                @Override
+                public String fromTransport(@NonNull PolicyValueTransport transport) {
+                    if (transport.getTag() != PolicyValueTransport.stringField) {
+                        throw new IllegalArgumentException(
+                                "Policy value " + transport + " is not a string"
+                        );
+                    }
+
+                    return transport.getStringField();
+                }
+            };
+
 
     protected PolicyTransportValueConvertor() {
     }
@@ -88,6 +109,7 @@ public abstract class PolicyTransportValueConvertor<T> {
             case BooleanPolicyMetadata m -> BOOLEAN_CONVERTOR;
             case IntegerPolicyMetadata m -> INTEGER_CONVERTOR;
             case EnumPolicyMetadata m -> INTEGER_CONVERTOR;
+            case StringPolicyMetadata m -> STRING_CONVERTOR;
             default -> throw new UnsupportedOperationException(
                     "Unsupported policy conversion for "
                             + metadata.getId()

@@ -266,6 +266,48 @@ class PolicyMetadataCodeGeneratorTest {
         )
     }
 
+    private fun stringTestPolicy(name: String): PolicyMetadata.Builder =
+        PolicyMetadata.newBuilder()
+            .setName(name)
+            .setTypeSpecificMetadata(
+                TypeSpecificPolicyMetadata.newBuilder()
+                    .setStringMetadata(
+                        TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
+                    )
+            )
+
+    @Test
+    fun test_stringPolicy_outputMatches() {
+        val policyList = PolicyMetadataList.newBuilder()
+            .addPolicyMetadata(
+                stringTestPolicy("test.package.MY_TEST_STRING_POLICY")
+                    .addAllAllowedScopes(listOf(
+                        PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE
+                    ))
+                    .setAffectedResource(
+                        PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
+                    )
+            )
+            .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile)).isEqualTo(
+            fillInFile(
+                """
+                policies.add(new StringPolicyMetadata(
+                    /* id= */ test.package.MY_TEST_STRING_POLICY,
+                    /* allowedScopes= */ Set.of(
+                        2
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null
+                ));
+                """
+            )
+        )
+    }
     @Test
     fun test_permissions_outputMatches() {
         val policyList = PolicyMetadataList.newBuilder()

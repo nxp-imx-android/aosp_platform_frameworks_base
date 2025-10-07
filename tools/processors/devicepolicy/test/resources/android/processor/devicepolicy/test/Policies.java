@@ -63,6 +63,15 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null
         ));
+        policies.add(new StringPolicyMetadata(
+            /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null
+        ));
         return policies;
     }
 }
