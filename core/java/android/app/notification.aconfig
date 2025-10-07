@@ -213,10 +213,10 @@ flag {
 }
 
 flag {
-  name: "set_notification_background_color_refactor"
+  name: "notification_transparent_badge_ring"
   namespace: "systemui"
-  description: "Skips #setNotificationBackgroundColor when unnecessary."
-  bug: "442592454"
+  description: "Makes notification badge ring transparent and skips no longer necessary method."
+  bug: "409346132"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
