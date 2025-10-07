@@ -25,6 +25,7 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.banner.R
+import kotlin.math.max
 
 /**
  * Custom PreferenceGroup that allows expanding and collapsing child [BannerMessagePreference]s.
@@ -56,7 +57,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     private var collapseTitle: CharSequence? = null
     private var collapseIcon: Drawable? = null
     private val collapsiblePreferenceCount
-        get() = childPreferences.size - 1 + subsectionPreferenceCount
+        get() = max(childPreferences.size - 1, 0) + subsectionPreferenceCount
     private val subsectionPreferenceCount
         get() = subsectionCategory?.preferenceCount ?: 0
 
@@ -236,8 +237,8 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             childBanner.isVisible = i == 0 || isExpanded
         }
 
-        expandPreference?.isVisible = !isExpanded && collapsiblePreferenceCount > 1
-        collapsePreference?.isVisible = isExpanded && collapsiblePreferenceCount > 1
+        expandPreference?.isVisible = !isExpanded && collapsiblePreferenceCount > 0
+        collapsePreference?.isVisible = isExpanded && collapsiblePreferenceCount > 0
         subsectionCategory?.isVisible = isExpanded && subsectionPreferenceCount > 0
     }
 
