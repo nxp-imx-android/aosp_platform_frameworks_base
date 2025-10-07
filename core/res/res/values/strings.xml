@@ -6450,11 +6450,9 @@
     <!-- Status message displayed on SIM Network Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS">Requesting SIM network unlock\u2026</string>
     <!-- Status message displayed on SIM Network Subset Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS">Requesting SIM network subset unlock
-\u2026</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS">Requesting SIM network subset unlock\u2026</string>
     <!-- Status message displayed on SIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting SIM service provider un
-lock\u2026</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting SIM service provider unlock\u2026</string>
     <!-- Status message displayed on SIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS">Requesting SIM corporate unlock\u2026</string>
     <!-- Status message displayed on PUK Depersonalization panel [CHAR LIMIT=none] -->
@@ -6476,8 +6474,7 @@ lock\u2026</string>
     <!-- Status message displayed on RUIM Hrpd Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_HRPD_IN_PROGRESS">Requesting RUIM hrpd unlock\u2026</string>
     <!-- Status message displayed on RUIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting RUIM service provider
-unlock\u2026</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_IN_PROGRESS">Requesting RUIM service provider unlock\u2026</string>
     <!-- Status message displayed on RUIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_IN_PROGRESS">Requesting RUIM corporate unlock\u2026</string>
 
@@ -6509,11 +6506,9 @@ unlock\u2026</string>
     <!-- Error message displayed on SIM Network Depersonalization panel  [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR">SIM Network unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM Network Subset Depersonalization panel  [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR">SIM Network Subset unlock request unsucces
-sful.</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR">SIM Network Subset unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM Service Provider Depersonalization panel  [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR">SIM Service Provider unlock request unsu
-ccessful.</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR">SIM Service Provider unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM Corporate Depersonalization panel  [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR">SIM Corporate unlock request unsuccessful.</string>
     <!-- Error message displayed on SIM SIM Depersonalization panel  [CHAR LIMIT=none] -->
@@ -6527,8 +6522,7 @@ ccessful.</string>
     <!-- Error message displayed on RUIM Corporate Depersonalization panel  [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR">RUIM Corporate unlock request unsuccessful.</string>
     <!-- Error message displayed on RUIM Service Provider Depersonalization panel  [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR">RUIM Service Provider unlock request un
-successful.</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR">RUIM Service Provider unlock request unsuccessful.</string>
     <!-- Error message displayed on RUIM RUIM Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR">RUIM unlock request unsuccessful.</string>
     <!-- Error message displayed on PUK Depersonalization panel [CHAR LIMIT=none] -->
@@ -6564,14 +6558,12 @@ successful.</string>
     <string name="PERSOSUBSTATE_SIM_IMPI_ERROR">IMPI unlock request unsuccessful.</string>
     <!--  Error message displayed on SIM NS_SP Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR">Network subset service provider unlock request unsuccessful.</string>
-
     <!-- Success message displayed on SIM Network Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS">SIM Network unlock successful.</string>
     <!-- Success message displayed on SIM Network Subset Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS">SIM Network Subset unlock successful.</string>
     <!-- Success message displayed on SIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS">SIM Service Provider unlock successful
-.</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS">SIM Service Provider unlock successful.</string>
     <!-- Success message displayed on SIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS">SIM Corporate unlock successful.</string>
     <!-- Success message displayed on SIM SIM Depersonalization panel [CHAR LIMIT=none] -->
@@ -6583,8 +6575,7 @@ successful.</string>
     <!-- Success message displayed on RUIM Hrpd Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS">RUIM Hrpd unlock successful.</string>
     <!-- Success message displayed on RUIM Service Provider Depersonalization panel [CHAR LIMIT=none] -->
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS">RUIM Service Provider unlock successf
-ul.</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS">RUIM Service Provider unlock successful.</string>
     <!-- Success message displayed on RUIM Corporate Depersonalization panel [CHAR LIMIT=none] -->
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS">RUIM Corporate unlock successful.</string>
     <!-- Success message displayed on RUIM RUIM Depersonalization panel [CHAR LIMIT=none] -->
