@@ -46,6 +46,8 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionFinishCallback
@@ -59,6 +61,7 @@ import junit.framework.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
@@ -100,6 +103,8 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     private val mockMultiDisplayDragMoveIndicatorController =
         mock<MultiDisplayDragMoveIndicatorController>()
     private val mockDesktopTasksController = mock<DesktopTasksController>()
+    private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
+    private val mockDesktopRepository = mock<DesktopRepository>()
     private lateinit var resources: TestableResources
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
@@ -162,6 +167,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         whenever(mockWindowDecoration.getValidDragArea()).thenReturn(VALID_DRAG_AREA)
         whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
         whenever(mockDisplay.displayId).thenAnswer { DISPLAY_ID_0 }
+        whenever(mockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mockDesktopRepository)
 
         taskPositioner =
             MultiDisplayVeiledResizeTaskPositioner(
@@ -175,6 +181,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 mockMultiDisplayDragMoveIndicatorController,
                 desktopState,
                 mockDesktopTasksController,
+                mockDesktopUserRepositories,
             )
     }
 
@@ -420,6 +427,158 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             )
             Assert.assertFalse(DISPLAY_BOUNDS.intersect(rectAfterMove))
         }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testDragMove_whenSnappedOrMaximized_restoresBounds() = runOnUiThread {
+        val prevBounds = Rect(100, 300, 600, 700) // width=500, height=400
+        whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
+        whenever(mockDesktopRepository.removeBoundsBeforeSnapOrMaximize(TASK_ID))
+            .thenReturn(prevBounds)
+        val expectedRestoredBounds = Rect(250, 100, 750, 500)
+
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_UNDEFINED,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
+        )
+
+        val returnedBounds =
+            taskPositioner.onDragPositioningMove(
+                DISPLAY_ID_0,
+                STARTING_BOUNDS.left.toFloat() + 400f, // 500f
+                STARTING_BOUNDS.top.toFloat(), // 100f
+            )
+
+        Assert.assertEquals(expectedRestoredBounds, returnedBounds)
+
+        verify(mockTransitions).registerObserver(eq(taskPositioner))
+        verify(mockTransitions)
+            .startTransition(
+                eq(TRANSIT_CHANGE),
+                argThat { wct ->
+                    val change = wct.changes[taskBinder]
+                    change != null &&
+                        (change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0 &&
+                        change.configuration.windowConfiguration.bounds == expectedRestoredBounds
+                },
+                eq(taskPositioner),
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testManualDragResize_clearsPreviousBoundsAndDoesNotRestore() = runOnUiThread {
+        // Given a task hasBoundsBeforeSnapOrMaximize
+        val prevBounds = Rect(10, 20, 90, 80) // width=80, height=60
+        whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
+        whenever(mockDesktopRepository.removeBoundsBeforeSnapOrMaximize(TASK_ID))
+            .thenReturn(prevBounds)
+
+        // When a resize drag starts.
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_RIGHT, // A resize trigger
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.right.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+            INPUT_METHOD_TYPE_UNKNOWN,
+        )
+
+        // And the user manually resizes the window.
+        val returnedBounds =
+            taskPositioner.onDragPositioningMove(
+                DISPLAY_ID_0,
+                STARTING_BOUNDS.right.toFloat() + 50,
+                STARTING_BOUNDS.top.toFloat(),
+            )
+        // Then, the previous bounds are not applied but manually resized bounds are applied.
+        val expectedBounds = Rect(STARTING_BOUNDS)
+        expectedBounds.right += 50
+        Assert.assertEquals(expectedBounds, returnedBounds)
+
+        // User continues to manually resize.
+        val finalBounds =
+            taskPositioner.onDragPositioningMove(
+                DISPLAY_ID_0,
+                STARTING_BOUNDS.right.toFloat() + 100,
+                STARTING_BOUNDS.top.toFloat(),
+            )
+        val finalExpectedBounds = Rect(STARTING_BOUNDS)
+        finalExpectedBounds.right += 100
+
+        // Previous bounds should be cleared.
+        verify(mockDesktopRepository).removeBoundsBeforeSnapOrMaximize(TASK_ID)
+        Assert.assertEquals(finalExpectedBounds, finalBounds)
+        Assert.assertFalse("Previous bounds should not be restored", finalBounds.equals(prevBounds))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
+    fun testDragMove_awaitsResizeTransition_beforeMoving() = runOnUiThread {
+        val prevBounds = Rect(10, 20, 90, 80) // width=80, height=60
+        whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
+        whenever(mockDesktopRepository.removeBoundsBeforeSnapOrMaximize(TASK_ID))
+            .thenReturn(prevBounds)
+
+        val mockResizeBinder = mock<IBinder>()
+        whenever(mockTransitions.startTransition(any(), any(), any())).thenReturn(mockResizeBinder)
+
+        val dragStartX = 150f
+        val dragStartY = 150f
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_UNDEFINED,
+            DISPLAY_ID_0,
+            dragStartX,
+            dragStartY,
+            INPUT_METHOD_TYPE_UNKNOWN,
+        )
+
+        // First move triggers the resize to previous bounds and sets pendingResizeTransition to a
+        // non-null value.
+        val restoredBounds =
+            taskPositioner.onDragPositioningMove(
+                DISPLAY_ID_0,
+                200f, // moveX
+                200f, // moveY
+            )
+
+        // Second move: pendingResizeTransition is still non-null, so it should return the same
+        // bounds without moving the window to new coordinates.
+        val boundsDuringTransition =
+            taskPositioner.onDragPositioningMove(
+                DISPLAY_ID_0,
+                300f, // User continues to move the window (bigger moveX)
+                300f, // User continues to move the window (bigger moveY)
+            )
+        Assert.assertEquals(
+            "Bounds shouldn't be updated until resize transition finishes",
+            restoredBounds,
+            boundsDuringTransition,
+        )
+
+        // Simulate transition ready signal, which sets pendingResizeTransition to null.
+        taskPositioner.onTransitionReady(mockResizeBinder, mock(), mock(), mock())
+
+        val finalMoveX = 400f
+        val finalMoveY = 400f
+        // Third move: pendingResizeTransition is now null, so window can move.
+        val boundsAfterTransition =
+            taskPositioner.onDragPositioningMove(DISPLAY_ID_0, finalMoveX, finalMoveY)
+        Assert.assertFalse(
+            "Bounds should be updated based on the move after resize transition finishes",
+            restoredBounds.equals(boundsAfterTransition),
+        )
+
+        // Verify the final bounds are correct after the move.
+        val expectedFinalBounds = Rect(restoredBounds)
+        expectedFinalBounds.offset(
+            (finalMoveX - dragStartX).toInt(),
+            (finalMoveY - dragStartY).toInt(),
+        )
+        Assert.assertEquals(expectedFinalBounds, boundsAfterTransition)
+    }
 
     @Test
     fun testDragResize_resize_boundsUpdateOnEnd() = runOnUiThread {

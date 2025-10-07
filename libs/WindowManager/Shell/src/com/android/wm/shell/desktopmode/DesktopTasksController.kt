@@ -3145,6 +3145,11 @@ class DesktopTasksController(
             deskId,
         )
 
+        if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
+            val previousBounds = taskInfo.configuration.windowConfiguration.bounds
+            repository.saveBoundsBeforeSnapOrMaximize(taskInfo.taskId, previousBounds)
+        }
+
         if (DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue) {
             val isTiled = snapEventHandler.snapToHalfScreen(taskInfo, currentDragBounds, position)
             if (isTiled) {
