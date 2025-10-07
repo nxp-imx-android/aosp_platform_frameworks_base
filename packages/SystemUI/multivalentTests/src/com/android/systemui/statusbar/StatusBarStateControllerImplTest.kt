@@ -16,11 +16,15 @@
 
 package com.android.systemui.statusbar
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.logging.uiEventLoggerFake
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -50,7 +54,6 @@ import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -208,6 +211,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_whileLocked() =
         kosmos.runTest {
             disableDualShade()
@@ -256,6 +260,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_withAlternateBouncer() =
         kosmos.runTest {
             disableDualShade()
@@ -293,7 +298,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_dualShade_whileLocked() =
         kosmos.runTest {
             kosmos.enableDualShade()
@@ -396,7 +401,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_whileUnlocked_dualShade() =
         kosmos.runTest {
             enableDualShade()
@@ -477,7 +482,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
     fun start_hydratesStatusBarState_whileOccluded_dualShade() =
         kosmos.runTest {
             enableDualShade()

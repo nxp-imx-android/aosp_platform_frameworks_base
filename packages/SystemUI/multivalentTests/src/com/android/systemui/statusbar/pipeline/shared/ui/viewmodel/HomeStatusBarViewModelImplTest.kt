@@ -31,7 +31,10 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END
 import com.android.systemui.Flags
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
+import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.display.data.repository.displayRepository
@@ -108,6 +111,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -124,7 +128,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest by
-        Kosmos.Fixture { kosmos.homeStatusBarViewModel.also { it.activateIn(kosmos.testScope) } }
+        Kosmos.Fixture { homeStatusBarViewModel.also { it.activateIn(testScope) } }
 
     @Before
     fun setUp() {
@@ -135,7 +139,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     fun addDisplays() = runBlocking { kosmos.displayRepository.fake.addDisplay(DEFAULT_DISPLAY) }
 
     @Test
-    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END)
+    @EnableFlags(FLAG_SHOW_STOP_DIALOG_POST_CALL_END)
     fun mediaProjectionStopDialogDueToCallEndedState_initiallyHidden() =
         kosmos.runTest {
             shareToAppChipViewModel.start()
@@ -146,7 +150,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END)
+    @EnableFlags(FLAG_SHOW_STOP_DIALOG_POST_CALL_END)
     fun mediaProjectionStopDialogDueToCallEndedState_flagEnabled_mediaIsProjecting_projectionStartedDuringCallAndActivePostCallEventEmitted_isShown() =
         kosmos.runTest {
             shareToAppChipViewModel.start()
@@ -165,7 +169,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @DisableFlags(com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END)
+    @DisableFlags(FLAG_SHOW_STOP_DIALOG_POST_CALL_END)
     fun mediaProjectionStopDialogDueToCallEndedState_flagDisabled_mediaIsProjecting_projectionStartedDuringCallAndActivePostCallEventEmitted_isHidden() =
         kosmos.runTest {
             shareToAppChipViewModel.start()
@@ -1673,8 +1677,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
     fun onQuickSettingsChipClicked_qsShadeIsOpen_collapsesShade() =
         kosmos.runTest {
             enableDualShade()
@@ -1694,8 +1697,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
     fun onQuickSettingsChipClicked_qsShadeIsClosed_expandsShade() =
         kosmos.runTest {
             enableDualShade()
@@ -1709,8 +1711,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_notificationsShadeIsOpen_collapsesShade() =
         kosmos.runTest {
             enableDualShade()
@@ -1732,8 +1733,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableSceneContainer
-    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_notificationsShadeIsClosed_expandsShade() =
         kosmos.runTest {
             enableDualShade()
@@ -1751,7 +1751,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(underTest.hasStatusBarNotifications).isFalse()
 
             activeNotificationListRepository.activeNotifications.value =
-                kosmos.getPopulatedActiveNotificationsStore()
+                getPopulatedActiveNotificationsStore()
 
             assertThat(underTest.hasStatusBarNotifications).isTrue()
         }
@@ -1778,15 +1778,13 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     private fun Kosmos.setDeviceEntered() {
-        kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+        fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
             SuccessFingerprintAuthenticationStatus(0, true)
         )
 
         sceneInteractor.changeScene(Scenes.Gone, "test")
-        sceneInteractor.setTransitionState(
-            MutableStateFlow<ObservableTransitionState>(ObservableTransitionState.Idle(Scenes.Gone))
-        )
-        assertThat(kosmos.deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
+        sceneInteractor.setTransitionState(flowOf(ObservableTransitionState.Idle(Scenes.Gone)))
+        assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
     }
 
     companion object {
