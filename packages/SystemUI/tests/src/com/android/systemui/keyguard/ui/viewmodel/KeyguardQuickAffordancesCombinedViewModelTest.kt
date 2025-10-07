@@ -34,7 +34,6 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dock.DockManagerFake
-import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.data.quickaffordance.BuiltInKeyguardQuickAffordanceKeys
@@ -420,7 +419,6 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(com.android.systemui.shared.Flags.FLAG_NEW_CUSTOMIZATION_PICKER_UI)
     fun startButton_inPreviewMode_onPreviewQuickAffordanceSelected() =
         testScope.runTest {
             underTest.onPreviewSlotSelected(KeyguardQuickAffordanceSlots.SLOT_ID_BOTTOM_START)
