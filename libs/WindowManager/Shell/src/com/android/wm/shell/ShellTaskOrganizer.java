@@ -696,12 +696,10 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
-     * Creates and returns a surface which can be used to attach overview overlays above the home
-     * root task
+     * Returns a surface which can be used to attach overview overlays above home root task
      */
     @Nullable
     public SurfaceControl getOverviewOverlayContainer(int displayId) {
-        removeOverviewOverlayContainer(displayId);
         return getOrCreateOverviewOverlayContainer(displayId);
     }
 
@@ -724,21 +722,6 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             mOverviewOverlayLeashes.put(displayId, builder.build());
         }
         return mOverviewOverlayLeashes.get(displayId);
-    }
-
-    /**
-     * Removes an existing overlay container surface.
-     */
-    private void removeOverviewOverlayContainer(int displayId) {
-        if (!mOverviewOverlayLeashes.contains(displayId)) {
-            return;
-        }
-        ProtoLog.v(WM_SHELL_TASK_ORG,
-                "Removing overview overlay on displayId=%d", displayId);
-        SurfaceControl surfaceControl = mOverviewOverlayLeashes.removeReturnOld(displayId);
-        SurfaceControl.Transaction t = new SurfaceControl.Transaction();
-        t.remove(surfaceControl);
-        t.apply();
     }
 
     /**
@@ -945,8 +928,14 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
             int displayId = taskInfo.displayId;
             if (isOverviewOverlayEnabled(displayId)
-                    && taskInfo.getActivityType() == ACTIVITY_TYPE_HOME) {
-                removeOverviewOverlayContainer(displayId);
+                    && taskInfo.getActivityType() == ACTIVITY_TYPE_HOME
+                    && mOverviewOverlayLeashes.contains(displayId)) {
+                ProtoLog.v(WM_SHELL_TASK_ORG,
+                        "Removing overview overlay on displayId=%d", displayId);
+                SurfaceControl surfaceControl = mOverviewOverlayLeashes.removeReturnOld(displayId);
+                SurfaceControl.Transaction t = new SurfaceControl.Transaction();
+                t.remove(surfaceControl);
+                t.apply();
             }
 
             if (isHomeTaskOnDefaultDisplay(taskInfo)) {

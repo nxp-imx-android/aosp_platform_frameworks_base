@@ -67,7 +67,7 @@ interface IShellTransitions {
     oneway void setFocusTransitionListener(in IFocusTransitionListener listener) = 7;
 
     /**
-     * Creates & returns a container surface for the overview overlay.
+     * Returns a container surface for the overview overlay.
      */
     @nullable
     SurfaceControl getOverviewOverlayContainer(int displayId) = 8;
