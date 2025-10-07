@@ -601,7 +601,7 @@ constructor(
     }
 
     fun onTransitionAnimationProgress(progress: Float) {
-        if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) return
+        if (!Flags.notificationShadeBlur()) return
         // Because the Shade takes a few frames to actually trigger the unblur after a transition
         // has ended, we need to disable it manually, or the opening window itself will be blurred
         // for a few frames due to relative ordering. We do this towards the end, so that the
@@ -612,7 +612,7 @@ constructor(
     }
 
     fun onTransitionAnimationEnd() {
-        if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) return
+        if (!Flags.notificationShadeBlur()) return
         blursDisabledForAppLaunch = false
     }
 
