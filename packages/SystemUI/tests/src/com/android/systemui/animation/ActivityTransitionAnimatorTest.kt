@@ -310,7 +310,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             assertThat(startedIntent).isTrue()
             assertThat(originTransition).isNull()
             verify(controller).onIntentStarted(willAnimate = false)
-            verify(callback).hideKeyguardWithAnimation(null)
+            verify(callback).hideKeyguardWithAnimation(transition = null)
         }
     }
 

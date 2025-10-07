@@ -3034,7 +3034,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }
 
                 @Override
-                public void hideKeyguardWithAnimation(@NonNull IRemoteTransition transition) {
+                public void hideKeyguardWithAnimation(@Nullable IRemoteTransition transition) {
                     // We post to the main thread for 2 reasons:
                     //   1. KeyguardViewMediator is not thread-safe.
                     //   2. To ensure that ViewMediatorCallback#keyguardDonePending is called before
@@ -3046,7 +3046,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }
 
                 @Override
-                public void hideKeyguardWithAnimation(IRemoteAnimationRunner runner) {
+                public void hideKeyguardWithAnimation(@Nullable IRemoteAnimationRunner runner) {
                     // We post to the main thread for 2 reasons:
                     //   1. KeyguardViewMediator is not thread-safe.
                     //   2. To ensure that ViewMediatorCallback#keyguardDonePending is called before

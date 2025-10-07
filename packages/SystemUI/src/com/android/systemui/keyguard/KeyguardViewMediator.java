@@ -49,7 +49,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.app.ActivityTaskManager;
 import android.app.AlarmManager;
 import android.app.BroadcastOptions;
 import android.app.IActivityTaskManager;
@@ -2717,13 +2716,20 @@ public class KeyguardViewMediator implements CoreStartable,
      * This method should typically be called after {@link ViewMediatorCallback#keyguardDonePending}
      * was called, when we are ready to hide the keyguard. It will do nothing if we were not
      * expecting the keyguard to go away when called.
+     *
+     * @param transition Can be null, which will instead just dismiss the keyguard.
      */
-    public void hideWithAnimation(IRemoteTransition transition) {
+    public void hideWithAnimation(@Nullable IRemoteTransition transition) {
         if (!ActivityTransitionAnimator.Companion.shellMigrationEnabled()) {
             return;
         }
 
-        hideWithAnimationInner(SurfaceTransition.from(transition));
+        SurfaceTransition surfaceTransition = null;
+        if (transition != null) {
+            surfaceTransition = SurfaceTransition.from(transition);
+        }
+
+        hideWithAnimationInner(surfaceTransition);
     }
 
     /**
@@ -2735,12 +2741,17 @@ public class KeyguardViewMediator implements CoreStartable,
      *
      * @param runner Can be null, which will instead just dismiss the keyguard
      */
-    public void hideWithAnimation(IRemoteAnimationRunner runner) {
+    public void hideWithAnimation(@Nullable IRemoteAnimationRunner runner) {
         if (ActivityTransitionAnimator.Companion.shellMigrationEnabled()) {
             return;
         }
 
-        hideWithAnimationInner(SurfaceTransition.from(runner));
+        SurfaceTransition surfaceTransition = null;
+        if (runner != null) {
+            surfaceTransition = SurfaceTransition.from(runner);
+        }
+
+        hideWithAnimationInner(surfaceTransition);
     }
 
     private void hideWithAnimationInner(SurfaceTransition remote) {
