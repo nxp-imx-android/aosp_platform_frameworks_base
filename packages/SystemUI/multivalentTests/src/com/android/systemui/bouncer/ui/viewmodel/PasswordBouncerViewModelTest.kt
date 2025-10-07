@@ -38,6 +38,7 @@ import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -49,6 +50,7 @@ import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.google.common.truth.Truth.assertThat
 import java.util.UUID
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
@@ -63,7 +65,7 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 class PasswordBouncerViewModelTest : SysuiTestCase() {
 
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val isInputEnabled = MutableStateFlow(true)
     private val onIntentionalUserInputMock: () -> Unit = mock()
 
@@ -275,6 +277,9 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             // Assert initial value, before the UI subscribes.
             assertThat(underTest.isImeSwitcherButtonVisible.value).isFalse()
 
+            // Current implementation only emits if 300ms have passed and a subscriber exists.
+            advanceTimeBy(300.milliseconds)
+
             // Subscription starts; verify a fresh value is fetched.
             val isImeSwitcherButtonVisible by collectLastValue(underTest.isImeSwitcherButtonVisible)
             assertThat(isImeSwitcherButtonVisible).isTrue()
@@ -374,7 +379,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
-    fun onRevealPasswordButtonClicked_showsPassword() =
+    fun onRevealPasswordButtonClicked_showsPassword_hidesAfterDelay() =
         kosmos.runTest {
             overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
 
@@ -384,6 +389,46 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(5.seconds - 1.milliseconds)
+
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(2.milliseconds)
+
+            assertThat(isPasswordRevealed).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onRevealPasswordButtonClicked_showsPassword_hides5sAfterTextInput() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            val isPasswordRevealed by collectLastValue(underTest.isPasswordRevealed)
+
+            underTest.onRevealPasswordButtonClicked()
+            runCurrent()
+
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(2.seconds)
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+
+            advanceTimeBy(4.seconds)
+
+            // Still revealed after a total of 6 seconds after clicking the "reveal" button because
+            // text has been entered after 2s.
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(1.seconds - 1.milliseconds)
+
+            assertThat(isPasswordRevealed).isTrue()
+
+            advanceTimeBy(2.milliseconds)
+
+            assertThat(isPasswordRevealed).isFalse()
         }
 
     @Test
