@@ -17,7 +17,6 @@ package com.android.server.notification;
 
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
-import static android.service.notification.Flags.notificationForceGrouping;
 
 import android.content.Context;
 import android.util.ArraySet;
@@ -67,12 +66,10 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
 
         record.applyAdjustments();
 
-        if (notificationForceGrouping()) {
-            // Classification adjustments trigger regrouping
-            if (mGroupHelper != null && (hasAdjustedClassification || removedClassification)) {
-                return getRegroupReconsideration(
-                        record, hasAdjustedClassification, removedClassification);
-            }
+        // Classification adjustments trigger regrouping
+        if (mGroupHelper != null && (hasAdjustedClassification || removedClassification)) {
+            return getRegroupReconsideration(
+                    record, hasAdjustedClassification, removedClassification);
         }
 
         return null;
