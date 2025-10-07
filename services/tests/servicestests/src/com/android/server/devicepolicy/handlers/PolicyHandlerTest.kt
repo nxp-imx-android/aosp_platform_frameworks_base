@@ -28,8 +28,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.devicepolicy.CallerIdentity
 import com.android.server.devicepolicy.DevicePolicyManagerService.NOT_A_DPC
 import com.android.server.devicepolicy.IPermissionChecker
-import com.android.server.devicepolicy.handlers.PolicyHandlerTest.EnumPolicy.crossUserPermission
-import com.android.server.devicepolicy.handlers.PolicyHandlerTest.EnumPolicy.permission
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.Test
@@ -44,10 +42,9 @@ import org.mockito.kotlin.verifyNoMoreInteractions
  */
 open class HandlerThatStoresValue<T>(
     key: PolicyIdentifier<T>,
-    policyInformation: PolicyInformation<T>,
     policyMetadata: PolicyMetadata<T>,
     delegate: Delegate,
-) : PolicyHandler<T>(key, policyInformation, policyMetadata, delegate) {
+) : PolicyHandler<T>(key, policyMetadata, delegate) {
     var resultValue: T? = null
 
     override fun setPolicy(
@@ -75,12 +72,6 @@ class PolicyHandlerTest {
         const val VALUE_1 = 1
         const val VALUE_2 = 2
         val key = PolicyIdentifier<Int>(name)
-        val information =
-            EnumPolicyInformation(
-                key,
-                permission,
-                crossUserPermission,
-            )
         val metadata =
             EnumPolicyMetadata(
                 key,
@@ -117,28 +108,17 @@ class PolicyHandlerTest {
         id: PolicyIdentifier<Int>? = null,
         allowedScopes: Set<Int>? = null,
         affectedResource: Int? = null,
+        requiredPermission: String? = null,
+        requiredCrossUserPermission: String? = null,
         allowedValues: Set<Int>? = null,
     ): EnumPolicyMetadata {
         return EnumPolicyMetadata(
             id ?: source.id,
             allowedScopes ?: source.allowedScopes,
             affectedResource ?: source.affectedResource,
-            source.requiredPermission,
-            source.requiredCrossUserPermission,
-            allowedValues ?: source.allowedValues,
-        )
-    }
-
-    fun copyOf(
-        source: EnumPolicyInformation,
-        key: PolicyIdentifier<Int>? = null,
-        requiredPermission: String? = null,
-        requiredCrossUserPermission: String? = null,
-    ): EnumPolicyInformation {
-        return EnumPolicyInformation(
-            key ?: source.key,
             requiredPermission ?: source.requiredPermission,
             requiredCrossUserPermission ?: source.requiredCrossUserPermission,
+            allowedValues ?: source.allowedValues,
         )
     }
 
@@ -149,7 +129,6 @@ class PolicyHandlerTest {
             object :
                 PolicyHandler<Int>(
                     EnumPolicy.key,
-                    EnumPolicy.information,
                     EnumPolicy.metadata,
                     delegate,
                 ) {
@@ -187,7 +166,7 @@ class PolicyHandlerTest {
         val allAllowedScopes = setOf(POLICY_SCOPE_DEVICE, POLICY_SCOPE_PARENT_USER)
         val someDisallowedScopes = setOf(POLICY_SCOPE_USER, 111, 666)
         val metadata = copyOf(EnumPolicy.metadata, allowedScopes = allAllowedScopes)
-        val handler = PolicyHandler<Int>(EnumPolicy.key, EnumPolicy.information, metadata, delegate)
+        val handler = PolicyHandler<Int>(EnumPolicy.key, metadata, delegate)
 
         // This should not throw exceptions
         for (scope in allAllowedScopes) {
@@ -204,15 +183,14 @@ class PolicyHandlerTest {
 
     @Test
     fun setPolicy_scopeUser_shouldCheckPermission() {
-        val policyInformation =
-            copyOf(
-                EnumPolicy.information,
-                requiredPermission = "thePermission",
-                requiredCrossUserPermission = "shouldNotBeChecked",
-            )
-        val metadata = copyOf(EnumPolicy.metadata, allowedScopes = setOf(POLICY_SCOPE_USER))
+        val metadata = copyOf(
+            EnumPolicy.metadata,
+            allowedScopes = setOf(POLICY_SCOPE_USER),
+            requiredPermission = "thePermission",
+            requiredCrossUserPermission = "shouldNotBeChecked",
+        )
         val handler =
-            PolicyHandler<Int>(EnumPolicy.key, policyInformation, metadata, delegate)
+            PolicyHandler<Int>(EnumPolicy.key, metadata, delegate)
         val theCaller = anyCaller
 
         handler.setPolicy(theCaller, POLICY_SCOPE_USER, EnumPolicy.anyTransportValue)
@@ -223,15 +201,14 @@ class PolicyHandlerTest {
 
     @Test
     fun setPolicy_scopeGlobal_shouldCheckPermissionAndCrossUserPermission() {
-        val policyInformation =
-            copyOf(
-                EnumPolicy.information,
-                requiredPermission = "thePermission",
-                requiredCrossUserPermission = "theCrossUserPermission",
-            )
-        val metadata = copyOf(EnumPolicy.metadata, allowedScopes = setOf(POLICY_SCOPE_DEVICE))
+        val metadata = copyOf(
+            EnumPolicy.metadata,
+            allowedScopes = setOf(POLICY_SCOPE_DEVICE),
+            requiredPermission = "thePermission",
+            requiredCrossUserPermission = "theCrossUserPermission",
+        )
         val handler =
-            PolicyHandler<Int>(EnumPolicy.key, policyInformation, metadata, delegate)
+            PolicyHandler<Int>(EnumPolicy.key, metadata, delegate)
         val theCaller = anyCaller
 
         handler.setPolicy(theCaller, POLICY_SCOPE_DEVICE, EnumPolicy.anyTransportValue)
@@ -243,15 +220,14 @@ class PolicyHandlerTest {
 
     @Test
     fun setPolicy_scopeParent_shouldCheckPermissionAndCrossUserPermission() {
-        val policyInformation =
-            copyOf(
-                EnumPolicy.information,
-                requiredPermission = "permission",
-                requiredCrossUserPermission = "crossUserPermission",
-            )
-        val metadata = copyOf(EnumPolicy.metadata, allowedScopes = setOf(POLICY_SCOPE_PARENT_USER))
+        val metadata = copyOf(
+            EnumPolicy.metadata,
+            allowedScopes = setOf(POLICY_SCOPE_PARENT_USER),
+            requiredPermission = "permission",
+            requiredCrossUserPermission = "crossUserPermission",
+        )
         val handler =
-            PolicyHandler<Int>(EnumPolicy.key, policyInformation, metadata, delegate)
+            PolicyHandler<Int>(EnumPolicy.key, metadata, delegate)
         val theCaller = anyCaller
 
         handler.setPolicy(theCaller, POLICY_SCOPE_PARENT_USER, EnumPolicy.anyTransportValue)
@@ -268,7 +244,6 @@ class PolicyHandlerTest {
         val handler =
             HandlerThatStoresValue<Int>(
                 EnumPolicy.key,
-                EnumPolicy.information,
                 metadata,
                 delegate,
             )
@@ -285,7 +260,6 @@ class PolicyHandlerTest {
         val handler =
             HandlerThatStoresValue<Int>(
                 EnumPolicy.key,
-                EnumPolicy.information,
                 EnumPolicy.metadata,
                 delegate,
             )
@@ -299,7 +273,7 @@ class PolicyHandlerTest {
         val metadata = copyOf(EnumPolicy.metadata, allowedValues = validEnumValues)
 
         val handler =
-            PolicyHandler<Int>(EnumPolicy.key, EnumPolicy.information, metadata, delegate)
+            PolicyHandler<Int>(EnumPolicy.key, metadata, delegate)
 
         val invalidEnumValues = setOf(0, 1, 554, 556, 665, 667, 1000)
 
@@ -315,7 +289,6 @@ class PolicyHandlerTest {
         val handler =
             PolicyHandler<Int>(
                 EnumPolicy.key,
-                EnumPolicy.information,
                 EnumPolicy.metadata,
                 delegate,
             )

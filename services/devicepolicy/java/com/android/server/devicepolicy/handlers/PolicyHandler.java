@@ -27,6 +27,7 @@ import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
 import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
+import android.app.admin.metadata.PolicyTransportValueConvertor;
 
 import com.android.server.devicepolicy.CallerIdentity;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
@@ -103,9 +104,9 @@ public class PolicyHandler<T> {
     }
 
     private final PolicyIdentifier<T> mKey;
-    private final PolicyInformation<T> mPolicyInformation;
     private final PolicyMetadata<T> mPolicyMetadata;
     private final PolicyValidator<T> mValidator;
+    private final PolicyTransportValueConvertor<T> mTransportValueConvertor;
 
     /**
      * Helper class that provides access to methods used while processing policies. Must be
@@ -115,40 +116,27 @@ public class PolicyHandler<T> {
 
     public PolicyHandler(
             @NonNull PolicyIdentifier<T> key,
-            @NonNull PolicyInformation<T> policyInformation,
             @NonNull PolicyMetadata<T> policyMetadata) {
         mKey = key;
-        mPolicyInformation = policyInformation;
         mPolicyMetadata = policyMetadata;
         mValidator = PolicyValidator.getInstance(mPolicyMetadata);
+        mTransportValueConvertor = PolicyTransportValueConvertor.getInstance(mPolicyMetadata);
     }
 
-    /** Constructor that uses the generated {@link PolicyInformation} and {@link PolicyMetadata} */
+    /** Constructor that uses the generated {@link PolicyMetadata} */
     public PolicyHandler(@NonNull PolicyIdentifier<T> key) {
         this(
                 key,
-                getGeneratedPolicyInformation(key),
                 GeneratedPolicyMetadata.getPolicyMetadata(key));
     }
 
     /** Convenience constructor used by unittests */
     public PolicyHandler(
             @NonNull PolicyIdentifier<T> key,
-            @NonNull PolicyInformation<T> policyInformation,
             @NonNull PolicyMetadata<T> policyMetadata,
             @NonNull Delegate delegate) {
-        this(key, policyInformation, policyMetadata);
+        this(key, policyMetadata);
         setDelegate(delegate);
-    }
-
-    @NonNull
-    private static <T> PolicyInformation<T> getGeneratedPolicyInformation(
-            @NonNull PolicyIdentifier<T> key) {
-        PolicyInformation<T> result = GeneratedPolicyInformation.get(key);
-        if (result == null) {
-            throw new IllegalArgumentException("Unknown policy " + key.getId());
-        }
-        return result;
     }
 
     public PolicyIdentifier<T> getKey() {
@@ -156,8 +144,8 @@ public class PolicyHandler<T> {
     }
 
     @NonNull
-    protected PolicyInformation<T> getPolicyInformation() {
-        return mPolicyInformation;
+    protected PolicyTransportValueConvertor<T> getTransportValueConvertor() {
+        return mTransportValueConvertor;
     }
 
     @NonNull
@@ -216,7 +204,10 @@ public class PolicyHandler<T> {
     @Nullable
     protected T convertValue(
             @NonNull CallerIdentity caller, @Nullable PolicyValueTransport transportValue) {
-        return getPolicyInformation().valueFromTransportValue(transportValue);
+        if (transportValue == null) {
+            return null;
+        }
+        return getTransportValueConvertor().fromTransport(transportValue);
     }
 
     /**
@@ -233,11 +224,11 @@ public class PolicyHandler<T> {
     protected void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
         var permissionChecker = getDelegate().getPermissionChecker();
 
-        permissionChecker.enforce(getPolicyInformation().getRequiredPermission(), caller);
+        permissionChecker.enforce(getPolicyMetadata().getRequiredPermission(), caller);
 
         if (scope != POLICY_SCOPE_USER) {
             permissionChecker.enforce(
-                    getPolicyInformation().getRequiredCrossUserPermission(), caller);
+                    getPolicyMetadata().getRequiredCrossUserPermission(), caller);
         }
     }
 
