@@ -72,7 +72,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun downTransitionKey_splitShadeDisabled_isNull() =
+    fun downTransitionKey_singleShade_isNull() =
         kosmos.runTest {
             val userActions by collectLastValue(underTest.actions)
             enableSingleShade()
@@ -82,7 +82,7 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_DUAL_SHADE)
-    fun downTransitionKey_dualShadeEnabled_isNull() =
+    fun downTransitionKey_dualShade_goesToNotificationsShade() =
         kosmos.runTest {
             val userActions by collectLastValue(underTest.actions)
             enableDualShade(wideLayout = true)
