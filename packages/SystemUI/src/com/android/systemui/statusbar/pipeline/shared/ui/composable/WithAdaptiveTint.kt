@@ -36,19 +36,22 @@ import com.android.systemui.shade.ui.composable.ChipHighlightModel
  */
 @Composable
 fun WithAdaptiveTint(
+    highlightModel: ChipHighlightModel? = null,
     isDarkProvider: (Rect) -> Boolean,
-    isHighlighted: Boolean,
     modifier: Modifier = Modifier,
     content: @Composable (tint: Color) -> Unit,
 ) {
     var bounds by remember { mutableStateOf(Rect()) }
+
     val tint =
-        if (isHighlighted) {
-            ChipHighlightModel.Strong.foregroundColor
-        } else if (isDarkProvider(bounds)) {
-            Color.White
-        } else {
-            Color.Black
+        when (highlightModel) {
+            null,
+            ChipHighlightModel.Transparent ->
+                if (isDarkProvider(bounds)) Color.White else Color.Black
+
+            ChipHighlightModel.Strong -> highlightModel.foregroundColor
+
+            ChipHighlightModel.Weak -> if (isDarkProvider(bounds)) Color.Black else Color.White
         }
 
     Box(

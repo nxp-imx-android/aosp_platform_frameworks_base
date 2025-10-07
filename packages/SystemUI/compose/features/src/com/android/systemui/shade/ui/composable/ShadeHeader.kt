@@ -402,7 +402,12 @@ fun ContentScope.OverlayShadeHeader(
                         foregroundColor = quickSettingsHighlight.foregroundColor.toArgb(),
                         backgroundColor = quickSettingsHighlight.backgroundColor.toArgb(),
                     )
-                    BatteryInfo(viewModel = viewModel, showIcon = true, useExpandedFormat = false)
+                    BatteryInfo(
+                        viewModel = viewModel,
+                        showIcon = true,
+                        useExpandedFormat = false,
+                        chipHighlightModel = quickSettingsHighlight,
+                    )
                 }
                 if (viewModel.isPrivacyChipVisible) {
                     Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
@@ -548,11 +553,23 @@ private fun BatteryInfo(
     useExpandedFormat: Boolean,
     modifier: Modifier = Modifier,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
+    chipHighlightModel: ChipHighlightModel? = null,
 ) {
     val isQuickSettingsDarkTheme = isSystemInDarkTheme()
+    // `viewModel.isShadeAreaDark` does not account for when the shade is pulled down and scrim is
+    // applied behind the battery. Use `isSystemInDarkTheme` for sufficient contrast against the
+    // shade.
+    val isDarkProvider: IsAreaDark =
+        when (chipHighlightModel) {
+            // null means directly on top of the shade scrim.
+            null -> IsAreaDark { isQuickSettingsDarkTheme }
+            ChipHighlightModel.Transparent -> viewModel.isShadeAreaDark
+            ChipHighlightModel.Strong -> IsAreaDark { !isQuickSettingsDarkTheme }
+            ChipHighlightModel.Weak -> IsAreaDark { isQuickSettingsDarkTheme }
+        }
     BatteryWithEstimate(
         viewModelFactory = viewModel.batteryViewModelFactory,
-        isDarkProvider = { IsAreaDark { isQuickSettingsDarkTheme } },
+        isDarkProvider = { isDarkProvider },
         showIcon = showIcon,
         showEstimate = useExpandedFormat,
         textColor = textColor,

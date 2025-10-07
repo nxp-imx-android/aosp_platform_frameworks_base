@@ -451,8 +451,7 @@ private fun addStartSideComposable(
                     WithAdaptiveTint(
                         isDarkProvider = { bounds ->
                             statusBarViewModel.areaDark.isDarkTheme(bounds)
-                        },
-                        isHighlighted = false,
+                        }
                     ) { tint ->
                         Clock(
                             clockViewModel = checkNotNull(clockViewModel),
