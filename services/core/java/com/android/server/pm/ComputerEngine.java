@@ -244,7 +244,11 @@ public class ComputerEngine implements Computer {
         // TODO: Find replacement
         @Nullable
         public SettingBase getSettingBase(int appId) {
-            return mSettings.getSettingLPr(appId);
+            if (Process.isPccUid(appId)) {
+                return mSettings.getPccSettingLPr(appId);
+            } else {
+                return mSettings.getSettingLPr(appId);
+            }
         }
 
         @Nullable
