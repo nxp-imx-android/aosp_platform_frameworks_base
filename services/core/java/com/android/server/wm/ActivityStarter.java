@@ -147,6 +147,7 @@ import com.android.server.pm.PackageArchiver;
 import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
+import com.android.server.utils.Slogf;
 import com.android.server.wm.ActivityMetricsLogger.LaunchingState;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
@@ -190,6 +191,7 @@ class ActivityStarter {
     private final ActivityTaskSupervisor mSupervisor;
     private final ActivityStartInterceptor mInterceptor;
     private final ActivityStartController mController;
+    private final boolean mIsHeadlessSystemUserMode;
 
     // Share state variable among methods when starting an activity.
     @VisibleForTesting
@@ -717,6 +719,7 @@ class ActivityStarter {
         mRootWindowContainer = service.mRootWindowContainer;
         mSupervisor = supervisor;
         mInterceptor = interceptor;
+        mIsHeadlessSystemUserMode = service.getUserManagerInternal().isHeadlessSystemUserMode();
         reset(true);
     }
 
@@ -1191,6 +1194,30 @@ class ActivityStarter {
             } catch (RemoteException e) {
                 Slog.w(TAG, "Failure checking voice capabilities", e);
                 err = ActivityManager.START_NOT_VOICE_COMPATIBLE;
+            }
+        }
+
+        if (android.multiuser.Flags.hsuAllowlistActivities() && err == ActivityManager.START_SUCCESS
+                && aInfo != null && mIsHeadlessSystemUserMode && userId == UserHandle.USER_SYSTEM) {
+            // If running in Headless System User Mode, check if the activity is allowlisted.
+            // This check is done as late as possible because it affects a very small number of the
+            // occurrences (as few devices are HSUM, and most of them don't even allow switching to
+            // the system user, so we want to minimize its impact.
+            var compName = intent.getComponent();
+            if (compName != null) {
+                var umi = mService.getUserManagerInternal();
+                if (!umi.isActivityAllowlistedForHsu(compName)) {
+                    Slogf.w(TAG, "Activity %s not allowed on headless system user",
+                            compName.flattenToShortString());
+                    // TODO(b/414326600): consolidate with the logLaunchedHsuActivity() on
+                    // handleResult (once the final API for logging is defined)
+                    umi.logBlockedHsuActivity(compName);
+                    err = ActivityManager.START_NOT_ALLOWED_FOR_HEADLESS_SYSTEM_USER;
+                }
+            } else {
+                // Should not be happen, but better be safe than sorry....
+                Slogf.wtf(TAG, "Could not check if %s is allowed for HSU because its intent (%s) "
+                        + "doesn't have a Component Name", aInfo, intent);
             }
         }
 
@@ -1898,16 +1925,15 @@ class ActivityStarter {
         }
 
         if (android.multiuser.Flags.hsuAllowlistActivities()
-                && isStarted && started.mUserId == UserHandle.USER_SYSTEM) {
+                && isStarted && mIsHeadlessSystemUserMode
+                &&  started.mUserId == UserHandle.USER_SYSTEM) {
             // TODO(b/412177078): for now we're just logging activities launched on HSU, but once
             // the allowlist mechanism is in place, we'll need to change this call to log a
             // successful launch, but also log when it's blocked earlier on (probably before the
             // check for voice session on executeRequest(), as voice interaction is not supported
             // on the HSU)
             var umi = mService.getUserManagerInternal();
-            if (umi.isHeadlessSystemUserMode()) {
-                umi.logLaunchedHsuActivity(started.mActivityComponent);
-            }
+            umi.logLaunchedHsuActivity(started.mActivityComponent);
         }
 
         return startedActivityRootTask;
@@ -3676,6 +3702,8 @@ class ActivityStarter {
         pw.print(mAddingToTask);
         pw.print(" mInTaskFragment=");
         pw.println(mInTaskFragment);
+        pw.print(" mIsHeadlessSystemUserMode=");
+        pw.println(mIsHeadlessSystemUserMode);
     }
 
     /**
