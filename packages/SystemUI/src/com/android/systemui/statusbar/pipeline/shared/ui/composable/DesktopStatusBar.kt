@@ -38,6 +38,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.android.systemui.clock.ClockModernization
+import com.android.systemui.clock.ui.composable.Clock
 import com.android.systemui.clock.ui.composable.ClockLegacy
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
@@ -109,17 +111,23 @@ fun DesktopStatusBar(
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                ClockLegacy(textColor = tint, onClick = null)
-
                 val clockViewModel =
                     rememberViewModel("HomeStatusBar.Clock") {
                         clockViewModelFactory.create(AmPmStyle.Gone)
                     }
+                val textStyle = MaterialTheme.typography.labelLargeEmphasized
+
+                if (ClockModernization.isEnabled) {
+                    Clock(clockViewModel = clockViewModel, textColor = tint, textStyle = textStyle)
+                } else {
+                    ClockLegacy(textColor = tint, onClick = null)
+                }
+
                 VariableDayDate(
                     longerDateText = clockViewModel.longerDateText,
                     shorterDateText = clockViewModel.shorterDateText,
                     textColor = tint,
-                    textStyle = MaterialTheme.typography.labelLargeEmphasized,
+                    textStyle = textStyle,
                 )
             }
         }
