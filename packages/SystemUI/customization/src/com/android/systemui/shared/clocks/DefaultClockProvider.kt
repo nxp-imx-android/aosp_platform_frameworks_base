@@ -33,8 +33,9 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockMetadata
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockPickerConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockProvider
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
-import com.android.systemui.shared.clocks.FlexClockController.Companion.buildPresetGroup
-import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
+import com.android.systemui.shared.clocks.controller.FlexClockController
+import com.android.systemui.shared.clocks.controller.FlexClockController.Companion.buildPresetGroup
+import com.android.systemui.shared.clocks.controller.FlexClockController.Companion.getDefaultAxes
 
 private val TAG = DefaultClockProvider::class.simpleName
 const val DEFAULT_CLOCK_ID = "DEFAULT"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.shared.clocks.controller
 
 import android.content.res.Resources
 import android.icu.util.TimeZone
@@ -37,6 +37,9 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockFontAxis.Companion.m
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
+import com.android.systemui.shared.clocks.DEFAULT_CLOCK_ID
+import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
+import com.android.systemui.shared.clocks.FlexClockContext
 import java.io.PrintWriter
 import java.util.Locale
 
