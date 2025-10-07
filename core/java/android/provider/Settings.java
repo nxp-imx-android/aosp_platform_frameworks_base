@@ -13088,7 +13088,7 @@ public final class Settings {
 
         /**
          * Whether to always expand notification bundles in the notification shade.
-         * 1 = expand, 0 = collapse.
+         * 1 = always expand, 0 = auto, -1 always collapse.
          * @hide
          */
         public static final String NOTIFICATION_BUNDLES_ALWAYS_EXPAND =
