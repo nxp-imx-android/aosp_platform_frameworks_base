@@ -246,13 +246,6 @@ flag {
 }
 
 flag {
-    name: "skip_accessibility_warning_dialog_for_trusted_services"
-    namespace: "accessibility"
-    description: "Skips showing the accessibility warning dialog for trusted services."
-    bug: "303511250"
-}
-
-flag {
     name: "supplemental_description"
     namespace: "accessibility"
     description: "Feature flag for supplemental description api"
