@@ -3742,7 +3742,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     @GuardedBy("getLockObject()")
-    private boolean maybeMigrateCrossProfileWidgetProvider(String backupId) {
+    private boolean maybeMigrateCrossProfileWidgetProviderLocked(String backupId) {
         if (!Flags.crossProfileWidgetProviderBulkApis()) {
             return false;
         }
@@ -24616,7 +24616,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         String crossProfileWidgetProviderBackupId = "37.3.cross-profile-widget-provider";
         boolean crossProfileWidgetProviderMigrated =
-                maybeMigrateCrossProfileWidgetProvider(crossProfileWidgetProviderBackupId);
+                maybeMigrateCrossProfileWidgetProviderLocked(crossProfileWidgetProviderBackupId);
         if (crossProfileWidgetProviderMigrated) {
             Slogf.i(LOG_TAG, "Backup made: " + crossProfileWidgetProviderBackupId);
         }
