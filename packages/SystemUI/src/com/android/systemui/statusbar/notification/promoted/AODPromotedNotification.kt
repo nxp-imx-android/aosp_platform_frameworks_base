@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.promoted
 
+import android.app.Flags.apiMetricStyle
 import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.content.Context
@@ -23,6 +24,7 @@ import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
+import android.text.TextUtils
 import android.util.Log
 import android.util.Size
 import android.view.NotificationHeaderView
@@ -76,6 +78,7 @@ import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificat
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.PrimaryText
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.SecondaryText
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Metric
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
@@ -137,7 +140,6 @@ fun AODPromotedNotificationView(
             .toInt()
 
     val viewModifier = Modifier.border(borderStroke, borderShape)
-
     Box(modifier = boxModifier) {
         AndroidView(
             factory = { context ->
@@ -227,31 +229,6 @@ private class FrameLayoutWithMaxHeight(maxHeight: Int, context: Context) : Frame
     }
 }
 
-private val PromotedNotificationContentModel.layoutResource: Int?
-    get() {
-        return if (notificationsRedesignTemplates()) {
-            when (style) {
-                Style.Base -> R.layout.notification_2025_template_expanded_base
-                Style.CollapsedBase -> R.layout.notification_2025_template_collapsed_base
-                Style.BigText -> R.layout.notification_2025_template_expanded_big_text
-                Style.Call -> R.layout.notification_2025_template_expanded_call
-                Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
-                Style.Progress -> R.layout.notification_2025_template_expanded_progress
-                Style.Ineligible -> null
-            }
-        } else {
-            when (style) {
-                Style.Base -> R.layout.notification_template_material_big_base
-                Style.CollapsedBase -> R.layout.notification_template_material_base
-                Style.BigText -> R.layout.notification_template_material_big_text
-                Style.Call -> R.layout.notification_template_material_big_call
-                Style.CollapsedCall -> R.layout.notification_template_material_call
-                Style.Progress -> R.layout.notification_template_material_progress
-                Style.Ineligible -> null
-            }
-        }
-    }
-
 private class AODPromotedNotificationViewUpdater(root: View) {
     private val alertedIcon: ImageView? = root.findViewById(R.id.alerted_icon)
     private val alternateExpandTarget: View? = root.findViewById(R.id.alternate_expand_target)
@@ -286,6 +263,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val time: DateTimeView? = root.findViewById(R.id.time)
     private val timeDivider: TextView? = root.findViewById(R.id.time_divider)
     private val title: TextView? = root.findViewById(R.id.title)
+    private val altTitle: TextView? = root.findViewById(R.id.alt_title)
+    private val appNameTextDivider: TextView? = root.findViewById(R.id.app_name_text_divider)
     private val header: NotificationHeaderView? = root.findViewById(R.id.notification_header)
     private val topLine: NotificationTopLineView? = root.findViewById(R.id.notification_top_line)
     private val actionsContainer: FrameLayout? = root.findViewById(R.id.actions_container)
@@ -297,6 +276,32 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private var oldProgressBar: ProgressBar? = null
     private val newProgressBar = root.findViewById<View>(R.id.progress) as? NotificationProgressBar
 
+    // MetricStyle notifications support up to 3 metrics.
+    private val metricViews: List<MetricView> =
+        if (!apiMetricStyle()) {
+            emptyList<MetricView>()
+        } else {
+            listOf(
+                MetricView(
+                    container = root.findViewById<View>(R.id.metric_view_0),
+                    label = root.findViewById<TextView>(R.id.metric_label_0),
+                    textValue = root.findViewById<TextView>(R.id.metric_value_0),
+                    chronometer = root.findViewById<Chronometer>(R.id.metric_chronometer_0),
+                ),
+                MetricView(
+                    container = root.findViewById<View>(R.id.metric_view_1),
+                    label = root.findViewById<TextView>(R.id.metric_label_1),
+                    textValue = root.findViewById<TextView>(R.id.metric_value_1),
+                    chronometer = root.findViewById<Chronometer>(R.id.metric_chronometer_1),
+                ),
+                MetricView(
+                    container = root.findViewById<View>(R.id.metric_view_2),
+                    label = root.findViewById<TextView>(R.id.metric_label_2),
+                    textValue = root.findViewById<TextView>(R.id.metric_value_2),
+                    chronometer = root.findViewById<Chronometer>(R.id.metric_chronometer_2),
+                ),
+            )
+        }
     private val defaultLargeIconSizePx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
     private val defaultTypeface: Typeface? = getNotificationTypeFace(root.context)
@@ -345,12 +350,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             ?.mutate()
             ?.setColorFilter(SecondaryText.colorInt, PorterDuff.Mode.SRC_IN)
 
-        setTextViewColor(appNameDivider, SecondaryText)
-        setTextViewColor(headerTextDivider, SecondaryText)
-        setTextViewColor(headerTextSecondaryDivider, SecondaryText)
-        setTextViewColor(timeDivider, SecondaryText)
-        setTextViewColor(verificationDivider, SecondaryText)
-
+        adjustPromotedNotificationTextColors()
         adjustPromotedNotificationTextFonts()
 
         if (notificationsRedesignTemplates()) {
@@ -372,6 +372,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             Style.Call -> updateCallStyle(content, collapsed = false)
             Style.CollapsedCall -> updateCallStyle(content, collapsed = true)
             Style.Progress -> updateProgressStyle(content)
+            Style.Metric,
+            Style.MetricSingle -> updateMetricStyle(content)
             Style.Ineligible -> {}
         }
 
@@ -445,6 +447,55 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             newProgressBar.visibility = VISIBLE
         } else {
             newProgressBar.visibility = GONE
+        }
+    }
+
+    private fun updateMetricStyle(content: PromotedNotificationContentModel) {
+        updateHeader(content, collapsed = false, null)
+        updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
+
+        val hasTitle = !TextUtils.isEmpty(content.title)
+        altTitle?.text = content.title
+        altTitle?.isVisible = hasTitle
+        appNameTextDivider?.isVisible = altTitle != null && hasTitle
+
+        metricViews.forEach {
+            it.container?.isVisible = false
+            it.label?.isVisible = false
+            it.textValue?.isVisible = false
+            it.chronometer?.isVisible = false
+        }
+        val metrics = content.metrics ?: return
+        for (i in metrics.indices) {
+            val metric = metrics[i]
+            val metricView = metricViews[i]
+
+            metricView.container?.isVisible = true
+
+            metricView.label?.isVisible = true
+            metricView.label?.text = metric.label
+
+            when (metric) {
+                is Metric.TimeDifference -> {
+                    metricView.chronometer?.isVisible = true
+                    metricView.chronometer?.isCountDown = metric.isTimer
+                    metricView.chronometer?.isUseAdaptiveFormat = metric.useAdaptiveFormat
+                    metricView.chronometer?.format = null
+                    metricView.chronometer?.setStarted(metric !is Metric.TimeDifference.Paused)
+                    when (metric) {
+                        is Metric.TimeDifference.ElapsedRealtime ->
+                            metricView.chronometer?.setBase(metric.zeroElapsedRealtime)
+                        is Metric.TimeDifference.Instant ->
+                            metricView.chronometer?.setBase(metric.zeroTime)
+                        is Metric.TimeDifference.Paused ->
+                            metricView.chronometer?.setPausedDuration(metric.pausedDuration)
+                    }
+                }
+                is Metric.Text -> {
+                    metricView.textValue?.isVisible = true
+                    metricView.textValue?.let { it.text = metric.metricValue }
+                }
+            }
         }
     }
 
@@ -743,6 +794,21 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         view?.setTextColor(color.colorInt)
     }
 
+    private fun adjustPromotedNotificationTextColors() {
+        setTextViewColor(appNameDivider, SecondaryText)
+        setTextViewColor(headerTextDivider, SecondaryText)
+        setTextViewColor(headerTextSecondaryDivider, SecondaryText)
+        setTextViewColor(timeDivider, SecondaryText)
+        setTextViewColor(verificationDivider, SecondaryText)
+        setTextViewColor(altTitle, SecondaryText)
+        setTextViewColor(appNameTextDivider, SecondaryText)
+        metricViews.forEach { metricView ->
+            metricView.label?.let { setTextViewColor(it, SecondaryText) }
+            metricView.chronometer?.let { setTextViewColor(it, SecondaryText) }
+            metricView.textValue?.let { setTextViewColor(it, SecondaryText) }
+        }
+    }
+
     private fun adjustPromotedNotificationTextFonts() {
         adjustTextViewFont(appNameDivider)
         adjustTextViewFont(appNameText)
@@ -758,6 +824,13 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         adjustTextViewFont(verificationText)
         adjustTextViewFont(time)
         adjustTextViewFont(timeDivider)
+        adjustTextViewFont(altTitle)
+        adjustTextViewFont(appNameTextDivider)
+        metricViews.forEach { metricView ->
+            metricView.label?.let(::adjustTextViewFont)
+            metricView.chronometer?.let(::adjustTextViewFont)
+            metricView.textValue?.let(::adjustTextViewFont)
+        }
     }
 
     private fun getNotificationTypeFace(context: Context): Typeface? =
@@ -843,6 +916,13 @@ private enum class AodPromotedNotificationColor(val colorInt: Int) {
 
     val brush = SolidColor(androidx.compose.ui.graphics.Color(colorInt))
 }
+
+class MetricView(
+    val container: View?,
+    val label: TextView?,
+    val textValue: TextView?,
+    val chronometer: Chronometer?,
+)
 
 @Composable
 private fun scaledFontHeight(@DimenRes dimenId: Int): Dp {

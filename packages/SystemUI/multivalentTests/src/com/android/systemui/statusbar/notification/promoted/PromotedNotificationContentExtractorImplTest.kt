@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.promoted
 
+import android.app.Flags.FLAG_API_METRIC_STYLE
 import android.app.Notification
 import android.app.Notification.BigTextStyle
 import android.app.Notification.CallStyle
@@ -39,6 +40,7 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
@@ -611,6 +613,172 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
             assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
             assertThat(oldProgress.isIndeterminate).isTrue()
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    fun extractContent_fromMetricStyle_singleTextValue() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setStyle(
+                    Notification.MetricStyle()
+                        .addMetric(
+                            Notification.Metric(
+                                Notification.Metric.FixedText("Value1", "unit"),
+                                "Label1",
+                            )
+                        )
+                )
+            }
+
+            val content = requireContent(entry)
+            val privateVersion = content.privateVersion
+
+            assertThat(privateVersion.style).isEqualTo(Style.MetricSingle)
+            assertThat(privateVersion.metrics).hasSize(1)
+            val metric =
+                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric.label).isEqualTo("Label1 (unit)")
+            assertThat(metric.metricValue).isEqualTo("Value1")
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    fun extractContent_fromMetricStyle_singleIntegerValue() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setStyle(
+                    Notification.MetricStyle()
+                        .addMetric(
+                            Notification.Metric(
+                                Notification.Metric.FixedInt(123, "unit"),
+                                "LabelInt",
+                            )
+                        )
+                )
+            }
+
+            val content = requireContent(entry)
+            val privateVersion = content.privateVersion
+
+            assertThat(privateVersion.style).isEqualTo(Style.MetricSingle)
+            assertThat(privateVersion.metrics).hasSize(1)
+            val metric =
+                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric.label).isEqualTo("LabelInt (unit)")
+            assertThat(metric.metricValue).isEqualTo("123")
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    fun extractContent_fromMetricStyle_timeDifferenceWithInstant() =
+        kosmos.runTest {
+            val zeroTime = java.time.Instant.ofEpochMilli(100)
+            val entry = createEntry {
+                setStyle(
+                    Notification.MetricStyle()
+                        .addMetric(
+                            Notification.Metric(
+                                Notification.Metric.TimeDifference.forStopwatch(
+                                    zeroTime,
+                                    Notification.Metric.TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                "Time Label",
+                            )
+                        )
+                )
+            }
+
+            val content = requireContent(entry)
+            val privateVersion = content.privateVersion
+
+            assertThat(privateVersion.style).isEqualTo(Style.MetricSingle)
+            assertThat(privateVersion.metrics).hasSize(1)
+            val metric =
+                privateVersion.metrics?.get(0)
+                    as PromotedNotificationContentModel.Metric.TimeDifference.Instant
+            assertThat(metric.label).isEqualTo("Time Label")
+            assertThat(metric.zeroTime).isEqualTo(zeroTime)
+            assertThat(metric.isTimer).isFalse()
+            assertThat(metric.useAdaptiveFormat).isFalse()
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    fun extractContent_fromMetricStyle_timeDifferenceWithPausedDuration() =
+        kosmos.runTest {
+            val pausedDuration = java.time.Duration.ofSeconds(30)
+            val entry = createEntry {
+                setStyle(
+                    Notification.MetricStyle()
+                        .addMetric(
+                            Notification.Metric(
+                                Notification.Metric.TimeDifference.forPausedTimer(
+                                    pausedDuration,
+                                    Notification.Metric.TimeDifference.FORMAT_ADAPTIVE,
+                                ),
+                                "Paused Timer",
+                            )
+                        )
+                )
+            }
+
+            val content = requireContent(entry)
+            val privateVersion = content.privateVersion
+            val metric =
+                privateVersion.metrics?.get(0)
+                    as PromotedNotificationContentModel.Metric.TimeDifference.Paused
+            assertThat(metric.label).isEqualTo("Paused Timer")
+            assertThat(metric.pausedDuration).isEqualTo(pausedDuration)
+            assertThat(metric.isTimer).isTrue()
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, FLAG_API_METRIC_STYLE)
+    fun extractContent_fromMetricStyle_multipleMetrics() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setStyle(
+                    Notification.MetricStyle()
+                        .addMetric(
+                            Notification.Metric(Notification.Metric.FixedText("Value1"), "Label1")
+                        )
+                        .addMetric(
+                            Notification.Metric(
+                                Notification.Metric.TimeDifference.forTimer(
+                                    12345L,
+                                    Notification.Metric.TimeDifference.FORMAT_CHRONOMETER,
+                                ),
+                                "Timer",
+                            )
+                        )
+                        .addMetric(Notification.Metric(Notification.Metric.FixedInt(42), "Label3"))
+                )
+            }
+
+            val content = requireContent(entry)
+            val privateVersion = content.privateVersion
+
+            assertThat(privateVersion.style).isEqualTo(Style.Metric)
+            assertThat(privateVersion.metrics).hasSize(3)
+
+            val metric1 =
+                privateVersion.metrics?.get(0) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric1.label).isEqualTo("Label1")
+            assertThat(metric1.metricValue).isEqualTo("Value1")
+
+            val metric2 =
+                privateVersion.metrics?.get(1)
+                    as PromotedNotificationContentModel.Metric.TimeDifference.ElapsedRealtime
+            assertThat(metric2.label).isEqualTo("Timer")
+            assertThat(metric2.zeroElapsedRealtime).isEqualTo(12345L)
+            assertThat(metric2.isTimer).isTrue()
+            assertThat(metric2.useAdaptiveFormat).isFalse()
+
+            val metric3 =
+                privateVersion.metrics?.get(2) as PromotedNotificationContentModel.Metric.Text
+            assertThat(metric3.label).isEqualTo("Label3")
+            assertThat(metric3.metricValue).isEqualTo("42")
         }
 
     private fun Kosmos.requireContent(
