@@ -34,20 +34,17 @@ public final class HandoffActivityDataSerializer {
 
     private static final String TAG = "HandoffActivityDataSerializer";
 
-    public static void writeToProto(
-            HandoffActivityData handoffActivityData,
-            ProtoOutputStream pos) throws IOException {
+    public static void writeToProto(HandoffActivityData handoffActivityData, ProtoOutputStream pos)
+            throws IOException {
 
         String flattenedComponentName = handoffActivityData.getComponentName().flattenToString();
         pos.writeString(
-            android.companion.HandoffActivityData.COMPONENT_NAME,
-            flattenedComponentName);
+                android.companion.HandoffActivityData.COMPONENT_NAME, flattenedComponentName);
 
         Uri fallbackUri = handoffActivityData.getFallbackUri();
         if (fallbackUri != null) {
             pos.writeString(
-                android.companion.HandoffActivityData.FALLBACK_URI,
-                fallbackUri.toString());
+                    android.companion.HandoffActivityData.FALLBACK_URI, fallbackUri.toString());
         }
 
         PersistableBundle extras = handoffActivityData.getExtras();
@@ -55,8 +52,7 @@ public final class HandoffActivityDataSerializer {
             ByteArrayOutputStream extrasStream = new ByteArrayOutputStream();
             extras.writeToStream(extrasStream);
             pos.writeBytes(
-                android.companion.HandoffActivityData.EXTRAS,
-                extrasStream.toByteArray());
+                    android.companion.HandoffActivityData.EXTRAS, extrasStream.toByteArray());
         }
     }
 
@@ -69,8 +65,8 @@ public final class HandoffActivityDataSerializer {
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.HandoffActivityData.COMPONENT_NAME:
-                    String flattenedComponentName
-                        = pis.readString(android.companion.HandoffActivityData.COMPONENT_NAME);
+                    String flattenedComponentName =
+                            pis.readString(android.companion.HandoffActivityData.COMPONENT_NAME);
 
                     componentName = ComponentName.unflattenFromString(flattenedComponentName);
                     if (componentName == null) {
@@ -80,8 +76,8 @@ public final class HandoffActivityDataSerializer {
 
                     break;
                 case (int) android.companion.HandoffActivityData.FALLBACK_URI:
-                    String flattenedFallbackUri
-                        = pis.readString(android.companion.HandoffActivityData.FALLBACK_URI);
+                    String flattenedFallbackUri =
+                            pis.readString(android.companion.HandoffActivityData.FALLBACK_URI);
 
                     fallbackUri = Uri.parse(flattenedFallbackUri);
                     if (fallbackUri == null) {
@@ -90,8 +86,7 @@ public final class HandoffActivityDataSerializer {
 
                     break;
                 case (int) android.companion.HandoffActivityData.EXTRAS:
-                    byte[] rawExtras
-                        = pis.readBytes(android.companion.HandoffActivityData.EXTRAS);
+                    byte[] rawExtras = pis.readBytes(android.companion.HandoffActivityData.EXTRAS);
 
                     ByteArrayInputStream extrasStream = new ByteArrayInputStream(rawExtras);
                     PersistableBundle newExtras = PersistableBundle.readFromStream(extrasStream);
@@ -100,8 +95,10 @@ public final class HandoffActivityDataSerializer {
                     }
                     break;
                 default:
-                    Log.w(TAG, "Skipping unknown field in HandoffActivityData: "
-                        + pis.getFieldNumber());
+                    Log.w(
+                            TAG,
+                            "Skipping unknown field in HandoffActivityData: "
+                                    + pis.getFieldNumber());
                     break;
             }
         }

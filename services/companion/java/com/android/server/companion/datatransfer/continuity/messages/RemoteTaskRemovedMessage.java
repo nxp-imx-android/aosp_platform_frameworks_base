@@ -28,9 +28,7 @@ public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMess
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.RemoteTaskRemovedMessage.TASK_ID:
-                    taskId = pis.readInt(
-                        android.companion.RemoteTaskRemovedMessage.TASK_ID
-                    );
+                    taskId = pis.readInt(android.companion.RemoteTaskRemovedMessage.TASK_ID);
                     break;
             }
         }
@@ -45,8 +43,6 @@ public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMess
 
     @Override
     public void writeToProto(ProtoOutputStream pos) throws IOException {
-        pos.write(
-            android.companion.RemoteTaskRemovedMessage.TASK_ID,
-            taskId());
+        pos.write(android.companion.RemoteTaskRemovedMessage.TASK_ID, taskId());
     }
 }

@@ -21,9 +21,7 @@ import android.util.proto.ProtoOutputStream;
 
 import java.io.IOException;
 
-/**
- * Deserialized version of the HandoffRequestMessage proto.
- */
+/** Deserialized version of the HandoffRequestMessage proto. */
 public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage {
 
     public static HandoffRequestMessage readFromProto(ProtoInputStream pis) throws IOException {

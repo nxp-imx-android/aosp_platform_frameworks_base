@@ -16,7 +16,6 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.testng.Assert.expectThrows;
 
@@ -43,8 +42,8 @@ public class ContinuityDeviceConnectedTest {
     public void testConstructor_fromObjects() {
         final List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
 
-        final ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(remoteTasks);
+        final ContinuityDeviceConnected continuityDeviceConnected =
+                new ContinuityDeviceConnected(remoteTasks);
 
         assertThat(continuityDeviceConnected.remoteTasks()).isEqualTo(remoteTasks);
     }
@@ -54,8 +53,9 @@ public class ContinuityDeviceConnectedTest {
         int expectedTaskId = 1;
         String expectedLabel = "test";
         long expectedLastActiveTime = 0;
-        ContinuityDeviceConnected expected = new ContinuityDeviceConnected(
-            Arrays.asList(new RemoteTaskInfo(1, "task", 50, new byte[0], true)));
+        ContinuityDeviceConnected expected =
+                new ContinuityDeviceConnected(
+                        Arrays.asList(new RemoteTaskInfo(1, "task", 50, new byte[0], true)));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
@@ -69,10 +69,10 @@ public class ContinuityDeviceConnectedTest {
 
     @Test
     public void testGetFieldNumber_returnsCorrectValue() {
-        ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(new ArrayList<>());
+        ContinuityDeviceConnected continuityDeviceConnected =
+                new ContinuityDeviceConnected(new ArrayList<>());
 
         assertThat(continuityDeviceConnected.getFieldNumber())
-            .isEqualTo(android.companion.TaskContinuityMessage.DEVICE_CONNECTED);
+                .isEqualTo(android.companion.TaskContinuityMessage.DEVICE_CONNECTED);
     }
 }
