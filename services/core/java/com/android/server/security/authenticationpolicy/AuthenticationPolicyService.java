@@ -22,7 +22,6 @@ import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.hardware.biometrics.BiometricConstants.BIOMETRIC_ERROR_LOCKOUT;
 import static android.hardware.biometrics.BiometricConstants.BIOMETRIC_ERROR_LOCKOUT_PERMANENT;
-import static android.security.Flags.disableAdaptiveAuthCounterLock;
 import static android.security.Flags.failedAuthLockToggle;
 import static android.security.Flags.secureLockDevice;
 import static android.security.Flags.secureLockdown;
@@ -394,8 +393,7 @@ public class AuthenticationPolicyService extends SystemService {
         // If a user toggle is enabled by the device manufacturer on 25Q4+ builds, or if it's
         // debuggable 25Q3+ builds, then failed auth lock can be enabled or disabled by
         // users in settings
-        if ((failedAuthLockToggle() && mEnableFailedAuthLockToggle)
-                || (disableAdaptiveAuthCounterLock() && Build.IS_DEBUGGABLE)) {
+        if ((failedAuthLockToggle() && mEnableFailedAuthLockToggle) || Build.IS_DEBUGGABLE) {
             // If userId is a profile, use its parent's settings to determine whether failed auth
             // lock is enabled or disabled for the profile, irrespective of the profile's own
             // settings. If userId is a main user (i.e. parentUserId equals to userId), use its own
