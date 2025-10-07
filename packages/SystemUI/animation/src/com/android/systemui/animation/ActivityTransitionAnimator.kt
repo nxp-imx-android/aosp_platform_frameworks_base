@@ -382,7 +382,7 @@ constructor(
                 Log.i(TAG, "Starting intent with no animation")
                 intentStarter(null)
                 controller?.callOnIntentStartedOnMainThread(willAnimate = false)
-                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(null)
+                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(transition = null)
                 return
             }
 
@@ -440,7 +440,7 @@ constructor(
                 Log.i(TAG, "Starting intent with no animation")
                 intentStarterLegacy(null)
                 controller?.callOnIntentStartedOnMainThread(willAnimate = false)
-                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(null)
+                if (hideKeyguardWithAnimation) callback.hideKeyguardWithAnimation(runner = null)
                 return
             }
 
@@ -996,8 +996,7 @@ constructor(
         fun isOnKeyguard(): Boolean = false
 
         /** Hide the keyguard and animate using [transition]. */
-        // TODO(b/397180418): implement this wherever the old version is implemented.
-        fun hideKeyguardWithAnimation(transition: IRemoteTransition) {
+        fun hideKeyguardWithAnimation(transition: IRemoteTransition?) {
             throw UnsupportedOperationException()
         }
 
