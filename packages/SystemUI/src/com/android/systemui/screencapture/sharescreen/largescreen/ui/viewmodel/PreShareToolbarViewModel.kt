@@ -23,7 +23,7 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
 import dagger.assisted.Assisted
@@ -34,11 +34,11 @@ import dagger.assisted.AssistedInject
 class PreShareToolbarViewModel
 @AssistedInject
 constructor(
-    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
-    @Assisted private val shareContentListViewModel: ShareContentListViewModel,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+    @Assisted private val recentTasksViewModel: RecentTasksViewModel,
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
     var selectedScreenCaptureTarget: ScreenCaptureTarget by
         mutableStateOf(ScreenCaptureTarget.AppContent(contentId = 0))
 
@@ -48,7 +48,7 @@ constructor(
 
     fun onShareClicked() {
         if (selectedScreenCaptureTarget is ScreenCaptureTarget.App) {
-            shareContentListViewModel.selectedRecentTaskViewModel?.let {
+            recentTasksViewModel.selectedTarget.value?.let {
                 screenCaptureUiInteractor.onScreenSharingApproved(it.model.taskId)
             }
         }
@@ -57,6 +57,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(shareContentListViewModel: ShareContentListViewModel): PreShareToolbarViewModel
+        fun create(recentTasksViewModel: RecentTasksViewModel): PreShareToolbarViewModel
     }
 }

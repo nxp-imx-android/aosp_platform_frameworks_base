@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
+package com.android.systemui.screencapture.common.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
+import javax.inject.Provider
 
-val Kosmos.audioSwitchViewModelFactory by Fixture {
-    object : AudioSwitchViewModel.Factory {
-        override fun create(): AudioSwitchViewModel {
-            return AudioSwitchViewModel(drawableLoaderViewModelImpl)
-        }
-    }
-}
+var Kosmos.audioSwitchViewModel by Kosmos.Fixture { AudioSwitchViewModelImpl() }
 
-val Kosmos.audioSwitchViewModel by Fixture { audioSwitchViewModelFactory.create() }
+var Kosmos.audioSwitchViewModelProvider: Provider<AudioSwitchViewModel> by
+    Kosmos.Fixture { Provider { AudioSwitchViewModelImpl() } }

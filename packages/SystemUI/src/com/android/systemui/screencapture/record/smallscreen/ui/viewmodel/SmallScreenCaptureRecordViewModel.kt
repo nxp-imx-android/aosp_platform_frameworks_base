@@ -33,7 +33,6 @@ import com.android.systemui.screencapture.common.domain.interactor.ScreenCapture
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
@@ -56,11 +55,11 @@ constructor(
     recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
     screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
     recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
-    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val markupInteractor: ScreenCaptureMarkupInteractor,
     private val activityManager: ActivityManagerWrapper,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
         recordDetailsAppSelectorViewModelFactory.create()

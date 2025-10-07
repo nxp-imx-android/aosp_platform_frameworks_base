@@ -26,18 +26,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.AudioSwitchViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
 
 /** Main component for the screen share UI. */
 @Composable
 fun PreShareUI(
     preShareToolbarViewModel: PreShareToolbarViewModel,
-    shareContentListViewModel: ShareContentListViewModel,
-    audioSwitchViewModel: AudioSwitchViewModel,
-    recentTaskViewModelFactory: RecentTaskViewModel.Factory,
+    recentTasksViewModel: RecentTasksViewModel,
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -52,13 +48,9 @@ fun PreShareUI(
                 preShareToolbarViewModel = preShareToolbarViewModel,
                 expanded = true,
                 onCloseClick = { preShareToolbarViewModel.onCloseClicked() },
-                shareButtonEnabled = shareContentListViewModel.selectedRecentTaskViewModel != null,
+                shareButtonEnabled = recentTasksViewModel.selectedTarget.value != null,
             )
-            ShareContentSelector(
-                shareContentListViewModel = shareContentListViewModel,
-                recentTaskViewModelFactory = recentTaskViewModelFactory,
-                audioSwitchViewModel = audioSwitchViewModel,
-            )
+            ShareContentSelector(recentTasksViewModel = recentTasksViewModel)
         }
     }
 }

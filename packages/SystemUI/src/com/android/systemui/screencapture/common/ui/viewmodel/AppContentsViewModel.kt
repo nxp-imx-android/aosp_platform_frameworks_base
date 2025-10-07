@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.common.ui.viewmodel
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureAppContentInteractor
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
@@ -79,9 +80,16 @@ class AppContentsViewModelImpl
 constructor(
     private val appContentInteractor: ScreenCaptureAppContentInteractor,
     recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
+    private val appContentViewModelFactory: AppContentViewModel.Factory,
+    drawableLoaderViewModel: DrawableLoaderViewModel,
+    audioSwitchViewModel: AudioSwitchViewModel,
     @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
     @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
-) : AppContentsViewModel, HydratedActivatable() {
+) :
+    AppContentsViewModel,
+    DrawableLoaderViewModel by drawableLoaderViewModel,
+    AudioSwitchViewModel by audioSwitchViewModel,
+    HydratedActivatable() {
 
     override val targets: State<List<ScreenCaptureAppContent>?> =
         recentTaskInteractor.recentTasks
@@ -93,6 +101,17 @@ constructor(
                 )
             }
             .hydratedStateOf("AppContentsViewModel#getAppContents", null)
+
+    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureAppContent>?>(null)
+    override val selectedTarget: State<TargetViewModel<ScreenCaptureAppContent>?> = _selectedTarget
+
+    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureAppContent>?) {
+        _selectedTarget.value = target
+    }
+
+    override fun createViewModelFor(
+        target: ScreenCaptureAppContent
+    ): TargetViewModel<ScreenCaptureAppContent> = appContentViewModelFactory.create(target)
 
     @AssistedFactory
     interface Factory : AppContentsViewModel.Factory {

@@ -20,7 +20,15 @@ import androidx.compose.runtime.State
 import com.android.systemui.lifecycle.Activatable
 
 /** Interface for view models that provide capture targets. */
-interface TargetsViewModel<T : Any> : Activatable {
+interface TargetsViewModel<T : Any> : Activatable, DrawableLoaderViewModel, AudioSwitchViewModel {
     /** The currently available targets. */
     val targets: State<List<T>?>
+    /** The view model of the currently selected target. */
+    val selectedTarget: State<TargetViewModel<T>?>
+
+    /** Sets the view model for the currently selected target. */
+    fun setSelectedTarget(target: TargetViewModel<T>?)
+
+    /** Creates a view model for */
+    fun createViewModelFor(target: T): TargetViewModel<T>
 }

@@ -20,6 +20,14 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 
 var Kosmos.recentTasksViewModel: RecentTasksViewModel by
-    Kosmos.Fixture { RecentTasksViewModelImpl(screenCaptureRecentTaskInteractor) }
+    Kosmos.Fixture {
+        RecentTasksViewModelImpl(
+            interactor = screenCaptureRecentTaskInteractor,
+            recentTaskViewModelFactory = recentTaskViewModelFactory,
+            drawableLoaderViewModel = drawableLoaderViewModel,
+            audioSwitchViewModel = AudioSwitchViewModelImpl(),
+        )
+    }
 
-val Kosmos.fakeRecentTasksViewModel by Kosmos.Fixture { FakeRecentTasksViewModel() }
+val Kosmos.fakeRecentTasksViewModel by
+    Kosmos.Fixture { FakeRecentTasksViewModel(recentTaskViewModelFactory, drawableLoaderViewModel) }

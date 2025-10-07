@@ -24,7 +24,6 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -38,9 +37,9 @@ constructor(
     @Assisted val videoUri: Uri,
     private val context: Context,
     private val activityStarter: ActivityStarter,
-    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     fun retake() {
         screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())

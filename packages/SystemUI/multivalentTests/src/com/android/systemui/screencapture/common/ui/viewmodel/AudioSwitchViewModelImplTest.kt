@@ -14,37 +14,31 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
+package com.android.systemui.screencapture.common.ui.viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testScope
-import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class AudioSwitchViewModelTest : SysuiTestCase() {
-    private val kosmos = testKosmosNew()
-    private val testScope = kosmos.testScope
-
-    private val viewModel: AudioSwitchViewModel = kosmos.audioSwitchViewModel
-
-    @Before
-    fun setUp() {
-        viewModel.activateIn(testScope)
-    }
+class AudioSwitchViewModelImplTest : SysuiTestCase() {
 
     @Test
-    fun initialState() =
-        kosmos.runTest {
-            // Assert that the initial values are as expected upon creation and activation.
-            assertThat(viewModel.audioSwitchChecked).isEqualTo(false)
-        }
+    fun captureAudio_returnsCaptureAudioState() {
+        // Arrange
+        val viewModel = AudioSwitchViewModelImpl()
+        val result by viewModel.captureAudio
+        assertThat(result).isFalse()
+
+        // Act
+        viewModel.setCaptureAudio(true)
+
+        // Assert
+        assertThat(result).isTrue()
+    }
 }

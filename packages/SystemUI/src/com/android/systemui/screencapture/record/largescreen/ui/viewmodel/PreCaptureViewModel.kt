@@ -25,7 +25,6 @@ import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
@@ -50,13 +49,13 @@ constructor(
     @Background private val backgroundScope: CoroutineScope,
     private val windowManager: WindowManager,
     private val screenshotInteractor: ScreenshotInteractor,
-    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val screenRecordingServiceRepository: ScreenRecordingServiceRepository,
     private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     private val recordingParameters = screenCaptureUiParams as ScreenCaptureUiParameters.Record
     private val isShowingUiFlow = MutableStateFlow(true)

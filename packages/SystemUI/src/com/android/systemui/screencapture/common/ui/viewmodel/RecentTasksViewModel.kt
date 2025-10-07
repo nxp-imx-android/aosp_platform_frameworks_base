@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.common.ui.viewmodel
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
@@ -62,9 +63,30 @@ import javax.inject.Inject
 interface RecentTasksViewModel : TargetsViewModel<ScreenCaptureRecentTask>
 
 /** The default implementation of [RecentTasksViewModel]. */
-class RecentTasksViewModelImpl @Inject constructor(interactor: ScreenCaptureRecentTaskInteractor) :
-    RecentTasksViewModel, HydratedActivatable() {
+class RecentTasksViewModelImpl
+@Inject
+constructor(
+    interactor: ScreenCaptureRecentTaskInteractor,
+    private val recentTaskViewModelFactory: RecentTaskViewModel.Factory,
+    drawableLoaderViewModel: DrawableLoaderViewModel,
+    audioSwitchViewModel: AudioSwitchViewModel,
+) :
+    RecentTasksViewModel,
+    DrawableLoaderViewModel by drawableLoaderViewModel,
+    AudioSwitchViewModel by audioSwitchViewModel,
+    HydratedActivatable() {
 
     override val targets: State<List<ScreenCaptureRecentTask>?> =
         interactor.recentTasks.hydratedStateOf("RecentTasksViewModel#recentTasks", null)
+
+    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureRecentTask>?>(null)
+    override val selectedTarget: State<TargetViewModel<ScreenCaptureRecentTask>?> = _selectedTarget
+
+    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureRecentTask>?) {
+        _selectedTarget.value = target
+    }
+
+    override fun createViewModelFor(
+        target: ScreenCaptureRecentTask
+    ): TargetViewModel<ScreenCaptureRecentTask> = recentTaskViewModelFactory.create(target)
 }

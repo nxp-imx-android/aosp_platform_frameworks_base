@@ -18,9 +18,10 @@ package com.android.systemui.screencapture.common.ui.viewmodel
 
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
+import com.android.systemui.lifecycle.Activatable
 
 /** A view model for capture targets. */
-interface TargetViewModel<T : Any> {
+interface TargetViewModel<T : Any> : Activatable {
     /** The model that this view model is backed by */
     val model: T
     /** The icon associated with the target, if any. */

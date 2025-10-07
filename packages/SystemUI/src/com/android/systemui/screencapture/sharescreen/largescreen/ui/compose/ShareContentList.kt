@@ -42,23 +42,16 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 
 /**
  * A composable that displays a scrollable list of shareable content (e.g., recent apps).
  *
  * @param modifier The modifier to be applied to the composable.
  * @param viewModel The ViewModel that provides the list of tasks and manages selection state.
- * @param recentTaskViewModelFactory A factory to create a [RecentTaskViewModel] for each item.
- * @param selectedRecentTaskViewModel The selected RecentTaskViewModel.
  */
 @Composable
-fun ShareContentList(
-    modifier: Modifier = Modifier,
-    viewModel: ShareContentListViewModel,
-    recentTaskViewModelFactory: RecentTaskViewModel.Factory,
-    selectedRecentTaskViewModel: RecentTaskViewModel?,
-) {
+fun ShareContentList(modifier: Modifier = Modifier, viewModel: RecentTasksViewModel) {
     val recentTasks by viewModel.targets
     Surface(
         shape = RoundedCornerShape(20.dp),
@@ -74,15 +67,14 @@ fun ShareContentList(
                             traceName = "ShareContentListItemViewModel#${task.taskId}",
                             key = task,
                         ) {
-                            recentTaskViewModelFactory.create(task)
+                            viewModel.createViewModelFor(task) as RecentTaskViewModel
                         }
                     SelectorItem(
                         currentRecentTaskViewModel = currentRecentTaskViewModel,
                         isSelected =
-                            currentRecentTaskViewModel.model == selectedRecentTaskViewModel?.model,
-                        onItemSelected = {
-                            viewModel.selectedRecentTaskViewModel = currentRecentTaskViewModel
-                        },
+                            currentRecentTaskViewModel.model ==
+                                viewModel.selectedTarget.value?.model,
+                        onItemSelected = { viewModel.setSelectedTarget(currentRecentTaskViewModel) },
                     )
                 }
             }
