@@ -2114,3 +2114,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "fix_privacy_indicator_both_dot_chip_visible_qs"
+  namespace: "systemui"
+  description: "Fix privacy indicator both dot and chip visible in QS"
+  bug: "443507159"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
