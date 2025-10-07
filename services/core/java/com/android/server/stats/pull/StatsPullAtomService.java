@@ -19,6 +19,7 @@ package com.android.server.stats.pull;
 import static android.app.AppOpsManager.OP_FLAG_SELF;
 import static android.app.AppOpsManager.OP_FLAG_TRUSTED_PROXIED;
 import static android.app.AppProtoEnums.HOSTING_COMPONENT_TYPE_EMPTY;
+import static android.bpfprogs.flags.Flags.kernelWakelockDuration;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PermissionInfo.PROTECTION_DANGEROUS;
 import static android.hardware.display.HdrConversionMode.HDR_CONVERSION_PASSTHROUGH;
@@ -181,6 +182,8 @@ import android.security.metrics.KeystoreAtomPayload;
 import android.security.metrics.RkpErrorStats;
 import android.security.metrics.StorageStats;
 import android.stats.storage.StorageEnums;
+import android.system.suspend.internal.AggregatedKernelWakelockInfo;
+import android.system.suspend.internal.ISuspendControlServiceInternal;
 import android.telephony.ModemActivityInfo;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -400,6 +403,8 @@ public class StatsPullAtomService extends SystemService {
     private KernelWakelockReader mKernelWakelockReader;
     @GuardedBy("mKernelWakelockLock")
     private KernelWakelockStats mTmpWakelockStats;
+    @GuardedBy("mSuspendControlServiceInternalLock")
+    private ISuspendControlServiceInternal mSuspendControlServiceInternal;
 
     @GuardedBy("mDiskIoLock")
     private StoragedUidIoStatsReader mStoragedUidIoStatsReader;
@@ -476,6 +481,9 @@ public class StatsPullAtomService extends SystemService {
     public static final boolean ENABLE_MEMCG_STATS_PULLER =
                 addMemcgMemoryInformationPuller();
 
+    private static final boolean ENABLE_AGGREGATED_KERNEL_WAKELOCK_STATS_PULLER =
+                kernelWakelockDuration();
+
     private static final ArrayMap<String, Integer> mPreviousThermalThrottlingStatus =
             new ArrayMap<>();
     // Puller locks
@@ -532,6 +540,7 @@ public class StatsPullAtomService extends SystemService {
     private final Object mSettingsStatsLock = new Object();
     private final Object mInstalledIncrementalPackagesLock = new Object();
     private final Object mKeystoreLock = new Object();
+    private final Object mSuspendControlServiceInternalLock = new Object();
 
     public StatsPullAtomService(Context context) {
         super(context);
@@ -594,6 +603,10 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.KERNEL_WAKELOCK:
                         synchronized (mKernelWakelockLock) {
                             return pullKernelWakelockLocked(atomTag, data);
+                        }
+                    case FrameworkStatsLog.AGGREGATED_KERNEL_WAKELOCK_INFO:
+                        synchronized (mSuspendControlServiceInternalLock) {
+                            return pullAggregatedKernelWakelockInfo(atomTag, data);
                         }
                     case FrameworkStatsLog.CPU_TIME_PER_CLUSTER_FREQ:
                         synchronized (mCpuTimePerClusterFreqLock) {
@@ -1065,6 +1078,9 @@ public class StatsPullAtomService extends SystemService {
         registerCachedAppsHighWatermarkPuller();
         registerPressureStallInformation();
         registerBatteryLife();
+        if (ENABLE_AGGREGATED_KERNEL_WAKELOCK_STATS_PULLER) {
+            registerAggregatedKernelWakelockInfo();
+        }
         if (ENABLE_MEMCG_STATS_PULLER) {
             registerMemcgInformation();
             registerMemcgMemoryHighWaterMark();
@@ -1308,6 +1324,35 @@ public class StatsPullAtomService extends SystemService {
             }
         }
         return mProcessStatsService;
+    }
+
+    private ISuspendControlServiceInternal getISuspendControlServiceInternal() {
+        synchronized (mSuspendControlServiceInternalLock) {
+            if (mSuspendControlServiceInternal == null) {
+                mSuspendControlServiceInternal =
+                        ISuspendControlServiceInternal.Stub.asInterface(
+                                ServiceManager.getService("suspend_control_internal"));
+
+                if (mSuspendControlServiceInternal != null) {
+                    try {
+                        mSuspendControlServiceInternal
+                                .asBinder()
+                                .linkToDeath(
+                                        () -> {
+                                            synchronized (mSuspendControlServiceInternalLock) {
+                                                mSuspendControlServiceInternal = null;
+                                            }
+                                        }, /* flags */
+                                        0);
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "linkToDeath with SuspendControlServiceInternal failed", e);
+                        mSuspendControlServiceInternal = null;
+                    }
+                }
+            }
+
+            return mSuspendControlServiceInternal;
+        }
     }
 
     private void registerWifiBytesTransfer() {
@@ -2050,6 +2095,32 @@ public class StatsPullAtomService extends SystemService {
             KernelWakelockStats.Entry kws = ent.getValue();
             pulledData.add(FrameworkStatsLog.buildStatsEvent(
                     atomTag, name, kws.count, kws.version, kws.totalTimeUs));
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    private void registerAggregatedKernelWakelockInfo() {
+        int tagId = FrameworkStatsLog.AGGREGATED_KERNEL_WAKELOCK_INFO;
+        mStatsManager.setPullAtomCallback(
+                tagId, /* PullAtomMetadata */ null, DIRECT_EXECUTOR, mStatsCallbackImpl);
+    }
+
+    int pullAggregatedKernelWakelockInfo(int atomTag, List<StatsEvent> pulledData) {
+        ISuspendControlServiceInternal suspendControlServiceInternal =
+                getISuspendControlServiceInternal();
+        if (suspendControlServiceInternal == null) {
+            return StatsManager.PULL_SKIP;
+        }
+
+        try {
+            AggregatedKernelWakelockInfo aggregatedKernelWakelockInfo =
+                    suspendControlServiceInternal.getKernelWakelockDurationStats();
+            pulledData.add(
+                    FrameworkStatsLog.buildStatsEvent(
+                            atomTag, aggregatedKernelWakelockInfo.kernelWakelockDuration / 1000));
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Cannot pull aggregated kernel wakelock info.", e);
+            return StatsManager.PULL_SKIP;
         }
         return StatsManager.PULL_SUCCESS;
     }
