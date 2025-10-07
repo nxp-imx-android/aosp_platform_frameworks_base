@@ -23,7 +23,13 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
+import android.app.compat.CompatChanges;
 import android.app.ActivityThread;
+import android.app.Instrumentation;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.Disabled;
+import android.compat.annotation.EnabledAfter;
+import android.compat.annotation.Overridable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
@@ -60,6 +66,15 @@ public final class MessageQueue {
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_D = "DeliQueue";
     private static final boolean DEBUG = false;
+
+    /**
+     * Enables concurrent message queue implementation in all applications.
+     *
+     * @hide
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.BAKLAVA)
+    public static final long USE_NEW_MESSAGEQUEUE = 421623328L;
 
     // True if the message queue can be quit.
     @UnsupportedAppUsage
@@ -153,8 +168,16 @@ public final class MessageQueue {
     }
 
     private static boolean computeUseDeliQueue() {
-        if (Flags.useConcurrentMessageQueueInApps()) {
-            return true;
+        if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
+                || Flags.useConcurrentMessageQueueInApps()) {
+            // b/447778739: Some Robolectric tests still use legacy LooperMode.
+            try {
+                Class.forName("org.robolectric.Robolectric");
+                // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
+                return false;
+            } catch (ClassNotFoundException e) {
+                return true;
+            }
         }
 
         final String processName = Process.myProcessName();
