@@ -25,9 +25,13 @@ import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.communal.ui.compose.Communal
 import com.android.systemui.communal.ui.compose.TransitionDuration
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.scene.shared.model.Scenes
 
 fun TransitionBuilder.lockscreenToCommunalTransition() {
     spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
+
+    // Elevate the status bar so that it doesn't scale down during the transition.
+    sharedElement(LockscreenElementKeys.StatusBar, elevateInContent = Scenes.Lockscreen)
 
     timestampRange(endMillis = 166, easing = FastOutSlowInEasing) {
         // Lockscreen depth push
