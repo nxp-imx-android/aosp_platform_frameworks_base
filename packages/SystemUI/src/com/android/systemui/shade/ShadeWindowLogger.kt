@@ -62,6 +62,7 @@ class ShadeWindowLogger @Inject constructor(@ShadeWindowLog private val buffer: 
         scrimsVisibilityNotTransparent: Boolean,
         launchingActivityFromNotification: Boolean,
         forceHideAfterActivityLaunch: Boolean,
+        isAnimatingGoneToAod: Boolean,
     ) {
         buffer.log(
             TAG,
@@ -77,6 +78,7 @@ class ShadeWindowLogger @Inject constructor(@ShadeWindowLog private val buffer: 
                 long1 = if (scrimsVisibilityNotTransparent) 1L else 0L
                 long2 = if (launchingActivityFromNotification) 1L else 0L
                 double1 = if (forceHideAfterActivityLaunch) 1.0 else 0.0
+                bool5 = isAnimatingGoneToAod
             },
             {
                 "Setting isExpanded to $str1: forceWindowCollapsed $bool1, " +
@@ -84,8 +86,9 @@ class ShadeWindowLogger @Inject constructor(@ShadeWindowLog private val buffer: 
                     "keyguardFadingAway $bool4, bouncerShowing ${int1 == 1}, " +
                     "headsUpNotificationShowing ${int2 == 1}, " +
                     "scrimsVisibilityNotTransparent ${long1 == 1L}, " +
-                    "launchingActivityFromNotification $${long2 == 1L}, " +
-                    "forceHideAfterActivityLaunch $${double1 == 1.0}"
+                    "launchingActivityFromNotification ${long2 == 1L}, " +
+                    "forceHideAfterActivityLaunch ${double1 == 1.0}, " +
+                    "isAnimatingGoneToAod $bool5"
             },
         )
     }

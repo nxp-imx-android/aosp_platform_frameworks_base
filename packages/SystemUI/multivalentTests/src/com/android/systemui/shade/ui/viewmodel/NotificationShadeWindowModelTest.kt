@@ -36,6 +36,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.data.repository.setTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
@@ -267,6 +268,47 @@ class NotificationShadeWindowModelTest(flags: FlagsParameterization) : SysuiTest
                     TransitionStep(from = KeyguardState.DREAMING, to = KeyguardState.LOCKSCREEN),
             )
             assertThat(isOnOrGoingToDream).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isAnimatingGoneToAod_withSceneContainer() =
+        kosmos.runTest {
+            val isAnimatingGoneToAod by collectLastValue(underTest.isAnimatingGoneToAod)
+            assertThat(isAnimatingGoneToAod).isFalse()
+
+            setSceneTransition(
+                Transition(from = Scenes.Gone, to = Scenes.Lockscreen, progress = flowOf(0.5f))
+            )
+
+            keyguardTransitionRepository.sendTransitionStep(
+                TransitionStep(
+                    from = KeyguardState.UNDEFINED,
+                    to = KeyguardState.AOD,
+                    value = 0.5f,
+                    transitionState = TransitionState.RUNNING,
+                )
+            )
+
+            assertThat(isAnimatingGoneToAod).isTrue()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun isAnimatingGoneToAod_withoutSceneContainer() =
+        kosmos.runTest {
+            val isAnimatingGoneToAod by collectLastValue(underTest.isAnimatingGoneToAod)
+            assertThat(isAnimatingGoneToAod).isFalse()
+
+            keyguardTransitionRepository.sendTransitionStep(
+                TransitionStep(
+                    from = KeyguardState.GONE,
+                    to = KeyguardState.AOD,
+                    value = 0.5f,
+                    transitionState = TransitionState.RUNNING,
+                )
+            )
+            assertThat(isAnimatingGoneToAod).isTrue()
         }
 
     @Test
