@@ -82,11 +82,6 @@ public class DisplayBrightnessStrategySelector {
     // The automatic strategy which controls the brightness when adaptive mode is ON.
     private final AutomaticBrightnessStrategy mAutomaticBrightnessStrategy1;
 
-    // The deprecated AutomaticBrightnessStrategy. Avoid using it for any new features without
-    // consulting with the display frameworks team. Use {@link AutomaticBrightnessStrategy} instead.
-    // This will be removed once the flag
-    // {@link DisplayManagerFlags#isRefactorDisplayPowerControllerEnabled is fully rolled out
-    private final AutomaticBrightnessStrategy2 mAutomaticBrightnessStrategy2;
     // Controls the brightness if adaptive brightness is on and there exists an active offload
     // session. Brightness value is provided by the offload session.
     @Nullable
@@ -134,28 +129,17 @@ public class DisplayBrightnessStrategySelector {
         mBoostBrightnessStrategy = injector.getBoostBrightnessStrategy();
         mFollowerBrightnessStrategy = injector.getFollowerBrightnessStrategy(displayId);
         mInvalidBrightnessStrategy = injector.getInvalidBrightnessStrategy();
-        mAutomaticBrightnessStrategy1 =
-                (!mDisplayManagerFlags.isRefactorDisplayPowerControllerEnabled()) ? null
-                        : injector.getAutomaticBrightnessStrategy1(context, displayId,
+        mAutomaticBrightnessStrategy1 = injector.getAutomaticBrightnessStrategy1(context, displayId,
                                 mDisplayManagerFlags);
-        mAutomaticBrightnessStrategy2 =
-                (mDisplayManagerFlags.isRefactorDisplayPowerControllerEnabled()) ? null
-                        : injector.getAutomaticBrightnessStrategy2(context, displayId);
-        mAutomaticBrightnessStrategy =
-                (mDisplayManagerFlags.isRefactorDisplayPowerControllerEnabled())
-                        ? mAutomaticBrightnessStrategy1 : mAutomaticBrightnessStrategy2;
-        mAutoBrightnessFallbackStrategy = (mDisplayManagerFlags
-                .isRefactorDisplayPowerControllerEnabled())
-                ? injector.getAutoBrightnessFallbackStrategy() : null;
+        mAutomaticBrightnessStrategy = mAutomaticBrightnessStrategy1;
+        mAutoBrightnessFallbackStrategy = injector.getAutoBrightnessFallbackStrategy();
         if (flags.isDisplayOffloadEnabled()) {
             mOffloadBrightnessStrategy = injector
                     .getOffloadBrightnessStrategy(mDisplayManagerFlags);
         } else {
             mOffloadBrightnessStrategy = null;
         }
-        mFallbackBrightnessStrategy = (mDisplayManagerFlags
-                .isRefactorDisplayPowerControllerEnabled())
-                ? injector.getFallbackBrightnessStrategy() : null;
+        mFallbackBrightnessStrategy = injector.getFallbackBrightnessStrategy();
         mDisplayBrightnessStrategies = new DisplayBrightnessStrategy[]{mInvalidBrightnessStrategy,
                 mScreenOffBrightnessStrategy, mDozeBrightnessStrategy, mFollowerBrightnessStrategy,
                 mBoostBrightnessStrategy, mOverrideBrightnessStrategy, mTemporaryBrightnessStrategy,
@@ -174,7 +158,7 @@ public class DisplayBrightnessStrategySelector {
     @NonNull
     public DisplayBrightnessStrategy selectStrategy(
             StrategySelectionRequest strategySelectionRequest) {
-        DisplayBrightnessStrategy displayBrightnessStrategy = mInvalidBrightnessStrategy;
+        DisplayBrightnessStrategy displayBrightnessStrategy;
         int targetDisplayState = strategySelectionRequest.getTargetDisplayState();
         DisplayPowerRequest displayPowerRequest = strategySelectionRequest
                 .getDisplayPowerRequest();
@@ -197,8 +181,7 @@ public class DisplayBrightnessStrategySelector {
         } else if (BrightnessUtils.isValidBrightnessValue(
                 mTemporaryBrightnessStrategy.getTemporaryScreenBrightness())) {
             displayBrightnessStrategy = mTemporaryBrightnessStrategy;
-        } else if (mDisplayManagerFlags.isRefactorDisplayPowerControllerEnabled()
-                && isAutomaticBrightnessStrategyValid(strategySelectionRequest)) {
+        } else if (isAutomaticBrightnessStrategyValid(strategySelectionRequest)) {
             displayBrightnessStrategy = mAutomaticBrightnessStrategy1;
         } else if (mAutomaticBrightnessStrategy.shouldUseAutoBrightness()
                 && mOffloadBrightnessStrategy != null && BrightnessUtils.isValidBrightnessValue(
@@ -207,17 +190,11 @@ public class DisplayBrightnessStrategySelector {
         } else if (isAutoBrightnessFallbackStrategyValid()) {
             displayBrightnessStrategy = mAutoBrightnessFallbackStrategy;
         } else {
-            // This will become the ultimate fallback strategy once the flag has been fully rolled
-            // out
-            if (mDisplayManagerFlags.isRefactorDisplayPowerControllerEnabled()) {
                 displayBrightnessStrategy = mFallbackBrightnessStrategy;
-            }
         }
 
-        if (mDisplayManagerFlags.isRefactorDisplayPowerControllerEnabled()) {
-            postProcess(constructStrategySelectionNotifyRequest(displayBrightnessStrategy,
-                    strategySelectionRequest));
-        }
+        postProcess(constructStrategySelectionNotifyRequest(displayBrightnessStrategy,
+                strategySelectionRequest));
 
         if (!mOldBrightnessStrategyName.equals(displayBrightnessStrategy.getName())) {
             Slog.i(TAG,
@@ -318,8 +295,7 @@ public class DisplayBrightnessStrategySelector {
     }
 
     private boolean isAutoBrightnessFallbackStrategyValid() {
-        return mDisplayManagerFlags.isRefactorDisplayPowerControllerEnabled()
-                && mAutoBrightnessFallbackStrategy != null
+        return mAutoBrightnessFallbackStrategy != null
                 && getAutomaticBrightnessStrategy().shouldUseAutoBrightness()
                 && mAutoBrightnessFallbackStrategy.isValid();
     }
