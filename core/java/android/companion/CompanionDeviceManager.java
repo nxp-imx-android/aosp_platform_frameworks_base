@@ -312,7 +312,7 @@ public final class CompanionDeviceManager {
 
 
     /**
-     * Message header assigned to PCC messages.
+     * Message header assigned to PCC (Private Compute Core) messages.
      *
      * @hide
      */
@@ -1235,7 +1235,13 @@ public final class CompanionDeviceManager {
      * Sends a message to associated remote devices. The target associations must already have a
      * connected transport.
      *
+     * @param messageType message type for the message.
+     * @param data message data.
+     * @param associationIds association ids (representing the remote devices) to send the
+     *                       message to.
+     *
      * @see #attachSystemDataTransport(int, InputStream, OutputStream)
+     * @see #associate(AssociationRequest, Executor, Callback)
      *
      * @hide
      */
