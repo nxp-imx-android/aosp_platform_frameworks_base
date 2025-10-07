@@ -86,6 +86,13 @@ flag {
 }
 
 flag {
+  name: "metadata_refactor"
+  namespace: "android_settings"
+  description: "Flag for refactoring the infrastructure for a clearer separation between get, device state and metadata"
+  bug: "447037228"
+}
+
+flag {
     name: "write_system_preference_permission_enabled"
     is_fixed_read_only: true
     namespace: "android_settings"
