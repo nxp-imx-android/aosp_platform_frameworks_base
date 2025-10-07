@@ -1124,6 +1124,9 @@
     <!-- Whether to enable features improving large screen interaction -->
     <bool name="config_improveLargeScreenInteractionOnLockscreen">false</bool>
 
+    <!-- Show the accessibility button on the bouncer. -->
+    <bool name="config_showAccessibilityButtonOnBouncer">false</bool>
+
     <!-- Whether to enable "Sign out" button on keyguard's status bar  -->
     <bool name="config_enableSignOutButtonOnKeyguardStatusBar">false</bool>
 

@@ -153,6 +153,11 @@ constructor(
     val showBackButton =
         Flags.backButtonOnBouncerFix() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
 
+    /** Whether to show the accessibility button on the bouncer. */
+    val showAccessibilityButton =
+        Flags.bouncerAccessibilityButtonForDesktop() &&
+            bouncerInteractor.isShowAccessibilityButtonOnBouncerEnabled
+
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()
 
@@ -498,6 +503,10 @@ constructor(
 
     fun navigateBack() {
         sceneInteractor.hideOverlay(Overlays.Bouncer, "back button clicked")
+    }
+
+    fun showAccessibilityDialog() {
+        // TODO: b/449824070 - Show dialog once implemented.
     }
 
     data class DialogViewModel(

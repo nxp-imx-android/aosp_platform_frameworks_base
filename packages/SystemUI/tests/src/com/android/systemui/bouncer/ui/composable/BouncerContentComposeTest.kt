@@ -18,6 +18,7 @@ package com.android.systemui.bouncer.ui.composable
 
 import android.app.AlertDialog
 import android.content.testableContext
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -42,6 +43,12 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 class BouncerContentComposeTest : SysuiTestCase() {
+
+    private companion object {
+        const val BACK_BUTTON_TAG = "BackButton"
+        const val A11Y_BUTTON_TAG = "AccessibilityButton"
+    }
+
     private val kosmos = testKosmos()
 
     @get:Rule val composeTestRule = createComposeRule()
@@ -81,7 +88,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
         composeTestRule.setContent { BouncerContentUnderTest() }
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag("BackButton").assertIsDisplayed()
+        composeTestRule.onNodeWithTag(BACK_BUTTON_TAG).assertIsDisplayed()
     }
 
     @Test
@@ -95,6 +102,48 @@ class BouncerContentComposeTest : SysuiTestCase() {
         composeTestRule.setContent { BouncerContentUnderTest() }
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag("BackButton").isNotDisplayed()
+        composeTestRule.onNodeWithTag(BACK_BUTTON_TAG).isNotDisplayed()
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_BOUNCER_ACCESSIBILITY_BUTTON_FOR_DESKTOP)
+    fun accessibilityButton_withConfigEnabled_showsAccessibilityButton() {
+        kosmos.testableContext.orCreateTestableResources.addOverride(
+            R.bool.config_showAccessibilityButtonOnBouncer,
+            true,
+        )
+
+        composeTestRule.setContent { BouncerContentUnderTest() }
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag(A11Y_BUTTON_TAG).assertIsDisplayed()
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_BOUNCER_ACCESSIBILITY_BUTTON_FOR_DESKTOP)
+    fun accessibilityButton_withConfigDisabled_showsNoAccessibilityButton() {
+        kosmos.testableContext.orCreateTestableResources.addOverride(
+            R.bool.config_showAccessibilityButtonOnBouncer,
+            false,
+        )
+
+        composeTestRule.setContent { BouncerContentUnderTest() }
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag(A11Y_BUTTON_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_BOUNCER_ACCESSIBILITY_BUTTON_FOR_DESKTOP)
+    fun accessibilityButton_withFlagDisabled_showsNoAccessibilityButton() {
+        kosmos.testableContext.orCreateTestableResources.addOverride(
+            R.bool.config_showAccessibilityButtonOnBouncer,
+            true,
+        )
+
+        composeTestRule.setContent { BouncerContentUnderTest() }
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag(A11Y_BUTTON_TAG).assertDoesNotExist()
     }
 }

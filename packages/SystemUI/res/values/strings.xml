@@ -4543,6 +4543,9 @@
     <!-- Content of button shown on the bouncer screen to navigate back to keyguard. [CHAR LIMIT=NONE] -->
     <string name="back_button_on_bouncer">Back</string>
 
+    <!-- Content description of a button shown on the bouncer screen with an accessibility icon to open an accessibility dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_button_on_bouncer_description">Accessibility</string>
+
     <!-- Content description for arrow in Pager Dots to navigate to previous page [CHAR LIMIT=NONE] -->
     <string name="pager_dots_previous_content_description">Previous</string>
 
