@@ -477,6 +477,15 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         dismiss();
     }
 
+    /**
+     * Set a dialog's elevation to 0. This is needed for dialogs that are not
+     * {@link SystemUIDialog}, as launching an activity from them will result in a weird flicker if
+     * they have an elevation, due to some legacy inner Window Manager behaviors.
+     */
+    public static void resetElevation(Dialog dialog) {
+        dialog.getWindow().setElevation(0);
+    }
+
     public static void setShowForAllUsers(Dialog dialog, boolean show) {
         if (show) {
             dialog.getWindow().getAttributes().privateFlags |=
