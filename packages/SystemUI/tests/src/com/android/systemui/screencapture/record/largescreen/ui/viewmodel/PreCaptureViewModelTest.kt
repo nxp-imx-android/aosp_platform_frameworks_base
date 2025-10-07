@@ -287,6 +287,10 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
             viewModel.beginCapture()
 
+            // Account for the delay (temporary fix b/435225255)
+            advanceTimeBy(100)
+            runCurrent()
+
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockScreenshotHelper, times(1))
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
@@ -306,6 +310,10 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
 
             viewModel.beginCapture()
+
+            // Account for the delay (temporary fix b/435225255)
+            advanceTimeBy(100)
+            runCurrent()
 
             assertUiClosed()
         }
