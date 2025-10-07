@@ -14,7 +14,6 @@
 package com.android.systemui.clocks.sample
 
 import android.content.Context
-import android.graphics.Rect
 import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
@@ -24,6 +23,7 @@ import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.DigitalTimespecHandler
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAnimations
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceConfig
@@ -79,7 +79,7 @@ class SampleClockFaceController(
                 view.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizePx)
             }
 
-            override fun onTargetRegionChanged(targetRegion: Rect?) {}
+            override fun onTargetRegionChanged(targetRegion: VRect) {}
 
             override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}
         }

@@ -16,7 +16,6 @@
 
 package com.android.systemui.shared.clocks
 
-import android.graphics.Rect
 import android.icu.util.TimeZone
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.clocks.ClockContext
@@ -27,6 +26,7 @@ import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.customization.clocks.view.HorizontalAlignment
 import com.android.systemui.customization.clocks.view.VerticalAlignment
 import com.android.systemui.plugins.keyguard.VPointF
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.data.model.AlarmData
 import com.android.systemui.plugins.keyguard.data.model.WeatherData
 import com.android.systemui.plugins.keyguard.data.model.ZenData
@@ -180,7 +180,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
                 view.onFontSettingChanged(fontSizePx)
             }
 
-            override fun onTargetRegionChanged(targetRegion: Rect?) {}
+            override fun onTargetRegionChanged(targetRegion: VRect) {}
 
             override fun onSecondaryDisplayChanged(onSecondaryDisplay: Boolean) {}
         }

@@ -16,20 +16,18 @@
 
 package com.android.systemui.customization.clocks.utils
 
-import android.graphics.Rect
 import android.view.View
 import com.android.systemui.customization.clocks.view.DigitalClockViewAdapter
-import com.android.systemui.plugins.keyguard.VPoint.Companion.center
 import com.android.systemui.plugins.keyguard.VPointF
-import com.android.systemui.plugins.keyguard.VPointF.Companion.center
+import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.VRectF
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 object ViewUtils {
-    fun computeLayoutDiff(view: View, targetRegion: Rect, isLargeClock: Boolean): VPointF {
-        val parent = view.parent
-        if (parent is View && parent.isLaidOut() && isLargeClock) {
+    fun View.computeLayoutDiff(targetRegion: VRect, isLargeClock: Boolean): VPointF {
+        val parent = this.parent
+        if (parent is View && parent.isLaidOut && isLargeClock) {
             return targetRegion.center - parent.size / 2f
         }
         return VPointF.ZERO
