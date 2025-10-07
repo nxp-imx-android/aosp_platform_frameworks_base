@@ -43020,6 +43020,43 @@ package android.service.persistentdata {
 
 }
 
+package android.service.personalcontext {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.UUID getRendererComponentId();
+    method @NonNull public java.util.UUID getTokenId();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.RenderToken> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class RenderToken.RenderTokenBuilder {
+    ctor public RenderToken.RenderTokenBuilder();
+    method @NonNull public android.service.personalcontext.RenderToken build();
+    method @NonNull public android.service.personalcontext.RenderToken.RenderTokenBuilder setRendererComponentId(@NonNull java.util.UUID);
+  }
+
+}
+
+package android.service.personalcontext.hint {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleHint extends android.service.personalcontext.hint.ContextHint {
+    ctor public BundleHint();
+    method @NonNull public android.os.Bundle getDataBundle();
+    method public int getHintType();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
+    method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getAttributionHints();
+    method @NonNull public final java.util.UUID getHintId();
+    method public abstract int getHintType();
+    method @Nullable public final android.service.personalcontext.RenderToken getRenderToken();
+    field public static final int HINT_TYPE_BUNDLE = 1; // 0x1
+    field public static final int HINT_TYPE_ERROR = -1; // 0xffffffff
+  }
+
+}
+
 package android.service.quickaccesswallet {
 
   public interface GetWalletCardsCallback {
