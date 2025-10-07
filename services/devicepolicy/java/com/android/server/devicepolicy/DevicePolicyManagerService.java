@@ -311,6 +311,7 @@ import android.app.admin.DevicePolicyManager.DevicePolicyOperation;
 import android.app.admin.DevicePolicyManager.OperationSafetyReason;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.DevicePolicyManager.PersonalAppsSuspensionReason;
+import android.app.admin.DevicePolicyManager.PolicyScope;
 import android.app.admin.DevicePolicyManager.ProvisioningPrecondition;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerLiteInternal;
@@ -884,15 +885,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             DevicePolicyManagerService dpms
     ){
         List<PolicyHandler<?>> handlers = new ArrayList<PolicyHandler<?>>();
-
-        handlers.add(
-                new PolicyHandler<Integer>(PolicyIdentifier.SCREEN_CAPTURE) {
-                    @Override
-                    protected void storePolicyValue(
-                            CallerIdentity caller, int scope, Integer value) {
-                        dpms.setScreenCaptureUnchecked(caller, scope, value);
-                    }
-                });
 
         // NEW HANDLERS SHOULD GO IN {@link PolicyHandler.HANDLERS}, NOT HERE!
         //
@@ -25225,41 +25217,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                         acceptedScopes));
     }
 
-    private void setScreenCaptureUnchecked(CallerIdentity caller, int scope, Integer value) {
-        requirePolicyScopeIsOneOf(scope, POLICY_SCOPE_DEVICE, POLICY_SCOPE_USER);
-
-        EnforcingAdmin admin = getEnforcingAdmin(caller);
-        boolean disabled = (value == null || value == PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED);
-
-        switch (scope) {
-            case POLICY_SCOPE_DEVICE:
-                if (disabled) {
-                    mDevicePolicyEngine.setGlobalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
-                            admin,
-                            new BooleanPolicyValue(disabled));
-                } else {
-                    mDevicePolicyEngine.removeGlobalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
-                            admin);
-                }
-                break;
-            case POLICY_SCOPE_USER:
-                int userId = caller.getUserId();
-                if (disabled) {
-                    mDevicePolicyEngine.setLocalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
-                            admin,
-                            new BooleanPolicyValue(disabled), userId);
-                } else {
-                    mDevicePolicyEngine.removeLocalPolicy(PolicyDefinition.SCREEN_CAPTURE_DISABLED,
-                            admin, userId);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "SCREEN_CAPTURE_DISABLED only supports POLICY_SCOPE_DEVICE and "
-                                + "POLICY_SCOPE_USER");
-        }
-    }
-
     class PolicyHandlerDelegate implements PolicyHandler.Delegate {
         @Override
         public @DpcType int getDpcType(@NonNull CallerIdentity caller) {
@@ -25271,11 +25228,60 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         public PermissionChecker getPermissionChecker() {
             return DevicePolicyManagerService.this.mPermissions;
         }
+
+        @Override
+        public <T> void storePolicy(
+                @NonNull CallerIdentity caller,
+                @NonNull PolicyDefinition<T> key,
+                @PolicyScope int scope,
+                @NonNull PolicyValue<T> value) {
+            EnforcingAdmin admin = getEnforcingAdmin(caller);
+
+            Slogf.d(LOG_TAG, "Storing policy %s with scope %d in policy engine", key, scope);
+            switch (scope) {
+                case POLICY_SCOPE_DEVICE:
+                    mDevicePolicyEngine.setGlobalPolicy(key, admin, value);
+                    break;
+                case POLICY_SCOPE_USER:
+                    mDevicePolicyEngine.setLocalPolicy(key, admin, value, caller.getUserId());
+                    break;
+                case POLICY_SCOPE_PARENT_USER:
+                    mDevicePolicyEngine.setLocalPolicy(
+                            key, admin, value, getProfileParentId(caller.getUserId()));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid scope " + scope);
+            }
+        }
+
+        @Override
+        public <T> void clearPolicy(
+                @NonNull CallerIdentity caller,
+                @NonNull PolicyDefinition<T> key,
+                @PolicyScope int scope) {
+            EnforcingAdmin admin = getEnforcingAdmin(caller);
+
+            Slogf.d(LOG_TAG, "Removing policy %s with scope %d from policy engine", key, scope);
+            switch (scope) {
+                case POLICY_SCOPE_DEVICE:
+                    mDevicePolicyEngine.removeGlobalPolicy(key, admin);
+                    break;
+                case POLICY_SCOPE_USER:
+                    mDevicePolicyEngine.removeLocalPolicy(key, admin, caller.getUserId());
+                    break;
+                case POLICY_SCOPE_PARENT_USER:
+                    mDevicePolicyEngine.removeLocalPolicy(
+                            key, admin, getProfileParentId(caller.getUserId()));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid scope " + scope);
+            }
+        }
     }
 
     @Override
-    public void setPolicy(String callerPackageName, String id, int scope,
-            PolicyValueTransport value) {
+    public void setPolicy(
+            String callerPackageName, String id, int scope, PolicyValueTransport value) {
         if (!mHasFeature) {
             return;
         }

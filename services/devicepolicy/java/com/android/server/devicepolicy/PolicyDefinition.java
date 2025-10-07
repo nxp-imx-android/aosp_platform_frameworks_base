@@ -58,7 +58,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-final class PolicyDefinition<V> {
+public final class PolicyDefinition<V> {
 
     static final String TAG = "PolicyDefinition";
 
@@ -293,7 +293,7 @@ final class PolicyDefinition<V> {
             new PackageSetPolicySerializer());
 
 
-    static PolicyDefinition<Boolean> SCREEN_CAPTURE_DISABLED = new PolicyDefinition<>(
+    public static PolicyDefinition<Boolean> SCREEN_CAPTURE_DISABLED = new PolicyDefinition<>(
             new NoArgsPolicyKey(DevicePolicyIdentifiers.SCREEN_CAPTURE_DISABLED_POLICY),
             TRUE_MORE_RESTRICTIVE,
             POLICY_FLAG_INHERITABLE,
@@ -712,7 +712,7 @@ final class PolicyDefinition<V> {
      * Callers must ensure that {@code policyType} have implemented an appropriate
      * {@link Object#equals} implementation.
      */
-    private PolicyDefinition(
+    public PolicyDefinition(
             @NonNull PolicyKey key,
             ResolutionMechanism<V> resolutionMechanism,
             QuadFunction<V, Context, Integer, PolicyKey, CompletableFuture<Boolean>>
