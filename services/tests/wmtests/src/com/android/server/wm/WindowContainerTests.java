@@ -1144,6 +1144,11 @@ public class WindowContainerTests extends WindowTestsBase {
         clearInvocations(mTransaction);
         container.assignLayer(mTransaction, 1 /* layer */);
         verify(mTransaction).setLayer(container.mSurfaceControl, 1 /* layer */);
+        // The layer of ImeContainer can only be updated from explicit IME state changes.
+        mDisplayContent.assignChildLayers(mTransaction);
+        final SurfaceControl imeContainerSc = mDisplayContent.getImeContainer().mSurfaceControl;
+        verify(mTransaction, never()).setLayer(eq(imeContainerSc), anyInt());
+        verify(mTransaction, never()).setRelativeLayer(eq(imeContainerSc), any(), anyInt());
         container.mTransitionController.mBuildingTransitionLayers = false;
         container.mTransitionController.mBuildingFinishLayers = false;
 
