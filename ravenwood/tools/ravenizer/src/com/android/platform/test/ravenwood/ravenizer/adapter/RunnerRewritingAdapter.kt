@@ -28,6 +28,7 @@ import com.android.hoststubgen.visitors.OPCODE_VERSION
 import com.android.platform.test.ravenwood.ravenizer.RavenizerInternalException
 import com.android.platform.test.ravenwood.ravenizer.classRuleAnotType
 import com.android.platform.test.ravenwood.ravenizer.innerRunnerAnotType
+import com.android.platform.test.ravenwood.ravenizer.isJUnit3LookingClass
 import com.android.platform.test.ravenwood.ravenizer.isTestLookingClass
 import com.android.platform.test.ravenwood.ravenizer.noRavenizerAnotType
 import com.android.platform.test.ravenwood.ravenizer.ravenwoodTestRunnerType
@@ -69,6 +70,9 @@ class RunnerRewritingAdapter(
     /** True if this visitor is generating code. */
     var isGeneratingCode = false
 
+    /** True if the current class is a JUnit3 test class. */
+    var isJUnit3LookingClass = false
+
     /** Run a [block] with [isGeneratingCode] set to true. */
     private inline fun <T> generateCode(block: () -> T): T {
         isGeneratingCode = true
@@ -92,14 +96,18 @@ class RunnerRewritingAdapter(
         if (!isTestLookingClass(classes, name)) {
             throw RavenizerInternalException("This adapter shouldn't be used for non-test class")
         }
+        isJUnit3LookingClass = isJUnit3LookingClass(classes, name)
         super.visit(version, access, name, signature, superName, interfaces)
 
         generateCode {
             injectRunWithAnnotation()
-            if (!classes.hasClassInitializer(classInternalName)) {
-                injectStaticInitializer()
+            if (!isJUnit3LookingClass) {
+                // Inject JUnit4 rules for method hooks
+                if (!classes.hasClassInitializer(classInternalName)) {
+                    injectStaticInitializer()
+                }
+                injectRules()
             }
-            injectRules()
         }
     }
 
@@ -257,7 +265,7 @@ class RunnerRewritingAdapter(
         exceptions: Array<String>?,
     ): MethodVisitor {
         val next = super.visitMethod(access, name, descriptor, signature, exceptions)
-        if (name == CTOR_NAME) {
+        if (!isJUnit3LookingClass && name == CTOR_NAME) {
             return ConstructorVisitor(
                 access, name, descriptor, signature, exceptions, next)
         }

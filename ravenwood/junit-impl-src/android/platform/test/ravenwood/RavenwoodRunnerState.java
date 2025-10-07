@@ -20,6 +20,7 @@ import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERB
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import android.app.RavenwoodAppDriver;
 import android.util.Log;
@@ -87,6 +88,8 @@ public final class RavenwoodRunnerState {
 
     /** Called when a test method is about to start */
     public void enterTestMethod(Description description) {
+        // If the method has @DisabledOnRavenwood, this will skip the execution.
+        assumeTrue(RavenwoodEnablementChecker.getInstance().shouldEnableOnRavenwood(description));
         RavenwoodDriver.enterTestMethod(description);
         RavenwoodErrorHandler.enterTestMethod(description);
     }

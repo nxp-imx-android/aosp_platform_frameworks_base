@@ -20,6 +20,7 @@ import android.platform.test.annotations.internal.InnerRunner
 import android.platform.test.ravenwood.RavenwoodAwareTestRunner
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.findAnyAnnotation
+import com.android.hoststubgen.asm.isAbstract
 import com.android.hoststubgen.asm.startsWithAny
 import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.filters.isRClass
@@ -67,11 +68,49 @@ fun isTestLookingClass(classes: ClassNodes, className: String): Boolean {
         }
     }
 
+    if (isJUnit3LookingClass(classes, className)) {
+        return true
+    }
+
     // Check the super class.
     if (cn.superName == null) {
         return false
     }
     return isTestLookingClass(classes, cn.superName)
+}
+
+fun isJUnit3LookingClass(classes: ClassNodes, className: String): Boolean {
+    val cn = classes.findClass(className) ?: return false
+
+    if (cn.superName == null) {
+        return false
+    }
+
+    // Check if JUnit3 subclass.
+    if (!cn.isAbstract()
+        && !cn.name.startsWith("android/test/")
+        && cn.superName.isLegacyTestBaseClass()) {
+        return true
+    }
+
+    // Check the super class.
+    return isJUnit3LookingClass(classes, cn.superName)
+}
+
+/**
+ * Check if a class internal name is a known legacy test base class.
+ */
+fun String.isLegacyTestBaseClass(): Boolean {
+    return this.startsWithAny(
+        "junit/framework/TestCase",
+
+        // The following base classes should be statically included in the test jar
+        // so we don't need to check them, but let's check here in case we start
+        // including them in ravenwood-runtime.
+        "android/test/AndroidTestCase",
+        "android/test/InstrumentationTestCase",
+        "android/test/InstrumentationTestSuite",
+    )
 }
 
 fun String.isRavenwoodClass(): Boolean {
