@@ -4171,16 +4171,6 @@ public final class ViewRootImpl implements ViewParent,
                             mWindowAttributes.surfaceInsets);
                     mNeedsRendererSetup = false;
                 }
-
-                if (setClientDrawnCornerRadii() && !mCornerRadii.isEmpty()
-                                            && mSurfaceControl.isValid()) {
-                    applyTransactionOnDraw(mTransaction
-                            .setClientDrawnCornerRadius(mSurfaceControl, mCornerRadii.topLeft,
-                            mCornerRadii.topRight, mCornerRadii.bottomLeft,
-                            mCornerRadii.bottomRight,
-                            threadedRenderer.getRoundedClipBounds()));
-                    threadedRenderer.setCornerRadius(mCornerRadii);
-                }
             }
 
             // TODO: In the CL "ViewRootImpl: Fix issue with early draw report in
@@ -4843,6 +4833,22 @@ public final class ViewRootImpl implements ViewParent,
             }
             mAttachInfo.mNeedsUpdateLightCenter = false;
         }
+    }
+
+    private void prepareCornerRadiiForDraw() {
+        final ThreadedRenderer threadedRenderer = mAttachInfo.mThreadedRenderer;
+        if (threadedRenderer == null
+                || !setClientDrawnCornerRadii()
+                || !mSurfaceControl.isValid()) {
+            return;
+        }
+        applyOpacity(false);
+        RectF bounds = threadedRenderer.setCornerRadius(mCornerRadii);
+        applyTransactionOnDraw(mTransaction
+                .setClientDrawnCornerRadius(mSurfaceControl, mCornerRadii.topLeft,
+                                mCornerRadii.topRight, mCornerRadii.bottomLeft,
+                                mCornerRadii.bottomRight,
+                                bounds));
     }
 
     private void handleWindowFocusChanged() {
@@ -5909,6 +5915,8 @@ public final class ViewRootImpl implements ViewParent,
                             mHdrRenderState.getDesiredHdrSdrRatio()));
                     mAttachInfo.mThreadedRenderer.setTargetHdrSdrRatio(renderRatio);
                 }
+
+                prepareCornerRadiiForDraw();
 
                 if (activeSyncGroup != null) {
                     registerCallbacksForSync(syncBuffer, activeSyncGroup);
@@ -9837,6 +9845,10 @@ public final class ViewRootImpl implements ViewParent,
             return;
         }
 
+        applyOpacity(opaque);
+    }
+
+    private void applyOpacity(boolean opaque) {
         final ThreadedRenderer renderer = mAttachInfo.mThreadedRenderer;
         if (renderer != null && renderer.rendererOwnsSurfaceControlOpacity()) {
             opaque = renderer.setSurfaceControlOpaque(opaque);
@@ -10240,6 +10252,14 @@ public final class ViewRootImpl implements ViewParent,
         @Override
         public int hashCode() {
             return Objects.hash(topLeft, topRight, bottomRight, bottomLeft);
+        }
+
+        @Override
+        public String toString() {
+            return "CornerRadii{ topLeft=" + topLeft
+                   + ", topRight=" + topRight
+                   + ", bottomRight=" + bottomRight
+                   + ", bottomLeft=" + bottomLeft + "}";
         }
     }
 

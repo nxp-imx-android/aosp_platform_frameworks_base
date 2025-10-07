@@ -545,21 +545,17 @@ public final class ThreadedRenderer extends HardwareRenderer {
         setLightCenter(attachInfo);
     }
 
-    RectF getRoundedClipBounds() {
-        return new RectF(-mInsetLeft, -mInsetTop, mSurfaceWidth, mSurfaceHeight);
-    }
-
-    void setCornerRadius(CornerRadii radii) {
-        if (radii == null || radii.isEmpty()) {
-            mRootNode.setClipToOutline(false);
-            return;
-        }
+    RectF setCornerRadius(CornerRadii radii) {
         mCornerRadii = radii;
+        if (radii == null) {
+            mRootNode.setClipToOutline(false);
+            return new RectF(0, 0, 0, 0);
+        }
         if (mOutline == null) {
             mOutline = new Outline();
         }
         Path path = new Path();
-        RectF rect = new RectF(-mInsetLeft, -mInsetTop, mSurfaceWidth, mSurfaceHeight);
+        RectF rect = new RectF(0, 0, mSurfaceWidth, mSurfaceHeight);
         float[] cwRadii = {mCornerRadii.topLeft, mCornerRadii.topLeft,
                 mCornerRadii.topRight, mCornerRadii.topRight,
                 mCornerRadii.bottomRight, mCornerRadii.bottomRight,
@@ -568,6 +564,10 @@ public final class ThreadedRenderer extends HardwareRenderer {
         mOutline.setPath(path);
         mRootNode.setOutline(mOutline);
         mRootNode.setClipToOutline(true);
+
+         // If the surface has corner radii, it can't be opaque.
+        setOpaque(false);
+        return rect;
     }
 
     /**
