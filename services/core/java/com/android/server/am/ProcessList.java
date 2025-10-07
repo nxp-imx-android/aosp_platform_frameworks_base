@@ -198,6 +198,11 @@ public final class ProcessList extends ProcessListInternal
     private static final String APPLY_SDK_SANDBOX_AUDIT_RESTRICTIONS = ":isSdkSandboxAudit";
     private static final String APPLY_SDK_SANDBOX_NEXT_RESTRICTIONS = ":isSdkSandboxNext";
 
+    // Number of bytes in a Kilobyte.
+    private static final int BYTES_IN_KB = 1024;
+    // Divisor used to calculate the cached restore threshold from the kernel cache reserve.
+    private static final int CACHED_RESTORE_THRESHOLD_DIVISOR = 3;
+
     // OOM adjustments for processes in various states:
 
     // Uninitialized value for any major or minor adj fields
@@ -429,8 +434,6 @@ public final class ProcessList extends ProcessListInternal
     private final int[] mOomMinFree = new int[mOomAdj.length];
 
     private final long mTotalMemMb;
-
-    private long mCachedRestoreLevel;
 
     private boolean mHaveDisplaySize;
 
@@ -883,7 +886,7 @@ public final class ProcessList extends ProcessListInternal
     ProcessList() {
         MemInfoReader minfo = new MemInfoReader();
         minfo.readMemInfo();
-        mTotalMemMb = minfo.getTotalSize()/(1024*1024);
+        mTotalMemMb = minfo.getTotalSize() / (BYTES_IN_KB * BYTES_IN_KB);
         updateOomLevels(0, 0, false);
     }
 
@@ -1108,11 +1111,12 @@ public final class ProcessList extends ProcessListInternal
         // The maximum size we will restore a process from cached to background, when under
         // memory duress, is 1/3 the size we have reserved for kernel caches and other overhead
         // before killing background processes.
-        mCachedRestoreLevel = (getMemLevel(ProcessList.CACHED_APP_MAX_ADJ) / 1024) / 3;
+        setCachedRestoreThresholdKb((getMemLevel(CACHED_APP_MAX_ADJ) / BYTES_IN_KB)
+                / CACHED_RESTORE_THRESHOLD_DIVISOR);
 
         // Ask the kernel to try to keep enough memory free to allocate 3 full
         // screen 32bpp buffers without entering direct reclaim.
-        int reserve = displayWidth * displayHeight * 4 * 3 / 1024;
+        int reserve = displayWidth * displayHeight * 4 * 3 / BYTES_IN_KB;
         int reserve_adj = Resources.getSystem().getInteger(
                 com.android.internal.R.integer.config_extraFreeKbytesAdjust);
         int reserve_abs = Resources.getSystem().getInteger(
@@ -1133,7 +1137,7 @@ public final class ProcessList extends ProcessListInternal
             ByteBuffer buf = ByteBuffer.allocate(4 * (2 * mOomAdj.length + 1));
             buf.putInt(LMK_TARGET);
             for (int i = 0; i < mOomAdj.length; i++) {
-                buf.putInt((mOomMinFree[i] * 1024)/PAGE_SIZE);
+                buf.putInt((mOomMinFree[i] * BYTES_IN_KB) / PAGE_SIZE);
                 buf.putInt(mOomAdj[i]);
             }
 
@@ -1543,18 +1547,10 @@ public final class ProcessList extends ProcessListInternal
     long getMemLevel(int adjustment) {
         for (int i = 0; i < mOomAdj.length; i++) {
             if (adjustment <= mOomAdj[i]) {
-                return mOomMinFree[i] * 1024;
+                return mOomMinFree[i] * BYTES_IN_KB;
             }
         }
-        return mOomMinFree[mOomAdj.length - 1] * 1024;
-    }
-
-    /**
-     * Return the maximum pss size in kb that we consider a process acceptable to
-     * restore from its cached state for running in the background when RAM is low.
-     */
-    long getCachedRestoreThresholdKb() {
-        return mCachedRestoreLevel;
+        return mOomMinFree[mOomAdj.length - 1] * BYTES_IN_KB;
     }
 
     AppStartInfoTracker getAppStartInfoTracker() {
@@ -1680,7 +1676,7 @@ public final class ProcessList extends ProcessListInternal
                 buf = ByteBuffer.allocate(4 * (2 * mOomAdj.length + 1));
                 buf.putInt(LMK_TARGET);
                 for (int i = 0; i < mOomAdj.length; i++) {
-                    buf.putInt((mOomMinFree[i] * 1024)/PAGE_SIZE);
+                    buf.putInt((mOomMinFree[i] * BYTES_IN_KB) / PAGE_SIZE);
                     buf.putInt(mOomAdj[i]);
                 }
                 ostream.write(buf.array(), 0, buf.position());
@@ -4808,13 +4804,13 @@ public final class ProcessList extends ProcessListInternal
                         makeProcStateProtoEnum(state.getSetProcState()));
                 writeProcessCapabilitiesListToProto(proto, state.getCurCapability());
                 proto.write(ProcessOomProto.Detail.LAST_PSS, DebugUtils.sizeValueToString(
-                        r.mProfile.getLastPss() * 1024, new StringBuilder()));
+                        r.mProfile.getLastPss() * BYTES_IN_KB, new StringBuilder()));
                 proto.write(ProcessOomProto.Detail.LAST_SWAP_PSS, DebugUtils.sizeValueToString(
-                        r.mProfile.getLastSwapPss() * 1024, new StringBuilder()));
+                        r.mProfile.getLastSwapPss() * BYTES_IN_KB, new StringBuilder()));
                 // TODO(b/296454553): This proto field should be replaced with last cached RSS once
                 // AppProfiler is no longer collecting PSS.
                 proto.write(ProcessOomProto.Detail.LAST_CACHED_PSS, DebugUtils.sizeValueToString(
-                        r.mProfile.getLastCachedPss() * 1024, new StringBuilder()));
+                        r.mProfile.getLastCachedPss() * BYTES_IN_KB, new StringBuilder()));
                 proto.write(ProcessOomProto.Detail.CACHED, state.isCached());
                 proto.write(ProcessOomProto.Detail.EMPTY, state.isEmpty());
                 proto.write(ProcessOomProto.Detail.HAS_ABOVE_CLIENT, psr.isHasAboveClient());
@@ -4949,16 +4945,16 @@ public final class ProcessList extends ProcessListInternal
                 // These values won't be collected if the flag is enabled.
                 if (service.mAppProfiler.isProfilingPss()) {
                     pw.print(" lastPss=");
-                    DebugUtils.printSizeValue(pw, r.mProfile.getLastPss() * 1024);
+                    DebugUtils.printSizeValue(pw, r.mProfile.getLastPss() * BYTES_IN_KB);
                     pw.print(" lastSwapPss=");
-                    DebugUtils.printSizeValue(pw, r.mProfile.getLastSwapPss() * 1024);
+                    DebugUtils.printSizeValue(pw, r.mProfile.getLastSwapPss() * BYTES_IN_KB);
                     pw.print(" lastCachedPss=");
-                    DebugUtils.printSizeValue(pw, r.mProfile.getLastCachedPss() * 1024);
+                    DebugUtils.printSizeValue(pw, r.mProfile.getLastCachedPss() * BYTES_IN_KB);
                 } else {
                     pw.print(" lastRss=");
-                    DebugUtils.printSizeValue(pw, r.mProfile.getLastRss() * 1024);
+                    DebugUtils.printSizeValue(pw, r.mProfile.getLastRss() * BYTES_IN_KB);
                     pw.print(" lastCachedRss=");
-                    DebugUtils.printSizeValue(pw, r.mProfile.getLastCachedRss() * 1024);
+                    DebugUtils.printSizeValue(pw, r.mProfile.getLastCachedRss() * BYTES_IN_KB);
                 }
                 pw.println();
                 pw.print(prefix);
@@ -4999,7 +4995,7 @@ public final class ProcessList extends ProcessListInternal
         pw.print(": ");
         pw.print(name);
         pw.print(" (");
-        pw.print(ActivityManagerService.stringifySize(getMemLevel(adj), 1024));
+        pw.print(ActivityManagerService.stringifySize(getMemLevel(adj), BYTES_IN_KB));
         pw.println(")");
     }
 
