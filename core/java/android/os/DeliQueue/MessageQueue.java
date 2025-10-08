@@ -26,9 +26,6 @@ import android.annotation.TestApi;
 import android.app.ActivityThread;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
-import android.ravenwood.annotation.RavenwoodRedirect;
-import android.ravenwood.annotation.RavenwoodRedirectionClass;
-import android.ravenwood.annotation.RavenwoodReplace;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
@@ -61,7 +58,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@link Looper#myQueue() Looper.myQueue()}.
  */
 @RavenwoodKeepWholeClass
-@RavenwoodRedirectionClass("MessageQueue_ravenwood")
 public final class MessageQueue {
     private static final String TAG = "DeliQueue";
     private static final boolean DEBUG = false;
@@ -74,21 +70,14 @@ public final class MessageQueue {
     @SuppressWarnings("unused")
     private long mPtr; // used by native code
 
-    @RavenwoodRedirect
     private native static long nativeInit();
-    @RavenwoodRedirect
     private native static void nativeDestroy(long ptr);
     @UnsupportedAppUsage
-    @RavenwoodRedirect
     private native void nativePollOnce(long ptr, int timeoutMillis); /*non-static for callbacks*/
 
-    @RavenwoodRedirect
     private native static void nativeWake(long ptr);
-    @RavenwoodRedirect
     private native static boolean nativeIsPolling(long ptr);
-    @RavenwoodRedirect
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
-    @RavenwoodRedirect
     private native static void nativeSetSkipEpollWaitForZeroTimeout(long ptr);
 
     @UnsupportedAppUsage
