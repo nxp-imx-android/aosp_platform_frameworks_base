@@ -115,6 +115,9 @@ public class RavenwoodTestStats {
                     }
                     var cause = ex.getCause();
                     if (cause == null) {
+                        if (ex instanceof UnsatisfiedLinkError) {
+                            return getCaller(ex);
+                        }
                         if (ex instanceof ExceptionInInitializerError
                                 && ex.getMessage().contains("RavenwoodUnsupportedApiException")) {
                             // A static initializer hit a Ravenwood unsupported API

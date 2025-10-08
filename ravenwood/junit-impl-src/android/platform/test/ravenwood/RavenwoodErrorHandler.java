@@ -81,8 +81,11 @@ public class RavenwoodErrorHandler {
     static void enterTestRunner() {
         // Reset the main thread to clear pending messages in the queue
         Looper.getMainLooper().getQueue().resetForTest();
+        clearPendingRecoverableUncaughtException();
         // Wait until the main thread is idle to be 100% sure the queue is empty
-        RavenwoodUtils.waitForMainLooperDone();
+        try {
+            RavenwoodUtils.waitForMainLooperDone();
+        } catch (Throwable ignored) {}
         // It's possible that an exception was thrown during the final msg on the main thread
         // the moment the queue is reset. Ignore it as it's not relevant to the current test.
         clearPendingRecoverableUncaughtException();
@@ -103,10 +106,6 @@ public class RavenwoodErrorHandler {
         cancelTimeout();
         maybeThrowPendingRecoverableUncaughtExceptionAndClear();
         maybeThrowUnrecoverableUncaughtException();
-    }
-
-    static void exitTestClass() {
-        maybeThrowPendingRecoverableUncaughtExceptionAndClear();
     }
 
     // Setup timeout to detect slow tests
@@ -290,7 +289,10 @@ public class RavenwoodErrorHandler {
     }
 
     private static void clearPendingRecoverableUncaughtException() {
-        sPendingRecoverableUncaughtException.set(null);
+        var pending = sPendingRecoverableUncaughtException.getAndSet(null);
+        if (pending != null) {
+            Log.e(TAG, "Pending recoverable exception suppressed", pending);
+        }
     }
 
     private static void maybeThrowPendingRecoverableUncaughtException(boolean clear) {

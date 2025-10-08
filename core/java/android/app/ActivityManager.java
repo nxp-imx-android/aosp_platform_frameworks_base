@@ -1815,12 +1815,14 @@ public class ActivityManager {
      * something with 1GB or less of RAM.  This is mostly intended to be used by apps
      * to determine whether they should turn off certain features that require more RAM.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public boolean isLowRamDevice() {
         return isLowRamDeviceStatic();
     }
 
     /** @hide */
     @UnsupportedAppUsage
+    @android.ravenwood.annotation.RavenwoodIgnore
     public static boolean isLowRamDeviceStatic() {
         return RoSystemProperties.CONFIG_LOW_RAM ||
                 (Build.IS_DEBUGGABLE && DEVELOPMENT_FORCE_LOW_RAM);
