@@ -426,7 +426,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     private final boolean mSkipScreenOnBrightnessRamp;
 
     // Display white balance components.
-    // Critical methods must be called on DPC2 handler thread.
+    // Critical methods must be called on DPC handler thread.
     @Nullable
     private final DisplayWhiteBalanceSettings mDisplayWhiteBalanceSettings;
     @Nullable
@@ -466,7 +466,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
 
     // Responsible for evaluating and tracking the automatic brightness relevant states.
-    // Todo: This is a temporary workaround. Ideally DPC2 should never talk to the strategies
+    // Todo: This is a temporary workaround. Ideally DPC should never talk to the strategies
     private final AutomaticBrightnessStrategy mAutomaticBrightnessStrategy;
 
     // A record of state for skipping brightness ramps.
