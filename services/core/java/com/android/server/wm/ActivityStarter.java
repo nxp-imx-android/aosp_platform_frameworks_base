@@ -58,6 +58,7 @@ import static android.os.Process.INVALID_UID;
 import static android.security.Flags.preventIntentRedirectAbortOrThrowException;
 import static android.security.Flags.preventIntentRedirectShowToast;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_FLAG_AVOID_MOVE_TO_FRONT;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.window.TaskFragmentOperation.OP_TYPE_START_ACTIVITY_IN_TASK_FRAGMENT;
@@ -1327,9 +1328,12 @@ class ActivityStarter {
 
         final TaskDisplayArea suggestedLaunchDisplayArea =
                 computeSuggestedLaunchDisplayArea(inTask, sourceRecord, checkedOptions);
+        final int sourceDisplayId =
+                sourceRecord != null ? sourceRecord.getDisplayId() : INVALID_DISPLAY;
         mInterceptor.setStates(userId, realCallingPid, realCallingUid, startFlags,
                 callingPackage,
-                callingFeatureId);
+                callingFeatureId,
+                sourceDisplayId);
         if (mInterceptor.intercept(intent, rInfo, aInfo, resolvedType, inTask, inTaskFragment,
                 callingPid, callingUid, checkedOptions, suggestedLaunchDisplayArea,
                 request.componentSpecified)) {
