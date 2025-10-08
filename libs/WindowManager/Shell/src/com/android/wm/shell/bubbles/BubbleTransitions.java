@@ -2224,6 +2224,7 @@ public class BubbleTransitions {
             mFinishTransaction = finishTransaction;
             updateBubbleTask();
             cleanup();
+            finishCallback.onTransitionFinished(null);
             return true;
         }
 
