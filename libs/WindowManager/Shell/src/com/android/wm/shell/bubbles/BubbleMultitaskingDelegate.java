@@ -25,6 +25,7 @@ import static com.android.wm.shell.bubbles.Bubbles.DISMISS_NO_LONGER_BUBBLE;
 import android.annotation.BinderThread;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -99,6 +100,38 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
                         mController.expandStackAndSelectAppBubble(b);
                         if (DEBUG) {
                             Slog.d(TAG, "Created an expanded bubble");
+                        }
+                    }
+                });
+    }
+
+    @BinderThread
+    @Override
+    public void launchInBubble(IBinder token, PendingIntent pendingIntent, boolean collapsed) {
+        if (DEBUG) {
+            Slog.d(TAG, "Handling launch in bubble request");
+        }
+        Objects.requireNonNull(token);
+        Objects.requireNonNull(pendingIntent.getIntent().getComponent());
+        mMainExecutor.execute(
+                () -> {
+                    if (getBubbleWithToken(token) != null) {
+                        Slog.e(TAG, "Skip launching bubble - found one with the same token.");
+                        return;
+                    }
+
+                    Bubble b = Bubble.createClientControlledAppBubble(pendingIntent,
+                            new UserHandle(mCurrentUserId), null, token, mMainExecutor,
+                            mBgExecutor);
+                    if (collapsed) {
+                        mController.inflateAndAdd(b, false, false);
+                        if (DEBUG) {
+                            Slog.d(TAG, "Launched in a collapsed bubble");
+                        }
+                    } else {
+                        mController.expandStackAndSelectAppBubble(b);
+                        if (DEBUG) {
+                            Slog.d(TAG, "Launched in an expanded bubble");
                         }
                     }
                 });
