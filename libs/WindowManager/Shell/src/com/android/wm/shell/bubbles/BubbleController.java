@@ -660,6 +660,8 @@ public class BubbleController implements ConfigurationChangeListener,
                                 return;
                             }
                             mAppBubbleRootTaskInfo = taskInfo;
+                            mBubbleTransitions.mTaskViewTransitions.setTaskViewRootTaskInfo(
+                                    taskInfo);
 
                             final WindowContainerTransaction wct = new WindowContainerTransaction();
                             wct.reorder(taskInfo.token, false /* onTop */);

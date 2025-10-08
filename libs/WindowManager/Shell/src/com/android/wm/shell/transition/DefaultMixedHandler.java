@@ -387,14 +387,14 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         if (requestHasBubbleEnter(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
 
+            final WindowContainerTransaction out = new WindowContainerTransaction();
             if (mSplitHandler.requestImpliesSplitToBubble(task)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Got a Bubble-enter request from a split task");
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE, transition));
-
-                WindowContainerTransaction out = new WindowContainerTransaction();
+                mBubbleTransitions.handleRequest(out, transition, request);
                 mSplitHandler.addExitForBubblesIfNeeded(request, out);
                 return out;
             } else if (task != null && mPipHandler.isTaskActiveInPip(task.taskId)) {
@@ -403,7 +403,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE, transition));
-                return new WindowContainerTransaction();
+                mBubbleTransitions.handleRequest(out, transition, request);
+                return out;
             } else if (task != null && mDesktopTasksController != null
                     && mDesktopTasksController.isDesktopTask(task)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -411,8 +412,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE, transition));
-
-                final WindowContainerTransaction out = new WindowContainerTransaction();
+                mBubbleTransitions.handleRequest(out, transition, request);
                 mDesktopTasksController.addMoveToBubbleFromDesktopChange(out, task, transition);
                 return out;
             } else {
@@ -422,7 +422,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition));
-                return new WindowContainerTransaction();
+                mBubbleTransitions.handleRequest(out, transition, request);
+                return out;
             }
         } else if (requestHasBubbleEnterFromAppBubbleOrExistingBubble(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());

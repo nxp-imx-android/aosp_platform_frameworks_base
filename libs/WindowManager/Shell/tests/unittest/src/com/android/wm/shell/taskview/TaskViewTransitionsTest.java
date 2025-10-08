@@ -22,6 +22,7 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
+import static com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction;
@@ -32,6 +33,8 @@ import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -561,6 +564,31 @@ public class TaskViewTransitionsTest extends ShellTestCase {
 
         assertThat(handled).isFalse();
         assertThat(finishCalled[0]).isFalse();
+    }
+
+    @EnableFlags({FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE})
+    @Test
+    public void testUpdateTaskViewTaskBounds_rootTask() {
+        WindowContainerToken rootTaskToken = new MockToken().token();
+        ActivityManager.RunningTaskInfo rootTaskInfo = createMockTaskInfo(100, rootTaskToken);
+        WindowContainerToken taskToken = new MockToken().token();
+        ActivityManager.RunningTaskInfo taskInfo = createMockTaskInfo(101, taskToken);
+        Rect bounds = new Rect(0, 0, 10, 10);
+
+        WindowContainerTransaction wct = mock(WindowContainerTransaction.class);
+        mTaskViewTransitions.updateTaskViewTaskBounds(wct, taskInfo, bounds);
+        verify(wct).setBounds(eq(taskToken), eq(bounds));
+
+        clearInvocations(wct);
+        mTaskViewTransitions.setTaskViewRootTaskInfo(rootTaskInfo);
+        taskInfo.parentTaskId = rootTaskInfo.taskId;
+        mTaskViewTransitions.updateTaskViewTaskBounds(wct, taskInfo, bounds);
+        verify(wct).setBounds(eq(rootTaskToken), eq(bounds));
+
+        clearInvocations(wct);
+        taskInfo.parentTaskId = 10;
+        mTaskViewTransitions.updateTaskViewTaskBounds(wct, taskInfo, bounds);
+        verify(wct).setBounds(eq(taskToken), eq(bounds));
     }
 
     private ActivityManager.RunningTaskInfo createMockTaskInfo(int taskId,

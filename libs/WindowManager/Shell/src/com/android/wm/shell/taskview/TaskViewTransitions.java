@@ -94,6 +94,12 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     private PendingRedirectTransition mPendingRedirectTransition;
 
     /**
+     * The task info of the Root Task that organized the TaskView's tasks.
+     */
+    @Nullable
+    private ActivityManager.RunningTaskInfo mRootTaskInfo;
+
+    /**
      * TaskView makes heavy use of startTransition. Only one shell-initiated transition can be
      * in-flight (collecting) at a time (because otherwise, the operations could get merged into
      * a single transition). So, keep a queue here until we add a queue in server-side.
@@ -494,7 +500,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             wct = overrideTransaction;
         } else {
             wct = new WindowContainerTransaction();
-            wct.setBounds(taskView.getTaskInfo().token, state.mBounds);
+            updateTaskViewTaskBounds(wct, taskView.getTaskInfo(), state.mBounds);
             if (reorder && !syncHiddenWithVisibilityOnReorder) {
                 // Reset hidden state to fix corner case where surface was destroyed before task
                 // appeared in #prepareOpenAnimation.
@@ -598,7 +604,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         // If there is a pending redirect transition, it may have a WCT with other operations.
         final WindowContainerTransaction wct = mPendingRedirectTransition != null
                 ? mPendingRedirectTransition.takePendingWct() : new WindowContainerTransaction();
-        wct.setBounds(taskView.getTaskInfo().token, boundsOnScreen);
+        updateTaskViewTaskBounds(wct, taskView.getTaskInfo(), boundsOnScreen);
         mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
         startNextTransition();
     }
@@ -1175,8 +1181,31 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         }
         updateBoundsState(taskView, boundsOnScreen);
         updateVisibilityState(taskView, true /* visible */);
-        wct.setBounds(taskInfo.token, boundsOnScreen);
+        updateTaskViewTaskBounds(wct, taskInfo, boundsOnScreen);
         taskView.applyCaptionInsetsIfNeeded();
+    }
+
+    /**
+     * Update the TaskView's task bounds. The bounds are set to the root task that organized the
+     * TaskView task if any. Otherwise, it is set to the TaskView task directly.
+     */
+    public void updateTaskViewTaskBounds(@NonNull WindowContainerTransaction wct,
+            @NonNull ActivityManager.RunningTaskInfo taskInfo, @NonNull Rect bounds) {
+        final WindowContainerToken token;
+        if (!taskInfo.hasParentTask() || mRootTaskInfo == null
+                || taskInfo.parentTaskId != mRootTaskInfo.taskId) {
+            token = taskInfo.token;
+        } else {
+            token = mRootTaskInfo.token;
+        }
+        wct.setBounds(token, bounds);
+    }
+
+    /**
+     * Sets the root task info that organize the TaskView's task.
+     */
+    public void setTaskViewRootTaskInfo(@NonNull ActivityManager.RunningTaskInfo rootTaskInfo) {
+        mRootTaskInfo = rootTaskInfo;
     }
 
     private void executePendingRedirectTransition() {
