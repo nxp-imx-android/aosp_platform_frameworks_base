@@ -663,6 +663,24 @@ aidl_interface {
     },
 }
 
+// Build Rust bindings as usbauthservice depends on this.
+aidl_interface {
+    name: "android.hardware.usb.auth",
+    unstable: true,
+    host_supported: true,
+    srcs: [
+        "android/hardware/usb/UsbAuthorizationStatus.aidl",
+        "android/hardware/usb/UsbAuthorizationSystemState.aidl",
+        "android/hardware/usb/UsbAuthDeviceInfo.aidl",
+        "android/hardware/usb/IUsbAuthManager.aidl",
+    ],
+    backend: {
+        rust: {
+            enabled: true,
+        },
+    },
+}
+
 aidl_interface {
     name: "android.companion.virtual.virtualdevice_aidl",
     unstable: true,
