@@ -52,8 +52,23 @@ import kotlinx.coroutines.launch
 
 /**
  * A custom layout for nested scrolling of notification content over the shade's headers.
- * * It measures and places the shade headers with accounting for display cutouts. │
- * * It offsets, and changes the height of the notification scrim while doing nested scrolling.
+ *
+ * It measures and places the shade headers while accounting for display cutouts. It also offsets
+ * and changes the height of the notification scrim during nested scrolling.
+ *
+ * @param modifier The modifier to be applied to this layout.
+ * @param shadeSession The session for this shade instance.
+ * @param viewModel The view model for this placeholder.
+ * @param scrollState The scroll state of the notification list.
+ * @param scrimOverScrollEffect The overscroll effect for the scrim.
+ * @param jankMonitor To monitor jank.
+ * @param statusBarHeader The composable for the status bar header (clock, icons, etc). This header
+ *   is always visible.
+ * @param mediaAndQqsHeader The composable for the media and quick settings header. This header can
+ *   be scrolled over.
+ * @param scrollableScrim The composable for the scrollable notification scrim. The callback
+ *   provides the height of the content.
+ * @param cutoutInsetsProvider A provider for the display cutout insets.
  */
 @Composable
 fun ContentScope.SingleShadeNestedScrollLayout(
@@ -205,6 +220,14 @@ fun ContentScope.SingleShadeNestedScrollLayout(
 /**
  * The scroll connection used to offset the scrim depending on the current offset and the scroll
  * state of the scrim content.
+ *
+ * @param currentOffset Lambda that returns the current scrim offset.
+ * @param updateOffset Lambda to snap the scrim offset to a new value.
+ * @param animateOffset Lambda to animate the scrim offset to a new value.
+ * @param collapsibleHeaderHeight Lambda that returns the height of the collapsible header.
+ * @param canOverscrollContent Lambda that returns whether the content can be overscrolled.
+ * @param flingBehavior The fling behavior for the scrollable content.
+ * @return The nested scroll connection for the scrim.
  */
 private fun scrimNestedScrollConnection(
     currentOffset: () -> Float,
@@ -225,6 +248,13 @@ private fun scrimNestedScrollConnection(
     )
 }
 
+/**
+ * Applies the cutout insets to the constraints.
+ *
+ * @param constraints The constraints to be applied.
+ * @param cutoutInsets The cutout insets to be applied.
+ * @return The constraints with the cutout insets applied.
+ */
 private fun MeasureScope.applyCutout(
     constraints: Constraints,
     cutoutInsets: WindowInsets?,
