@@ -133,14 +133,6 @@ flag {
 }
 
 flag {
-    name: "enable_app_store_filters_screen_fallback"
-    is_exported: false
-    namespace: "supervision"
-    description: "Flag that enables fallback UI for app store filters screen with Supervision settings entry point"
-    bug: "446954309"
-}
-
-flag {
   name: "enable_app_service_connection_callback"
   is_exported: false
   namespace: "supervision"
