@@ -73,7 +73,6 @@ import com.android.systemui.shared.rotation.RotationButton.RotationButtonUpdates
 import com.android.systemui.shared.system.ActivityManagerWrapper;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 import com.android.systemui.shared.system.TaskStackChangeListeners;
-import com.android.window.flags.Flags;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
@@ -676,13 +675,7 @@ public class RotationButtonController {
             return;
         }
         final String caller = "RotationButtonController#onRotateSuggestionClick";
-
-        if (Flags.enableDeviceStateAutoRotateSettingRefactor()) {
-            mRotationPolicyWrapper.setRotationAtAngleIfAllowed(rotationSuggestion, caller);
-            return;
-        }
-
-        setRotationAtAngle(isLocked, rotationSuggestion, caller);
+        mRotationPolicyWrapper.setRotationAtAngleIfAllowed(rotationSuggestion, caller);
     }
 
     private boolean onRotateSuggestionHover(View v, MotionEvent event) {
