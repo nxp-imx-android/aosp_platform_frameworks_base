@@ -41,6 +41,7 @@ import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -75,7 +76,8 @@ class RecordIssueDialogDelegateTest : SysuiTestCase() {
     private val systemClock = FakeSystemClock()
     private val bgExecutor = FakeExecutor(systemClock)
     private val mainExecutor = FakeExecutor(systemClock)
-    @Mock private lateinit var mDialogTransitionAnimator: DialogTransitionAnimator
+    @Mock private lateinit var dialogTransitionAnimator: DialogTransitionAnimator
+    @Mock private lateinit var blurInteractor: WindowRootViewBlurInteractor
 
     private lateinit var dialog: SystemUIDialog
     private lateinit var factory: SystemUIDialog.Factory
@@ -95,7 +97,8 @@ class RecordIssueDialogDelegateTest : SysuiTestCase() {
                     context,
                     systemUIDialogManager,
                     broadcastDispatcher,
-                    mDialogTransitionAnimator,
+                    dialogTransitionAnimator,
+                    blurInteractor,
                 )
             )
 

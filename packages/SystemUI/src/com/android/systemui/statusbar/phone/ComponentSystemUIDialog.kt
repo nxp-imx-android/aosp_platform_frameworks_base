@@ -34,6 +34,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastDispatcher
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 
 /**
  * A [SystemUIDialog] that implements [LifecycleOwner], [SavedStateRegistryOwner] and
@@ -54,6 +55,7 @@ class ComponentSystemUIDialog(
     dialogManager: SystemUIDialogManager,
     broadcastDispatcher: BroadcastDispatcher,
     dialogTransitionAnimator: DialogTransitionAnimator,
+    blurInteractor: WindowRootViewBlurInteractor,
     delegate: DialogDelegate<SystemUIDialog>,
 ) :
     SystemUIDialog(
@@ -63,6 +65,7 @@ class ComponentSystemUIDialog(
         dialogManager,
         broadcastDispatcher,
         dialogTransitionAnimator,
+        blurInteractor,
         delegate,
         true, /* shouldAcsdDismissDialog */
     ),

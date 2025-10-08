@@ -82,6 +82,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import org.junit.After;
 import org.junit.Before;
@@ -123,6 +124,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     private SystemUIDialogManager mSystemUIDialogManager;
     @Mock
     private DialogTransitionAnimator mDialogTransitionAnimator;
+    @Mock
+    private WindowRootViewBlurInteractor mBlurInteractor;
     @Mock
     private ActivityStarter mActivityStarter;
     @Mock
@@ -437,7 +440,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 mContext,
                 mSystemUIDialogManager,
                 getFakeBroadcastDispatcher(),
-                mDialogTransitionAnimator
+                mDialogTransitionAnimator,
+                mBlurInteractor
         );
         mDialogDelegate = new HearingDevicesDialogDelegate(
                 showPairNewDevice,

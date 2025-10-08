@@ -51,6 +51,7 @@ import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.mock
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import junit.framework.Assert.assertEquals
@@ -93,6 +94,7 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
                 Dependency.get(SystemUIDialogManager::class.java),
                 Dependency.get(BroadcastDispatcher::class.java),
                 Dependency.get(DialogTransitionAnimator::class.java),
+                kosmos.windowRootViewBlurInteractor,
             )
 
         underTest =
