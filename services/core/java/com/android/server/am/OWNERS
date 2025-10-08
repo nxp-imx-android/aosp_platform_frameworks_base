@@ -5,6 +5,7 @@ per-file ActiveServices.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ProcessList.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ActivityThread.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file Process*Record* = file:/ACTIVITY_MANAGER_OWNERS
+per-file PhantomProcessRecord.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file SystemServer.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ServiceRecord.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file AppProfiler.java = file:/ACTIVITY_MANAGER_OWNERS
