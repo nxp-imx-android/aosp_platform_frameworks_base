@@ -26,13 +26,6 @@ flag {
 }
 
 flag {
-  name: "frr_dialog_improvement"
-  namespace: "biometrics_framework"
-  description: "This flag controls FRR dialog improvement"
-  bug: "380800403"
-}
-
-flag {
   name: "biometric_prompt_external_display"
   namespace: "biometrics_framework"
   description: "This flag returns error code when biometric prompt is requested on external display."
