@@ -55,3 +55,61 @@ Follow these steps to execute the tests using the Forrest/ABTD web interface.
 7. Set the product to a physical device, e.g., **raven**.
 
 8. Click **Run** to start the test.
+
+
+## Analyzing Perfetto Traces
+
+After a test run, a Perfetto trace file can be found as a test artifact. Here are two useful queries which can be run in Perfetto UI
+
+###  Get native heap allocation dumps
+
+```sql
+WITH AggregatedDumps AS (
+  SELECT
+    a.ts,
+    p.name AS track_name,
+    SUM(a.size) AS dump_size_bytes_for_ts
+  FROM
+    heap_profile_allocation AS a
+  JOIN
+    process AS p ON a.upid = p.upid
+  GROUP BY
+    a.ts, p.name
+)
+SELECT
+  ts,
+  track_name,
+  SUM(dump_size_bytes_for_ts) OVER (PARTITION BY track_name ORDER BY ts) AS cumulative_dump_size_bytes,
+  SUM(dump_size_bytes_for_ts) OVER (PARTITION BY track_name ORDER BY ts) / (1024.0 * 1024.0) AS cumulative_dump_size_mib
+FROM
+  AggregatedDumps
+ORDER BY
+  ts, track_name;
+```
+
+### Get binder transactions in time range of app startup
+
+```sql
+INCLUDE PERFETTO MODULE android.binder;
+WITH
+  testhelper_startup AS (
+    SELECT
+      ts,
+      (ts + dur) AS ts_end
+    FROM
+      android_startups
+    WHERE
+      package = 'android.app.memory.testhelper'
+    LIMIT 1
+  )
+SELECT
+  *
+FROM
+  android_binder_txns AS abt
+  LEFT JOIN process AS p ON (p.upid = abt.client_upid)
+  LEFT JOIN thread AS t ON (t.utid = abt.client_utid)
+  JOIN testhelper_startup
+    ON (abt.client_ts >= testhelper_startup.ts AND abt.client_ts < testhelper_startup.ts_end)
+WHERE
+  abt.client_process = 'android.app.memory.testhelper'
+```
