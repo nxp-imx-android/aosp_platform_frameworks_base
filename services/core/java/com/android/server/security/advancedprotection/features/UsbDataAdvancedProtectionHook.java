@@ -43,6 +43,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.UiModeManager;
+import android.app.UiModeManager.OnProjectionStateChangedListener;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -125,7 +127,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private static final int NOTIFICATION_DATA = 2;
 
     // For connection recovery, in case of Android Auto or unreliable cables
-    private static final int DELAY_DISABLE_MILLIS = 15000;
+    private static final int DELAY_DISABLE_MILLIS_AUTO = 15000;
+    private static final int DELAY_DISABLE_MILLIS_DEFAULT = 1000;
     private static final int USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS = 3;
     private static final long USB_PORT_POWER_BRICK_CONNECTION_CHECK_TIMEOUT_DEFAULT_MILLIS = 3000;
     private static final long USB_PD_COMPLIANCE_CHECK_TIMEOUT_DEFAULT_MILLIS = 1000;
@@ -171,6 +174,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private final Context mContext;
 
     private AtomicBoolean mApmRequestedUsbDataStatus = new AtomicBoolean(false);
+    // We are assuming that if the USB connection and in device is in car mode, it will stay in car
+    // mode until the USB connection is removed.
+    private AtomicBoolean mLastUsbKnownConnectionIncludesCarMode = new AtomicBoolean(false);
 
     // We use handlers for tasks that may need to be updated by broadcasts events.
     private Handler mDelayedDisableHandler = new Handler(Looper.getMainLooper());
@@ -190,6 +196,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private ExecutorService mUsbDataSignalUpdateExecutor = Executors.newSingleThreadExecutor();
     private KeyguardLockedStateListener mKeyguardLockedStateListener;
     private UsbPortStatus mLastUsbPortStatus;
+    private UiModeManager mUiModeManager;
 
     // TODO(b/418846176):  Move these to a system property
     private long mUsbPortPowerBrickConnectionCheckTimeoutMillis;
@@ -220,6 +227,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 Objects.requireNonNull(LocalServices.getService(IUsbManagerInternal.class));
         mKeyguardManager = Objects.requireNonNull(mContext.getSystemService(KeyguardManager.class));
         mUserManager = Objects.requireNonNull(mContext.getSystemService(UserManager.class));
+        if (Flags.aapmFeatureUsbDataProtectionDelayDisableAutoOnly()) {
+            mUiModeManager = Objects.requireNonNull(mContext.getSystemService(UiModeManager.class));
+        }
         mCanSetUsbDataSignal = canSetUsbDataSignal();
         onAdvancedProtectionChanged(enabled);
     }
@@ -288,6 +298,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             if (!mBroadcastReceiverIsRegistered) {
                 registerReceiver();
                 registerKeyguardLockListener();
+                if (Flags.aapmFeatureUsbDataProtectionDelayDisableAutoOnly()) {
+                    registerCarProjectionModeListener();
+                }
             }
             if (mKeyguardManager.isKeyguardLocked()) {
                 setUsbDataSignalIfPossible(false);
@@ -348,7 +361,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                 if (!portStatus.isConnected()) {
                                     cleanUpNotificationHandlerTasks();
                                     clearExistingNotification();
-
+                                    // Reset the flag to false as last USB connection state has
+                                    // expired due to new disconnection event.
+                                    mLastUsbKnownConnectionIncludesCarMode.set(false);
                                     /*
                                      * Due to limitations of current APIs, we cannot cannot fully
                                      * rely on power brick and pd compliance check to be accurate
@@ -374,6 +389,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                         updateDelayedNotificationTask(delayTimeMillis);
                                     }
                                 } else {
+                                    if (deviceHaveAndroidAutoConnection()) {
+                                        mLastUsbKnownConnectionIncludesCarMode.set(true);
+                                    }
                                     cleanUpNotificationHandlerTasks();
                                     createAndSendNotificationIfDeviceIsLocked(
                                             portStatus, NOTIFICATION_DATA);
@@ -455,6 +473,19 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         if (usbPortIsConnected(portStatus)) {
                             mDelayedDisableHandler.removeCallbacksAndMessages(null);
                         } else if (!mDelayedDisableHandler.hasMessagesOrCallbacks()) {
+
+                            int delayDisableMillis = DELAY_DISABLE_MILLIS_DEFAULT;
+                            if (Flags.aapmFeatureUsbDataProtectionDelayDisableAutoOnly()
+                                    && mLastUsbKnownConnectionIncludesCarMode.get()) {
+                                delayDisableMillis = DELAY_DISABLE_MILLIS_AUTO;
+                                FrameworkStatsLog.write(
+                                        FrameworkStatsLog.ADVANCED_PROTECTION_USB_EVENT_REPORTED,
+                                        AdvancedProtectionProtoEnums
+                                                .USB_EVENT_USB_AUTO_DISCONNECTED);
+                            }
+                            Slog.d(
+                                    TAG,
+                                    "Disconnection detected, delay disable: " + delayDisableMillis);
                             boolean taskPosted =
                                     mDelayedDisableHandler.postDelayed(
                                             () -> {
@@ -462,7 +493,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                                     setUsbDataSignalIfPossible(false);
                                                 }
                                             },
-                                            DELAY_DISABLE_MILLIS);
+                                            delayDisableMillis);
                             if (!taskPosted) {
                                 Slog.w(TAG, "Delayed Disable Task: Failed to post task");
                             }
@@ -505,6 +536,19 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 };
     }
 
+    private boolean deviceHaveAndroidAutoConnection() {
+        if (mUsbManager.getAccessoryList() == null) return false;
+        for (UsbAccessory accessory : mUsbManager.getAccessoryList()) {
+            // https://docs.partner.android.com/auto/resources/huig/huig_next/huig_head_next#R03-242
+            if (accessory.getManufacturer().equals("Android")
+                    && accessory.getModel().equals("Android Auto")
+                    && accessory.getDescription().equals("Android Auto")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void initializeNotifications() {
         if (mNotificationManager.getNotificationChannel(APM_USB_FEATURE_NOTIF_CHANNEL) == null) {
             mNotificationChannel =
@@ -530,7 +574,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             // Log interactions that were suppressed due to silence flags
             mAdvancedProtectionService.logDialogShown(
                     FEATURE_ID_DISALLOW_USB,
-                    // TODO: (b/446947637) - Update to correct dialog type (requires update in AdvancedProtectionManager API)
+                    // TODO: (b/446947637) - Update to correct dialog type (requires update in
+                    // AdvancedProtectionManager API)
                     SUPPORT_DIALOG_TYPE_UNKNOWN,
                     false);
             return;
@@ -555,7 +600,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         }
 
         Intent silenceIntent = new Intent(ACTION_SILENCE_NOTIFICATION);
-        if(notificationType == NOTIFICATION_CHARGE_DATA) {
+        if (notificationType == NOTIFICATION_CHARGE_DATA) {
             silenceIntent.putExtra(EXTRA_SILENCE_DATA_NOTIFICATION, true);
             silenceIntent.putExtra(EXTRA_SILENCE_POWER_NOTIFICATION, true);
         } else if (notificationType == NOTIFICATION_CHARGE) {
@@ -571,9 +616,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 getAtomUsbNotificationType(notificationType));
 
         mAdvancedProtectionService.logDialogShown(
-                FEATURE_ID_DISALLOW_USB,
-                SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION,
-                false);
+                FEATURE_ID_DISALLOW_USB, SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION, false);
     }
 
     private int getAtomUsbNotificationType(@NotificationType int internalNotificationType) {
@@ -687,6 +730,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     if (mUsbManagerInternal.enableUsbDataSignal(status, USB_DISABLE_REASON_APM)) {
                         mApmRequestedUsbDataStatus.set(status);
                         successfullySetUsbDataSignal = true;
+                        // If USB data is disabled, we need to make sure to reset the flag
+                        // mLastUsbKnownConnectionIncludesCarMode to false.
+                        if (!status) {
+                            mLastUsbKnownConnectionIncludesCarMode.set(false);
+                        }
                         Slog.d(TAG, "Successfully set USB data");
                         break;
                     } else {
@@ -779,6 +827,42 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 };
         mKeyguardManager.addKeyguardLockedStateListener(
                 mUsbDataSignalUpdateExecutor, keyguardListener);
+    }
+
+    // TODO:(b/449783386) If finalized and planned for launch, add supporting tests.
+    private void registerCarProjectionModeListener() {
+        OnProjectionStateChangedListener projectionModeListener =
+                new OnProjectionStateChangedListener() {
+                    @Override
+                    public void onProjectionStateChanged(
+                            int projectionMode, Set<String> packageNames) {
+                        Slog.d(
+                                TAG,
+                                "onProjectionStateChanged: "
+                                        + projectionMode
+                                        + " is Auto:"
+                                        + Boolean.toString(
+                                                UiModeManager.PROJECTION_TYPE_AUTOMOTIVE
+                                                        == projectionMode)
+                                        + " usb check:"
+                                        + Boolean.toString(deviceHaveAndroidAutoConnection()));
+                        mLastUsbKnownConnectionIncludesCarMode.set(
+                                deviceHaveAndroidAutoConnection());
+                        if (mLastUsbKnownConnectionIncludesCarMode.get()) {
+                            FrameworkStatsLog.write(
+                                    FrameworkStatsLog.ADVANCED_PROTECTION_USB_EVENT_REPORTED,
+                                    AdvancedProtectionProtoEnums.USB_EVENT_USB_AUTO_CONNECTED);
+                        }
+                    }
+                };
+        mUiModeManager.addOnProjectionStateChangedListener(
+                // We don't track PROJECTION_TYPE_NONE because if the current USB connection is Auto
+                // capable, we should assume it can switch back to PROJECTION_TYPE_AUTOMOTIVE
+                // anytime. We reset value upon USB disconnect instead
+                UiModeManager.PROJECTION_TYPE_AUTOMOTIVE,
+                mContext.getMainExecutor(),
+                projectionModeListener);
+        Slog.d(TAG, "Registered projection mode listener");
     }
 
     private void unregisterKeyguardLockListener() {
