@@ -142,6 +142,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                                     desk.leftTiledTaskId,
                                     desk.rightTiledTaskId,
                                     desk.boundsByTaskId,
+                                    desk.boundsBeforeSnapOrMaximizeByTaskId,
                                 )
                                 .updateZOrder(desk.freeformTasksInZOrder)
                                 .updateUniqueDisplayId(desk.uniqueDisplayId)
@@ -207,6 +208,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                             desk.leftTiledTaskId,
                             desk.rightTiledTaskId,
                             desk.boundsByTaskId,
+                            desk.boundsBeforeSnapOrMaximizeByTaskId,
                         )
                         .updateZOrder(desk.freeformTasksInZOrder)
                         .updateUniqueDisplayId(desk.uniqueDisplayId)
@@ -370,6 +372,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             leftTiledTask: Int?,
             rightTiledTask: Int?,
             boundsByTaskId: MutableMap<Int, Rect> = mutableMapOf(),
+            boundsBeforeSnapOrMaximizeByTaskId: MutableMap<Int, Rect> = mutableMapOf(),
         ): Desktop.Builder {
             clearTasksByTaskId()
 
@@ -391,6 +394,8 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         state = DesktopTaskState.VISIBLE,
                         getTilingStateForTask(it, leftTiledTask, rightTiledTask),
                         bounds = boundsByTaskId[it] ?: Rect(),
+                        boundsBeforeSnapOrMaximize =
+                            boundsBeforeSnapOrMaximizeByTaskId[it] ?: Rect(),
                     )
                 }
             )
@@ -400,6 +405,8 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         it,
                         state = DesktopTaskState.MINIMIZED,
                         bounds = boundsByTaskId[it] ?: Rect(),
+                        boundsBeforeSnapOrMaximize =
+                            boundsBeforeSnapOrMaximizeByTaskId[it] ?: Rect(),
                     )
                 }
             )
@@ -439,13 +446,18 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             state: DesktopTaskState = DesktopTaskState.VISIBLE,
             tilingState: DesktopTaskTilingState = DesktopTaskTilingState.NONE,
             bounds: Rect,
-        ): DesktopTask =
-            DesktopTask.newBuilder()
+            boundsBeforeSnapOrMaximize: Rect,
+        ): DesktopTask {
+            val builder = DesktopTask.newBuilder()
                 .setTaskId(taskId)
                 .setDesktopTaskState(state)
                 .setDesktopTaskTilingState(tilingState)
                 .setTaskBounds(bounds.toRectProto())
-                .build()
+            if (!boundsBeforeSnapOrMaximize.isEmpty) {
+                builder.setBoundsBeforeSnapOrMaximize(boundsBeforeSnapOrMaximize.toRectProto())
+            }
+            return builder.build()
+        }
 
         private fun Rect.toRectProto() =
             RectProto.newBuilder().setLeft(left).setTop(top).setRight(right).setBottom(bottom)
