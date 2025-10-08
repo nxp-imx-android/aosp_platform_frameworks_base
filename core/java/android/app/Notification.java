@@ -12078,8 +12078,7 @@ public class Notification implements Parcelable
 
                     final CharSequence metricLabel;
                     if (isExpandedView) {
-                        if (Flags.metricStyleUnitInLabel()
-                                && !TextUtils.isEmpty(valueString.subtext())) {
+                        if (!TextUtils.isEmpty(valueString.subtext())) {
                             metricLabel = mBuilder.mContext.getString(
                                     R.string.notification_metric_label_unit,
                                     metric.getLabel(), valueString.subtext());
@@ -12095,16 +12094,6 @@ public class Notification implements Parcelable
 
                     mBuilder.setTextViewColorSecondary(contentView, metricView.labelId(), p);
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
-                    if (Flags.metricStyleUnitInLabel()) {
-                        contentView.setViewVisibility(metricView.unitId(), View.GONE);
-                    } else if (isExpandedView) {
-                        mBuilder.setTextViewColorSecondary(contentView, metricView.unitId(), p);
-                        contentView.setViewVisibility(metricView.unitId(),
-                                TextUtils.isEmpty(valueString.subtext())
-                                        ? View.GONE
-                                        : View.VISIBLE);
-                        contentView.setTextViewText(metricView.unitId(), valueString.subtext());
-                    }
 
                     if (metricValue instanceof Metric.TimeDifference timeDifference) {
                         contentView.setViewVisibility(metricView.textValueId(), View.GONE);
@@ -12151,27 +12140,24 @@ public class Notification implements Parcelable
         private record MetricView(int containerId,
                            int labelId,
                            int textValueId,
-                           int chronometerId,
-                           int unitId) {
+                           int chronometerId
+        ) {
             private static final List<MetricView> VIEWS = List.of(
                     new MetricView(
                             /* containerId = */R.id.metric_view_0,
                             /* labelId = */R.id.metric_label_0,
                             /* textValueId = */R.id.metric_value_0,
-                            /* chronometerId = */R.id.metric_chronometer_0,
-                            /* unitId = */R.id.metric_unit_0),
+                            /* chronometerId = */R.id.metric_chronometer_0),
                     new MetricView(
                             /* containerId = */R.id.metric_view_1,
                             /* labelId = */R.id.metric_label_1,
                             /* textValueId = */R.id.metric_value_1,
-                            /* chronometerId = */R.id.metric_chronometer_1,
-                            /* unitId = */R.id.metric_unit_1),
+                            /* chronometerId = */R.id.metric_chronometer_1),
                     new MetricView(
                             /* containerId = */R.id.metric_view_2,
                             /* labelId = */R.id.metric_label_2,
                             /* textValueId = */R.id.metric_value_2,
-                            /* chronometerId = */R.id.metric_chronometer_2,
-                            /* unitId = */R.id.metric_unit_2)
+                            /* chronometerId = */R.id.metric_chronometer_2)
             );
         }
 
