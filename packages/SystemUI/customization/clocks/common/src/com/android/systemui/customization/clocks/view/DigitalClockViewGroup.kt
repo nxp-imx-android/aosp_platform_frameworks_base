@@ -21,12 +21,12 @@ import android.graphics.Canvas
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import androidx.core.graphics.withSave
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DigitTranslateAnimator
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
-import com.android.systemui.customization.clocks.utils.CanvasUtils.use
 import com.android.systemui.customization.clocks.utils.ViewUtils.layout
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
 import com.android.systemui.customization.clocks.utils.ViewUtils.position
@@ -216,9 +216,9 @@ abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
     override fun onDraw(canvas: Canvas) {
         logger.onDraw()
         children.forEach { child ->
-            canvas.use { canvas ->
-                canvas.translate(child.position)
-                child.draw(canvas)
+            canvas.withSave {
+                translate(child.position)
+                child.draw(this)
             }
         }
     }

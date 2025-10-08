@@ -56,13 +56,25 @@ class PluginPrefs(context: Context) {
         private const val HAS_PLUGINS = "plugins"
 
         @JvmStatic
-        @Deprecated("Prefer non-static version")
+        @Deprecated(
+            "Prefer non-static version",
+            ReplaceWith(
+                "PluginPrefs(context).hasPlugins",
+                "com.android.systemui.shared.plugins.PluginPrefs",
+            ),
+        )
         fun hasPlugins(context: Context): Boolean {
             return PluginPrefs(context).hasPlugins
         }
 
         @JvmStatic
-        @Deprecated("Prefer non-static version")
+        @Deprecated(
+            "Prefer non-static version",
+            ReplaceWith(
+                "PluginPrefs(context).hasPlugins = true",
+                "com.android.systemui.shared.plugins.PluginPrefs",
+            ),
+        )
         fun setHasPlugins(context: Context) {
             PluginPrefs(context).hasPlugins = true
         }

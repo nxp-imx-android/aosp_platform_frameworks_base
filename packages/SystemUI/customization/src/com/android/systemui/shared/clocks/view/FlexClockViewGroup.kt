@@ -23,12 +23,12 @@ import android.icu.text.NumberFormat
 import android.util.MathUtils.constrainedMap
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.withSave
 import androidx.core.view.children
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
-import com.android.systemui.customization.clocks.utils.CanvasUtils.use
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
 import com.android.systemui.customization.clocks.utils.ViewUtils.position
 import com.android.systemui.customization.clocks.view.DigitalClockViewGroup
@@ -47,9 +47,6 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     override val children: Sequence<FlexClockTextView>
         get() = (this as ViewGroup).children.filterIsInstance<FlexClockTextView>()
 
-    private var lockscreenTranslate = VPointF.ZERO
-    private var aodTranslate = VPointF.ZERO
-
     private var onAnimateDoze: (() -> Unit)? = null
     private var isDozeReadyToAnimate = false
 
@@ -65,7 +62,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     override fun calculateSize(widthMeasureSpec: Int, heightMeasureSpec: Int): VPointF {
         val xScale = if (children.count() < 4) 1f else 2f
         val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
-        return (maxChildSize + aodTranslate.abs()) * VPointF(xScale, 2f) + VPointF(0f, yBuffer)
+        return maxChildSize * VPointF(xScale, 2f) + VPointF(0f, yBuffer)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -92,7 +89,6 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
             }
 
         val childSize = child.measuredSize
-        offset += aodTranslate.abs()
 
         // Horizontal offset to center each view in the available space
         val midX = if (children.count() < 4) measuredWidth / 2f else measuredWidth / 4f
@@ -104,10 +100,10 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     override fun onDraw(canvas: Canvas) {
         logger.onDraw()
         children.forEach { child ->
-            canvas.use { canvas ->
-                canvas.translate(digitOffsets.getOrDefault(child.id, 0f), 0f)
-                canvas.translate(child.position)
-                child.draw(canvas)
+            canvas.withSave {
+                translate(digitOffsets.getOrDefault(child.id, 0f), 0f)
+                translate(child.position)
+                child.draw(this)
             }
         }
     }
@@ -139,30 +135,6 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     fun animateDoze(isDozing: Boolean, isAnimated: Boolean) {
         fun executeDozeAnimation() {
             children.forEach { view -> view.animateDoze(isDozing, isAnimated) }
-            if (maxChildSize.x < 0 || maxChildSize.y < 0) {
-                measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-            }
-            children.forEach { textView ->
-                textView.digitTranslateAnimator?.let {
-                    if (!isDozing) {
-                        it.animatePosition(
-                            animate = isAnimated && isAnimationEnabled,
-                            interpolator = Interpolators.EMPHASIZED,
-                            duration = AOD_TRANSITION_DURATION,
-                            targetTranslation =
-                                updateDirectionalTargetTranslate(id, lockscreenTranslate),
-                        )
-                    } else {
-                        it.animatePosition(
-                            animate = isAnimated && isAnimationEnabled,
-                            interpolator = Interpolators.EMPHASIZED,
-                            duration = AOD_TRANSITION_DURATION,
-                            onAnimationEnd = null,
-                            targetTranslation = updateDirectionalTargetTranslate(id, aodTranslate),
-                        )
-                    }
-                }
-            }
         }
 
         if (isDozeReadyToAnimate) executeDozeAnimation()
@@ -171,32 +143,6 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
 
     fun animateCharge() {
         children.forEach { view -> view.animateCharge() }
-        children.forEach { textView ->
-            textView.digitTranslateAnimator?.let {
-                it.animatePosition(
-                    animate = isAnimationEnabled,
-                    interpolator = Interpolators.EMPHASIZED,
-                    duration = CHARGING_TRANSITION_DURATION,
-                    onAnimationEnd = {
-                        it.animatePosition(
-                            animate = isAnimationEnabled,
-                            interpolator = Interpolators.EMPHASIZED,
-                            duration = CHARGING_TRANSITION_DURATION,
-                            targetTranslation =
-                                updateDirectionalTargetTranslate(
-                                    textView.id,
-                                    if (dozeFraction == 1F) aodTranslate else lockscreenTranslate,
-                                ),
-                        )
-                    },
-                    targetTranslation =
-                        updateDirectionalTargetTranslate(
-                            textView.id,
-                            if (dozeFraction == 1F) lockscreenTranslate else aodTranslate,
-                        ),
-                )
-            }
-        }
     }
 
     override fun animateFidget(pt: VPointF, enforceBounds: Boolean): Boolean {
@@ -291,7 +237,6 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     companion object {
         const val FORMAT_NUMBER = 1234567890
         const val AOD_TRANSITION_DURATION = 800L
-        const val CHARGING_TRANSITION_DURATION = 300L
 
         private val STEP_INTERPOLATOR = Interpolators.EMPHASIZED
         // Measured as fraction of total animation duration
@@ -302,19 +247,5 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
 
         /** Languages that do not have vertically mono spaced numerals */
         private val NON_MONO_VERTICAL_NUMERIC_LINE_SPACING_LANGUAGES = setOf("my" /* Burmese */)
-
-        /** Use the sign of targetTranslation to control the direction of digit translation */
-        fun updateDirectionalTargetTranslate(id: Int, targetTranslation: VPointF): VPointF {
-            return targetTranslation *
-                when (id) {
-                    ClockViewIds.HOUR_FIRST_DIGIT -> VPointF(-1, -1)
-                    ClockViewIds.HOUR_SECOND_DIGIT -> VPointF(1, -1)
-                    ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(-1, 1)
-                    ClockViewIds.MINUTE_SECOND_DIGIT -> VPointF(1, 1)
-                    ClockViewIds.HOUR_DIGIT_PAIR -> VPointF(-1, -1)
-                    ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(-1, 1)
-                    else -> VPointF(1, 1)
-                }
-        }
     }
 }

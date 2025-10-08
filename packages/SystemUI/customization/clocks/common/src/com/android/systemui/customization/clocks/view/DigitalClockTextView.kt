@@ -33,6 +33,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
 import android.widget.TextView
+import androidx.core.graphics.withSave
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.Flags.clockFidgetAnimation
@@ -48,7 +49,6 @@ import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.TextStyle
 import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
-import com.android.systemui.customization.clocks.utils.CanvasUtils.use
 import com.android.systemui.customization.clocks.utils.PaintUtils.getTextBounds
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
 import com.android.systemui.plugins.keyguard.VPoint
@@ -317,15 +317,15 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             } ?: setInterpolatedLocation(measureSize)
         }
 
-        canvas.use {
-            digitTranslateAnimator?.apply { canvas.translate(currentTranslation) }
+        canvas.withSave {
+            digitTranslateAnimator?.apply { translate(currentTranslation) }
             if (isVertical) {
-                canvas.translate(0f, measuredHeight.toFloat())
-                canvas.rotate(-90f)
+                translate(0f, measuredHeight.toFloat())
+                rotate(-90f)
             }
             val drawTranslation = getDrawTranslation(interpBounds)
-            canvas.translate(drawTranslation)
-            drawAnimators(canvas, drawTranslation)
+            translate(drawTranslation)
+            drawAnimators(this, drawTranslation)
         }
     }
 
@@ -508,14 +508,10 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         widthMeasureSpec: Int = measuredWidthAndState,
         heightMeasureSpec: Int = measuredHeightAndState,
     ) {
-        var mode =
-            VPoint(
-                x = MeasureSpec.getMode(widthMeasureSpec),
-                y = MeasureSpec.getMode(heightMeasureSpec),
-            )
-
+        val mode =
+            VPoint(MeasureSpec.getMode(widthMeasureSpec), MeasureSpec.getMode(heightMeasureSpec))
+                .let { mode -> if (isVertical) mode.swap() else mode }
         val size = if (isVertical) measureBounds.swap() else measureBounds
-        if (isVertical) mode = mode.swap()
 
         setMeasuredDimension(
             MeasureSpec.makeMeasureSpec(size.x.roundToInt(), mode.x),
@@ -523,9 +519,9 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         )
 
         logger.d({
-            val size = VPointF.fromLong(long1)
-            val mode = VPoint.fromLong(long2)
-            "setInterpolatedSize(size=$size, mode=$mode)"
+            val unpackedSize = VPointF.fromLong(long1)
+            val unpackedMode = VPoint.fromLong(long2)
+            "setInterpolatedSize(size=$unpackedSize, mode=$unpackedMode)"
         }) {
             long1 = size.toLong()
             long2 = mode.toLong()

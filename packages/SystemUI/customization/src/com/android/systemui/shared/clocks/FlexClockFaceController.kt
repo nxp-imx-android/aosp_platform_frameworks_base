@@ -30,7 +30,7 @@ import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DefaultClockFaceLayout
-import com.android.systemui.customization.clocks.DigitalFormatter
+import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.R
@@ -93,7 +93,7 @@ class FlexClockFaceController(
     private val keyguardLargeClockTopMargin =
         clockCtx.resources.getDimensionPixelSize(R.dimen.keyguard_large_clock_top_margin)
     private val timeFormatter =
-        DigitalFormatter.Time("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
+        DigitalTimeFormatter("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
     val layerController: FlexClockViewController =
         if (isLargeClock) {
             FlexClockViewGroupController(clockCtx)

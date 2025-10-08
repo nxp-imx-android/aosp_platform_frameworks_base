@@ -19,7 +19,7 @@ package com.android.systemui.shared.clocks
 import android.icu.util.TimeZone
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.clocks.ClockContext
-import com.android.systemui.customization.clocks.DigitalFormatter
+import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.view.DigitalAlignment
@@ -71,7 +71,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
                 timeFormatter = null,
             )
 
-        DigitalFormatter.Time("hh", clockCtx.timeKeeper).also { timeFormatter ->
+        DigitalTimeFormatter("hh", clockCtx.timeKeeper).also { timeFormatter ->
             createController(
                 layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, timeFormatter = timeFormatter)
             )
@@ -83,7 +83,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
             )
         }
 
-        DigitalFormatter.Time("mm", clockCtx.timeKeeper).also { timeFormatter ->
+        DigitalTimeFormatter("mm", clockCtx.timeKeeper).also { timeFormatter ->
             createController(
                 layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, timeFormatter = timeFormatter)
             )
