@@ -64,13 +64,17 @@ public class AdbdServicesManager {
         serviceInfo.setServiceName(instanceName);
         serviceInfo.setServiceType(serviceType);
         serviceInfo.setPort(port);
-        serviceInfo.setAttribute("v", "1");
-        serviceInfo.setAttribute("name", SystemProperties.get("ro.product.model", ""));
-        serviceInfo.setAttribute("api", SystemProperties.get("ro.build.version.sdk_full", ""));
-        serviceInfo.setAttribute(
-                "given_name",
-                Settings.Global.getString(mContentResolver, Settings.Global.DEVICE_NAME));
-        serviceInfo.setAttribute("serial", SystemProperties.get("ro.serialno", ""));
+        if (AdbDebuggingManager.wifiLifeCycleOverAdbdauthSupported()) {
+            serviceInfo.setAttribute("v", "2.0");
+            serviceInfo.setAttribute("name", SystemProperties.get("ro.product.model", ""));
+            serviceInfo.setAttribute("api", SystemProperties.get("ro.build.version.sdk_full", ""));
+            serviceInfo.setAttribute(
+                    "given_name",
+                    Settings.Global.getString(mContentResolver, Settings.Global.DEVICE_NAME));
+            serviceInfo.setAttribute("serial", SystemProperties.get("ro.serialno", ""));
+        } else {
+            serviceInfo.setAttribute("v", "1");
+        }
 
         AdbdRegistrationListener listener =
                 new AdbdRegistrationListener(instanceName, serviceType, port);

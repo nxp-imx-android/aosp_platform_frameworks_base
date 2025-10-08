@@ -29,7 +29,6 @@ import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
 
 class AdbPairingThread extends Thread implements NsdManager.RegistrationListener {
     private static final String TAG = AdbPairingThread.class.getSimpleName();
-    private final NsdManager mNsdManager;
     private final Context mContext;
     private final String mPairingCode;
     private final String mGuid;
@@ -57,18 +56,13 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
         }
         mPort = -1;
         mContext = context;
-        mNsdManager = (NsdManager) mContext.getSystemService(Context.NSD_SERVICE);
         mHandler = handler;
     }
 
     @Override
     public void run() {
-        // Register the mdns service
-        NsdServiceInfo serviceInfo = new NsdServiceInfo();
-        serviceInfo.setServiceName(mServiceName);
-        serviceInfo.setServiceType(mServiceType);
-        serviceInfo.setPort(mPort);
-        mNsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, this);
+        AdbdServicesManager servicesManager = new AdbdServicesManager(mContext);
+        servicesManager.registerService(mServiceName, mServiceType, mPort);
 
         // Send pairing port to UI
         Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MSG_RESPONSE_PAIRING_PORT);
@@ -82,7 +76,7 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
             Slog.i(TAG, "Pairing failed");
         }
 
-        mNsdManager.unregisterService(this);
+        servicesManager.unregisterService(mServiceName, mServiceType);
 
         Message message =
                 Message.obtain(
