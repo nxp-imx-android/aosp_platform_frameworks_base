@@ -3650,7 +3650,7 @@ final class ActivityRecord extends WindowToken {
                 chain.getTransition().collectClose(trigger);
             }
 
-            if (Flags.polishCloseWallpaperIncludesOpenChange() && endTask) {
+            if (endTask) {
                 final TaskDisplayArea displayArea = getDisplayArea();
                 if (displayArea != null && rootTask == displayArea.mPreferredTopFocusableRootTask) {
                     displayArea.clearPreferredTopFocusableRootTask();
