@@ -2466,8 +2466,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             mDeveloperVerificationServiceProvider =
                     getVerificationServiceProvider(computer, mContext.getString(
                             R.string.config_developerVerificationServiceProviderPackageName));
-            mProtectedPackages.setDeveloperVerificationServiceProviderPackage(
-                    mDeveloperVerificationServiceProvider);
             // Remember the developer verification policy delegate which is allowed to change the
             // developer verification policy on behalf of the developer verification service
             // provider defined above.
@@ -3734,7 +3732,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         final List<ResolveInfo> matches = computer.queryIntentServicesInternal(
                 intent,
                 /* resolvedType= */ null,
-                MATCH_SYSTEM_ONLY | MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE,
+                MATCH_SYSTEM_ONLY | MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE
+                        | MATCH_DISABLED_COMPONENTS,
                 UserHandle.USER_SYSTEM,
                 /* callingUid= */ Process.myUid(),
                 Process.INVALID_PID,
