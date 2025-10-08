@@ -6365,13 +6365,6 @@
   <!-- For Interactive Doze -->
   <java-symbol type="bool" name="config_enableInteractiveDoze" />
 
-  <!-- Personal Context configuration -->
-  <java-symbol type="array" name="config_personalContextTriggerComponents" />
-  <java-symbol type="array" name="config_personalContextRefinerComponents" />
-  <java-symbol type="string" name="config_personalContextUnderstanderComponent" />
-  <java-symbol type="array" name="config_personalContextTransformerComponents" />
-  <java-symbol type="array" name="config_personalContextRendererComponents" />
-
   <!-- Whether to force color fade. -->
   <java-symbol type="bool" name="config_forceColorFade" />
 </resources>

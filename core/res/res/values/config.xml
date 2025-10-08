@@ -7787,25 +7787,6 @@
     <!-- Whether the device supports Interactive Doze mode. -->
     <bool name="config_enableInteractiveDoze">false</bool>
 
-    <!-- Services for Personal Context triggers. -->
-    <string-array name="config_personalContextTriggerComponents" translatable="false">
-    </string-array>
-
-    <!-- Services for Personal Context refiners. -->
-    <string-array name="config_personalContextRefinerComponents" translatable="false">
-    </string-array>
-
-    <!-- Services for Personal Context understander. -->
-    <string name="config_personalContextUnderstanderComponent" translatable="false"></string>
-
-    <!-- Services for Personal Context transformers. -->
-    <string-array name="config_personalContextTransformerComponents" translatable="false">
-    </string-array>
-
-    <!-- Services for Personal Context renderers. -->
-    <string-array name="config_personalContextRendererComponents" translatable="false">
-    </string-array>
-
     <!-- Whether to force color fade. -->
     <bool name="config_forceColorFade">false</bool>
 </resources>

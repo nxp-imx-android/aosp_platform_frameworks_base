@@ -19,6 +19,10 @@ package com.android.server.personalcontext;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.UserHandle;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.util.Log;
@@ -26,128 +30,183 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.internal.R;
+import com.android.internal.content.PackageMonitor;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @hide
  */
 public class PersonalContextManagerService extends SystemService {
+    // TODO(b/450089078): Move these actions to Intent.
+    public static final String ACTION_REFINER_SERVICE =
+            "android.service.personalcontext.RefinerService";
+
+    public static final String ACTION_UNDERSTANDER_SERVICE =
+            "android.service.personalcontext.UnderstanderService";
+
+    public static final String ACTION_TRANSFORMER_SERVICE =
+            "android.service.personalcontext.TransformerService";
+
+    public static final String ACTION_RENDERER_SERVICE =
+            "android.service.personalcontext.RendererService";
+
     private static final String TAG = "PersonalContext";
-    private final Context mContext;
 
-    private boolean mRegisteredComponents = false;
+    private final Monitor mMonitor = new Monitor(this);
 
-    private List<ComponentName> mTriggerComponents;
-    private List<ComponentName> mRefinerComponents;
-    private ComponentName mUnderstanderComponent;
-    private List<ComponentName> mTransformerComponents;
-    private List<ComponentName> mRendererComponents;
+    private boolean mRegisteredMonitor = false;
+
+    @NonNull private List<ComponentName> mRefinerComponents = Collections.emptyList();
+    @NonNull private List<ComponentName> mUnderstanderComponents = Collections.emptyList();
+    @NonNull private List<ComponentName> mTransformerComponents = Collections.emptyList();
+    @NonNull private List<ComponentName> mRendererComponents = Collections.emptyList();
 
     public PersonalContextManagerService(Context context) {
         super(context);
-        mContext = context;
     }
 
     @Override
     public void onStart() {
-        publishBinderService(PersonalContextManager.PERSONAL_CONTEXT_SERVICE, new BinderService());
+        publishBinderService(
+                PersonalContextManager.PERSONAL_CONTEXT_SERVICE,
+                new BinderService(this));
+
         Log.d(TAG, "Service started");
     }
 
     @Override
     public void onUserUnlocked(@NonNull TargetUser user) {
-        if (mRegisteredComponents) {
+        if (mRegisteredMonitor) {
             return;
         }
 
-        mRegisteredComponents = true;
-        registerComponents(
-                resourceToComponentList(R.array.config_personalContextTriggerComponents),
-                resourceToComponentList(R.array.config_personalContextRefinerComponents),
-                resourceToComponent(R.string.config_personalContextUnderstanderComponent),
-                resourceToComponentList(R.array.config_personalContextTransformerComponents),
-                resourceToComponentList(R.array.config_personalContextRendererComponents)
-        );
+        mRegisteredMonitor = true;
+        registerComponents();
+
+        Log.d(TAG, "Starting package monitor");
+        mMonitor.register(
+                getContext(),
+                /* looper= */ null,
+                /* user= */ UserHandle.CURRENT,
+                /* externalStorage= */ false);
     }
 
-    private void registerComponents(
-            List<ComponentName> triggerComponents,
-            List<ComponentName> refinerComponents,
-            ComponentName understanderComponent,
-            List<ComponentName> transformerComponents,
-            List<ComponentName> rendererComponents) {
-        mTriggerComponents = triggerComponents;
-        mRefinerComponents = refinerComponents;
-        mUnderstanderComponent = understanderComponent;
-        mTransformerComponents = transformerComponents;
-        mRendererComponents = rendererComponents;
-
-        // TODO: Do actual registration.
-    }
-
-    private ComponentName resourceToComponent(int resId) {
-        return ComponentName.unflattenFromString(getContext().getResources().getString(resId));
-    }
-
-    private List<ComponentName> resourceToComponentList(int resId) {
-        List<ComponentName> result = new ArrayList<>();
-        for (String rawComponentName : getContext().getResources().getStringArray(resId)) {
-            result.add(ComponentName.unflattenFromString(rawComponentName));
+    private List<ComponentName> getServiceComponentNames(String action) {
+        final Intent serviceIntent = new Intent(action);
+        final List<ResolveInfo> services = getContext().getPackageManager().queryIntentServices(
+                serviceIntent, PackageManager.GET_META_DATA);
+        final List<ComponentName> result = new ArrayList<>(services.size());
+        for (ResolveInfo resolveInfo : services) {
+            if (resolveInfo != null && resolveInfo.serviceInfo != null) {
+                result.add(new ComponentName(
+                        resolveInfo.serviceInfo.packageName,
+                        resolveInfo.serviceInfo.name));
+            }
         }
-        return result;
+
+        return List.copyOf(result);
     }
 
-    private final class BinderService extends IPersonalContextManager.Stub {
+    private void registerComponents() {
+        Log.d(TAG, "Registering components");
+
+        mRefinerComponents = getServiceComponentNames(ACTION_REFINER_SERVICE);
+        mUnderstanderComponents = getServiceComponentNames(ACTION_UNDERSTANDER_SERVICE);
+        mTransformerComponents = getServiceComponentNames(ACTION_TRANSFORMER_SERVICE);
+        mRendererComponents = getServiceComponentNames(ACTION_RENDERER_SERVICE);
+    }
+
+    private static final class BinderService extends IPersonalContextManager.Stub {
+        private final WeakReference<PersonalContextManagerService> mService;
+
+        private BinderService(PersonalContextManagerService service) {
+            mService = new WeakReference<>(service);
+        }
+
         @PermissionManuallyEnforced
         @Override
         protected void dump(
                 @NonNull FileDescriptor fd,
                 @NonNull PrintWriter fout,
                 @Nullable String[] args) {
-            if (!DumpUtils.checkDumpPermission(mContext, TAG, fout)) {
+            final PersonalContextManagerService service = mService.get();
+            if (service == null) {
+                fout.write("Service not available");
+                return;
+            } else if (!DumpUtils.checkDumpPermission(service.getContext(), TAG, fout)) {
                 return;
             }
 
-            fout.write("Triggers\n");
-            fout.write("========\n");
-            dumpComponentList(fout, mTriggerComponents);
-
-            fout.write("Refiners\n");
-            fout.write("========\n");
-            dumpComponentList(fout, mRefinerComponents);
-
-            fout.write("Understander\n");
-            fout.write("============\n");
-            if (mUnderstanderComponent != null) {
-                fout.write("  " + mUnderstanderComponent.flattenToString() + "\n");
-            } else {
-                fout.write("  (No component configured)\n");
-            }
-            fout.write("\n");
-
-            fout.write("Transformers\n");
-            fout.write("============\n");
-            dumpComponentList(fout, mTransformerComponents);
-
-            fout.write("Renderers\n");
-            fout.write("=========\n");
-            dumpComponentList(fout, mRendererComponents);
+            dumpComponentList(fout, "Refiners", service.mRefinerComponents);
+            dumpComponentList(fout, "Understanders", service.mUnderstanderComponents);
+            dumpComponentList(fout, "Transformers", service.mTransformerComponents);
+            dumpComponentList(fout, "Renderers", service.mRendererComponents);
         }
 
-        private void dumpComponentList(@NonNull PrintWriter fout, List<ComponentName> components) {
+        private void dumpComponentList(
+                @NonNull PrintWriter fout,
+                @NonNull String name,
+                @NonNull Collection<ComponentName> components) {
+            fout.write(name + "\n");
+            fout.write("=".repeat(name.length()) + "\n");
             for (ComponentName component : components) {
                 fout.write("  " + component.flattenToString() + "\n");
             }
             fout.write(String.format("  (%s configured components)\n", components.size()));
             fout.write("\n");
         }
+    }
 
+    private static final class Monitor extends PackageMonitor {
+        private final WeakReference<PersonalContextManagerService> mService;
+
+        private Monitor(PersonalContextManagerService service) {
+            mService = new WeakReference<>(service);
+        }
+
+        private void reregisterComponents() {
+            // TODO: Make this smart enough to only re-register when there's a meaningful change.
+            final PersonalContextManagerService service = mService.get();
+            if (service == null) {
+                Log.e(TAG, "Service not available, unregistering package monitor");
+                unregister();
+            } else {
+                service.registerComponents();
+            }
+        }
+
+        @Override
+        public boolean onPackageChanged(String packageName, int uid, String[] components) {
+            Log.d(TAG, "Package " + packageName + " changed, re-registering components");
+            reregisterComponents();
+            return false;
+        }
+
+        @Override
+        public void onPackageUpdateFinished(String packageName, int uid) {
+            Log.d(TAG, "Package " + packageName + " updated, re-registering components");
+            reregisterComponents();
+        }
+
+        @Override
+        public void onPackageAdded(String packageName, int uid) {
+            Log.d(TAG, "Package " + packageName + " added, re-registering components");
+            reregisterComponents();
+        }
+
+        @Override
+        public void onPackageRemoved(String packageName, int uid) {
+            Log.d(TAG, "Package " + packageName + " removed, re-registering components");
+            reregisterComponents();
+        }
     }
 }
