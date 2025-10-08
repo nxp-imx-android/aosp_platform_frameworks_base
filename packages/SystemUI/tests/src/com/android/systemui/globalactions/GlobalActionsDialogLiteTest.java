@@ -91,6 +91,7 @@ import com.android.systemui.util.settings.FakeGlobalSettings;
 import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.settings.GlobalSettings;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -148,6 +149,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     @Mock private UserLogoutInteractor mLogoutInteractor;
     @Mock private OnBackInvokedDispatcher mOnBackInvokedDispatcher;
     @Mock private PowerManager mPowerManager;
+    @Mock private WindowRootViewBlurInteractor mBlurInteractor;
     @Captor private ArgumentCaptor<OnBackInvokedCallback> mOnBackInvokedCallback;
 
     private TestableLooper mTestableLooper;
@@ -211,7 +213,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 mLogoutInteractor,
                 mInteractor,
                 () -> new FakeDisplayWindowPropertiesRepository(mContext),
-                mPowerManager
+                mPowerManager,
+                mBlurInteractor
         );
         mGlobalActionsDialogLite.setZeroDialogPressDelayForTesting();
 

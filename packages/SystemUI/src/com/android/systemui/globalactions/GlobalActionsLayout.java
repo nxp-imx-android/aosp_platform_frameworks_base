@@ -50,6 +50,10 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
         super(context, attrs);
     }
 
+    public void setIsBlurSupported(boolean isBlurSupported) {
+        updateIsBlurSupported(isBlurSupported);
+    }
+
     private void setBackgrounds() {
         ViewGroup listView = getListView();
 
@@ -64,7 +68,6 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
             blurDrawable.setBlurRadius(getResources().getDimensionPixelSize(
                     R.dimen.global_actions_blur_radius));
             GradientDrawable surfaceEffect = new GradientDrawable();
-            surfaceEffect.setColor(SurfaceEffectColors.surfaceEffect0(mContext));
             surfaceEffect.setCornerRadius(dialogCornerRadius);
             listBackground = new LayerDrawable(new Drawable[]{blurDrawable, surfaceEffect});
         } else {
@@ -86,6 +89,16 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
             if (separatedBackground != null) {
                 getSeparatedView().setBackground(separatedBackground);
             }
+        }
+    }
+
+    private void updateIsBlurSupported(boolean isBlurSupported) {
+        if (blurOnMoreSurfaces()) {
+            LayerDrawable layerDrawable = (LayerDrawable) getListView().getBackground();
+            layerDrawable.getDrawable(0).setVisible(isBlurSupported, false);
+            ((GradientDrawable) layerDrawable.getDrawable(1)).setColor(
+                    mContext.getColor(isBlurSupported ? R.color.global_actions_grid_background_blur
+                            : R.color.global_actions_grid_background_blur_fallback));
         }
     }
 

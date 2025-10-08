@@ -48,6 +48,8 @@
 
     <!-- The color of the background in the grid of the Global Actions menu -->
     <color name="global_actions_grid_background">#F1F3F4</color>
+    <color name="global_actions_grid_background_blur">@androidprv:color/surface_effect_0</color>
+    <color name="global_actions_grid_background_blur_fallback">@android:color/system_accent1_200</color>
 
     <!-- Colors for Power Menu Lite -->
     <color name="global_actions_lite_button_background_focused">#808080</color>
