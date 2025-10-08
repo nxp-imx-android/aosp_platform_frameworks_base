@@ -1865,16 +1865,6 @@ flag {
 }
 
 flag {
-    name: "blur_settings_toggle"
-    namespace: "systemui"
-    description: "Add a settings toggle to enable/disable blur."
-    bug: "418000779"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "expandable_use_modifier_implementation"
     namespace: "systemui"
     description: "Default the Compose Expandable to the new modifier implementation."
