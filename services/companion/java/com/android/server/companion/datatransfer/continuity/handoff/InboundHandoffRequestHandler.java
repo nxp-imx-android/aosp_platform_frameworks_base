@@ -53,16 +53,16 @@ import java.util.Objects;
  * Responsible for receiving handoff requests from other devices and passing back data needed to
  * reinflate the tasks on the remote device.
  */
-public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.Stub {
+public class InboundHandoffRequestHandler extends IHandoffTaskDataReceiver.Stub {
 
-    private static final String TAG = "InboundHandoffRequestController";
+    private static final String TAG = "InboundHandoffRequestHandler";
 
     // Map of task id to list of association ids that have a pending handoff request for that task.
     private final Map<Integer, List<Integer>> mPendingHandoffRequests = new HashMap<>();
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
-    public InboundHandoffRequestController(
+    public InboundHandoffRequestHandler(
             @NonNull TaskContinuityMessenger taskContinuityMessenger) {
         Objects.requireNonNull(taskContinuityMessenger);
 

@@ -52,21 +52,21 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OutboundHandoffRequestControllerTest {
+public class OutboundHandoffRequestHandlerTest {
 
     @Mock private Context mMockContext;
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private PackageManager mMockPackageManager;
     @Mock private TaskSyncController mMockTaskSyncController;
 
-    private OutboundHandoffRequestController mOutboundHandoffRequestController;
+    private OutboundHandoffRequestHandler mOutboundHandoffRequestHandler;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         doReturn(mMockPackageManager).when(mMockContext).getPackageManager();
-        mOutboundHandoffRequestController =
-                new OutboundHandoffRequestController(
+        mOutboundHandoffRequestHandler =
+                new OutboundHandoffRequestHandler(
                         mMockContext, mMockTaskContinuityMessenger, mMockTaskSyncController);
     }
 
@@ -80,7 +80,7 @@ public class OutboundHandoffRequestControllerTest {
                 .sendMessage(eq(associationId), any());
 
         // Request a handoff to a device.
-        mOutboundHandoffRequestController.requestHandoff(associationId, taskId, callbackHolder);
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callbackHolder);
 
         // Verify HandoffRequestMessage was sent.
         HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
@@ -108,7 +108,7 @@ public class OutboundHandoffRequestControllerTest {
                         taskId,
                         TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS,
                         List.of(handoffActivityData));
-        mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
+        mOutboundHandoffRequestHandler.onHandoffRequestResultMessageReceived(
                 associationId, handoffRequestResultMessage);
 
         // Verify the intent was launched.
@@ -139,7 +139,7 @@ public class OutboundHandoffRequestControllerTest {
                 .when(mMockTaskContinuityMessenger)
                 .sendMessage(eq(associationId), any());
 
-        mOutboundHandoffRequestController.requestHandoff(associationId, taskId, callbackHolder);
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callbackHolder);
 
         // Verify the callback was invoked.
         callbackHolder.verifyInvoked(
@@ -159,8 +159,8 @@ public class OutboundHandoffRequestControllerTest {
         // Request handoff multiple times.
         FakeHandoffRequestCallback firstCallback = new FakeHandoffRequestCallback();
         FakeHandoffRequestCallback secondCallback = new FakeHandoffRequestCallback();
-        mOutboundHandoffRequestController.requestHandoff(associationId, taskId, firstCallback);
-        mOutboundHandoffRequestController.requestHandoff(associationId, taskId, secondCallback);
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, firstCallback);
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, secondCallback);
 
         HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
         verify(mMockTaskContinuityMessenger, times(1))
@@ -176,11 +176,11 @@ public class OutboundHandoffRequestControllerTest {
                 .when(mMockTaskContinuityMessenger)
                 .sendMessage(eq(associationId), any());
         FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
-        mOutboundHandoffRequestController.requestHandoff(associationId, taskId, callback);
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callback);
 
         // Simulate a message failure
         int failureStatusCode = TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT;
-        mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
+        mOutboundHandoffRequestHandler.onHandoffRequestResultMessageReceived(
                 associationId,
                 new HandoffRequestResultMessage(taskId, failureStatusCode, List.of()));
 
@@ -200,10 +200,10 @@ public class OutboundHandoffRequestControllerTest {
                 .when(mMockTaskContinuityMessenger)
                 .sendMessage(eq(associationId), any());
         FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
-        mOutboundHandoffRequestController.requestHandoff(associationId, taskId, callback);
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callback);
 
         // Return no data for this request.
-        mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
+        mOutboundHandoffRequestHandler.onHandoffRequestResultMessageReceived(
                 associationId,
                 new HandoffRequestResultMessage(
                         taskId, TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS, List.of()));
@@ -248,7 +248,7 @@ public class OutboundHandoffRequestControllerTest {
                 .when(mMockTaskContinuityMessenger)
                 .sendMessage(eq(associationId), any());
         FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
-        mOutboundHandoffRequestController.requestHandoff(associationId, taskId, callback);
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callback);
         callback.verifyInvoked(associationId, taskId, expectedStatusCode);
         verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
     }

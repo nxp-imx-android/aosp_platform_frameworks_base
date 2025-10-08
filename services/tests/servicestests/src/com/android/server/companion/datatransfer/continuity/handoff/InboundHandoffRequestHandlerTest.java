@@ -69,12 +69,12 @@ import java.util.List;
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class InboundHandoffRequestControllerTest {
+public class InboundHandoffRequestHandlerTest {
 
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
 
-    private InboundHandoffRequestController mInboundHandoffRequestController;
+    private InboundHandoffRequestHandler mInboundHandoffRequestHandler;
 
     @Before
     public void setUp() {
@@ -83,8 +83,8 @@ public class InboundHandoffRequestControllerTest {
         LocalServices.addService(
                 ActivityTaskManagerInternal.class, mMockActivityTaskManagerInternal);
 
-        mInboundHandoffRequestController =
-                new InboundHandoffRequestController(mMockTaskContinuityMessenger);
+        mInboundHandoffRequestHandler =
+                new InboundHandoffRequestHandler(mMockTaskContinuityMessenger);
     }
 
     @After
@@ -98,16 +98,16 @@ public class InboundHandoffRequestControllerTest {
         int taskId = 2;
 
         // Setup a pending request
-        mInboundHandoffRequestController.onHandoffRequestMessageReceived(
+        mInboundHandoffRequestHandler.onHandoffRequestMessageReceived(
                 associationId, new HandoffRequestMessage(taskId));
         verify(mMockActivityTaskManagerInternal, times(1))
-                .requestHandoffTaskData(eq(taskId), eq(mInboundHandoffRequestController));
+                .requestHandoffTaskData(eq(taskId), eq(mInboundHandoffRequestHandler));
 
         HandoffActivityData handoffActivityData =
                 new HandoffActivityData.Builder(new ComponentName("testPackage", "testActivity"))
                         .build();
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
-        mInboundHandoffRequestController.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
+        mInboundHandoffRequestHandler.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
         HandoffRequestResultMessage expectedMessage =
                 new HandoffRequestResultMessage(
@@ -124,9 +124,9 @@ public class InboundHandoffRequestControllerTest {
         int taskId = 3;
 
         // Setup pending requests from two associations for the same task
-        mInboundHandoffRequestController.onHandoffRequestMessageReceived(
+        mInboundHandoffRequestHandler.onHandoffRequestMessageReceived(
                 firstAssociationId, new HandoffRequestMessage(taskId));
-        mInboundHandoffRequestController.onHandoffRequestMessageReceived(
+        mInboundHandoffRequestHandler.onHandoffRequestMessageReceived(
                 secondAssociationId, new HandoffRequestMessage(taskId));
         // requestHandoffTaskData should only be called once for the task
         verify(mMockActivityTaskManagerInternal, times(1))
@@ -137,7 +137,7 @@ public class InboundHandoffRequestControllerTest {
                         .build();
 
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
-        mInboundHandoffRequestController.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
+        mInboundHandoffRequestHandler.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
         HandoffRequestResultMessage expectedMessage =
                 new HandoffRequestResultMessage(
@@ -192,12 +192,12 @@ public class InboundHandoffRequestControllerTest {
         int taskId = 1;
 
         // Setup a pending request
-        mInboundHandoffRequestController.onHandoffRequestMessageReceived(
+        mInboundHandoffRequestHandler.onHandoffRequestMessageReceived(
                 associationId, new HandoffRequestMessage(taskId));
         verify(mMockActivityTaskManagerInternal, times(1))
                 .requestHandoffTaskData(eq(taskId), any());
 
-        mInboundHandoffRequestController.onHandoffTaskDataRequestFailed(taskId, receiverErrorCode);
+        mInboundHandoffRequestHandler.onHandoffTaskDataRequestFailed(taskId, receiverErrorCode);
 
         HandoffRequestResultMessage expectedMessage =
                 new HandoffRequestResultMessage(taskId, expectedStatusCode, List.of());
