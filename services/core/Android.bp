@@ -253,6 +253,7 @@ java_library_static {
         "AvfBuildFlags",
         "textclassifier_flags_lib",
         "accounts_flags_lib",
+        "lights_flags_lib",
         "android.bpfprogs.flags-aconfig-java",
         "services.signal-collector-manager-internal",
     ],

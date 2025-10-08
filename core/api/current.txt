@@ -21424,19 +21424,44 @@ package android.hardware.input {
 
 package android.hardware.lights {
 
+  @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public final class ColorSequence implements android.os.Parcelable {
+    method public int describeContents();
+    method @ColorInt @NonNull public int[] getColors();
+    method @NonNull public int[] getDelaysMillis();
+    method public int getDurationMillis();
+    method public int getInterpolationMode();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.lights.ColorSequence> CREATOR;
+    field public static final int INTERPOLATION_MODE_LINEAR = 1; // 0x1
+    field public static final int INTERPOLATION_MODE_NONE = 0; // 0x0
+  }
+
+  public static final class ColorSequence.Builder {
+    ctor public ColorSequence.Builder();
+    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoint(int, @ColorInt int);
+    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull int[], @ColorInt @NonNull int[]);
+    method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull android.hardware.lights.ColorSequence);
+    method @NonNull public android.hardware.lights.ColorSequence build();
+    method @NonNull public android.hardware.lights.ColorSequence.Builder setInterpolationMode(int);
+  }
+
   public final class Light implements android.os.Parcelable {
     method public int describeContents();
     method public int getId();
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public int getMinUpdatePeriodMillis();
     method @NonNull public String getName();
     method public int getOrdinal();
     method public int getType();
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public boolean hasAnimationControl();
     method public boolean hasBrightnessControl();
     method public boolean hasRgbControl();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.lights.Light> CREATOR;
+    field @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public static final int LIGHT_CAPABILITY_ANIMATION = 4; // 0x4
     field public static final int LIGHT_CAPABILITY_BRIGHTNESS = 1; // 0x1
     field public static final int LIGHT_CAPABILITY_COLOR_RGB = 2; // 0x2
     field @Deprecated public static final int LIGHT_CAPABILITY_RGB = 0; // 0x0
+    field @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public static final int LIGHT_TYPE_APPLICATION = 10; // 0xa
     field public static final int LIGHT_TYPE_INPUT = 10001; // 0x2711
     field public static final int LIGHT_TYPE_KEYBOARD_BACKLIGHT = 10003; // 0x2713
     field public static final int LIGHT_TYPE_MICROPHONE = 8; // 0x8
@@ -21470,6 +21495,7 @@ package android.hardware.lights {
   }
 
   public final class LightsRequest {
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") @Nullable public android.hardware.lights.MultiLightEffect getEffect();
     method @NonNull public java.util.List<android.hardware.lights.LightState> getLightStates();
     method @NonNull public java.util.List<java.lang.Integer> getLights();
     method @NonNull public java.util.Map<android.hardware.lights.Light,android.hardware.lights.LightState> getLightsAndStates();
@@ -21480,6 +21506,24 @@ package android.hardware.lights {
     method @NonNull public android.hardware.lights.LightsRequest.Builder addLight(@NonNull android.hardware.lights.Light, @NonNull android.hardware.lights.LightState);
     method @NonNull public android.hardware.lights.LightsRequest build();
     method @NonNull public android.hardware.lights.LightsRequest.Builder clearLight(@NonNull android.hardware.lights.Light);
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") @NonNull public android.hardware.lights.LightsRequest.Builder setEffect(@NonNull android.hardware.lights.MultiLightEffect);
+  }
+
+  @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public final class MultiLightEffect implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getIterations();
+    method @NonNull public java.util.Map<java.lang.Integer,android.hardware.lights.ColorSequence> getSequences();
+    method public boolean isPreemptive();
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.lights.MultiLightEffect> CREATOR;
+  }
+
+  @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public static final class MultiLightEffect.Builder {
+    ctor public MultiLightEffect.Builder();
+    method @NonNull public android.hardware.lights.MultiLightEffect.Builder addLightSequence(@NonNull android.hardware.lights.Light, @NonNull android.hardware.lights.ColorSequence);
+    method @NonNull public android.hardware.lights.MultiLightEffect build();
+    method @NonNull public android.hardware.lights.MultiLightEffect.Builder setIterations(int);
+    method @NonNull public android.hardware.lights.MultiLightEffect.Builder setPreemptive(boolean);
   }
 
 }
