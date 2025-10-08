@@ -23,6 +23,7 @@ import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.view.Display.TYPE_INTERNAL;
+import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
@@ -206,6 +207,20 @@ class AppCompatDisplayCompatModePolicy {
 
         final int supportedConfigChanged = mActivityRecord.info.getRealConfigChanged();
         return COMPUTER_CONTROL_COMPAT_MODE_CONFIG_MASK & (~supportedConfigChanged);
+    }
+
+    /**
+     * Returns {@code true} if the activity is likely to be unintentionally killing itself on
+     * display move.
+     */
+    boolean shouldRecoverFromSelfKillOnDisplayMove() {
+        if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
+            return false;
+        }
+        // TODO(b/446998828):  Make sure that this returns true only when we're sure it's needed.
+        //  For example, once an app has moved between displays, this returns true for any activity
+        //  relaunch (not necessarily the one associated to display move).
+        return mActivityRecord.isRelaunching() && mDisplayChangedWithoutRestart;
     }
 
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
