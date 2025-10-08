@@ -22,7 +22,6 @@ import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.VRectF
 import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 object ViewUtils {
     fun View.computeLayoutDiff(targetRegion: VRect, isLargeClock: Boolean): VPointF {
@@ -60,19 +59,19 @@ object ViewUtils {
 
     fun DigitalClockViewAdapter.setLeftTopRightBottom(rect: VRectF) {
         (this as View).setLeftTopRightBottom(
-            ceil(rect.left).roundToInt(),
-            ceil(rect.top).roundToInt(),
-            ceil(rect.right).roundToInt(),
-            ceil(rect.bottom).roundToInt(),
+            ceil(rect.left).toInt(),
+            ceil(rect.top).toInt(),
+            ceil(rect.right).toInt(),
+            ceil(rect.bottom).toInt(),
         )
     }
 
     fun DigitalClockViewAdapter.layout(rect: VRectF) {
         (this as View).layout(
-            ceil(rect.left).roundToInt(),
-            ceil(rect.top).roundToInt(),
-            ceil(rect.right).roundToInt(),
-            ceil(rect.bottom).roundToInt(),
+            ceil(rect.left).toInt(),
+            ceil(rect.top).toInt(),
+            ceil(rect.right).toInt(),
+            ceil(rect.bottom).toInt(),
         )
     }
 }
