@@ -84,6 +84,7 @@ import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.shade.ShadeExpansionChangeEvent;
 import com.android.systemui.touch.TouchInsetManager;
+import com.android.systemui.util.Assert;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.kotlin.BooleanFlowOperators;
 
@@ -468,7 +469,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mLifecycleRegistry = lifecycleOwner.getRegistry();
         mPowerInteractor = powerInteractor;
 
-        mExecutor.execute(() -> setLifecycleStateLocked(Lifecycle.State.CREATED));
+        setLifecycleStateLocked(Lifecycle.State.CREATED);
 
         mFlows.add(collectFlow(getLifecycle(), mCommunalInteractor.isCommunalAvailable(),
                 mIsCommunalAvailableCallback));
@@ -519,11 +520,11 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         }
         mFlows.clear();
 
-        mExecutor.execute(() -> {
-            setLifecycleStateLocked(Lifecycle.State.DESTROYED);
-            mDestroyed = true;
-            mResetHandler.reset("destroying");
-        });
+        // onDestroy will run on the main thread so this call is safe.
+        Assert.isMainThread();
+        setLifecycleStateLocked(Lifecycle.State.DESTROYED);
+        mDestroyed = true;
+        mResetHandler.reset("destroying");
 
         mDispatcher.onServicePreSuperOnDestroy();
         super.onDestroy();
@@ -531,6 +532,11 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
     @Override
     public void onStartDream(@NonNull WindowManager.LayoutParams layoutParams) {
+        if (mDestroyed) {
+            Log.e(TAG, "Tried to start dream in destroyed state");
+            return;
+        }
+
         final ComplicationComponent complicationComponent = mComplicationComponentFactory.create(
                 mLifecycleOwner,
                 () -> mExecutor.execute(DreamOverlayService.this::requestExit),
@@ -566,12 +572,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         mUiEventLogger.log(DreamOverlayEvent.DREAM_OVERLAY_ENTER_START);
 
-        if (mDestroyed) {
-            // The task could still be executed after the service has been destroyed. Bail if
-            // that is the case.
-            return;
-        }
-
         if (mStarted) {
             // Reset the current dream overlay before starting a new one. This can happen
             // when two dreams overlap (briefly, for a smoother dream transition) and both
@@ -598,9 +598,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             return;
         }
 
-        // Set lifecycle to resumed only if there's nothing covering the dream, ex. shade, bouncer,
-        // or hub. These updates can come in before onStartDream runs.
-        updateLifecycleStateLocked();
         mStateController.setOverlayActive(true);
         final ComponentName dreamComponent = getDreamComponent();
         mStateController.setLowLightActive(
@@ -614,6 +611,10 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mDreamOverlayCallbackController.onStartDream();
         mStarted = true;
         mEnded = false;
+
+        // Set lifecycle to resumed only if there's nothing covering the dream, ex. shade, bouncer,
+        // or hub. These updates can come in before onStartDream runs.
+        updateLifecycleStateLocked();
 
         mKeyguardUpdateMonitor.registerCallback(mKeyguardCallback);
 
@@ -641,6 +642,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         if (dreamOverlayStartedFix()) {
             mEnded = true;
         }
+        updateLifecycleStateLocked();
         mResetHandler.reset("ending dream");
     }
 
@@ -664,8 +666,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
      * {@link #dreamScopedExecute(Runnable, String)}.
      */
     private void updateGestureBlockingLocked() {
-        final boolean shouldBlock =
-                (dreamOverlayStartedFix() || mStarted) && !mShadeExpanded && !mBouncerShowing
+        final boolean shouldBlock = getLifecycleStateLocked() == Lifecycle.State.RESUMED
+                && (dreamOverlayStartedFix() || mStarted) && !mShadeExpanded && !mBouncerShowing
                         && !isDreamInPreviewMode() && !mBiometricPromptShowing;
 
         if (shouldBlock) {
@@ -693,7 +695,11 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         // If anything is on top of the dream, we should stop touch handling.
         boolean shouldPause =
-                mShadeExpanded || mCommunalVisible || mBouncerShowing || mBiometricPromptShowing;
+                mShadeExpanded
+                        || mCommunalVisible
+                        || mBouncerShowing
+                        || mBiometricPromptShowing
+                        || mEnded;
 
         setLifecycleStateLocked(
                 shouldPause ? Lifecycle.State.STARTED : Lifecycle.State.RESUMED);
