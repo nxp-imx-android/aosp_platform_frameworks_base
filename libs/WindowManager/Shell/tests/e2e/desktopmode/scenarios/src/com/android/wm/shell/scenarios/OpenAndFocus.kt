@@ -61,12 +61,8 @@ abstract class OpenAndFocus() : TestScenarioBase() {
 
     @Test
     open fun openAndFocus() {
-        // TODO(b/426420246): Use launchViaIntentOnDisplay
-        testAppInExternalDisplay.launchViaIntent(wmHelper)
-        testAppInExternalDisplay.moveToNextDisplayViaKeyboard(
-            wmHelper,
-            connectedDisplayRule.addedDisplays.first()
-        )
+        val displayId = connectedDisplayRule.addedDisplays.first()
+        testAppInExternalDisplay.launchViaIntentOnDisplay(wmHelper, displayId)
 
         // Send minimize via keyboard and observe window to check display focus.
         keyEventHelper.press(KEYCODE_MINUS, META_META_ON)
