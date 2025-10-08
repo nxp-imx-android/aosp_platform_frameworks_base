@@ -158,6 +158,7 @@ public final class DreamManagerService extends SystemService {
     private final boolean mOnlyDreamOnWirelessChargingDefault;
     private final boolean mKeepDreamingWhenUnpluggingDefault;
     private final boolean mDreamsDisabledByAmbientModeSuppressionConfig;
+    private final boolean mSupportDreamWirelessChargingRestriction;
 
     private final CopyOnWriteArrayList<DreamManagerInternal.DreamManagerStateListener>
             mDreamManagerStateListeners = new CopyOnWriteArrayList<>();
@@ -311,6 +312,8 @@ public final class DreamManagerService extends SystemService {
                 com.android.internal.R.bool.config_keepDreamingWhenUnplugging);
         mDreamsDisabledByAmbientModeSuppressionConfig = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_dreamsDisabledByAmbientModeSuppressionConfig);
+        mSupportDreamWirelessChargingRestriction = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_supportDreamWirelessChargingRestriction);
 
         mBatteryManagerInternal = getLocalService(BatteryManagerInternal.class);
     }
@@ -573,7 +576,8 @@ public final class DreamManagerService extends SystemService {
 
     private boolean dreamConditionActiveInternalLocked() {
         if ((mWhenToDream & DREAM_ON_CHARGE) == DREAM_ON_CHARGE) {
-            if (dreamsV2() && mOnlyDreamOnWirelessChargingSetting) {
+            if (dreamsV2() && mSupportDreamWirelessChargingRestriction
+                    && mOnlyDreamOnWirelessChargingSetting) {
                 return mIsWirelessCharging;
             } else {
                 return mIsCharging;
@@ -587,7 +591,8 @@ public final class DreamManagerService extends SystemService {
         }
 
         if ((mWhenToDream & DREAM_ON_POSTURED) == DREAM_ON_POSTURED) {
-            if (dreamsV2() && mOnlyDreamOnWirelessChargingSetting && !mIsWirelessCharging) {
+            if (dreamsV2() && mSupportDreamWirelessChargingRestriction
+                    && mOnlyDreamOnWirelessChargingSetting && !mIsWirelessCharging) {
                 return false;
             }
             return mIsPostured;

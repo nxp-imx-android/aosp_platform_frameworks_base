@@ -2876,6 +2876,9 @@
 
     <!-- Whether there is to be a chosen Dock User who is the only user allowed to dream. -->
     <bool name="config_dreamsOnlyEnabledForDockUser">false</bool>
+
+    <!-- Whether to support restricting dreams to wireless charging. -->
+    <bool name="config_supportDreamWirelessChargingRestriction">false</bool>
     <!-- Whether dreams are disabled when ambient mode is suppressed. -->
     <bool name="config_dreamsDisabledByAmbientModeSuppressionConfig">false</bool>
     <!-- Whether to restrict dreams to wireless charging. -->
