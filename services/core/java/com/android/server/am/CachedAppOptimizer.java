@@ -60,6 +60,7 @@ import android.app.ApplicationExitInfo;
 import android.app.ApplicationExitInfo.Reason;
 import android.app.ApplicationExitInfo.SubReason;
 import android.app.IApplicationThread;
+import android.content.pm.ApplicationInfo;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -2183,14 +2184,17 @@ public class CachedAppOptimizer {
             EventLog.writeEvent(EventLogTags.AM_FREEZE, pid, name);
 
             // See above for why we're not taking mPhenotypeFlagLock here
-            if (mRandom.nextFloat() < mFreezerStatsdSampleRate) {
+            if (mRandom.nextFloat() < mFreezerStatsdSampleRate
+                    || Flags.unsampledFreezeAtomLogging()) {
+                ApplicationInfo appInfo = proc.info;
                 FrameworkStatsLog.write(FrameworkStatsLog.APP_FREEZE_CHANGED,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__FREEZE_APP,
                         pid,
                         name,
                         unfrozenDuration,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE,
-                        UNFREEZE_REASON_NONE);
+                        UNFREEZE_REASON_NONE,
+                        appInfo != null ? appInfo.uid : -1);
             }
 
             try {
@@ -2223,7 +2227,9 @@ public class CachedAppOptimizer {
             app.onProcessUnfrozen();
 
             // See above for why we're not taking mPhenotypeFlagLock here
-            if (mRandom.nextFloat() < mFreezerStatsdSampleRate) {
+            if (mRandom.nextFloat() < mFreezerStatsdSampleRate
+                    || Flags.unsampledFreezeAtomLogging()) {
+                ApplicationInfo appInfo = app.info;
                 FrameworkStatsLog.write(
                         FrameworkStatsLog.APP_FREEZE_CHANGED,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__UNFREEZE_APP,
@@ -2231,7 +2237,8 @@ public class CachedAppOptimizer {
                         processName,
                         frozenDuration,
                         FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE, // deprecated
-                        reason);
+                        reason,
+                        appInfo != null ? appInfo.uid : -1);
             }
         }
 
