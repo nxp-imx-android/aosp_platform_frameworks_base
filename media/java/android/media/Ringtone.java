@@ -262,7 +262,7 @@ public class Ringtone {
      * and if not URI has been set, it will assume no haptic channels are present.
      * @hide
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @FlaggedApi(com.android.media.flags.Flags.FLAG_RELEASE_RINGTONE_AS_API)
     @SystemApi
     public boolean hasHapticChannels() {
         // FIXME: support remote player, or internalize haptic channels support and remove entirely.
