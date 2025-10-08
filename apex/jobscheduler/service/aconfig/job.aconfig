@@ -90,8 +90,6 @@ flag {
     }
 }
 
-
-
 flag {
     name: "fix_reporting_active_jobs"
     namespace: "backstage_power"
@@ -117,6 +115,16 @@ flag {
     namespace: "backstage_power"
     description: "Update the criteria for media backup job exemption"
     bug: "436531976"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "use_perfetto_sdk_for_tracing"
+    namespace: "backstage_power"
+    description: "Enable JobScheduler tracing via the Perfetto SDK."
+    bug: "441360426"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
