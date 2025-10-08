@@ -40,6 +40,9 @@ import com.android.systemui.authentication.shared.model.AuthenticationResultMode
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
 import com.android.systemui.user.data.repository.UserRepository
@@ -56,6 +59,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -63,6 +67,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 /** Defines interface for classes that can access authentication-related application state. */
@@ -128,7 +133,7 @@ interface AuthenticationRepository {
      * snapshot of the current authentication method without establishing a collector of the flow
      * can do so by invoking [getAuthenticationMethod].
      */
-    val authenticationMethod: Flow<AuthenticationMethodModel>
+    val authenticationMethod: StateFlow<AuthenticationMethodModel>
 
     /** The minimal length of a pattern. */
     val minPatternLength: Int
@@ -223,6 +228,7 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     broadcastDispatcher: BroadcastDispatcher,
     mobileConnectionsRepository: MobileConnectionsRepository,
+    @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
 ) : AuthenticationRepository {
 
     override val hintedPinLength: Int = 6
@@ -240,7 +246,7 @@ constructor(
             getFreshValue = lockPatternUtils::isAutoPinConfirmEnabled,
         )
 
-    override val authenticationMethod: Flow<AuthenticationMethodModel> =
+    override val authenticationMethod: StateFlow<AuthenticationMethodModel> =
         combine(userRepository.selectedUserInfo, mobileConnectionsRepository.isAnySimSecure) {
                 selectedUserInfo,
                 _ ->
@@ -258,8 +264,13 @@ constructor(
                     .onStart { emit(Unit) }
                     .map { selectedUserId }
             }
-            .map(::getAuthenticationMethod)
-            .distinctUntilChanged()
+            .map { getAuthenticationMethod() }
+            .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = None)
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = getAuthenticationMethodBlocking(selectedUserId),
+            )
 
     override val minPatternLength: Int = LockPatternUtils.MIN_LOCK_PATTERN_SIZE
 
@@ -324,8 +335,9 @@ constructor(
         }
     }
 
-    override suspend fun getAuthenticationMethod(): AuthenticationMethodModel =
-        getAuthenticationMethod(selectedUserId)
+    override suspend fun getAuthenticationMethod(): AuthenticationMethodModel {
+        return withContext(backgroundDispatcher) { getAuthenticationMethodBlocking(selectedUserId) }
+    }
 
     override suspend fun getPinLength(): Int {
         return withContext(backgroundDispatcher) { lockPatternUtils.getPinLength(selectedUserId) }
@@ -438,19 +450,20 @@ constructor(
         return flow.asStateFlow()
     }
 
-    /** Returns the authentication method for the given user ID. */
-    private suspend fun getAuthenticationMethod(@UserIdInt userId: Int): AuthenticationMethodModel {
-        return withContext(backgroundDispatcher) {
-            when (getSecurityMode.apply(userId)) {
-                KeyguardSecurityModel.SecurityMode.PIN -> Pin
-                KeyguardSecurityModel.SecurityMode.SimPin,
-                KeyguardSecurityModel.SecurityMode.SimPuk -> Sim
-                KeyguardSecurityModel.SecurityMode.Password -> Password
-                KeyguardSecurityModel.SecurityMode.Pattern -> Pattern
-                KeyguardSecurityModel.SecurityMode.None -> None
-                KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth -> Biometric
-                KeyguardSecurityModel.SecurityMode.Invalid -> error("Invalid security mode!")
-            }
+    /**
+     * Returns the authentication method for the given user ID. This is a blocking call that
+     * normally should only be made off the main thread.
+     */
+    private fun getAuthenticationMethodBlocking(@UserIdInt userId: Int): AuthenticationMethodModel {
+        return when (getSecurityMode.apply(userId)) {
+            KeyguardSecurityModel.SecurityMode.PIN -> Pin
+            KeyguardSecurityModel.SecurityMode.SimPin,
+            KeyguardSecurityModel.SecurityMode.SimPuk -> Sim
+            KeyguardSecurityModel.SecurityMode.Password -> Password
+            KeyguardSecurityModel.SecurityMode.Pattern -> Pattern
+            KeyguardSecurityModel.SecurityMode.None -> None
+            KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth -> Biometric
+            KeyguardSecurityModel.SecurityMode.Invalid -> error("Invalid security mode!")
         }
     }
 

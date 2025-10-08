@@ -33,6 +33,7 @@ import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.testKosmos
@@ -94,6 +95,7 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
                 devicePolicyManager = devicePolicyManager,
                 broadcastDispatcher = fakeBroadcastDispatcher,
                 mobileConnectionsRepository = mobileConnectionsRepository,
+                tableLogBuffer = logcatTableLogBuffer(kosmos, "sceneFrameworkTableLogBuffer"),
             )
     }
 

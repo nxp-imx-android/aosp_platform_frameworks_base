@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.domain.interactor
 
+import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -36,5 +37,6 @@ val Kosmos.sceneInteractor: SceneInteractor by
             keyguardEnabledInteractor = { keyguardEnabledInteractor },
             disabledContentInteractor = disabledContentInteractor,
             shadeModeInteractor = shadeModeInteractor,
+            authenticationInteractor = { authenticationInteractor },
         )
     }
