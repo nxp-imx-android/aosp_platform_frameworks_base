@@ -63,6 +63,7 @@ import com.android.compose.gesture.NestedScrollableBound
 fun SceneTransitionLayout(
     state: SceneTransitionLayoutState,
     modifier: Modifier = Modifier,
+    transitions: SceneTransitions? = null,
     swipeSourceDetector: SwipeSourceDetector = DefaultEdgeDetector,
     swipeDetector: SwipeDetector = DefaultSwipeDetector,
     @FloatRange(from = 0.0, to = 0.5) transitionInterceptionThreshold: Float = 0.05f,
@@ -73,6 +74,7 @@ fun SceneTransitionLayout(
     SceneTransitionLayoutForTesting(
         state,
         modifier,
+        transitions,
         swipeSourceDetector,
         swipeDetector,
         transitionInterceptionThreshold,
@@ -778,6 +780,7 @@ class FixedDistance(private val distance: Dp) : UserActionDistance {
 internal fun SceneTransitionLayoutForTesting(
     state: SceneTransitionLayoutState,
     modifier: Modifier = Modifier,
+    transitions: SceneTransitions? = null,
     swipeSourceDetector: SwipeSourceDetector = DefaultEdgeDetector,
     swipeDetector: SwipeDetector = DefaultSwipeDetector,
     transitionInterceptionThreshold: Float = 0f,
@@ -794,9 +797,29 @@ internal fun SceneTransitionLayoutForTesting(
     val defaultEffectFactory = checkNotNull(LocalOverscrollFactory.current)
     val animationScope = rememberCoroutineScope()
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val mutableState =
+        when (state) {
+            is HoistedSceneTransitionLayoutStateImpl -> {
+                state.rememberUiBoundState(transitions ?: SceneTransitions.Empty)
+            }
+            is MutableSceneTransitionLayoutStateImpl -> {
+                check(transitions == null) {
+                    "transitions should be passed to rememberMutableSceneTransitionLayoutState() " +
+                        "when the state is created during composition"
+                }
+
+                state
+            }
+            is NestedSceneTransitionLayoutState ->
+                error(
+                    "SceneTransitionLayout shouldn't be able to receive a " +
+                        "NestedSceneTransitionLayoutState"
+                )
+        }
+
     val layoutImpl = remember {
         SceneTransitionLayoutImpl(
-                state = state as MutableSceneTransitionLayoutStateImpl,
+                state = mutableState,
                 density = density,
                 layoutDirection = layoutDirection,
                 swipeSourceDetector = swipeSourceDetector,
@@ -820,7 +843,7 @@ internal fun SceneTransitionLayoutForTesting(
     layoutImpl.updateContents(builder, layoutDirection, defaultEffectFactory)
 
     SideEffect {
-        if (state != layoutImpl.state) {
+        if (mutableState != layoutImpl.state) {
             error(
                 "This SceneTransitionLayout was bound to a different SceneTransitionLayoutState" +
                     " that was used when creating it, which is not supported"
