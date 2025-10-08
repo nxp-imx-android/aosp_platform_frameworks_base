@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
+import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
 
 import android.app.ActivityManager;
 import android.app.HandoffActivityData;
@@ -57,7 +57,7 @@ public class OutboundHandoffRequestControllerTest {
     @Mock private Context mMockContext;
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private PackageManager mMockPackageManager;
-    @Mock private RemoteTaskStore mMockRemoteTaskStore;
+    @Mock private TaskSyncController mMockTaskSyncController;
 
     private OutboundHandoffRequestController mOutboundHandoffRequestController;
 
@@ -67,7 +67,7 @@ public class OutboundHandoffRequestControllerTest {
         doReturn(mMockPackageManager).when(mMockContext).getPackageManager();
         mOutboundHandoffRequestController =
                 new OutboundHandoffRequestController(
-                        mMockContext, mMockTaskContinuityMessenger, mMockRemoteTaskStore);
+                        mMockContext, mMockTaskContinuityMessenger, mMockTaskSyncController);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class OutboundHandoffRequestControllerTest {
                 associationId, taskId, TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS);
 
         // Verify the task was removed from the store.
-        verify(mMockRemoteTaskStore).removeTask(associationId, taskId);
+        verify(mMockTaskSyncController).removeTask(associationId, taskId);
     }
 
     @Test
