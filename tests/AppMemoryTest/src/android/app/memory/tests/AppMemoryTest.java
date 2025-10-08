@@ -159,6 +159,10 @@ public class AppMemoryTest {
         assertTrue("PID is not a valid number: " + pid, pid.matches("\\d+"));
         Log.i(TAG, "Got PID for " + HELPER + ": " + pid);
 
+        // before java app heap dump, trigger native heap dump by perfetto
+        cmd = "killall -USR1 heapprofd";
+        r = runShellCommandWithResult(cmd);
+
         // trigger the heap dump
         cmd = String.format("am dumpheap -b png %s %s", pid, profilePath);
         Log.i(TAG, "Executing heap dump command: " + cmd);
