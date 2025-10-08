@@ -187,16 +187,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_bal_reparent_existing_task"
-    description: "Avoid reparent existing task when the background launch is not allowed."
-    bug: "434047695"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "fix_tf_adjacent_visibility"
     description: "Fix the incorrect visibility calculation on adjacent TaskFragments."
     bug: "444352552"
