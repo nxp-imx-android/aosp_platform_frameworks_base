@@ -32,6 +32,7 @@
 #include <cutils/properties.h>
 #include <gui/Flags.h>
 #include <gui/GLConsumer.h>
+#include <gui/IGraphicBufferProducer.h>
 #include <gui/Surface.h>
 #include <nativehelper/JNIHelp.h>
 #include <utils/Errors.h>
@@ -759,19 +760,25 @@ static void android_hardware_Camera_setPreviewTexture(JNIEnv *env,
     sp<Camera> camera = get_native_camera(env, thiz, NULL);
     if (camera == 0) return;
 
-#if WB_LIBCAMERASERVICE_WITH_DEPENDENCIES
     sp<Surface> surface;
-#endif
-    sp<IGraphicBufferProducer> producer = NULL;
+    sp<IGraphicBufferProducer> producer;
     if (jSurfaceTexture != NULL) {
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_SURFACETEXTURE)
+        surface = SurfaceTexture_getSurface(env, jSurfaceTexture);
+        if (surface == NULL) {
+            jniThrowException(env, "java/lang/IllegalArgumentException",
+                              "SurfaceTexture already released in setPreviewTexture");
+            return;
+        }
+        producer = surface->getIGraphicBufferProducer();
+#else
         producer = SurfaceTexture_getProducer(env, jSurfaceTexture);
         if (producer == NULL) {
             jniThrowException(env, "java/lang/IllegalArgumentException",
                     "SurfaceTexture already released in setPreviewTexture");
             return;
         }
-#if WB_LIBCAMERASERVICE_WITH_DEPENDENCIES
-        surface = new Surface(producer);
+        surface = sp<Surface>::make(producer);
 #endif
     }
 

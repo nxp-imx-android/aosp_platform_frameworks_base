@@ -154,6 +154,9 @@ static inline bool isSurfaceValid(const sp<Surface>& sur) {
 #ifdef __ANDROID__
 static jlong nativeCreateFromSurfaceTexture(JNIEnv* env, jclass clazz,
         jobject surfaceTextureObj) {
+#if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_SURFACETEXTURE)
+    sp<Surface> surface = SurfaceTexture_getSurface(env, surfaceTextureObj);
+#else
     sp<IGraphicBufferProducer> producer(SurfaceTexture_getProducer(env, surfaceTextureObj));
     if (producer == NULL) {
         jniThrowException(env, IllegalArgumentException,
@@ -162,6 +165,7 @@ static jlong nativeCreateFromSurfaceTexture(JNIEnv* env, jclass clazz,
     }
 
     sp<Surface> surface = sp<Surface>::make(producer, true);
+#endif
     if (surface == NULL) {
         jniThrowException(env, OutOfResourcesException, NULL);
         return 0;
