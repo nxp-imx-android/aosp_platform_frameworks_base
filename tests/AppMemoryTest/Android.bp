@@ -91,3 +91,8 @@ android_test_helper_app {
     // to simulate it in our test load.
     min_sdk_version: "34",
 }
+
+filegroup {
+    name: "appmemorytest_perfetto_config",
+    srcs: ["perfetto.textproto"],
+}
