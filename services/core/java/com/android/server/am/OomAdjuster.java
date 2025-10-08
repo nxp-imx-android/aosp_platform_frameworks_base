@@ -556,6 +556,10 @@ public abstract class OomAdjuster {
                 / CACHED_APP_IMPORTANCE_LEVELS;
     }
 
+    OomAdjusterDebugLogger getLogger() {
+        return mLogger;
+    }
+
     void setAppAndChildProcessGroup(ProcessRecordInternal app, int group) {
         mProcessGroupHandler.sendMessage(mProcessGroupHandler.obtainMessage(
                 group, app));
@@ -2448,74 +2452,6 @@ public abstract class OomAdjuster {
         if (state.getSetProcState() <= PROCESS_STATE_TOP
                 && state.getCurProcState() > PROCESS_STATE_TOP) {
             state.setLastTopTime(nowUptime);
-        }
-    }
-
-    /**
-     * Look for recently inactive apps and mark them idle after a grace period. If idled, stop
-     * any background services and inform listeners.
-     */
-    @GuardedBy("mService")
-    void idleUidsLocked() {
-        final int N = mActiveUids.size();
-        mService.mHandler.removeMessages(IDLE_UIDS_MSG);
-        if (N <= 0) {
-            return;
-        }
-        final long nowElapsed = mInjector.getElapsedRealtimeMillis();
-        final long maxBgTime = nowElapsed - mConstants.BACKGROUND_SETTLE_TIME;
-        long nextTime = 0;
-        if (mService.mLocalPowerManager != null) {
-            mService.mLocalPowerManager.startUidChanges();
-        }
-        boolean shouldLogMisc = false;
-        for (int i = N - 1; i >= 0; i--) {
-            final UidRecord uidRec = mActiveUids.valueAt(i);
-            final long bgTime = uidRec.getLastBackgroundTime();
-            final long idleTime = uidRec.getLastIdleTimeIfStillIdle();
-            if (bgTime > 0 && (!uidRec.isIdle() || idleTime == 0)) {
-                if (bgTime <= maxBgTime) {
-                    EventLogTags.writeAmUidIdle(uidRec.getUid());
-                    synchronized (mProcLock) {
-                        uidRec.setIdle(true);
-                        uidRec.setSetIdle(true);
-                        uidRec.setLastIdleTime(nowElapsed);
-                    }
-                    mService.doStopUidLocked(uidRec.getUid(), uidRec);
-                } else {
-                    if (nextTime == 0 || nextTime > bgTime) {
-                        nextTime = bgTime;
-                    }
-                    if (mLogger.shouldLog(uidRec.getUid())) {
-                        shouldLogMisc = true;
-                    }
-                }
-            }
-        }
-        if (mService.mLocalPowerManager != null) {
-            mService.mLocalPowerManager.finishUidChanges();
-        }
-        // Also check if there are any apps in cached and background restricted mode,
-        // if so, kill it if it's been there long enough, or kick off a msg to check
-        // it later.
-        if (mService.mConstants.mKillBgRestrictedAndCachedIdle) {
-            final ArraySet<? extends ProcessRecordInternal> apps =
-                    mProcessList.mAppsInBackgroundRestricted;
-            for (int i = 0, size = apps.size(); i < size; i++) {
-                // Check to see if needs to be killed.
-                final long bgTime = mProcessList.killAppIfBgRestrictedAndCachedIdleLocked(
-                        apps.valueAt(i), nowElapsed) - mConstants.BACKGROUND_SETTLE_TIME;
-                if (bgTime > 0 && (nextTime == 0 || nextTime > bgTime)) {
-                    nextTime = bgTime;
-                }
-            }
-        }
-        if (nextTime > 0) {
-            long delay = nextTime + mConstants.BACKGROUND_SETTLE_TIME - nowElapsed;
-            if (shouldLogMisc) {
-                mLogger.logScheduleUidIdle3(delay);
-            }
-            mService.mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG, delay);
         }
     }
 
