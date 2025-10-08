@@ -21,6 +21,7 @@ import static android.os.Process.PROC_OUT_LONG;
 
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
+import static com.android.server.am.psc.Constants.NATIVE_ADJ;
 
 import android.os.Handler;
 import android.os.Process;
@@ -78,7 +79,7 @@ public final class PhantomProcessRecord {
         mPid = pid;
         mPpid = ppid;
         mKilled = false;
-        mAdj = ProcessList.NATIVE_ADJ;
+        mAdj = NATIVE_ADJ;
         mKnownSince = SystemClock.elapsedRealtime();
         mService = service;
         mLock = service.mPhantomProcessList.mLock;

@@ -68,7 +68,7 @@ import static com.android.internal.util.FrameworkStatsLog.APP_START_OCCURRED__PA
 import static com.android.internal.util.FrameworkStatsLog.APP_START_OCCURRED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_STOPPED;
 import static com.android.server.am.MemoryStatUtil.MemoryStat;
 import static com.android.server.am.MemoryStatUtil.readMemoryStatFromFilesystem;
-import static com.android.server.am.ProcessList.INVALID_ADJ;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_METRICS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;

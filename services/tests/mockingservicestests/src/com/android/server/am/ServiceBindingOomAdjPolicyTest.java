@@ -38,10 +38,10 @@ import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_OTHER;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_NONE;
-import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
-import static com.android.server.am.ProcessList.HOME_APP_ADJ;
-import static com.android.server.am.ProcessList.PERCEPTIBLE_APP_ADJ;
-import static com.android.server.am.ProcessList.SERVICE_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.HOME_APP_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
+import static com.android.server.am.psc.Constants.SERVICE_ADJ;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;

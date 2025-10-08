@@ -86,27 +86,29 @@ import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.AppProfiler.TAG_PSS;
 import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_LEGACY;
 import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NONE;
-import static com.android.server.am.ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
-import static com.android.server.am.ProcessList.CACHED_APP_MAX_ADJ;
-import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
-import static com.android.server.am.ProcessList.FOREGROUND_APP_ADJ;
-import static com.android.server.am.ProcessList.INVALID_ADJ;
-import static com.android.server.am.ProcessList.PERCEPTIBLE_APP_ADJ;
-import static com.android.server.am.ProcessList.PERCEPTIBLE_LOW_APP_ADJ;
-import static com.android.server.am.ProcessList.PERCEPTIBLE_MEDIUM_APP_ADJ;
-import static com.android.server.am.ProcessList.PREVIOUS_APP_ADJ;
-import static com.android.server.am.ProcessList.PREVIOUS_APP_MAX_ADJ;
-import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
-import static com.android.server.am.ProcessList.SCHED_GROUP_DEFAULT;
-import static com.android.server.am.ProcessList.SCHED_GROUP_FOREGROUND_WINDOW;
-import static com.android.server.am.ProcessList.SCHED_GROUP_RESTRICTED;
-import static com.android.server.am.ProcessList.SCHED_GROUP_TOP_APP;
-import static com.android.server.am.ProcessList.SCHED_GROUP_TOP_APP_BOUND;
-import static com.android.server.am.ProcessList.SERVICE_ADJ;
 import static com.android.server.am.ProcessList.TAG_PROCESS_OBSERVERS;
-import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
-import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
-import static com.android.server.am.ProcessList.VISIBLE_APP_MAX_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
+import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
+import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_LOW_APP_ADJ;
+import static com.android.server.am.psc.Constants.PERCEPTIBLE_MEDIUM_APP_ADJ;
+import static com.android.server.am.psc.Constants.PREVIOUS_APP_ADJ;
+import static com.android.server.am.psc.Constants.PREVIOUS_APP_MAX_ADJ;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_DEFAULT;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_FOREGROUND_WINDOW;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_RESTRICTED;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_TOP_APP;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_TOP_APP_BOUND;
+import static com.android.server.am.psc.Constants.SERVICE_ADJ;
+import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
+import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
+import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
+import static com.android.server.am.psc.Constants.VISIBLE_APP_LAYER_MAX;
+import static com.android.server.am.psc.Constants.VISIBLE_APP_MAX_ADJ;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_SWITCH;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
@@ -716,7 +718,7 @@ public abstract class OomAdjuster {
                         ? cr.getService().getIsolationHostProcess()
                         : cr.getService().getHostProcess();
                 if (service == null || service == pr
-                        || ((service.getMaxAdj() >= ProcessList.SYSTEM_ADJ)
+                        || ((service.getMaxAdj() >= SYSTEM_ADJ)
                                 && (service.getMaxAdj() < FOREGROUND_APP_ADJ))) {
                     continue;
                 }
@@ -737,7 +739,7 @@ public abstract class OomAdjuster {
                 ContentProviderConnectionInternal cpc = ppr.getProviderConnectionAt(i);
                 ProcessRecordInternal provider = cpc.getProvider().getHostProcess();
                 if (provider == null || provider == pr
-                        || ((provider.getMaxAdj() >= ProcessList.SYSTEM_ADJ)
+                        || ((provider.getMaxAdj() >= SYSTEM_ADJ)
                                 && (provider.getMaxAdj() < FOREGROUND_APP_ADJ))) {
                     continue;
                 }
@@ -773,7 +775,7 @@ public abstract class OomAdjuster {
                             final ConnectionRecordInternal cr = clist.get(i);
                             final ProcessRecordInternal attributedApp = cr.getAttributedClient();
                             if (attributedApp == null || attributedApp == pr
-                                    || ((attributedApp.getMaxAdj() >= ProcessList.SYSTEM_ADJ)
+                                    || ((attributedApp.getMaxAdj() >= SYSTEM_ADJ)
                                     && (attributedApp.getMaxAdj() < FOREGROUND_APP_ADJ))) {
                                 continue;
                             }
@@ -1507,7 +1509,7 @@ public abstract class OomAdjuster {
         void computeOomAdjFromActivitiesIfNecessary(ProcessRecordInternal app, int adj,
                 boolean foregroundActivities, boolean hasVisibleActivities, int procState,
                 int schedGroup, int processCurTop, boolean reportDebugMsgs) {
-            if (app.getCachedAdj() != ProcessList.INVALID_ADJ) {
+            if (app.getCachedAdj() != INVALID_ADJ) {
                 return;
             }
             initialize(app, adj, foregroundActivities, hasVisibleActivities, procState,
@@ -1545,9 +1547,9 @@ public abstract class OomAdjuster {
                 // because there is no direct connection between the activities and bindings
                 // (processes) of an app.
             } else {
-                if (mAdj == ProcessList.VISIBLE_APP_ADJ) {
+                if (mAdj == VISIBLE_APP_ADJ) {
                     final int taskLayer = flags & ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
-                    final int minLayer = Math.min(ProcessList.VISIBLE_APP_LAYER_MAX, taskLayer);
+                    final int minLayer = Math.min(VISIBLE_APP_LAYER_MAX, taskLayer);
                     mAdj += minLayer;
                 }
             }
@@ -1832,19 +1834,19 @@ public abstract class OomAdjuster {
             // in order to honor the request.  We want to drop it by one adjustment
             // level...  but there is special meaning applied to various levels so
             // we will skip some of them.
-            if (adj < ProcessList.FOREGROUND_APP_ADJ) {
+            if (adj < FOREGROUND_APP_ADJ) {
                 // System process will not get dropped, ever
-            } else if (adj < ProcessList.VISIBLE_APP_ADJ) {
-                adj = ProcessList.VISIBLE_APP_ADJ;
-            } else if (adj < ProcessList.PERCEPTIBLE_APP_ADJ) {
-                adj = ProcessList.PERCEPTIBLE_APP_ADJ;
-            } else if (adj < ProcessList.PERCEPTIBLE_LOW_APP_ADJ) {
-                adj = ProcessList.PERCEPTIBLE_LOW_APP_ADJ;
-            } else if (adj < ProcessList.SERVICE_ADJ) {
-                adj = ProcessList.SERVICE_ADJ;
-            } else if (adj < ProcessList.CACHED_APP_MIN_ADJ) {
-                adj = ProcessList.CACHED_APP_MIN_ADJ;
-            } else if (adj < ProcessList.CACHED_APP_MAX_ADJ) {
+            } else if (adj < VISIBLE_APP_ADJ) {
+                adj = VISIBLE_APP_ADJ;
+            } else if (adj < PERCEPTIBLE_APP_ADJ) {
+                adj = PERCEPTIBLE_APP_ADJ;
+            } else if (adj < PERCEPTIBLE_LOW_APP_ADJ) {
+                adj = PERCEPTIBLE_LOW_APP_ADJ;
+            } else if (adj < SERVICE_ADJ) {
+                adj = SERVICE_ADJ;
+            } else if (adj < CACHED_APP_MIN_ADJ) {
+                adj = CACHED_APP_MIN_ADJ;
+            } else if (adj < CACHED_APP_MAX_ADJ) {
                 adj++;
             }
         }
@@ -2374,8 +2376,8 @@ public abstract class OomAdjuster {
         app.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
         app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
 
-        app.setCurAdj(ProcessList.FOREGROUND_APP_ADJ);
-        app.setCurRawAdj(ProcessList.FOREGROUND_APP_ADJ);
+        app.setCurAdj(FOREGROUND_APP_ADJ);
+        app.setCurRawAdj(FOREGROUND_APP_ADJ);
         app.setForcingToImportant(null);
         app.setHasShownUi(false);
 

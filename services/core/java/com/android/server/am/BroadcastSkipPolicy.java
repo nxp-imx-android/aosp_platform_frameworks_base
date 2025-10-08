@@ -19,6 +19,7 @@ package com.android.server.am;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PERMISSIONS_REVIEW;
 import static com.android.server.am.ActivityManagerService.checkComponentPermission;
 import static com.android.server.am.BroadcastQueue.TAG;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -714,7 +715,7 @@ public class BroadcastSkipPolicy {
 
         final boolean callerForeground = receiverRecord.callerApp != null
                 ? receiverRecord.callerApp.getSetSchedGroup()
-                != ProcessList.SCHED_GROUP_BACKGROUND : true;
+                != SCHED_GROUP_BACKGROUND : true;
 
         // Show a permission review UI only for explicit broadcast from a foreground app
         if (callerForeground && receiverRecord.intent.getComponent() != null) {

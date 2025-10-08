@@ -44,6 +44,7 @@ import static com.android.server.am.BroadcastRecord.getReceiverPackageName;
 import static com.android.server.am.BroadcastRecord.getReceiverProcessName;
 import static com.android.server.am.BroadcastRecord.getReceiverUid;
 import static com.android.server.am.BroadcastRecord.isDeliveryStateTerminal;
+import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
 import static com.android.window.flags.Flags.balCheckBroadcastWhenDispatched;
 
 import android.annotation.CheckResult;
@@ -770,7 +771,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         if ((queue != null) && getRunningIndexOf(queue) >= 0) {
             return queue.getPreferredSchedulingGroupLocked();
         }
-        return ProcessList.SCHED_GROUP_UNDEFINED;
+        return SCHED_GROUP_UNDEFINED;
     }
 
     @GuardedBy("mService")
