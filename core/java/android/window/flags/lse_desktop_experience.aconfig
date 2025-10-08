@@ -144,6 +144,13 @@ flag {
 }
 
 flag {
+    name: "enable_auto_recovery_from_self_kill"
+    namespace: "lse_desktop_experience"
+    description: "Automatically recovers apps from killing themselves on display moves"
+    bug: "446998828"
+}
+
+flag {
     name: "enable_auto_restart_on_display_move"
     namespace: "lse_desktop_experience"
     description: "Automatically restarts apps upon display move to fix density issues"
