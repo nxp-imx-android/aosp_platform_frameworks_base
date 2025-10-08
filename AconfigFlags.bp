@@ -788,6 +788,10 @@ rust_aconfig_library {
     name: "libandroid_security_flags_rust",
     crate_name: "android_security_flags",
     aconfig_declarations: "android.security.flags-aconfig",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.virt",
+    ],
 }
 
 // Package Manager
