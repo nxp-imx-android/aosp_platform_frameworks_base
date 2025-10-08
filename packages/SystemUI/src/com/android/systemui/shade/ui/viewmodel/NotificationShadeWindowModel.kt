@@ -21,8 +21,10 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GLANCEABLE_HUB
+import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -102,6 +104,13 @@ constructor(
                 flow { error("Consume this flow only when SceneContainerFlag is enabled") }
             }
             .distinctUntilChanged()
+
+    /** Whether transitions are animating GONE->AOD or not */
+    val isAnimatingGoneToAod: Flow<Boolean> =
+        keyguardTransitionInteractor.isInTransition(
+            edge = Edge.create(Scenes.Gone, AOD),
+            edgeWithoutSceneContainer = Edge.create(GONE, AOD),
+        )
 
     /** Whether we're on dream or transitioning to dream. */
     val isOnOrGoingToDream: Flow<Boolean> =

@@ -589,6 +589,15 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
     }
 
     @Test
+    public void isAnimatingGoneToAod() {
+        mNotificationShadeWindowController.setIsAnimatingGoneToAod(true);
+        verify(mNotificationShadeWindowView).setVisibility(eq(View.VISIBLE));
+
+        mNotificationShadeWindowController.setIsAnimatingGoneToAod(false);
+        verify(mNotificationShadeWindowView).setVisibility(eq(View.INVISIBLE));
+    }
+
+    @Test
     public void setKeyguardFadingAway_doesNothing_whenForceHidden() {
         // GIVEN the panel is visible force-hidden at the end of an activity launch
         mNotificationShadeWindowController.setLaunchingActivity(true);

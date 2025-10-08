@@ -64,6 +64,7 @@ class NotificationShadeWindowState(
     @JvmField var communalVisible: Boolean = false,
     @JvmField var isOnOrGoingToDream: Boolean = false,
     @JvmField var isAnimatingSurfaceBehind: Boolean = false,
+    @JvmField var isAnimatingGoneToAod: Boolean = false,
 ) {
 
     fun isKeyguardShowingAndNotOccluded(): Boolean {
@@ -109,6 +110,7 @@ class NotificationShadeWindowState(
             communalVisible.toString(),
             isOnOrGoingToDream.toString(),
             isAnimatingSurfaceBehind.toString(),
+            isAnimatingGoneToAod.toString(),
         )
     }
 
@@ -154,6 +156,7 @@ class NotificationShadeWindowState(
             communalVisible: Boolean,
             isOnOrGoingToDream: Boolean,
             isAnimatingSurfaceBehind: Boolean,
+            isAnimatingGoneToAod: Boolean,
         ) {
             buffer.advance().apply {
                 this.keyguardShowing = keyguardShowing
@@ -189,6 +192,7 @@ class NotificationShadeWindowState(
                 this.communalVisible = communalVisible
                 this.isOnOrGoingToDream = isOnOrGoingToDream
                 this.isAnimatingSurfaceBehind = isAnimatingSurfaceBehind
+                this.isAnimatingGoneToAod = isAnimatingGoneToAod
             }
         }
 
