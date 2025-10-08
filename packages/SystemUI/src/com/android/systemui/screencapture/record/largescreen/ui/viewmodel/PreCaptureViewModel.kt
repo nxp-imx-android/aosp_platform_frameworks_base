@@ -94,6 +94,12 @@ constructor(
     }
 
     fun updateCaptureRegion(selectedRegion: ScreenCaptureRegion) {
+        if (selectedRegion != ScreenCaptureRegion.PARTIAL) {
+            toolbarViewModel.updateOpacityForRegionBox(
+                isInteracting = false,
+                regionBoxBounds = null,
+            )
+        }
         captureRegionSource.value = selectedRegion
         uiEventLogger.log(
             ScreenCaptureEvent.fromRegionAndType(selectedRegion, captureTypeSource.value)

@@ -406,4 +406,26 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
             assertUiClosed()
         }
+
+    @Test
+    fun updateCaptureRegion_toFullscreen_resetsToolbarOpacity() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureRegion = ScreenCaptureRegion.PARTIAL)
+            )
+            val toolbarViewModel = viewModel.toolbarViewModel
+            val toolbarBounds = Rect(0, 0, 100, 20)
+            toolbarViewModel.setToolbarBounds(toolbarBounds)
+
+            // When the region box intersects with the toolbar, the opacity is dimmed
+            val regionBox = Rect(10, 10, 50, 50)
+            toolbarViewModel.updateOpacityForRegionBox(
+                isInteracting = false,
+                regionBoxBounds = regionBox,
+            )
+            assertThat(toolbarViewModel.toolbarOpacity).isLessThan(1f)
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
+            assertThat(toolbarViewModel.toolbarOpacity).isEqualTo(1f)
+        }
 }
