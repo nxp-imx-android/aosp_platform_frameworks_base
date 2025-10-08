@@ -37,7 +37,6 @@ import android.media.AudioManager;
 import android.media.MediaRoute2Info;
 import android.media.MediaRoute2ProviderService;
 import android.media.RoutingSessionInfo;
-import android.media.audio.Flags;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.os.Build;
 import android.os.Handler;
@@ -51,6 +50,7 @@ import android.util.SparseArray;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.media.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -149,7 +149,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             @NonNull Looper looper,
             @NonNull AudioProductStrategy strategyForMedia,
             @NonNull BluetoothAdapter btAdapter) {
-        if (!com.android.media.flags.Flags.enableUseOfSingletonAudioManagerRouteController()) {
+        if (!Flags.enableUseOfSingletonAudioManagerRouteController()) {
             return new AudioManagerRouteController(
                     context, audioManager, looper, strategyForMedia, btAdapter);
         }
@@ -230,7 +230,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
     @Override
     public void start(UserHandle mUser) {
         // When AudioManagerRouteController is singleton, only need to call this function once.
-        if (com.android.media.flags.Flags.enableUseOfSingletonAudioManagerRouteController()) {
+        if (Flags.enableUseOfSingletonAudioManagerRouteController()) {
             if (mStarted) {
                 return;
             }
@@ -238,9 +238,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         }
 
         mBluetoothRouteController.start(
-                com.android.media.flags.Flags.enableUseOfSingletonAudioManagerRouteController()
-                        ? UserHandle.SYSTEM
-                        : mUser,
+                Flags.enableUseOfSingletonAudioManagerRouteController() ? UserHandle.SYSTEM : mUser,
                 this::rebuildAvailableRoutesAndNotify);
         mAudioManager.registerAudioDeviceCallback(mAudioDeviceCallback, mHandler);
         mAudioManager.addOnDevicesForAttributesChangedListener(
@@ -257,7 +255,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
     @Override
     public void stop() {
         // Singleton AudioManagerRouteController doesn't need to call stop function.
-        if (com.android.media.flags.Flags.enableUseOfSingletonAudioManagerRouteController()) {
+        if (Flags.enableUseOfSingletonAudioManagerRouteController()) {
             return;
         }
 
@@ -344,8 +342,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
         // We need to stop broadcast when we transfer to another route
         boolean currentOutputIsBLEBroadcast =
-                com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()
-                        && currentOutputIsBLEBroadcast();
+                Flags.enableOutputSwitcherPersonalAudioSharing() && currentOutputIsBLEBroadcast();
         if (currentOutputIsBLEBroadcast) {
             boolean isBtRoute =
                     mBluetoothRouteController.isBtRoute(mediaRoute2InfoHolder.mMediaRoute2Info);
@@ -462,7 +459,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         } else {
             String deviceAddress = "";
 
-            if (com.android.media.flags.Flags.enableDeviceAddressAsIdentifierInMediaRouter2()) {
+            if (Flags.enableDeviceAddressAsIdentifierInMediaRouter2()) {
                 deviceAddress = mediaRoute2InfoHolder.mMediaRoute2Info.getAddress();
                 if (deviceAddress == null) {
                     deviceAddress = "";
@@ -537,11 +534,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
         }
 
         boolean isLEAudioBroadcastSupported =
-                com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()
+                Flags.enableOutputSwitcherPersonalAudioSharing()
                         && mBluetoothRouteController.isLEAudioBroadcastSupported();
 
         List<MediaRoute2Info> bluetoothRoutesInBroadcast = Collections.emptyList();
-        if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()
                 && selectedDeviceAttributesType == AudioDeviceInfo.TYPE_BLE_BROADCAST) {
             bluetoothRoutesInBroadcast = mBluetoothRouteController.getBroadcastingDeviceRoutes();
         }
@@ -617,7 +614,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         }
 
         for (AudioDeviceInfo audioDeviceInfo : audioDeviceInfos) {
-            if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
+            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
                 if (audioDeviceInfo.getType() == AudioDeviceInfo.TYPE_BLE_BROADCAST) {
                     // Handled previously
                     continue;
@@ -635,8 +632,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
                                 mediaRoute2Info, audioDeviceInfoType);
                 mRouteIdToAvailableDeviceRoutes.put(mediaRoute2Info.getId(), newHolder);
                 if (selectedDeviceAttributesType == audioDeviceInfoType) {
-                    if (com.android.media.flags.Flags
-                            .enableDeviceAddressAsIdentifierInMediaRouter2()) {
+                    if (Flags.enableDeviceAddressAsIdentifierInMediaRouter2()) {
                         if (selectedDeviceAttributesAddr.equals(audioDeviceInfoAddr)) {
                             newSelectedRouteHolder = newHolder;
                         }
@@ -717,7 +713,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
                 .forEach(
                         it -> mRouteIdToAvailableDeviceRoutes.put(it.mMediaRoute2Info.getId(), it));
 
-        if (com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing()) {
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
             if (!isLEAudioBroadcastSupported) {
                 mDeselectableRoutes = Collections.emptyList();
                 mSelectableRoutes = Collections.emptyList();
@@ -821,7 +817,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             // are creating a non-BT route, or we are creating a BT route but a race condition
             // caused AudioManager to expose the BT route before BluetoothAdapter, preventing us
             // from getting an id using BluetoothRouteController#getRouteIdForBluetoothAddress.
-            if (com.android.media.flags.Flags.enableDeviceAddressAsIdentifierInMediaRouter2()) {
+            if (Flags.enableDeviceAddressAsIdentifierInMediaRouter2()) {
                 routeId = systemRouteInfo.mDefaultRouteId + ROUTE_ID_ADDRESS_PREFIX + address;
             } else {
                 routeId = systemRouteInfo.mDefaultRouteId;
@@ -1072,22 +1068,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_LINE_DIGITAL,
                 new SystemRouteInfo(
-                        com.android.media.flags.Flags.enableNewWiredMediaRoute2InfoTypes()
-                                ? MediaRoute2Info.TYPE_LINE_DIGITAL : MediaRoute2Info.TYPE_UNKNOWN,
+                        Flags.enableNewWiredMediaRoute2InfoTypes()
+                                ? MediaRoute2Info.TYPE_LINE_DIGITAL
+                                : MediaRoute2Info.TYPE_UNKNOWN,
                         /* defaultRouteId= */ "ROUTE_ID_LINE_DIGITAL",
                         /* nameResource= */ R.string.default_audio_route_name_digital));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_LINE_ANALOG,
                 new SystemRouteInfo(
-                        com.android.media.flags.Flags.enableNewWiredMediaRoute2InfoTypes()
-                                ? MediaRoute2Info.TYPE_LINE_ANALOG : MediaRoute2Info.TYPE_UNKNOWN,
+                        Flags.enableNewWiredMediaRoute2InfoTypes()
+                                ? MediaRoute2Info.TYPE_LINE_ANALOG
+                                : MediaRoute2Info.TYPE_UNKNOWN,
                         /* defaultRouteId= */ "ROUTE_ID_LINE_ANALOG",
                         /* nameResource= */ R.string.default_audio_route_name_analog));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_AUX_LINE,
                 new SystemRouteInfo(
-                        com.android.media.flags.Flags.enableNewWiredMediaRoute2InfoTypes()
-                                ? MediaRoute2Info.TYPE_AUX_LINE : MediaRoute2Info.TYPE_UNKNOWN,
+                        Flags.enableNewWiredMediaRoute2InfoTypes()
+                                ? MediaRoute2Info.TYPE_AUX_LINE
+                                : MediaRoute2Info.TYPE_UNKNOWN,
                         /* defaultRouteId= */ "ROUTE_ID_AUX_LINE",
                         /* nameResource= */ R.string.default_audio_route_name_aux));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
@@ -1096,7 +1095,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
                         MediaRoute2Info.TYPE_DOCK,
                         /* defaultRouteId= */ "ROUTE_ID_DOCK_ANALOG",
                         /* nameResource= */ R.string.default_audio_route_name_dock_speakers));
-        if (Flags.enableMultichannelGroupDevice()) {
+        if (android.media.audio.Flags.enableMultichannelGroupDevice()) {
             AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                     AudioDeviceInfo.TYPE_MULTICHANNEL_GROUP,
                     new SystemRouteInfo(
