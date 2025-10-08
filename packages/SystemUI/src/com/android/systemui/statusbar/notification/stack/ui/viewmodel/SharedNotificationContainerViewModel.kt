@@ -697,7 +697,7 @@ constructor(
             goneToLockscreenTransitionViewModel.lockscreenAlpha,
             lockscreenToDreamingTransitionViewModel.lockscreenAlpha,
             lockscreenToGoneTransitionViewModel.notificationAlpha(viewState),
-            lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
+            lockscreenToOccludedTransitionViewModel.lockscreenAlpha(viewState),
             lockscreenToPrimaryBouncerTransitionViewModel.notificationAlpha,
             alternateBouncerToPrimaryBouncerTransitionViewModel.notificationAlpha,
             occludedToAodTransitionViewModel.lockscreenAlpha,

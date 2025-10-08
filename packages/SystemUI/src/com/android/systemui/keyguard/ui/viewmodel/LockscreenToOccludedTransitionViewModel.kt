@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import android.util.MathUtils
 import com.android.app.animation.Interpolators.EMPHASIZED_ACCELERATE
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
@@ -56,11 +57,16 @@ constructor(
             )
 
     /** Lockscreen views alpha */
-    val lockscreenAlpha: Flow<Float> =
-        transitionAnimation.sharedFlowWithShade(
+    fun lockscreenAlpha(viewState: ViewStateAccessor): Flow<Float> {
+        var startAlpha = 1f
+        return transitionAnimation.sharedFlowWithShade(
             duration = 250.milliseconds,
-            onStep = { step, isShadeExpanded -> if (isShadeExpanded) 0f else 1f - step },
+            onStart = { startAlpha = viewState.alpha() },
+            onStep = { step, isShadeExpanded ->
+                if (isShadeExpanded) 0f else MathUtils.lerp(startAlpha, 0f, step)
+            },
         )
+    }
 
     val shortcutsAlpha: Flow<Float> =
         transitionAnimation.sharedFlowWithShade(

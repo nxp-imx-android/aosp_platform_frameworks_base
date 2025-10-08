@@ -112,7 +112,7 @@ constructor(
                         dozingToOccludedTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToAodTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToAodTransitionViewModel.lockscreenAlphaOnFold,
-                        lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
+                        lockscreenToOccludedTransitionViewModel.lockscreenAlpha(viewState),
                         occludedToAlternateBouncerTransitionViewModel.lockscreenAlpha,
                         occludedToAodTransitionViewModel.lockscreenAlpha,
                         occludedToLockscreenTransitionViewModel.lockscreenAlpha,
