@@ -319,6 +319,7 @@ public class ProcessStateController {
         private ProcessRecordInternal mPreviousProcess = null;
         private static final int NONE_DEBUG_UID = -1;
         private volatile int mDebugUid = NONE_DEBUG_UID;
+        private volatile long mLastUserUnlockingUptime = 0;
 
         private void commitStagedState() {
             mUnlocking = mUnlockingStaged;
@@ -376,6 +377,10 @@ public class ProcessStateController {
 
         public boolean isDebugEnabled(ProcessRecordInternal app) {
             return app.getApplicationUid() == mDebugUid;
+        }
+
+        public long getLastUserUnlockingUptime() {
+            return mLastUserUnlockingUptime;
         }
     }
 
@@ -483,6 +488,21 @@ public class ProcessStateController {
      */
     public int getDebugUid() {
         return mGlobalState.mDebugUid;
+    }
+
+    /**
+     * Sets the timestamp for the last user unlock event. This should be called when a user starts
+     * unlocking to record the uptime.
+     */
+    public void setLastUserUnlockingUptime(long time) {
+        mGlobalState.mLastUserUnlockingUptime = time;
+    }
+
+    /**
+     * Returns the timestamp for the last user unlock event.
+     */
+    public long getLastUserUnlockingUptime() {
+        return mGlobalState.mLastUserUnlockingUptime;
     }
 
     /***************************** UID State Events ****************************/
