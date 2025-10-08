@@ -34,8 +34,8 @@ import android.os.Binder;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.handoff.InboundHandoffRequestController;
-import com.android.server.companion.datatransfer.continuity.handoff.OutboundHandoffRequestController;
+import com.android.server.companion.datatransfer.continuity.handoff.InboundHandoffRequestHandler;
+import com.android.server.companion.datatransfer.continuity.handoff.OutboundHandoffRequestHandler;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
@@ -57,8 +57,8 @@ public final class TaskContinuityManagerService extends SystemService
     private static final String TAG = "TaskContinuityManagerService";
 
     private TaskSyncController mTaskSyncController;
-    private InboundHandoffRequestController mInboundHandoffRequestController;
-    private OutboundHandoffRequestController mOutboundHandoffRequestController;
+    private InboundHandoffRequestHandler mInboundHandoffRequestHandler;
+    private OutboundHandoffRequestHandler mOutboundHandoffRequestHandler;
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskContinuityMessenger mTaskContinuityMessenger;
 
@@ -67,11 +67,11 @@ public final class TaskContinuityManagerService extends SystemService
 
         mTaskContinuityMessenger = new TaskContinuityMessenger(context);
         mTaskSyncController = new TaskSyncController(context, mTaskContinuityMessenger);
-        mOutboundHandoffRequestController =
-                new OutboundHandoffRequestController(
+        mOutboundHandoffRequestHandler =
+                new OutboundHandoffRequestHandler(
                         context, mTaskContinuityMessenger, mTaskSyncController);
-        mInboundHandoffRequestController =
-                new InboundHandoffRequestController(mTaskContinuityMessenger);
+        mInboundHandoffRequestHandler =
+                new InboundHandoffRequestHandler(mTaskContinuityMessenger);
     }
 
     @Override
@@ -107,7 +107,7 @@ public final class TaskContinuityManagerService extends SystemService
 
             final long ident = Binder.clearCallingIdentity();
             try {
-                mOutboundHandoffRequestController.requestHandoff(
+                mOutboundHandoffRequestHandler.requestHandoff(
                         associationId, remoteTaskId, callback);
             } finally {
                 Binder.restoreCallingIdentity(ident);
@@ -155,11 +155,11 @@ public final class TaskContinuityManagerService extends SystemService
         Slog.v(TAG, "Received message from association id: " + associationId);
         switch (Objects.requireNonNull(taskContinuityMessage)) {
             case HandoffRequestResultMessage handoffRequestResultMessage:
-                mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
+                mOutboundHandoffRequestHandler.onHandoffRequestResultMessageReceived(
                         associationId, handoffRequestResultMessage);
                 break;
             case HandoffRequestMessage handoffRequestMessage:
-                mInboundHandoffRequestController.onHandoffRequestMessageReceived(
+                mInboundHandoffRequestHandler.onHandoffRequestMessageReceived(
                         associationId, handoffRequestMessage);
                 break;
             default:

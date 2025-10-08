@@ -47,9 +47,9 @@ import java.util.Objects;
  * <p>This class is responsible for sending handoff request messages to the remote device and
  * handling the results, either launching the task locally or falling back to a web URL if provided.
  */
-public class OutboundHandoffRequestController {
+public class OutboundHandoffRequestHandler {
 
-    private static final String TAG = "OutboundHandoffRequestController";
+    private static final String TAG = "OutboundHandoffRequestHandler";
 
     private record PendingHandoffRequest(int associationId, int taskId) {}
 
@@ -60,14 +60,18 @@ public class OutboundHandoffRequestController {
             new HandoffRequestCallbackHolder();
     private final Set<PendingHandoffRequest> mPendingHandoffRequests = new HashSet<>();
 
-    public OutboundHandoffRequestController(
+    public OutboundHandoffRequestHandler(
             @NonNull Context context,
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
             @NonNull TaskSyncController taskSyncController) {
 
-        mContext = Objects.requireNonNull(context);
-        mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
-        mTaskSyncController = Objects.requireNonNull(taskSyncController);
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(taskContinuityMessenger);
+        Objects.requireNonNull(taskSyncController);
+
+        mContext = context;
+        mTaskContinuityMessenger = taskContinuityMessenger;
+        mTaskSyncController = taskSyncController;
     }
 
     public void requestHandoff(int associationId, int taskId, IHandoffRequestCallback callback) {
