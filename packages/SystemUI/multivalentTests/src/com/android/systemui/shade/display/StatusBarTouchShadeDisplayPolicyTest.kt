@@ -272,7 +272,7 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
         x: Float = 0f,
         statusBarWidth: Int = STATUS_BAR_WIDTH,
     ) {
-        underTest.onStatusBarOrLauncherTouched(x, displayId, statusBarWidth)
+        underTest.setExpansionIntentFromStatusBarEvent(x, displayId, statusBarWidth)
     }
 
     companion object {

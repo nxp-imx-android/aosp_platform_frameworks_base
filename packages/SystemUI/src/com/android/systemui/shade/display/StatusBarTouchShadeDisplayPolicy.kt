@@ -68,25 +68,36 @@ constructor(
 
     private var removalListener: Job? = null
 
-    /** Called when the status bar or launcher homescreen on the given display is touched. */
-    fun onStatusBarOrLauncherTouched(eventX: Float, displayId: Int, statusBarWidth: Int) {
-        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
-        updateShadeDisplayIfNeeded(displayId)
+    /** Called when the status bar on the given display is touched/clicked. */
+    fun setExpansionIntentFromStatusBarEvent(eventX: Float, displayId: Int, statusBarWidth: Int) {
         val element = classifyStatusBarEvent(eventX, statusBarWidth)
-        updateExpansionIntent(element)
+        setExpansionIntentForElement(element, displayId)
     }
 
-    private fun onKeyboardShortcut(element: ShadeElement) {
+    /**
+     * Called when we need to move the notification shade to a specific display. For e.g. when
+     * launcher homescreen on the given display is touched/clicked.
+     */
+    fun setExpansionIntentForNotificationElement(displayId: Int) {
+        setExpansionIntentForElement(notificationElement.get(), displayId)
+    }
+
+    private fun setExpansionIntentForElement(
+        element: ShadeElement,
+        displayId: Int = focusedDisplayRepository.focusedDisplayId.value,
+    ) {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
-        updateShadeDisplayIfNeeded(focusedDisplayRepository.focusedDisplayId.value)
+
+        updateShadeDisplayIfNeeded(displayId)
         updateExpansionIntent(element)
     }
 
     /** Called when notification panel keyboard shortcut is pressed. */
-    fun onNotificationPanelKeyboardShortcut() = onKeyboardShortcut(notificationElement.get())
+    fun onNotificationPanelKeyboardShortcut() =
+        setExpansionIntentForElement(notificationElement.get())
 
     /** Called when quick settings panel keyboard shortcut is pressed. */
-    fun onQSPanelKeyboardShortcut() = onKeyboardShortcut(qsShadeElement.get())
+    fun onQSPanelKeyboardShortcut() = setExpansionIntentForElement(qsShadeElement.get())
 
     override fun consumeExpansionIntent(): ShadeElement? {
         return latestIntent.getAndSet(null)

@@ -156,7 +156,7 @@ private constructor(
             // one.
             lazyStatusBarShadeDisplayPolicy
                 .get()
-                .onStatusBarOrLauncherTouched(event.x, event.displayId, mView.width)
+                .setExpansionIntentFromStatusBarEvent(event.x, event.displayId, mView.width)
         }
     }
 

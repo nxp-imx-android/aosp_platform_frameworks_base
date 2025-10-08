@@ -532,7 +532,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         view.onInterceptTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy)
-            .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), any())
+            .setExpansionIntentFromStatusBarEvent(eq(event.x), eq(event.displayId), any())
     }
 
     @Test
@@ -543,7 +543,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         view.onInterceptTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy, never())
-            .onStatusBarOrLauncherTouched(any(), any(), any())
+            .setExpansionIntentFromStatusBarEvent(any(), any(), any())
     }
 
     @Test
@@ -554,7 +554,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         view.onInterceptTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy, never())
-            .onStatusBarOrLauncherTouched(any(), any(), any())
+            .setExpansionIntentFromStatusBarEvent(any(), any(), any())
     }
 
     @Test
@@ -568,7 +568,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         statusContainer.dispatchTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy)
-            .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), any())
+            .setExpansionIntentFromStatusBarEvent(eq(event.x), eq(event.displayId), any())
     }
 
     @Test
@@ -582,7 +582,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         statusContainer.dispatchTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy)
-            .onStatusBarOrLauncherTouched(eq(event.x), eq(event.displayId), any())
+            .setExpansionIntentFromStatusBarEvent(eq(event.x), eq(event.displayId), any())
     }
 
     @Test
@@ -596,7 +596,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         statusContainer.dispatchTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy, never())
-            .onStatusBarOrLauncherTouched(any(), any(), any())
+            .setExpansionIntentFromStatusBarEvent(any(), any(), any())
     }
 
     @Test
