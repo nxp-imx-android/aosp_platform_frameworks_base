@@ -462,6 +462,7 @@ public class SettingsBackupTest {
                     Settings.Global.GPU_DEBUG_LAYERS,
                     Settings.Global.GPU_DEBUG_LAYERS_GLES,
                     Settings.Global.ANGLE_DEBUG_PACKAGE,
+                    Settings.Global.ANGLE_DYNAMIC_DENYLIST,
                     Settings.Global.ANGLE_GL_DRIVER_ALL_ANGLE,
                     Settings.Global.ANGLE_GL_DRIVER_SELECTION_PKGS,
                     Settings.Global.ANGLE_GL_DRIVER_SELECTION_VALUES,

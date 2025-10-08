@@ -79,7 +79,8 @@ public class GpuService extends SystemService {
     private ContentResolver mContentResolver;
     private long mProdDriverVersionCode;
     private SettingsObserver mSettingsObserver;
-    private DeviceConfigListener mDeviceConfigListener;
+    private GameDriverDeviceConfigListener mGameDriverListener;
+    private AngleDenylistDenyListListener mAngleDenylistListener;
     @GuardedBy("mLock")
     private Denylists mDenylists;
 
@@ -112,11 +113,14 @@ public class GpuService extends SystemService {
     public void onBootPhase(int phase) {
         if (phase == PHASE_BOOT_COMPLETED) {
             mContentResolver = mContext.getContentResolver();
+            if (android.provider.flags.Flags.angleDynamicDenylist()) {
+                mAngleDenylistListener = new AngleDenylistDenyListListener();
+            }
             if (!mHasProdDriver && !mHasDevDriver) {
                 return;
             }
             mSettingsObserver = new SettingsObserver();
-            mDeviceConfigListener = new DeviceConfigListener();
+            mGameDriverListener = new GameDriverDeviceConfigListener();
             fetchProductionDriverPackageProperties();
             processDenylists();
             setDenylist();
@@ -147,22 +151,49 @@ public class GpuService extends SystemService {
         }
     }
 
-    private final class DeviceConfigListener implements DeviceConfig.OnPropertiesChangedListener {
+    private final class GameDriverDeviceConfigListener implements
+            DeviceConfig.OnPropertiesChangedListener {
 
-        DeviceConfigListener() {
+        GameDriverDeviceConfigListener() {
             super();
             DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_GAME_DRIVER,
                     mContext.getMainExecutor(), this);
         }
+
         @Override
         public void onPropertiesChanged(Properties properties) {
             synchronized (mDeviceConfigLock) {
                 if (properties.getKeyset().contains(
-                            Settings.Global.UPDATABLE_DRIVER_PRODUCTION_DENYLISTS)) {
+                        Settings.Global.UPDATABLE_DRIVER_PRODUCTION_DENYLISTS)) {
                     parseDenylists(
                             properties.getString(
                                     Settings.Global.UPDATABLE_DRIVER_PRODUCTION_DENYLISTS, ""));
                     setDenylist();
+                }
+            }
+        }
+    }
+
+    private final class AngleDenylistDenyListListener implements
+            DeviceConfig.OnPropertiesChangedListener {
+        AngleDenylistDenyListListener() {
+            super();
+            DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_GPU,
+                    mContext.getMainExecutor(), this);
+        }
+
+        @Override
+        public void onPropertiesChanged(Properties properties) {
+            synchronized (this) {
+                if (properties.getKeyset().contains(Settings.Global.ANGLE_DYNAMIC_DENYLIST)) {
+                    final String denylistStr = properties.getString(
+                            Settings.Global.ANGLE_DYNAMIC_DENYLIST, "");
+                    if (DEBUG) {
+                        Slog.i(TAG, "Received ANGLE denylist device config update: " + denylistStr);
+                    }
+                    Settings.Global.putString(mContentResolver,
+                            Settings.Global.ANGLE_DYNAMIC_DENYLIST,
+                            denylistStr != null ? denylistStr : "");
                 }
             }
         }
