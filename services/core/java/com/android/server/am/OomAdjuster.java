@@ -74,7 +74,6 @@ import static android.os.Process.THREAD_PRIORITY_TOP_APP_BOOST;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_ALL;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_LRU;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
-import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESS_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PSS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_USAGE_STATS;
@@ -86,7 +85,6 @@ import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.AppProfiler.TAG_PSS;
 import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_LEGACY;
 import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NONE;
-import static com.android.server.am.ProcessList.TAG_PROCESS_OBSERVERS;
 import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
@@ -417,6 +415,17 @@ public abstract class OomAdjuster {
 
         /** Notifies when the process group for an application process has been updated. */
         void onProcessGroupUpdated(ProcessRecordInternal app, int group);
+
+        /**
+         * Notifies when a process's state has changed. This is triggered when there are
+         * updates to the process's activities, foreground services, or other state attributes.
+         *
+         * @param app The application process that has undergone a change.
+         * @param changes A bitmask of flags from
+         *                {@link com.android.server.am.ProcessList.ProcessChangeItem}
+         *                indicating the specific attributes that have changed.
+         */
+        void onProcessChanged(ProcessRecordInternal app, int changes);
 
         /** Notifies when the process state sequence number has been incremented for active UIDs. */
         void onProcStateSeqIncremented(ActiveUidsInternal activeUids);
@@ -2298,16 +2307,7 @@ public abstract class OomAdjuster {
         }
 
         if (changes != 0) {
-            if (DEBUG_PROCESS_OBSERVERS) Slog.i(TAG_PROCESS_OBSERVERS,
-                    "Changes in " + state + ": " + changes);
-            mProcessList.enqueueProcessChangeItemLocked(state.getPid(), state.getApplicationUid(),
-                    changes, state.getHasRepForegroundActivities());
-            if (DEBUG_PROCESS_OBSERVERS) Slog.i(TAG_PROCESS_OBSERVERS,
-                    "Enqueued process change item for "
-                            + state.toShortString() + ": changes=" + changes
-                            + " foreground=" + state.getHasRepForegroundActivities()
-                            + " type=" + state.getAdjType() + " source=" + state.getAdjSource()
-                            + " target=" + state.getAdjTarget());
+            mCallback.onProcessChanged(state, changes);
         }
 
         if (state.isCached() && !state.isSetCached()) {
