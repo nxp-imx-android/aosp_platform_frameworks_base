@@ -823,7 +823,7 @@ class InsetsPolicy {
             return false;
         }
 
-        if (!mPolicy.isRemoteInsetsControllerControllingSystemBars()) {
+        if (!mPolicy.isSystemBarRemoteInsetsControllerAllowed()) {
             return false;
         }
         if (mDisplayContent == null || mDisplayContent.mRemoteInsetsControlTarget == null) {
