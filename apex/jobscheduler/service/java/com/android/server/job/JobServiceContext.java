@@ -21,6 +21,26 @@ import static android.app.job.JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS;
 import static com.android.server.job.JobConcurrencyManager.WORK_TYPE_NONE;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
 import static com.android.server.job.JobSchedulerService.safelyScaleBytesToKBForHistogram;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DEADLINE_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DELAY_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_ID;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PROC_STATE;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PROXY_UID;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_SOURCE_UID;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STANDBY_BUCKET;
+import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STATE;
 
 import android.Manifest;
 import android.annotation.BytesLong;
@@ -53,6 +73,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PerfettoTrace;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.Trace;
@@ -154,6 +175,7 @@ public final class JobServiceContext implements ServiceConnection {
     private final JobConcurrencyManager mJobConcurrencyManager;
     private final JobNotificationCoordinator mNotificationCoordinator;
     private final JobSchedulerService mService;
+    private final JobPerfettoTracer mPerfettoTracer;
     /** Used for service binding, etc. */
     private final Context mContext;
     private final Object mLock;
@@ -353,9 +375,19 @@ public final class JobServiceContext implements ServiceConnection {
     JobServiceContext(JobSchedulerService service, JobConcurrencyManager concurrencyManager,
             JobNotificationCoordinator notificationCoordinator,
             IBatteryStats batteryStats, JobPackageTracker tracker, Looper looper) {
+        this(service, concurrencyManager, notificationCoordinator, batteryStats, tracker, looper,
+                service.getPerfettoTracer());
+    }
+
+    @VisibleForTesting
+    JobServiceContext(JobSchedulerService service, JobConcurrencyManager concurrencyManager,
+            JobNotificationCoordinator notificationCoordinator,
+            IBatteryStats batteryStats, JobPackageTracker tracker, Looper looper,
+            JobPerfettoTracer tracer) {
         mContext = service.getContext();
         mLock = service.getLock();
         mService = service;
+        mPerfettoTracer = tracer;
         mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
         mBatteryStats = batteryStats;
         mJobPackageTracker = tracker;
@@ -586,6 +618,7 @@ public final class JobServiceContext implements ServiceConnection {
                     mService.shouldUseAggressiveBackoff(
                             job.getNumAbandonedFailures(), job.getSourceUid()));
             sEnqueuedJwiAtJobStart.logSampleWithUid(job.getUid(), job.getWorkCount());
+            traceJobStarted(job, procState);
             final String sourcePackage = job.getSourcePackageName();
             if (Trace.isTagEnabled(Trace.TRACE_TAG_SYSTEM_SERVER)) {
                 // Use the context's ID to distinguish traces since there'll only be one job
@@ -1008,12 +1041,12 @@ public final class JobServiceContext implements ServiceConnection {
                 if (mTransferredDownloadBytes < downloadBytes) {
                     Counter.logIncrementWithUid(
                             "job_scheduler."
-                                    + "value_cntr_w_uid_transferred_network_download_bytes_increased",
+                                + "value_cntr_w_uid_transferred_network_download_bytes_increased",
                             mRunningJob.getUid());
                 } else if (mTransferredDownloadBytes > downloadBytes) {
                     Counter.logIncrementWithUid(
                             "job_scheduler."
-                                    + "value_cntr_w_uid_transferred_network_download_bytes_decreased",
+                                + "value_cntr_w_uid_transferred_network_download_bytes_decreased",
                             mRunningJob.getUid());
                 }
             }
@@ -1742,6 +1775,7 @@ public final class JobServiceContext implements ServiceConnection {
                 completedJob.getJob().getBackoffPolicy() + 1,
                 mService.shouldUseAggressiveBackoff(
                         completedJob.getNumAbandonedFailures(), completedJob.getSourceUid()));
+        traceJobFinished(completedJob, procState, loggingInternalStopReason, loggingStopReason);
         if (Trace.isTagEnabled(Trace.TRACE_TAG_SYSTEM_SERVER)) {
             Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_SYSTEM_SERVER,
                     JobSchedulerService.TRACE_TRACK_NAME, getId());
@@ -1795,6 +1829,73 @@ public final class JobServiceContext implements ServiceConnection {
                     reschedulingStopReason, reschedulingInternalStopReason, reschedule);
             mJobConcurrencyManager.onJobCompletedLocked(this, completedJob, workType);
         }
+    }
+
+    private void traceJobStarted(JobStatus job, int procState) {
+        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+            return;
+        }
+
+        final int startedState = FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__STARTED;
+        JobPerfettoTracer tracer = mPerfettoTracer.startEvent(job.getBatteryName())
+                .addField(PERFETTO_TRACE_FIELD_STATE, startedState);
+
+        addCommonTraceFields(tracer, job, procState)
+                .addField(
+                        PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON,
+                        JobProtoEnums.INTERNAL_STOP_REASON_UNKNOWN)
+                .addField(
+                        PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON,
+                        JobProtoEnums.STOP_REASON_UNDEFINED)
+                .emit();
+    }
+
+    private void traceJobFinished(JobStatus completedJob, int procState,
+            int loggingInternalStopReason, int loggingStopReason) {
+        if (!Flags.usePerfettoSdkForTracing() || !PerfettoTrace.isJobSchedulerCategoryEnabled()) {
+            return;
+        }
+        final int finishedState = FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__FINISHED;
+
+        JobPerfettoTracer tracer = mPerfettoTracer.startEvent(completedJob.getBatteryName())
+                .addField(PERFETTO_TRACE_FIELD_STATE, finishedState);
+
+        addCommonTraceFields(tracer, completedJob, procState)
+                .addField(
+                        PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON,
+                        loggingInternalStopReason)
+                .addField(
+                        PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON,
+                        loggingStopReason)
+                .emit();
+    }
+
+    private JobPerfettoTracer addCommonTraceFields(JobPerfettoTracer tracer, JobStatus job,
+            int procState) {
+        return tracer.addField(PERFETTO_TRACE_FIELD_JOB_ID, job.getLoggingJobId())
+                .addField(PERFETTO_TRACE_FIELD_SOURCE_UID, job.getSourceUid())
+                .addField(PERFETTO_TRACE_FIELD_PROXY_UID, job.isProxyJob() ? job.getUid() : -1)
+                .addField(PERFETTO_TRACE_FIELD_STANDBY_BUCKET, job.getStandbyBucket())
+                .addField(PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY, job.getJob().getPriority())
+                .addField(PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY, job.getEffectivePriority())
+                .addField(PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS, job.getNumPreviousAttempts())
+                .addField(
+                        PERFETTO_TRACE_FIELD_DEADLINE_MS, job.getJob().getMaxExecutionDelayMillis())
+                .addField(PERFETTO_TRACE_FIELD_DELAY_MS, job.getJob().getMinLatencyMillis())
+                .addField(PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS,
+                        getExecutionStartTimeElapsed() - job.enqueueTime)
+                .addField(PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS, job.getWorkCount())
+                .addField(PERFETTO_TRACE_FIELD_PROC_STATE,
+                        ActivityManager.processStateAmToProto(procState))
+                .addField(PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS,
+                        job.getJob().getIntervalMillis())
+                .addField(PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS,
+                        job.getJob().getFlexMillis())
+                .addField(PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT,
+                        job.getNumAbandonedFailures())
+                .addField(PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE,
+                        job.getJob().getBackoffPolicy() + 1)
+                .addField(PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS, JobStatus.packStatesToBits(job));
     }
 
     private void applyStoppedReasonLocked(@Nullable String reason) {

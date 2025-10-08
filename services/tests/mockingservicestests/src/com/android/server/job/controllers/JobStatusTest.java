@@ -1718,4 +1718,129 @@ public class JobStatusTest {
         jobStatus.serviceProcessName = "testProcess";
         return jobStatus;
     }
+
+    @Test
+    public void testPackStatesToBits_NoConstraints() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar")).build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long states = JobStatus.packStatesToBits(jobStatus);
+
+        assertEquals("Default job should have flexibility constraint",
+                JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT, states);
+    }
+
+    @Test
+    public void testPackStatesToBits_WithConstraints() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setRequiresCharging(true)
+                        .setRequiresDeviceIdle(true)
+                        .setRequiresBatteryNotLow(true)
+                        .setRequiresStorageNotLow(true)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .addTriggerContentUri(
+                                new JobInfo.TriggerContentUri(
+                                        MediaStore.Images.Media.INTERNAL_CONTENT_URI, 0))
+                        .setMinimumLatency(1000)
+                        .setOverrideDeadline(5000)
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long expected = JobStatus.JOB_STATE_FLAG_HAS_CHARGING_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_IDLE_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_BATTERY_NOT_LOW_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_STORAGE_NOT_LOW_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_CONTENT_TRIGGER_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_TIMING_DELAY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_DEADLINE_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES
+                | JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT;
+
+        // A job with various constraints will also have the flexibility constraint.
+        assertEquals("Job with various constraints should also have flexibility constraint",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithUserInitiatedJob() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setUserInitiated(true)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long expected = JobStatus.JOB_STATE_FLAG_IS_REQUESTED_USER_INITIATED_JOB
+                | JobStatus.JOB_STATE_FLAG_IS_RUNNING_AS_USER_INITIATED_JOB
+                | JobStatus.JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES;
+
+        // A user-initiated job will not have the flexibility constraint.
+        assertEquals("User-initiated job should not have flexibility constraint",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithUserInitiatedJobDemoted() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setUserInitiated(true)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        jobStatus.addInternalFlags(JobStatus.INTERNAL_FLAG_DEMOTED_BY_USER);
+        final long expected = JobStatus.JOB_STATE_FLAG_IS_REQUESTED_USER_INITIATED_JOB
+                | JobStatus.JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES;
+
+        // A user-initiated job should not be present
+        assertEquals("Demoted user-initiated job should not have UIJ running flag",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithPeriodicJob() {
+        final JobInfo jobInfo =
+                new JobInfo.Builder(101, new ComponentName("foo", "bar"))
+                        .setPeriodic(JobInfo.getMinPeriodMillis())
+                        .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+        final long expected = JobStatus.JOB_STATE_FLAG_IS_PERIODIC
+                | JobStatus.JOB_STATE_FLAG_HAS_TIMING_DELAY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_DEADLINE_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT;
+
+        assertEquals("Periodic job should have periodic, timing, and deadline flags",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
+
+    @Test
+    public void testPackStatesToBits_WithSatisfiedConstraints() {
+        final JobStatus jobStatus =
+                createJobStatus(new JobInfo.Builder(101, new ComponentName("foo", "bar")).build());
+        final long expected = JobStatus.JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_CHARGING_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_IDLE_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_BATTERY_NOT_LOW_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_STORAGE_NOT_LOW_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_CONNECTIVITY_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_CONTENT_TRIGGER_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_TIMING_DELAY_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_DEADLINE_SATISFIED
+                | JobStatus.JOB_STATE_FLAG_IS_CONSTRAINT_FLEXIBLE_SATISFIED;
+
+        // Now, satisfy all constraints, even if not requested by the job.
+        jobStatus.setChargingConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setIdleConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setBatteryNotLowConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setStorageNotLowConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setConnectivityConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setContentTriggerConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setTimingDelayConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setDeadlineConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+        jobStatus.setFlexibilityConstraintSatisfied(sElapsedRealtimeClock.millis(), true);
+
+        assertEquals("Job with all constraints satisfied should have all satisfied flags set",
+                expected, JobStatus.packStatesToBits(jobStatus));
+    }
 }

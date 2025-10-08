@@ -27,6 +27,8 @@ import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
 import static com.android.server.job.controllers.FlexibilityController.SYSTEM_WIDE_FLEXIBLE_CONSTRAINTS;
 
 import android.annotation.ElapsedRealtimeLong;
+import android.annotation.IntDef;
+import android.annotation.LongDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppGlobals;
@@ -77,6 +79,8 @@ import com.android.server.job.restrictions.JobRestriction;
 import dalvik.annotation.optimization.NeverCompile;
 
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,6 +105,55 @@ import java.util.regex.Pattern;
  * @hide
  */
 public final class JobStatus {
+    /**
+     * Field numbers for the job_trace event in perfetto.
+     */
+    @IntDef(prefix = "PERFETTO_TRACE_FIELD_", value = {
+            PERFETTO_TRACE_FIELD_JOB_ID,
+            PERFETTO_TRACE_FIELD_SOURCE_UID,
+            PERFETTO_TRACE_FIELD_PROXY_UID,
+            PERFETTO_TRACE_FIELD_STATE,
+            PERFETTO_TRACE_FIELD_STANDBY_BUCKET,
+            PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY,
+            PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY,
+            PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS,
+            PERFETTO_TRACE_FIELD_DEADLINE_MS,
+            PERFETTO_TRACE_FIELD_DELAY_MS,
+            PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS,
+            PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS,
+            PERFETTO_TRACE_FIELD_PROC_STATE,
+            PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS,
+            PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS,
+            PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT,
+            PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE,
+            PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON,
+            PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON,
+            PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PerfettoTraceField {}
+
+    public static final int PERFETTO_TRACE_FIELD_JOB_ID = 1;
+    public static final int PERFETTO_TRACE_FIELD_SOURCE_UID = 2;
+    public static final int PERFETTO_TRACE_FIELD_PROXY_UID = 3;
+    public static final int PERFETTO_TRACE_FIELD_STATE = 4;
+    public static final int PERFETTO_TRACE_FIELD_STANDBY_BUCKET = 5;
+    public static final int PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY = 6;
+    public static final int PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY = 7;
+    public static final int PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS = 8;
+    public static final int PERFETTO_TRACE_FIELD_DEADLINE_MS = 9;
+    public static final int PERFETTO_TRACE_FIELD_DELAY_MS = 10;
+    public static final int PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS = 11;
+    public static final int PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS = 12;
+    public static final int PERFETTO_TRACE_FIELD_PROC_STATE = 13;
+    public static final int PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS = 14;
+    public static final int PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS = 15;
+    public static final int PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT = 16;
+    public static final int PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE = 17;
+    public static final int PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON = 18;
+    public static final int PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON = 19;
+    public static final int PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS = 20;
+
     private static final String TAG = "JobScheduler.JobStatus";
     static final boolean DEBUG = JobSchedulerService.DEBUG;
 
@@ -138,6 +191,88 @@ public final class JobStatus {
             | CONSTRAINT_DEVICE_NOT_DOZING
             | CONSTRAINT_FLEXIBLE
             | CONSTRAINT_WITHIN_QUOTA;
+
+    /** Bit definitions for the return value of {@link #getJobStateFlags()}. */
+    @LongDef(prefix = "JOB_STATE_FLAG_", flag = true, value = {
+            JOB_STATE_FLAG_HAS_CHARGING_CONSTRAINT,
+            JOB_STATE_FLAG_HAS_BATTERY_NOT_LOW_CONSTRAINT,
+            JOB_STATE_FLAG_HAS_STORAGE_NOT_LOW_CONSTRAINT,
+            JOB_STATE_FLAG_HAS_TIMING_DELAY_CONSTRAINT,
+            JOB_STATE_FLAG_HAS_DEADLINE_CONSTRAINT,
+            JOB_STATE_FLAG_HAS_IDLE_CONSTRAINT,
+            JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT,
+            JOB_STATE_FLAG_HAS_CONTENT_TRIGGER_CONSTRAINT,
+            JOB_STATE_FLAG_IS_REQUESTED_EXPEDITED_JOB,
+            JOB_STATE_FLAG_IS_RUNNING_AS_EXPEDITED_JOB,
+            JOB_STATE_FLAG_IS_PREFETCH,
+            JOB_STATE_FLAG_IS_CONSTRAINT_DEADLINE_SATISFIED,
+            JOB_STATE_FLAG_IS_CONSTRAINT_CHARGING_SATISFIED,
+            JOB_STATE_FLAG_IS_CONSTRAINT_BATTERY_NOT_LOW_SATISFIED,
+            JOB_STATE_FLAG_IS_CONSTRAINT_STORAGE_NOT_LOW_SATISFIED,
+            JOB_STATE_FLAG_IS_CONSTRAINT_TIMING_DELAY_SATISFIED,
+            JOB_STATE_FLAG_IS_CONSTRAINT_IDLE_SATISFIED,
+            JOB_STATE_FLAG_IS_CONSTRAINT_CONNECTIVITY_SATISFIED,
+            JOB_STATE_FLAG_IS_CONSTRAINT_CONTENT_TRIGGER_SATISFIED,
+            JOB_STATE_FLAG_IS_REQUESTED_USER_INITIATED_JOB,
+            JOB_STATE_FLAG_IS_RUNNING_AS_USER_INITIATED_JOB,
+            JOB_STATE_FLAG_IS_PERIODIC,
+            JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT,
+            JOB_STATE_FLAG_IS_CONSTRAINT_FLEXIBLE_SATISFIED,
+            JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface JobStateFlags {}
+
+    public static final long JOB_STATE_FLAG_HAS_CHARGING_CONSTRAINT = 1L << 0;
+    public static final long JOB_STATE_FLAG_HAS_BATTERY_NOT_LOW_CONSTRAINT = 1L << 1;
+    public static final long JOB_STATE_FLAG_HAS_STORAGE_NOT_LOW_CONSTRAINT = 1L << 2;
+    public static final long JOB_STATE_FLAG_HAS_TIMING_DELAY_CONSTRAINT = 1L << 3;
+    public static final long JOB_STATE_FLAG_HAS_DEADLINE_CONSTRAINT = 1L << 4;
+    public static final long JOB_STATE_FLAG_HAS_IDLE_CONSTRAINT = 1L << 5;
+    public static final long JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT = 1L << 6;
+    public static final long JOB_STATE_FLAG_HAS_CONTENT_TRIGGER_CONSTRAINT = 1L << 7;
+    public static final long JOB_STATE_FLAG_IS_REQUESTED_EXPEDITED_JOB = 1L << 8;
+    public static final long JOB_STATE_FLAG_IS_RUNNING_AS_EXPEDITED_JOB = 1L << 9;
+    public static final long JOB_STATE_FLAG_IS_PREFETCH = 1L << 10;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_DEADLINE_SATISFIED = 1L << 11;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_CHARGING_SATISFIED = 1L << 12;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_BATTERY_NOT_LOW_SATISFIED = 1L << 13;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_STORAGE_NOT_LOW_SATISFIED = 1L << 14;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_TIMING_DELAY_SATISFIED = 1L << 15;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_IDLE_SATISFIED = 1L << 16;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_CONNECTIVITY_SATISFIED = 1L << 17;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_CONTENT_TRIGGER_SATISFIED = 1L << 18;
+    public static final long JOB_STATE_FLAG_IS_REQUESTED_USER_INITIATED_JOB = 1L << 19;
+    public static final long JOB_STATE_FLAG_IS_RUNNING_AS_USER_INITIATED_JOB = 1L << 20;
+    public static final long JOB_STATE_FLAG_IS_PERIODIC = 1L << 21;
+    public static final long JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT = 1L << 22;
+    public static final long JOB_STATE_FLAG_IS_CONSTRAINT_FLEXIBLE_SATISFIED = 1L << 23;
+    public static final long JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES = 1L << 24;
+
+    /**
+     * Bitmask of flags to clear when a job is scheduled, since they are not meaningful for a
+     * newly scheduled job.
+     */
+    public static final long JOB_STATE_FLAGS_TO_CLEAR_ON_SCHEDULE =
+            ~(JOB_STATE_FLAG_IS_RUNNING_AS_EXPEDITED_JOB
+            | JOB_STATE_FLAG_IS_CONSTRAINT_DEADLINE_SATISFIED
+            | JOB_STATE_FLAG_IS_CONSTRAINT_CHARGING_SATISFIED
+            | JOB_STATE_FLAG_IS_CONSTRAINT_BATTERY_NOT_LOW_SATISFIED
+            | JOB_STATE_FLAG_IS_CONSTRAINT_STORAGE_NOT_LOW_SATISFIED
+            | JOB_STATE_FLAG_IS_CONSTRAINT_TIMING_DELAY_SATISFIED
+            | JOB_STATE_FLAG_IS_CONSTRAINT_IDLE_SATISFIED
+            | JOB_STATE_FLAG_IS_CONSTRAINT_CONNECTIVITY_SATISFIED
+            | JOB_STATE_FLAG_IS_CONSTRAINT_CONTENT_TRIGGER_SATISFIED
+            | JOB_STATE_FLAG_IS_RUNNING_AS_USER_INITIATED_JOB
+            | JOB_STATE_FLAG_IS_CONSTRAINT_FLEXIBLE_SATISFIED);
+
+    /**
+     * Bitmask of flags to clear when a job is cancelled, since they are not meaningful for a
+     * cancelled job.
+     */
+    public static final long JOB_STATE_FLAGS_TO_CLEAR_ON_CANCEL =
+            ~(JOB_STATE_FLAG_IS_RUNNING_AS_EXPEDITED_JOB
+                    | JOB_STATE_FLAG_IS_RUNNING_AS_USER_INITIATED_JOB);
 
     // The following set of dynamic constraints are for specific use cases (as explained in their
     // relative naming and comments). Right now, they apply different constraints, which is fine,
@@ -1112,6 +1247,91 @@ public final class JobStatus {
     /** Returns an ID that can be used to uniquely identify the job when logging statsd metrics. */
     public long getLoggingJobId() {
         return mLoggingJobId;
+    }
+
+    /**
+     * Packs various job state booleans into a bit-field for logging and metrics purposes.
+     * This is mainly for memory optimization.
+     * The bit definitions are {@code JOB_STATE_FLAG_*} constants.
+     */
+    public static long packStatesToBits(@NonNull JobStatus jobStatus) {
+        long flags = 0;
+        if (jobStatus.hasChargingConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_CHARGING_CONSTRAINT;
+        }
+        if (jobStatus.hasBatteryNotLowConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_BATTERY_NOT_LOW_CONSTRAINT;
+        }
+        if (jobStatus.hasStorageNotLowConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_STORAGE_NOT_LOW_CONSTRAINT;
+        }
+        if (jobStatus.hasTimingDelayConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_TIMING_DELAY_CONSTRAINT;
+        }
+        if (jobStatus.hasDeadlineConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_DEADLINE_CONSTRAINT;
+        }
+        if (jobStatus.hasIdleConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_IDLE_CONSTRAINT;
+        }
+        if (jobStatus.hasConnectivityConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_CONNECTIVITY_CONSTRAINT;
+        }
+        if (jobStatus.hasContentTriggerConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_CONTENT_TRIGGER_CONSTRAINT;
+        }
+        if (jobStatus.isRequestedExpeditedJob()) {
+            flags |= JOB_STATE_FLAG_IS_REQUESTED_EXPEDITED_JOB;
+        }
+        if (jobStatus.shouldTreatAsExpeditedJob()) {
+            flags |= JOB_STATE_FLAG_IS_RUNNING_AS_EXPEDITED_JOB;
+        }
+        if (jobStatus.getJob().isPrefetch()) {
+            flags |= JOB_STATE_FLAG_IS_PREFETCH;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_DEADLINE)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_DEADLINE_SATISFIED;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_CHARGING)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_CHARGING_SATISFIED;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_BATTERY_NOT_LOW)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_BATTERY_NOT_LOW_SATISFIED;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_STORAGE_NOT_LOW)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_STORAGE_NOT_LOW_SATISFIED;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_TIMING_DELAY)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_TIMING_DELAY_SATISFIED;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_IDLE)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_IDLE_SATISFIED;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_CONNECTIVITY)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_CONNECTIVITY_SATISFIED;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_CONTENT_TRIGGER)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_CONTENT_TRIGGER_SATISFIED;
+        }
+        if (jobStatus.getJob().isUserInitiated()) {
+            flags |= JOB_STATE_FLAG_IS_REQUESTED_USER_INITIATED_JOB;
+        }
+        if (jobStatus.shouldTreatAsUserInitiatedJob()) {
+            flags |= JOB_STATE_FLAG_IS_RUNNING_AS_USER_INITIATED_JOB;
+        }
+        if (jobStatus.getJob().isPeriodic()) {
+            flags |= JOB_STATE_FLAG_IS_PERIODIC;
+        }
+        if (jobStatus.hasFlexibilityConstraint()) {
+            flags |= JOB_STATE_FLAG_HAS_FLEXIBILITY_CONSTRAINT;
+        }
+        if (jobStatus.isConstraintSatisfied(CONSTRAINT_FLEXIBLE)) {
+            flags |= JOB_STATE_FLAG_IS_CONSTRAINT_FLEXIBLE_SATISFIED;
+        }
+        if (jobStatus.canApplyTransportAffinities()) {
+            flags |= JOB_STATE_FLAG_CAN_APPLY_TRANSPORT_AFFINITIES;
+        }
+        return flags;
     }
 
     /** Returns a trace tag using debug information provided by the app. */
