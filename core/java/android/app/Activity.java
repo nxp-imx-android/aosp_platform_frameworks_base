@@ -10247,17 +10247,11 @@ public class Activity extends ContextThemeWrapper
         }
     }
 
-    /**
-     * Enabling jank tracking for this activity but only if certain conditions are met. The
-     * application must have an app category other than undefined and a visible view.
-     */
     private void startAppJankTracking() {
-        if (!android.app.jank.Flags.detailedAppJankMetricsLoggingEnabled()) {
+        if (!shouldStartAppJankTracking()) {
             return;
         }
-        if (mApplication.getApplicationInfo().category == ApplicationInfo.CATEGORY_UNDEFINED) {
-            return;
-        }
+
         if (getWindow() != null && getWindow().peekDecorView() != null) {
             DecorView decorView = (DecorView) getWindow().peekDecorView();
             if (decorView.getVisibility() == View.VISIBLE) {
@@ -10280,6 +10274,22 @@ public class Activity extends ContextThemeWrapper
                 mJankTracker.enableAppJankTracking();
             }
         }
+    }
+
+    /**
+     * Enabling jank tracking for this activity but only if certain conditions are met. The
+     * application must have an app category other than undefined and be a non user build.
+     */
+    private boolean shouldStartAppJankTracking() {
+        // TODO remove this check once b/449201648 is closed.
+        if (android.app.jank.Flags.disableUserBuildJankMetrics()
+                && Build.IS_USER) {
+            return false;
+        }
+        if (!android.app.jank.Flags.detailedAppJankMetricsLoggingEnabled()) {
+            return false;
+        }
+        return mApplication.getApplicationInfo().category != ApplicationInfo.CATEGORY_UNDEFINED;
     }
 
     /**

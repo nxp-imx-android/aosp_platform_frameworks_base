@@ -50,3 +50,14 @@ flag {
    }
   }
 
+flag {
+    name: "disable_user_build_jank_metrics"
+    namespace: "system_performance"
+    description: "when enabled jank metrics will not be collected on user builds"
+    bug: "450107675"
+    metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+
