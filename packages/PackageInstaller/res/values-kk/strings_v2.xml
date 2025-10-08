@@ -65,23 +65,23 @@
     <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Телефон және жеке деректер белгісіз қолданбалардың шабуылына ұшырауы мүмкін. Бұл қолданбаны орнату арқылы оны пайдалану нәтижесіндегі телефонға келетін залалға немесе деректердің жоғалуына өзіңіз ғана жауапты болатыныңызға келісесіз."</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Планшет және жеке деректер белгісіз қолданбалардың шабуылына ұшырауы мүмкін. Бұл қолданбаны орнату арқылы оны пайдалану нәтижесіндегі планшетке келетін залалға немесе деректердің жоғалуына өзіңіз ғана жауапты болатыныңызға келісесіз."</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Теледидар және жеке деректер белгісіз қолданбалардың шабуылына ұшырауы мүмкін. Бұл қолданбаны орнату арқылы оны пайдалану нәтижесіндегі теледидарға келетін қандай да бір залалға немесе деректердің жоғалуына өзіңіз ғана жауапты болатыныңызға келісесіз."</string>
-    <string name="message_install_failed_blocked" msgid="8289588872577100349">"Бұл қолданбаны орнату блокталды"</string>
-    <string name="message_install_failed_conflict" msgid="1707670432024473123">"Бұл қолданба құрылғыңыздағы қолданбаға қайшы келеді"</string>
-    <string name="message_install_failed_incompatible" msgid="184079710727317076">"Бұл қолданба құрылғыңызбен үйлесімді емес"</string>
-    <string name="message_install_failed_invalid" msgid="6607567121196588310">"Бұл қолданбаның орнату файлына қатысты мәселе орын алды"</string>
-    <string name="message_install_failed_less_storage" msgid="5263281541675717769">"Бұл қолданбаны орнату үшін орын босатып көріңіз де, әрекетті қайталаңыз"</string>
-    <string name="message_parse_failed" msgid="205300138438352785">"Қолданба файлына қатысты мәселе орын алды"</string>
-    <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"Қолданбалар орнатуға шектеу қойылды"</string>
-    <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"Белгісіз қолданбаларды орнатуға шектеу қойылды"</string>
-    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Бұл қолданбаның клоны бар және ол жойылады"</string>
-    <string name="message_delete_clone_app" msgid="6632017049227330363">"Бұл қолданба – <xliff:g id="APP_LABEL">%1$s</xliff:g> клоны"</string>
+    <string name="message_install_failed_blocked" msgid="8289588872577100349">"Бұл қолданбаны орнату блокталды."</string>
+    <string name="message_install_failed_conflict" msgid="1707670432024473123">"Бұл қолданба құрылғыңыздағы қолданбаға қайшы келеді."</string>
+    <string name="message_install_failed_incompatible" msgid="184079710727317076">"Бұл қолданба құрылғыңызбен үйлесімді емес."</string>
+    <string name="message_install_failed_invalid" msgid="6607567121196588310">"Бұл қолданбаның орнату файлына қатысты мәселе орын алды."</string>
+    <string name="message_install_failed_less_storage" msgid="5263281541675717769">"Бұл қолданбаны орнату үшін орын босатып, әрекетті қайталаңыз."</string>
+    <string name="message_parse_failed" msgid="205300138438352785">"Қолданба файлына қатысты мәселе орын алды."</string>
+    <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"Қолданбалар орнатуға шектеу қойылды."</string>
+    <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"Белгісіз қолданбаларды орнатуға шектеу қойылды."</string>
+    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"Бұл қолданбаның клоны бар және ол жойылады."</string>
+    <string name="message_delete_clone_app" msgid="6632017049227330363">"Бұл қолданба – <xliff:g id="APP_LABEL">%1$s</xliff:g> клоны."</string>
     <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"Бұл қолданба зауыттық нұсқамен ауыстырылады. Барлық қолданба дерегі өшіріледі."</string>
     <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"Бұл қолданба құрылғыдағы барлық пайдаланушы үшін зауыттық нұсқамен ауыстырылады. Барлық қолданба дерегі өшіріледі."</string>
-    <string name="message_uninstall_work_profile" msgid="224587253086750763">"Бұл қолданба жұмыс профилінен жойылады"</string>
-    <string name="message_uninstall_private_space" msgid="2815872500665141251">"Бұл қолданба құпия кеңістіктен жойылады"</string>
-    <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Бұл қолданба орнатылған қолданбалар тізімінен табылмады немесе әлдеқашан жойылған"</string>
+    <string name="message_uninstall_work_profile" msgid="224587253086750763">"Бұл қолданба жұмыс профилінен жойылады."</string>
+    <string name="message_uninstall_private_space" msgid="2815872500665141251">"Бұл қолданба құпия кеңістіктен жойылады."</string>
+    <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"Бұл қолданба орнатылған қолданбалар тізімінен табылмады немесе әлдеқашан жойылған."</string>
     <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"Берілген пайдаланушыға бұл қолданбаны жоюға рұқсат берілмеген."</string>
-    <string name="message_uninstall_failed" msgid="4678598986902459187">"Бұл қолданба жойылмады"</string>
+    <string name="message_uninstall_failed" msgid="4678598986902459187">"Бұл қолданба жойылмады."</string>
     <string name="message_uninstall_keep_data" msgid="3955153594868206983">"Қолданба деректерін сақтау"</string>
     <string name="message_archive" msgid="943853731737315850">"Қолданба дерегі сақталады."</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Барлық қолданба дерегі сақталады."</string>
@@ -95,7 +95,7 @@
     <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"Бұл қолданбаны қалпына келтіру үшін параметрлерден <xliff:g id="INSTALLERNAME">%1$s</xliff:g> құралын қосыңыз."</string>
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Бұл қолданбаны қалпына келтіру үшін <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>  орнатуыңыз керек."</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Бұл қолданбаны қалпына келтіру мүмкін болмады."</string>
-    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> – келесі қолданбаның бір бөлігі: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
+    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> – <xliff:g id="APP_NAME">%2$s</xliff:g> қолданбасының бір бөлігі."</string>
     <string name="cannot_install_app_blocked_summary" msgid="2082063650842897085">"&lt;p&gt;Бұл қолданба блокталған. Құрылғыңыз бен деректеріңізді қорғау үшін тек расталған әзірлеушілердің қолданбаларын орнатуға болады.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Әзірлеушілерді растау туралы толық ақпарат&lt;/a&gt;"</string>
     <string name="cannot_update_app_blocked_summary" msgid="7607734844900187499">"&lt;p&gt;Бұл қолданбаның жаңа нұсқасы орнатылмады. Құрылғыңыз бен деректеріңізді қорғау үшін тек расталған әзірлеушілердің жаңа нұсқаларын орнатуға болады.&lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Әзірлеушілерді растау туралы толық ақпарат&lt;/a&gt;"</string>
     <string name="cannot_install_verification_no_internet_summary" msgid="7298957699553589600">"&lt;p&gt;Бұл қолданба орнатылмады. Расталмаған әзірлеушілердің қолданбалары қауіпті болуы мүмкін.&lt;/p&gt; &lt;p&gt;Қолданба әзірлеушісін растау үшін интернет байланысы қажет. Байланысты тексеріп, қайта орнатып көріңіз. &lt;/p&gt; &lt;a href=https://g.co/android/developer&gt;Әзірлеушілерді растау туралы толық ақпарат&lt;/a&gt;"</string>
