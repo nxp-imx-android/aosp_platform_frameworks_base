@@ -10961,9 +10961,8 @@ public class CarrierConfigManager {
     /**
      * Auto data network switch policy between primary and opportunistic profiles in the same
      * subscription group: switching is disabled.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_DISABLED = 0;
 
     /**
@@ -10976,9 +10975,8 @@ public class CarrierConfigManager {
      *
      * <p>The system behavior may change over releases. Carriers can override with specific policies
      * below if carriers would like a consistent behavior.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOLLOW_SYSTEM = Integer.MAX_VALUE;
 
     /**
@@ -10990,9 +10988,8 @@ public class CarrierConfigManager {
      *
      * <p>The availability-based switch is also restricted by the device resource config
      * {@code auto_data_switch_availability_stability_time_threshold_millis}.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY =
             OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY;
 
@@ -11009,9 +11006,8 @@ public class CarrierConfigManager {
      * <p>Performance based policy implicitly include availability based policy, that is, when
      * primary or opportunistic is out of service, follow the same behavior for policy
      * {@link #OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY}.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOR_PERFORMANCE =
             OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY
                     | OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_PERFORMANCE;
@@ -11030,8 +11026,8 @@ public class CarrierConfigManager {
      * policies or specific policy according to the business user cases.
      *
      * <p>None of the policies here impact the auto data switch between primary networks.
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final String KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT =
             "opp_auto_data_switch_policy_int";
 
