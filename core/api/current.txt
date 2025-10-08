@@ -6204,8 +6204,9 @@ package android.app {
   }
 
   @FlaggedApi("android.companion.enable_task_continuity") public final class HandoffActivityData implements android.os.Parcelable {
+    method @NonNull public static android.app.HandoffActivityData createWebHandoff(@NonNull android.net.Uri);
     method public int describeContents();
-    method @NonNull public android.content.ComponentName getComponentName();
+    method @Nullable public android.content.ComponentName getComponentName();
     method @NonNull public android.os.PersistableBundle getExtras();
     method @Nullable public android.net.Uri getFallbackUri();
     method public void writeToParcel(@NonNull android.os.Parcel, int);

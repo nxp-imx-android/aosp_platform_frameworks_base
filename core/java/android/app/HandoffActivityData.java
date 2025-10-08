@@ -41,14 +41,32 @@ import java.util.Objects;
  * remote device's web browser in this case. If no fallback URI is specified, the user will be
  * presented with an error. If the system is attempting to hand off the entire task, failure to
  * resolve {@link #getComponentName()} will result in only the top activity of the task being handed
- * off.
+ * off. It is also possible to simply specify a fallback URI, rather than specifying a component
+ * name.
  */
 @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
 public final class HandoffActivityData implements Parcelable {
 
-    private @NonNull ComponentName mComponentName;
-    private @NonNull PersistableBundle mExtras;
-    private @Nullable Uri mFallbackUri;
+    private final @Nullable ComponentName mComponentName;
+    private final @NonNull PersistableBundle mExtras;
+    private final @Nullable Uri mFallbackUri;
+
+    /**
+     * Creates a {@link HandoffActivityData} object for a web handoff.
+     *
+     * @param uri the URI to be launched on the remote device's web browser.
+     * @return the {@link HandoffActivityData} object.
+     */
+    @NonNull
+    public static HandoffActivityData createWebHandoff(@NonNull Uri uri) {
+        return new HandoffActivityData(Objects.requireNonNull(uri));
+    }
+
+    private HandoffActivityData(@NonNull Uri uri) {
+        mComponentName = null;
+        mExtras = new PersistableBundle();
+        mFallbackUri = uri;
+    }
 
     private HandoffActivityData(@NonNull Builder builder) {
         Objects.requireNonNull(builder);
@@ -62,6 +80,8 @@ public final class HandoffActivityData implements Parcelable {
         mExtras = in.readPersistableBundle(getClass().getClassLoader());
         if (in.readInt() != 0) {
             mFallbackUri = Uri.CREATOR.createFromParcel(in);
+        } else {
+            mFallbackUri = null;
         }
     }
 
@@ -79,9 +99,10 @@ public final class HandoffActivityData implements Parcelable {
 
     /**
      * @return the component name of an activity to launch on the remote device
-     * when the activity represented by this object is handed off.
+     * when the activity represented by this object is handed off. When this is {@code null}, the
+     * {@link #getFallbackUri()} will be used.
      */
-    @NonNull
+    @Nullable
     public ComponentName getComponentName() {
         return mComponentName;
     }
