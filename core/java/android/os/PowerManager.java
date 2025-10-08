@@ -2979,6 +2979,12 @@ public final class PowerManager {
     }
 
     /**
+     * Invalid thermal status.
+     * @hide
+     */
+    public static final int THERMAL_STATUS_INVALID = -1;
+
+    /**
      * Thermal status code: Not under throttling.
      */
     public static final int THERMAL_STATUS_NONE = Temperature.THROTTLING_NONE;
@@ -3017,6 +3023,7 @@ public final class PowerManager {
     /** @hide */
     @Target(ElementType.TYPE_USE)
     @IntDef(prefix = { "THERMAL_STATUS_" }, value = {
+            THERMAL_STATUS_INVALID,
             THERMAL_STATUS_NONE,
             THERMAL_STATUS_LIGHT,
             THERMAL_STATUS_MODERATE,

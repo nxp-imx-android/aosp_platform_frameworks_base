@@ -131,8 +131,10 @@ public class DisplayModeDirectorTest {
             /* defaultPeakRefreshRate= */ 0,
             /* defaultRefreshRateInHbmHdr= */ 0,
             /* defaultRefreshRateInHbmSunlight= */ 0,
+            /* defaultWorkDurations= */ null,
             /* lowPowerSupportedModes= */ List.of(),
-            /* lowLightBlockingZoneSupportedModes= */ List.of());
+            /* lowLightBlockingZoneSupportedModes= */ List.of(),
+            /* lowPowerWorkDurations= */ null);
 
     public static Collection<Object[]> getAppRequestedSizeTestCases() {
         var appRequestedSizeTestCases = Arrays.asList(new Object[][] {
@@ -3248,8 +3250,10 @@ public class DisplayModeDirectorTest {
                 /* defaultPeakRefreshRate= */ 65,
                 /* defaultRefreshRateInHbmHdr= */ 65,
                 /* defaultRefreshRateInHbmSunlight= */ 75,
+                /* defaultWorkDurations= */ null,
                 /* lowPowerSupportedModes= */ List.of(),
-                /* lowLightBlockingZoneSupportedModes= */ List.of());
+                /* lowLightBlockingZoneSupportedModes= */ List.of(),
+                /* lowPowerWorkDurations= */ null);
         List<IdleScreenRefreshRateTimeoutLuxThresholdPoint>
                 idleScreenRefreshRateTimeoutLuxThresholdPoints =
                 List.of(getIdleScreenRefreshRateTimeoutLuxThresholdPoint(0, 1500),

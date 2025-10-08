@@ -387,6 +387,9 @@
             <xs:element type="refreshRateThrottlingMap" name="refreshRateThrottlingMap" maxOccurs="unbounded">
                 <xs:annotation name="final"/>
             </xs:element>
+            <xs:element type="workDurationsThrottlingMap" name="workDurationsThrottlingMap" maxOccurs="unbounded">
+                <xs:annotation name="final"/>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -398,6 +401,28 @@
                 <xs:annotation name="final"/>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="workDurationsThrottlingPair">
+        <xs:sequence>
+            <xs:element type="thermalStatus" name="thermalStatus">
+                <xs:annotation name="nonnull"/>
+                <xs:annotation name="final"/>
+            </xs:element>
+            <xs:element type="workDurations" name="thermalThrottlingWorkDurations">
+                <xs:annotation name="nullable"/>
+                <xs:annotation name="final"/>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="workDurationsThrottlingMap">
+        <xs:sequence>
+            <xs:element name="workDurationsThrottlingPair" type="workDurationsThrottlingPair" maxOccurs="unbounded">
+                <xs:annotation name="final"/>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="refreshRateThrottlingPoint">
@@ -799,6 +824,9 @@
                     minOccurs="0" maxOccurs="1">
             <xs:annotation name="final"/>
         </xs:element>
+        <xs:element name="defaultWorkDurations" type="workDurations" minOccurs="0" maxOccurs="1">
+            <xs:annotation name="final"/>
+        </xs:element>
         <xs:element name="lowerBlockingZoneConfigs" type="blockingZoneConfig"
                     minOccurs="0" maxOccurs="1">
             <xs:annotation name="final"/>
@@ -818,6 +846,10 @@
           </lowPowerSupportedModes>
            -->
         <xs:element type="nonNegativeFloatToFloatMap" name="lowPowerSupportedModes" minOccurs="0">
+            <xs:annotation name="nullable"/>
+            <xs:annotation name="final"/>
+        </xs:element>
+        <xs:element type="workDurations" name="lowPowerWorkDurations">
             <xs:annotation name="nullable"/>
             <xs:annotation name="final"/>
         </xs:element>
@@ -946,6 +978,20 @@
         <xs:element name="timeout" type="xs:nonNegativeInteger">
             <xs:annotation name="final"/>
         </xs:element>
+    </xs:complexType>
+
+    <xs:complexType name="workDurations">
+        <xs:sequence>
+            <xs:element name="lateWorkDuration" type="xs:nonNegativeInteger">
+                <xs:annotation><xs:documentation>SurfaceFlinger late phase work duration in milliseconds.</xs:documentation></xs:annotation>
+            </xs:element>
+            <xs:element name="earlyWorkDuration" type="xs:nonNegativeInteger">
+                <xs:annotation><xs:documentation>SurfaceFlinger early phase work duration in milliseconds.</xs:documentation></xs:annotation>
+            </xs:element>
+            <xs:element name="appWorkDuration" type="xs:nonNegativeInteger">
+                <xs:annotation><xs:documentation>Application phase work duration in milliseconds.</xs:documentation></xs:annotation>
+            </xs:element>
+        </xs:sequence>
     </xs:complexType>
 
     <!-- Predefined type names as defined by
