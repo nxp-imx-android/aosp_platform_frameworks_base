@@ -339,7 +339,7 @@
     <string name="managed_profile_app_label" msgid="367401088383965725">"Mudar para o app <xliff:g id="APP_NAME">%1$s</xliff:g> do perfil de trabalho"</string>
     <string name="permgrouplab_contacts" msgid="7443702399615347952">"Contatos e contas"</string>
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"acessar seus contatos e ver a lista de contas que podem salvar contatos neste dispositivo"</string>
-    <string name="permgrouplab_location" msgid="1858277002233964394">"Localização"</string>
+    <string name="permgrouplab_location" msgid="1858277002233964394">"localização"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"acesse o local do dispositivo"</string>
     <string name="permgrouplab_calendar" msgid="6426860926123033230">"Agenda"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"acessar sua agenda"</string>
