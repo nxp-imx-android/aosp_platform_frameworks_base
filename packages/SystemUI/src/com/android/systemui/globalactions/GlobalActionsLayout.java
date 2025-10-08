@@ -43,15 +43,21 @@ import java.util.Locale;
  * Grid-based implementation of the button layout created by the global actions dialog.
  */
 public abstract class GlobalActionsLayout extends MultiListLayout {
-
     boolean mBackgroundsSet;
+
+    private Boolean mIsBlurSupported = null;
 
     public GlobalActionsLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     public void setIsBlurSupported(boolean isBlurSupported) {
-        updateIsBlurSupported(isBlurSupported);
+        if (mIsBlurSupported != null && isBlurSupported == mIsBlurSupported) {
+            return;
+        }
+
+        mIsBlurSupported = isBlurSupported;
+        updateIsBlurSupported();
     }
 
     private void setBackgrounds() {
@@ -92,12 +98,12 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
         }
     }
 
-    private void updateIsBlurSupported(boolean isBlurSupported) {
-        if (blurOnMoreSurfaces()) {
+    private void updateIsBlurSupported() {
+        if (blurOnMoreSurfaces() && mBackgroundsSet && mIsBlurSupported != null) {
             LayerDrawable layerDrawable = (LayerDrawable) getListView().getBackground();
-            layerDrawable.getDrawable(0).setVisible(isBlurSupported, false);
+            layerDrawable.getDrawable(0).setVisible(mIsBlurSupported, false);
             ((GradientDrawable) layerDrawable.getDrawable(1)).setColor(
-                    mContext.getColor(isBlurSupported ? R.color.global_actions_grid_background_blur
+                    mContext.getColor(mIsBlurSupported ? R.color.global_actions_grid_background_blur
                             : R.color.global_actions_grid_background_blur_fallback));
         }
     }
@@ -116,6 +122,7 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
         if (getListView() != null && !mBackgroundsSet) {
             setBackgrounds();
             mBackgroundsSet = true;
+            updateIsBlurSupported();
         }
     }
 
