@@ -209,7 +209,6 @@ public abstract class CallRedirectionService extends Service {
      *                     response was sent with a true flag of allowInteractiveResponse via
      *                     {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)}
      */
-
     @FlaggedApi(Flags.FLAG_PLACE_CALL_TO_ALTERNATE_NUMBER)
     public final void placeCallToAlternateNumber(@NonNull Uri alternateUri,
                                                  @NonNull PhoneAccountHandle targetPhoneAccount,
@@ -218,6 +217,11 @@ public abstract class CallRedirectionService extends Service {
             if (mCallRedirectionAdapter == null) {
                 throw new IllegalStateException("Can only be called from onPlaceCall.");
             }
+
+            if (alternateUri == null) {
+                throw new IllegalArgumentException("alternateUri must be non-null");
+            }
+
             mCallRedirectionAdapter.placeCallToAlternateNumber(alternateUri,
                                                                targetPhoneAccount,
                                                                confirmFirst);
