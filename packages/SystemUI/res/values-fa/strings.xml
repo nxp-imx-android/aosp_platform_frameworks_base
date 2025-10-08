@@ -638,7 +638,7 @@
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"بیایید شروع کنیم"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"نمایش محافظ‌های صفحه‌نمایش دلخواه درحین شارژ"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"تعویض کاربر"</string>
-    <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"منوی پایین‌پر"</string>
+    <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"منو پایین‌پر"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"همه برنامه‌ها و داده‌های این جلسه حذف خواهد شد."</string>
     <string name="guest_wipe_session_title" msgid="7147965814683990944">"مهمان گرامی، بازگشتتان را خوش آمد می‌گوییم!"</string>
     <string name="guest_wipe_session_message" msgid="3393823610257065457">"آیا می‌خواهید جلسه‌تان را ادامه دهید؟"</string>
