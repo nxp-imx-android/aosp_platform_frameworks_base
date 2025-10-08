@@ -26,7 +26,7 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffActivityStarter;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffRequestCallbackHolder;
-import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
+import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
 
 import android.annotation.NonNull;
 import android.app.HandoffActivityData;
@@ -55,7 +55,7 @@ public class OutboundHandoffRequestController {
 
     private final Context mContext;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
-    private final RemoteTaskStore mRemoteTaskStore;
+    private final TaskSyncController mTaskSyncController;
     private final HandoffRequestCallbackHolder mHandoffRequestCallbackHolder =
             new HandoffRequestCallbackHolder();
     private final Set<PendingHandoffRequest> mPendingHandoffRequests = new HashSet<>();
@@ -63,15 +63,11 @@ public class OutboundHandoffRequestController {
     public OutboundHandoffRequestController(
             @NonNull Context context,
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
-            @NonNull RemoteTaskStore remoteTaskStore) {
+            @NonNull TaskSyncController taskSyncController) {
 
-        Objects.requireNonNull(context);
-        Objects.requireNonNull(taskContinuityMessenger);
-        Objects.requireNonNull(remoteTaskStore);
-
-        mContext = context;
-        mTaskContinuityMessenger = taskContinuityMessenger;
-        mRemoteTaskStore = remoteTaskStore;
+        mContext = Objects.requireNonNull(context);
+        mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
+        mTaskSyncController = Objects.requireNonNull(taskSyncController);
     }
 
     public void requestHandoff(int associationId, int taskId, IHandoffRequestCallback callback) {
@@ -158,7 +154,7 @@ public class OutboundHandoffRequestController {
             mPendingHandoffRequests.remove(request);
             mHandoffRequestCallbackHolder.notifyAndRemoveCallbacks(
                     associationId, taskId, statusCode);
-            mRemoteTaskStore.removeTask(associationId, taskId);
+            mTaskSyncController.removeTask(associationId, taskId);
         }
     }
 }
