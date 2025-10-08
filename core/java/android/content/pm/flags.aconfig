@@ -311,16 +311,6 @@ flag {
 }
 
 flag {
-    name: "consolidate_package_changed_broadcasts"
-    namespace: "package_manager_service"
-    description: "Flag guarding the changes to consolidate package_changed broadcasts into a single one, instead of sending them individually"
-    bug: "433394697"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "alternative_for_dexopt_cleanup"
     namespace: "art_cloud"
     description: "Flag guarding the alternative code path replacing the legacy dexopt code, to allow legacy dexopt cleanup."
