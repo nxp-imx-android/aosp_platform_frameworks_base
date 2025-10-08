@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.logging;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_ALERTING;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_FOREGROUND_SERVICE;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_HEADS_UP;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_HIGHLIGHTS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_MEDIA_CONTROLS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_PEOPLE;
@@ -175,6 +176,7 @@ public interface NotificationPanelLogger {
             case BUCKET_SOCIAL: return Notifications.Notification.SECTION_SOCIAL;
             case BUCKET_RECS: return Notifications.Notification.SECTION_RECS;
             case BUCKET_PROMO: return Notifications.Notification.SECTION_PROMO;
+            case BUCKET_HIGHLIGHTS: return Notifications.Notification.SECTION_HIGHLIGHTS;
         }
         return Notifications.Notification.SECTION_UNKNOWN;
     }

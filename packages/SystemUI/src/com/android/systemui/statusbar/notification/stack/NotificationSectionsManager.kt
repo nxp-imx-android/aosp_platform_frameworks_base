@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.notification.SourceType
 import com.android.systemui.statusbar.notification.collection.render.MediaContainerController
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.AlertingHeader
+import com.android.systemui.statusbar.notification.dagger.HighlightsHeader
 import com.android.systemui.statusbar.notification.dagger.IncomingHeader
 import com.android.systemui.statusbar.notification.dagger.NewsHeader
 import com.android.systemui.statusbar.notification.dagger.PeopleHeader
@@ -35,6 +36,7 @@ import com.android.systemui.statusbar.notification.dagger.SilentHeader
 import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider
@@ -62,6 +64,7 @@ internal constructor(
     @SocialHeader private val socialHeaderController: SectionHeaderController,
     @RecsHeader private val recsHeaderController: SectionHeaderController,
     @PromoHeader private val promoHeaderController: SectionHeaderController,
+    @HighlightsHeader private val highlightsHeaderController: SectionHeaderController,
 ) : SectionProvider {
 
     private val configurationListener =
@@ -110,6 +113,10 @@ internal constructor(
     val promoHeaderView: SectionHeaderView?
         get() = promoHeaderController.headerView
 
+    @VisibleForTesting
+    val highlightsHeaderView: SectionHeaderView?
+        get() = highlightsHeaderController.headerView
+
     /** Must be called before use. */
     fun initialize(parent: NotificationStackScrollLayout) {
         check(!initialized) { "NotificationSectionsManager already initialized" }
@@ -138,6 +145,9 @@ internal constructor(
             recsHeaderController.reinflateView(parent)
             promoHeaderController.reinflateView(parent)
         }
+        if (NmHighlights.isEnabled) {
+            highlightsHeaderController.reinflateView(parent)
+        }
     }
 
     override fun beginsSection(view: View, previous: View?): Boolean =
@@ -146,6 +156,7 @@ internal constructor(
             view === peopleHeaderView ||
             view === alertingHeaderView ||
             view === incomingHeaderView ||
+            (NmHighlights.isEnabled && view === highlightsHeaderView) ||
             (!NotificationBundleUi.isEnabled &&
                 (view === newsHeaderView ||
                     view === socialHeaderView ||
@@ -168,6 +179,7 @@ internal constructor(
             view === socialHeaderView -> BUCKET_SOCIAL
             view === recsHeaderView -> BUCKET_RECS
             view === promoHeaderView -> BUCKET_PROMO
+            view === highlightsHeaderView -> BUCKET_HIGHLIGHTS
             view is ExpandableNotificationRow ->
                 if (NotificationBundleUi.isEnabled) view.entryAdapter?.sectionBucket
                 else view.entryLegacy.bucket
@@ -307,6 +319,9 @@ internal constructor(
             socialHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
             recsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
             promoHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
+        }
+        if (NmHighlights.isEnabled) {
+            highlightsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         }
     }
 
