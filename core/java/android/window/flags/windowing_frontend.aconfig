@@ -469,6 +469,13 @@ flag {
     namespace: "windowing_frontend"
     description: "Virtual display owners can create system application overlays"
     bug: "432521645"
+}
+
+flag {
+    name: "displayinfo_state_deferrable"
+    namespace: "windowing_frontend"
+    description: "Display state should be a deferrable WM property"
+    bug: "423701190"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
