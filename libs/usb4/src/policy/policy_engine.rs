@@ -41,6 +41,7 @@ impl PolicyEngine {
     pub fn new() -> Self {
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(1)
+            .thread_name("usb4-policy-system-server")
             .enable_all()
             .build()
             .expect("Failed to create Tokio runtime for PolicyEngine");

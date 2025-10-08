@@ -136,7 +136,7 @@ impl SysfsUtils {
 
     /// Authorizes all external PCI devices.
     /// Returns `Ok(())` on success, `Err` on failure.
-    pub fn authorize_all_devices(&self) -> Result<()> {
+    pub fn authorize_all_devices(&self, retries: u8) -> Result<()> {
         info!("Authorizing all external PCI devices");
 
         // Collect all thunderbolt device paths.
@@ -161,6 +161,12 @@ impl SysfsUtils {
         // Authorize each thunderbolt device.
         for dev in thunderbolt_devs {
             if let Err(e) = self.authorize_thunderbolt_dev(&dev) {
+                if let Some(io_err) = e.downcast_ref::<std::io::Error>() {
+                    if io_err.kind() == io::ErrorKind::PermissionDenied && retries > 0 {
+                        debug!("Returning early due to Permission Error on authorization");
+                        return Err(e);
+                    }
+                }
                 error!("Failed to authorize thunderbolt device {:?}: {}", dev, e);
                 overall_success = false;
             }
