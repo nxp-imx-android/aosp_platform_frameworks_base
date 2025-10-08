@@ -641,6 +641,8 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         pw.println("  sleepy: " + mSleepy);
         pw.println("  fullyDozed: " + mFullyDozed);
         pw.println("  panelExpanded: " + mPanelExpanded);
+        pw.println("  lockscreenShowing: " + mLockscreenShowing);
+        pw.println("  trackingHeadsUp: " + mTrackingHeadsUp);
         pw.println("  pulsing: " + mPulsing);
         pw.println("  communalShowing: " + mCommunalShowing);
         pw.println("isSuppressingPipelineRun: " + mIsSuppressingPipelineRun);
