@@ -23964,7 +23964,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return EnforcingAdmin.createDeviceAdminEnforcingAdmin(
                     admin.info.getComponent(), userId);
         }
-        return EnforcingAdmin.createEnforcingAdmin(caller.getPackageName(), userId);
+        return EnforcingAdmin.createRoleEnforcingAdmin(caller.getPackageName(), userId);
     }
 
     private EnforcingAdmin getEnforcingAdminForPackage(@Nullable ComponentName who,
@@ -23986,7 +23986,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 }
             }
         }
-        return EnforcingAdmin.createEnforcingAdmin(packageName, userId);
+        return EnforcingAdmin.createRoleEnforcingAdmin(packageName, userId);
     }
 
     private int getAffectedUser(boolean calledOnParent) {
