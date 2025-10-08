@@ -482,7 +482,17 @@ aconfig_declarations {
     package: "android.security",
     exportable: true,
     container: "system",
-    srcs: ["core/java/android/security/*.aconfig"],
+    srcs: [
+        "core/java/android/security/flags.aconfig",
+        "core/java/android/security/responsible_apis_flags.aconfig",
+    ] + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: [
+            "core/java/android/security/conscrypt_nsc_on.aconfig",
+        ],
+        default: [
+            "core/java/android/security/conscrypt_nsc_off.aconfig",
+        ],
+    }),
 }
 
 java_aconfig_library {
