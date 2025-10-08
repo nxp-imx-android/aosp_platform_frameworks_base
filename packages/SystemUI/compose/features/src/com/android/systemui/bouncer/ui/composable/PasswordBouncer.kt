@@ -18,9 +18,17 @@
 
 package com.android.systemui.bouncer.ui.composable
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextObfuscationMode
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -71,6 +79,7 @@ internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modi
     val animateFailure: Boolean by viewModel.animateFailure.collectAsStateWithLifecycle()
     val isImeSwitcherButtonVisible by
         viewModel.isImeSwitcherButtonVisible.collectAsStateWithLifecycle()
+    val isPasswordRevealed by viewModel.isPasswordRevealed.collectAsStateWithLifecycle()
     val selectedUserId by viewModel.selectedUserId.collectAsStateWithLifecycle()
 
     DisposableEffect(Unit) { onDispose { viewModel.onHidden() } }
@@ -97,6 +106,9 @@ internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modi
                         imeAction = ImeAction.Done,
                     ),
                 onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
+                textObfuscationMode =
+                    if (isPasswordRevealed) TextObfuscationMode.Visible
+                    else TextObfuscationMode.Hidden,
                 modifier =
                     modifier
                         .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
@@ -111,18 +123,58 @@ internal fun PasswordBouncer(viewModel: PasswordBouncerViewModel, modifier: Modi
                                 false
                             }
                         },
-                trailingIcon =
-                    if (isImeSwitcherButtonVisible) {
-                        { ImeSwitcherButton(viewModel, color) }
-                    } else {
-                        null
-                    },
+                trailingIcon = {
+                    trailingIcons(viewModel, color, isImeSwitcherButtonVisible, isPasswordRevealed)
+                },
                 shape = RoundedCornerShape(28.dp),
                 colors =
                     OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = color,
                         unfocusedBorderColor = color,
                     ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun trailingIcons(
+    viewModel: PasswordBouncerViewModel,
+    color: Color,
+    isImeSwitcherButtonVisible: Boolean,
+    isPasswordRevealed: Boolean,
+) {
+    if (!viewModel.isMoreIndicatorsAndButtonsEnabled) {
+        if (isImeSwitcherButtonVisible) {
+            ImeSwitcherButton(viewModel, color)
+        }
+        return
+    }
+
+    Row() {
+        if (isImeSwitcherButtonVisible) {
+            ImeSwitcherButton(viewModel, color)
+        }
+        IconButton(
+            onClick = {
+                if (isPasswordRevealed) {
+                    viewModel.onHidePasswordButtonClicked()
+                } else {
+                    viewModel.onRevealPasswordButtonClicked()
+                }
+            },
+            colors =
+                IconButtonDefaults.filledIconButtonColors(
+                    contentColor = color,
+                    containerColor = Color.Transparent,
+                ),
+        ) {
+            Icon(
+                imageVector =
+                    if (isPasswordRevealed) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                contentDescription = null,
+                // 24p matches the size of ImeSwitcherButton's icon
+                modifier = Modifier.size(24.dp),
             )
         }
     }

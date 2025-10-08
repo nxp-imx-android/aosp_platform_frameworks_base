@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.inputmethod.domain.interactor.InputMethodInteractor
@@ -64,6 +65,11 @@ constructor(
 
     override val lockoutMessageId = R.string.kg_too_many_failed_password_attempts_dialog_message
 
+    val isMoreIndicatorsAndButtonsEnabled: Boolean
+        get() =
+            Flags.moreIndicatorsAndButtonsOnPasswordBouncer() &&
+                interactor.isImproveLargeScreenInteractionEnabled
+
     private val _isImeSwitcherButtonVisible = MutableStateFlow(false)
     /** Informs the UI whether the input method switcher button should be visible. */
     val isImeSwitcherButtonVisible: StateFlow<Boolean> = _isImeSwitcherButtonVisible.asStateFlow()
@@ -75,6 +81,10 @@ constructor(
         MutableStateFlow(isInputEnabled.value && !isTextFieldFocused.value)
     /** Whether the UI should request focus on the text field element. */
     val isTextFieldFocusRequested = _isTextFieldFocusRequested.asStateFlow()
+
+    private val _isPasswordRevealed = MutableStateFlow(false)
+    /** Informs the UI whether the password should be currently revealed in clear text. */
+    val isPasswordRevealed: StateFlow<Boolean> = _isPasswordRevealed.asStateFlow()
 
     private val _selectedUserId = MutableStateFlow(selectedUserInteractor.getSelectedUserId())
     /** The ID of the currently-selected user. */
@@ -152,6 +162,7 @@ constructor(
 
     override fun clearInput() {
         textFieldState.clearText()
+        _isPasswordRevealed.value = false
     }
 
     override fun getInput(): List<Any> {
@@ -165,6 +176,23 @@ constructor(
     /** Notifies that the user clicked the button to change the input method. */
     fun onImeSwitcherButtonClicked(displayId: Int) {
         requests.trySend(OnImeSwitcherButtonClicked(displayId))
+    }
+
+    /** Notifies that the user clicked the button to reveal the password in clear text. */
+    fun onRevealPasswordButtonClicked() {
+        if (!isMoreIndicatorsAndButtonsEnabled) {
+            return
+        }
+
+        // TODO(b/427681136): Hide after 5 seconds if the user does not type additional text.
+        // TODO(b/427681136): Reset password after 30 seconds if showing the password is visible and
+        // the user does not type additional text.
+        _isPasswordRevealed.value = true
+    }
+
+    /** Notifies that the user clicked the button to hide the password. */
+    fun onHidePasswordButtonClicked() {
+        _isPasswordRevealed.value = false
     }
 
     /** Notifies that the user has pressed the key for attempting to authenticate the password. */

@@ -17,9 +17,12 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.pm.UserInfo
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
@@ -87,6 +90,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             assertThat(underTest.textFieldState.text.toString()).isEmpty()
             assertThat(currentOverlays).contains(Overlays.Bouncer)
             assertThat(underTest.authenticationMethod).isEqualTo(AuthenticationMethodModel.Password)
+            assertThat(underTest.isPasswordRevealed.value).isFalse()
         }
 
     @Test
@@ -99,6 +103,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
             underTest.onHidden()
             assertThat(underTest.textFieldState.text.toString()).isEmpty()
+            assertThat(underTest.isPasswordRevealed.value).isFalse()
         }
 
     @Test
@@ -338,6 +343,61 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             runCurrent()
             // focus should not be requested again
             assertThat(textInputFocusRequested).isFalse()
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun moreButtonsAndIndicators_isDisabled_whenFlagNotEnabled() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            assertThat(underTest.isMoreIndicatorsAndButtonsEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun moreButtonsAndIndicators_isDisabled_whenDisabledInConfig() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, false)
+
+            assertThat(underTest.isMoreIndicatorsAndButtonsEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun moreButtonsAndIndicators_isEnabled_whenFlagAndConfigEnabled() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            assertThat(underTest.isMoreIndicatorsAndButtonsEnabled).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onRevealPasswordButtonClicked_showsPassword() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            val isPasswordRevealed by collectLastValue(underTest.isPasswordRevealed)
+
+            underTest.onRevealPasswordButtonClicked()
+            runCurrent()
+
+            assertThat(isPasswordRevealed).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onRevealPasswordButtonClicked_doesNotRevealPassword_whenNotEnabled() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, false)
+
+            val isPasswordRevealed by collectLastValue(underTest.isPasswordRevealed)
+
+            underTest.onRevealPasswordButtonClicked()
+            runCurrent()
+
+            assertThat(isPasswordRevealed).isFalse()
         }
 
     private fun Kosmos.showBouncer() {
