@@ -43057,6 +43057,30 @@ package android.service.personalcontext.hint {
 
 }
 
+package android.service.personalcontext.insight {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public android.os.Bundle getDataBundle();
+    method public int getInsightType();
+  }
+
+  public static final class BundleInsight.Builder {
+    ctor public BundleInsight.Builder();
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHint);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight build();
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setDataBundle(@NonNull android.os.Bundle);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
+    method @NonNull public final java.util.UUID getInsightId();
+    method public abstract int getInsightType();
+    method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getOriginHints();
+    field public static final int INSIGHT_TYPE_BUNDLE = 1; // 0x1
+    field public static final int INSIGHT_TYPE_ERROR = -1; // 0xffffffff
+  }
+
+}
+
 package android.service.quickaccesswallet {
 
   public interface GetWalletCardsCallback {

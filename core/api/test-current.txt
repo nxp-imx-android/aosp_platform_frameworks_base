@@ -3399,6 +3399,15 @@ package android.service.personalcontext.hint {
 
 }
 
+package android.service.personalcontext.insight {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
+    method @NonNull public static android.service.personalcontext.insight.ContextInsight createInsightFromBundle(@Nullable android.os.Bundle);
+    method @NonNull public android.os.Bundle toBundle();
+  }
+
+}
+
 package android.service.quickaccesswallet {
 
   public interface QuickAccessWalletClient extends java.io.Closeable {
