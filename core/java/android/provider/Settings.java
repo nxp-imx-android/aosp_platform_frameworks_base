@@ -17,6 +17,7 @@
 package android.provider;
 
 import static android.app.Flags.systemTermsOfAddressEnabled;
+import static android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -2961,6 +2962,20 @@ public final class Settings {
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_WIFI_TETHER_SETTING =
             "com.android.settings.WIFI_TETHER_SETTINGS";
+
+    /**
+     * Activity Action: Show settings to manage a supervision app.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String MANAGE_SUPERVISION_APP_SETTINGS =
+            "android.settings.MANAGE_SUPERVISION_APP_SETTINGS";
 
     /**
      * Broadcast to trigger notification of asking user to enable MMS.
