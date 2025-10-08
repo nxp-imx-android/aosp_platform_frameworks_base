@@ -24,7 +24,6 @@ import com.android.systemui.scene.ui.composable.transitions.dreamToCommunalTrans
 import com.android.systemui.scene.ui.composable.transitions.dreamToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerTransition
-import com.android.systemui.scene.ui.composable.transitions.goneToShadeOverlayTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToShadeSceneTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToSplitShadeTransition
@@ -230,15 +229,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                     revealHaptics = revealHaptics,
                 )
             }
-            from(
-                Scenes.Gone,
-                to = Overlays.NotificationsShade,
-                cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
-            ) {
-                goneToShadeOverlayTransition()
-            }
             to(Overlays.QuickSettingsShade, cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE) {
-
                 toQuickSettingsShadeTransition(
                     shadeExpansionMotion = shadeExpansionMotion,
                     revealHaptics = revealHaptics,
