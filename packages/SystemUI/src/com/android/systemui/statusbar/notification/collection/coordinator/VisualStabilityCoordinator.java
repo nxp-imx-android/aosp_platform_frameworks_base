@@ -158,6 +158,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
         mSleepy = mWakefulnessLifecycle.getWakefulness() == WAKEFULNESS_ASLEEP;
         mFullyDozed = mStatusBarStateController.getDozeAmount() == 1f;
+        mPanelExpanded = mStatusBarStateController.isExpanded();
 
         mStatusBarStateController.addCallback(mStatusBarStateControllerListener);
         mPulsing = mStatusBarStateController.isPulsing();
