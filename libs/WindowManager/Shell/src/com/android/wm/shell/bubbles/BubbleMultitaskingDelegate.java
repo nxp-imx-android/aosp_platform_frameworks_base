@@ -89,8 +89,7 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
                     }
 
                     Bubble b = Bubble.createClientControlledAppBubble(bubbleIntent,
-                            new UserHandle(mCurrentUserId), null, token, mMainExecutor,
-                            mBgExecutor);
+                            new UserHandle(mCurrentUserId), null, token);
                     if (collapsed) {
                         mController.inflateAndAdd(b, false, false);
                         if (DEBUG) {
@@ -122,8 +121,7 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
                     }
 
                     Bubble b = Bubble.createClientControlledAppBubble(pendingIntent,
-                            new UserHandle(mCurrentUserId), null, token, mMainExecutor,
-                            mBgExecutor);
+                            new UserHandle(mCurrentUserId), null, token);
                     if (collapsed) {
                         mController.inflateAndAdd(b, false, false);
                         if (DEBUG) {

@@ -631,26 +631,23 @@ class BubbleTaskViewListenerTest {
             // Robolectric doesn't seem to play nice with PendingIntents, have to mock it.
             val pendingIntent = mock<PendingIntent>()
             whenever(pendingIntent.intent).thenReturn(target)
-            return Bubble.createAppBubble(pendingIntent, mock<UserHandle>(),
-                mainExecutor, bgExecutor)
+            return Bubble.createAppBubble(pendingIntent, mock<UserHandle>())
         }
         expandedViewManager.stub {
             on { getAppBubbleRootTaskToken() } doReturn
                     rootTaskToken.takeIf { BubbleAnythingFlagHelper.enableRootTaskForBubble() }
         }
-        return Bubble.createAppBubble(target, mock<UserHandle>(), mock<Icon>(),
-            mainExecutor, bgExecutor)
+        return Bubble.createAppBubble(target, mock<UserHandle>(), mock<Icon>())
     }
 
     private fun createShortcutBubble(shortcutInfo: ShortcutInfo): Bubble {
-        return Bubble.createShortcutBubble(shortcutInfo, mainExecutor, bgExecutor)
+        return Bubble.createShortcutBubble(shortcutInfo)
     }
 
     private fun createNoteBubble(): Bubble {
         val target = Intent(context, TestActivity::class.java)
         target.setPackage(context.packageName)
-        return Bubble.createNotesBubble(target, mock<UserHandle>(), mock<Icon>(),
-            mainExecutor, bgExecutor)
+        return Bubble.createNotesBubble(target, mock<UserHandle>(), mock<Icon>())
     }
 
     private fun createChatBubble(key: String, shortcutInfo: ShortcutInfo): Bubble {
@@ -661,8 +658,8 @@ class BubbleTaskViewListenerTest {
             0 /* desiredHeightResId */,
             "title",
             -1 /*taskId */,
-            null /* locusId */, true /* isdismissabel */,
-            mainExecutor, bgExecutor, mock<BubbleMetadataFlagListener>()
+            null /* locusId */, true /* isDismissable */,
+            mock<BubbleMetadataFlagListener>()
         )
     }
 
@@ -688,10 +685,7 @@ class BubbleTaskViewListenerTest {
         whenever(sbn.getKey()).thenReturn(key)
         whenever(ranking.getConversationShortcutInfo()).thenReturn(shortcutInfo)
         val entry = BubbleEntry(sbn, ranking, true, false, false, false)
-        return Bubble(
-            entry, mock<BubbleMetadataFlagListener>(), null, mainExecutor,
-            bgExecutor
-        )
+        return Bubble(entry, mock<BubbleMetadataFlagListener>(), null, mainExecutor)
     }
 
     /**

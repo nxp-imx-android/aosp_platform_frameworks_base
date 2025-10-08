@@ -157,7 +157,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 mSyncQueue);
         mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,
                 mRepository, mBubbleData, mTaskViewTransitions,
-                new PackageManagerBubbleAppInfoProvider());
+                new PackageManagerBubbleAppInfoProvider(), new TestSyncExecutor());
         mBubbleTransitions.setBubbleController(mBubbleController);
         mTaskViewFactory = () -> {
             TaskViewTaskController taskViewTaskController = new TaskViewTaskController(

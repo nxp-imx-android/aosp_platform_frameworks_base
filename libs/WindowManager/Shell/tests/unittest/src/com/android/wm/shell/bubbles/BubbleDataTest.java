@@ -151,55 +151,54 @@ public class BubbleDataTest extends ShellTestCase {
         when(ranking.isTextChanged()).thenReturn(true);
         mEntryInterruptive = createBubbleEntry(1, "interruptive", "package.d", ranking);
         mBubbleInterruptive = new Bubble(mEntryInterruptive, mBubbleMetadataFlagListener, null,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
 
         mEntryDismissed = createBubbleEntry(1, "dismissed", "package.d", null);
         mBubbleDismissed = new Bubble(mEntryDismissed, mBubbleMetadataFlagListener, null,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
 
         mEntryLocusId = createBubbleEntry(1, "keyLocus", "package.e", null,
                 new LocusId("locusId1"));
         mBubbleLocusId = new Bubble(mEntryLocusId,
                 mBubbleMetadataFlagListener,
                 null /* pendingIntentCanceledListener */,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
 
         mBubbleA1 = new Bubble(mEntryA1,
                 mBubbleMetadataFlagListener,
                 mPendingIntentCanceledListener,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
         mBubbleA2 = new Bubble(mEntryA2,
                 mBubbleMetadataFlagListener,
                 mPendingIntentCanceledListener,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
         mBubbleA3 = new Bubble(mEntryA3,
                 mBubbleMetadataFlagListener,
                 mPendingIntentCanceledListener,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
         mBubbleB1 = new Bubble(mEntryB1,
                 mBubbleMetadataFlagListener,
                 mPendingIntentCanceledListener,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
         mBubbleB2 = new Bubble(mEntryB2,
                 mBubbleMetadataFlagListener,
                 mPendingIntentCanceledListener,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
         mBubbleB3 = new Bubble(mEntryB3,
                 mBubbleMetadataFlagListener,
                 mPendingIntentCanceledListener,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
         mBubbleC1 = new Bubble(mEntryC1,
                 mBubbleMetadataFlagListener,
                 mPendingIntentCanceledListener,
-                mMainExecutor, mBgExecutor);
+                mMainExecutor);
 
         Intent appBubbleIntent = new Intent(mContext, BubblesTestActivity.class);
         appBubbleIntent.setPackage(mContext.getPackageName());
         mAppBubble = Bubble.createAppBubble(
                 appBubbleIntent,
                 new UserHandle(1),
-                mock(Icon.class),
-                mMainExecutor, mBgExecutor);
+                mock(Icon.class));
 
         mUiEventLogger = new UiEventLoggerFake();
 

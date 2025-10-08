@@ -276,8 +276,6 @@ class BubbleViewInfoTest : ShellTestCase() {
             0 /* taskId */,
             "mockLocus",
             true /* isDismissible */,
-            mainExecutor,
-            bgExecutor,
             metadataFlagListener)
     }
 }

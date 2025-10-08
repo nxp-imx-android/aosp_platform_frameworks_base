@@ -27,7 +27,6 @@ import com.android.wm.shell.bubbles.BubbleViewInfoTask.BubbleViewInfo
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView
 import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.common.TestShellExecutor
-import com.google.common.util.concurrent.MoreExecutors.directExecutor
 
 /** Helper to create a [Bubble] instance */
 class FakeBubbleFactory {
@@ -83,8 +82,6 @@ class FakeBubbleFactory {
                     0, /* taskId */
                     null, /* locus */
                     true, /* isDismissable */
-                    directExecutor(),
-                    directExecutor(),
                 ) {}
             return bubble
         }
