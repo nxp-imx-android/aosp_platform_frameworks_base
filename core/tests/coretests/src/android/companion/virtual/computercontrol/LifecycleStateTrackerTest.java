@@ -31,18 +31,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
-public class SessionLifecycleTrackerTest {
+public class LifecycleStateTrackerTest {
 
     @Mock
     private ComputerControlSession.LifecycleCallback mMockCallback;
 
-    private SessionLifecycleTracker mLifecycle;
+    private LifecycleStateTracker mLifecycle;
     private AutoCloseable mMockitoSession;
 
     @Before
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mLifecycle = new SessionLifecycleTracker();
+        mLifecycle = new LifecycleStateTracker();
     }
 
     @After

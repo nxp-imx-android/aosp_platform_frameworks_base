@@ -20,9 +20,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
-import android.companion.virtual.computercontrol.SessionLifecycleTracker;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Blocked;
+import android.companion.virtual.computercontrol.LifecycleState;
+import android.companion.virtual.computercontrol.LifecycleState.Blocked;
+import android.companion.virtual.computercontrol.LifecycleStateTracker;
 import android.companion.virtualdevice.flags.Flags;
 import android.os.RemoteException;
 import android.util.Slog;
@@ -40,20 +40,20 @@ final class SessionLifecycle {
     private static final String TAG = "ComputerControlLifecycle";
 
     @GuardedBy("mLifecycle")
-    private final SessionLifecycleTracker mLifecycle = new SessionLifecycleTracker();
+    private final LifecycleStateTracker mLifecycle = new LifecycleStateTracker();
     @GuardedBy("mLifecycle")
     private boolean mIsRemoteCallbackAdded = false;
     @GuardedBy("mLifecycle")
     private final LifecycleConfig mLifecycleConfig = new LifecycleConfig();
     @GuardedBy("mLifecycle")
-    private SessionLifecycleTrackerState mCurrentState = null;
+    private LifecycleState mCurrentState = null;
 
     /** Configuration args that fully determine the lifecycle state of the session. */
     static final class LifecycleConfig {
 
         /** When non-null, indicates that the session was closed. */
         @Nullable
-        SessionLifecycleTrackerState.Closed mClosed = null;
+        LifecycleState.Closed mClosed = null;
 
         /** True if any blocked activity is running on the display. */
         boolean mBlockedActivityVisible = false;
@@ -62,8 +62,8 @@ final class SessionLifecycle {
         boolean mSecureWindowVisible = false;
 
         @NonNull
-        private SessionLifecycleTrackerState computeState(
-                SessionLifecycleTrackerState previousState) {
+        private LifecycleState computeState(
+                LifecycleState previousState) {
             if (mClosed != null) {
                 return mClosed;
             }
@@ -78,7 +78,7 @@ final class SessionLifecycle {
                 }
                 return new Blocked(reason);
             }
-            return SessionLifecycleTrackerState.ACTIVE;
+            return LifecycleState.ACTIVE;
         }
     }
 
@@ -99,7 +99,7 @@ final class SessionLifecycle {
      * @return The lifecycle state after the update.
      */
     @NonNull
-    SessionLifecycleTrackerState updateLifecycleState(Consumer<LifecycleConfig> update) {
+    LifecycleState updateLifecycleState(Consumer<LifecycleConfig> update) {
         synchronized (mLifecycle) {
             final var previousState = mCurrentState;
             update.accept(mLifecycleConfig);
@@ -108,11 +108,11 @@ final class SessionLifecycle {
                 return mCurrentState;
             }
             switch (mCurrentState) {
-                case SessionLifecycleTrackerState.Active ignored ->
+                case LifecycleState.Active ignored ->
                         mLifecycle.onActive();
                 case Blocked blocked ->
                         mLifecycle.onBlocked(blocked.reason);
-                case SessionLifecycleTrackerState.Closed closed ->
+                case LifecycleState.Closed closed ->
                         mLifecycle.onClosed(closed.reason);
             }
             Slog.i(TAG, "Updated lifecycle state from " + previousState + " to " + mCurrentState);
@@ -126,7 +126,7 @@ final class SessionLifecycle {
      * NOTE: Use the value returned by {@link #updateLifecycleState(Consumer)} to atomically get the
      *   updated state if there is a possibility for the state to change.
      */
-    SessionLifecycleTrackerState getCurrentState() {
+    LifecycleState getCurrentState() {
         synchronized (mLifecycle) {
             return mCurrentState;
         }

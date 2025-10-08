@@ -23,9 +23,9 @@ import static org.mockito.Mockito.verify;
 
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Active;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Blocked;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Closed;
+import android.companion.virtual.computercontrol.LifecycleState.Active;
+import android.companion.virtual.computercontrol.LifecycleState.Blocked;
+import android.companion.virtual.computercontrol.LifecycleState.Closed;
 import android.companion.virtualdevice.flags.Flags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;

@@ -17,13 +17,13 @@
 package android.companion.virtual.computercontrol;
 
 /**
- * State definitions for {@link SessionLifecycleTracker}.
+ * State definitions for {@link LifecycleStateTracker}.
  * @hide
  */
-public sealed interface SessionLifecycleTrackerState {
+public sealed interface LifecycleState {
 
     /** The active state, where the agent can see and interact with the session contents. */
-    final class Active implements SessionLifecycleTrackerState {
+    final class Active implements LifecycleState {
         private Active() {
         }
 
@@ -34,10 +34,10 @@ public sealed interface SessionLifecycleTrackerState {
     }
 
     /** Singleton object for the Active state. */
-    SessionLifecycleTrackerState ACTIVE = new Active();
+    LifecycleState ACTIVE = new Active();
 
     /** The blocked state, where the agent cannot see nor interact with the session contents. */
-    final class Blocked implements SessionLifecycleTrackerState {
+    final class Blocked implements LifecycleState {
         public final @ComputerControlSession.SessionBlockReason int reason;
 
         public Blocked(@ComputerControlSession.SessionBlockReason int reason) {
@@ -62,7 +62,7 @@ public sealed interface SessionLifecycleTrackerState {
     }
 
     /** State indicating the session has been closed. */
-    final class Closed implements SessionLifecycleTrackerState {
+    final class Closed implements LifecycleState {
         public final @ComputerControlSession.SessionCloseReason int reason;
 
         public Closed(@ComputerControlSession.SessionCloseReason int reason) {

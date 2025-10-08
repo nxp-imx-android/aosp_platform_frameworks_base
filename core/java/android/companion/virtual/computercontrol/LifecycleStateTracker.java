@@ -16,12 +16,12 @@
 
 package android.companion.virtual.computercontrol;
 
-import static android.companion.virtual.computercontrol.SessionLifecycleTrackerState.ACTIVE;
+import static android.companion.virtual.computercontrol.LifecycleState.ACTIVE;
 
 import android.annotation.NonNull;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Active;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Blocked;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState.Closed;
+import android.companion.virtual.computercontrol.LifecycleState.Active;
+import android.companion.virtual.computercontrol.LifecycleState.Blocked;
+import android.companion.virtual.computercontrol.LifecycleState.Closed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,16 +38,16 @@ import java.util.Objects;
  *
  * @hide
  */
-public final class SessionLifecycleTracker implements ComputerControlSession.LifecycleCallback {
+public final class LifecycleStateTracker implements ComputerControlSession.LifecycleCallback {
 
     // This is the initial state that callbacks are expected to be in before they are added.
     // If this changes, we must also update the LifecycleCallback documentation.
     // Callbacks will start in an "uninitialized" state.
-    private static final SessionLifecycleTrackerState INITIAL_STATE = null;
+    private static final LifecycleState INITIAL_STATE = null;
 
     private final List<ComputerControlSession.LifecycleCallback> mCallbacks = new ArrayList<>();
 
-    private SessionLifecycleTrackerState mState = INITIAL_STATE;
+    private LifecycleState mState = INITIAL_STATE;
 
     /**
      * Adds a lifecycle callback that should be notified for state changes. When a new callback is
@@ -105,7 +105,7 @@ public final class SessionLifecycleTracker implements ComputerControlSession.Lif
         transitionTo(new Closed(reason));
     }
 
-    private void transitionTo(SessionLifecycleTrackerState state) {
+    private void transitionTo(LifecycleState state) {
         if (mState instanceof Closed) {
             throw new IllegalStateException("Cannot change state: Session is closed");
         }

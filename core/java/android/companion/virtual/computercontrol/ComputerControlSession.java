@@ -178,7 +178,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     private ImageReader mImageReader;
 
     @GuardedBy("mLifecycle")
-    private final SessionLifecycleTracker mLifecycle = new SessionLifecycleTracker();
+    private final LifecycleStateTracker mLifecycle = new LifecycleStateTracker();
     @GuardedBy("mLifecycle")
     private LifecycleCallback mRegisteredLifecycleCallback = null;
 

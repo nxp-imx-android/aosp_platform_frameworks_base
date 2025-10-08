@@ -41,7 +41,7 @@ import android.companion.virtual.computercontrol.IComputerControlLifecycleCallba
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.InteractiveMirror;
-import android.companion.virtual.computercontrol.SessionLifecycleTrackerState;
+import android.companion.virtual.computercontrol.LifecycleState;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -409,7 +409,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (Flags.computerControlActivityPolicyStrict()) {
             // TODO(b/444600407): Remove this once the consent model is per-target app. While the
             // consent is general, the caller can extend the list of target packages dynamically.
-            if (!(mLifecycle.getCurrentState() instanceof SessionLifecycleTrackerState.Active)) {
+            if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
                 Slog.e(TAG, "Cannot launch application: Agent interaction is not available");
                 return;
             }
@@ -571,7 +571,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             if (config.mClosed != null) {
                 return;
             }
-            config.mClosed = new SessionLifecycleTrackerState.Closed(closeReason);
+            config.mClosed = new LifecycleState.Closed(closeReason);
         });
     }
 
@@ -730,7 +730,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     + mParams.getName());
             final var changedState = mLifecycle.updateLifecycleState(
                     (config) -> config.mBlockedActivityVisible = true);
-            if (changedState instanceof SessionLifecycleTrackerState.Blocked) {
+            if (changedState instanceof LifecycleState.Blocked) {
                 Intent intent = new Intent()
                         .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
                         .putExtra(Intent.EXTRA_COMPONENT_NAME, componentName);
