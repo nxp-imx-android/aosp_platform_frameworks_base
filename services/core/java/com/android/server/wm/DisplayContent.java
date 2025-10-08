@@ -4911,7 +4911,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     @VisibleForTesting
     @Nullable
     WindowContainer computeImeParent() {
-        if (!canComputeImeParent(mImeLayeringTarget, mImeInputTarget)) {
+        if (!canComputeImeParent(mInputMethodWindow, mImeLayeringTarget, mImeInputTarget)) {
             return null;
         }
         // Attach it to app if the IME layering target is part of an app that is covering the entire
@@ -4925,15 +4925,20 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Called from {@link #computeImeParent()} to check if we can compute the new IME parent
-     * based on the given IME layering and IME input target.
+     * Called from {@link #computeImeParent()} to check if we can compute a new IME parent.
      *
+     * @param imeWindow         The window of the IME.
      * @param imeLayeringTarget The window the IME is on top of.
      * @param imeInputTarget    The target which receives input from the IME.
      * @return {@code true} to keep computing the IME parent, {@code false} to defer this operation.
      */
-    private static boolean canComputeImeParent(@Nullable WindowState imeLayeringTarget,
-            @Nullable InputTarget imeInputTarget) {
+    private static boolean canComputeImeParent(@Nullable WindowState imeWindow,
+            @Nullable WindowState imeLayeringTarget, @Nullable InputTarget imeInputTarget) {
+        if (android.view.inputmethod.Flags.computeImeParentNullImeWindow() && imeWindow == null) {
+            // If we have no IME window, allow reparenting the surface of the IME Container to its
+            // parent window. Otherwise, it may remain parented to a destroyed surface.
+            return true;
+        }
         if (imeLayeringTarget == null) {
             return false;
         }

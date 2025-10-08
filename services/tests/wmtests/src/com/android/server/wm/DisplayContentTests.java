@@ -402,6 +402,7 @@ public class DisplayContentTests extends WindowTestsBase {
         verify(imeContainer).assignRelativeLayer(any(), eq(imeSurfaceParent), anyInt(), eq(true));
     }
 
+    @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
     public void testComputeImeLayeringTargetReturnsNull_windowDidntRequestIme() {
         final var appWin1 = newWindowBuilder("appWin1", TYPE_BASE_APPLICATION).build();
@@ -673,6 +674,7 @@ public class DisplayContentTests extends WindowTestsBase {
         assertFalse(mDisplayContent.getLastHasContent());
     }
 
+    @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
     public void testImeIsAttachedToDisplayForLetterboxedApp() {
         final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).build();
@@ -1234,9 +1236,11 @@ public class DisplayContentTests extends WindowTestsBase {
         assertEquals("The display should be rotated.", 1, dc.getRotation() % 2);
     }
 
+    @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
     public void testComputeImeParent_app() {
         final DisplayContent dc = createNewDisplay();
+        dc.setInputMethodWindowLocked(mImeWindow);
         final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).setDisplay(dc).build();
         dc.setImeInputTarget(appWin);
         dc.setImeLayeringTarget(appWin);
@@ -1244,9 +1248,11 @@ public class DisplayContentTests extends WindowTestsBase {
                 dc.computeImeParent().getSurfaceControl());
     }
 
+    @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
     public void testComputeImeParent_app_notFullscreen() {
         final DisplayContent dc = createNewDisplay();
+        dc.setInputMethodWindowLocked(mImeWindow);
         final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).setDisplay(dc)
                 .setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW).build();
         dc.setImeInputTarget(appWin);
@@ -1255,7 +1261,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 dc.computeImeParent().getSurfaceControl());
     }
 
-    @SetupWindows(addWindows = W_ACTIVITY)
+    @SetupWindows(addWindows = {W_ACTIVITY, W_INPUT_METHOD})
     @Test
     public void testComputeImeParent_app_notMatchParentBounds() {
         spyOn(mAppWindow.mActivityRecord);
@@ -1266,9 +1272,11 @@ public class DisplayContentTests extends WindowTestsBase {
                 mDisplayContent.computeImeParent().getSurfaceControl());
     }
 
+    @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
     public void testComputeImeParent_noApp() {
         final DisplayContent dc = createNewDisplay();
+        dc.setInputMethodWindowLocked(mImeWindow);
         final var statusBar = newWindowBuilder("statusBar", TYPE_STATUS_BAR).setDisplay(dc).build();
         dc.setImeInputTarget(statusBar);
         dc.setImeLayeringTarget(statusBar);
@@ -1276,7 +1284,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 dc.computeImeParent().getSurfaceControl());
     }
 
-    @SetupWindows(addWindows = W_ACTIVITY)
+    @SetupWindows(addWindows = {W_ACTIVITY, W_INPUT_METHOD})
     @Test
     public void testComputeImeParent_inputTargetNotUpdate() {
         final var appWin1 = newWindowBuilder("appWin1", TYPE_BASE_APPLICATION).build();
@@ -1292,7 +1300,7 @@ public class DisplayContentTests extends WindowTestsBase {
         assertNull(mDisplayContent.computeImeParent());
     }
 
-    @SetupWindows(addWindows = W_ACTIVITY)
+    @SetupWindows(addWindows = {W_ACTIVITY, W_INPUT_METHOD})
     @Test
     public void testComputeImeParent_updateParentWhenTargetNotUseIme() {
         final var overlay = newWindowBuilder("overlay", TYPE_APPLICATION_OVERLAY).build();
@@ -1306,6 +1314,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 mDisplayContent.computeImeParent().getSurfaceControl());
     }
 
+    @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
     public void testComputeImeParent_remoteControlTarget() {
         final var appWin1 = newWindowBuilder("appWin1", TYPE_BASE_APPLICATION)
@@ -1327,6 +1336,26 @@ public class DisplayContentTests extends WindowTestsBase {
         // The ImeParent should be the display.
         assertEquals(mDisplayContent.getImeContainer().getParent().getSurfaceControl(),
                 mDisplayContent.computeImeParent().getSurfaceControl());
+    }
+
+    /**
+     * Verifies that {@code computeImeParent} will a return the parent of the IME container when
+     * there is no IME window set on the display. Previously this used to return {@code null} in
+     * this scenario, which could leave the IME Container surface parented to a removed surface.
+     */
+    @RequiresFlagsEnabled(android.view.inputmethod.Flags.FLAG_COMPUTE_IME_PARENT_NULL_IME_WINDOW)
+    @SetupWindows(addWindows = W_INPUT_METHOD)
+    @Test
+    public void testComputeImeParent_noImeWindow() {
+        final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).build();
+        mDisplayContent.setImeInputTarget(appWin);
+        mDisplayContent.setImeLayeringTarget(null /* target */);
+        assertNull("IME parent should be null when IME Layering Target is null",
+                mDisplayContent.computeImeParent());
+
+        mDisplayContent.setInputMethodWindowLocked(null /* win */);
+        assertEquals("IME parent should be non-null when IME window is null",
+                mDisplayContent.getImeContainer().getParent(), mDisplayContent.computeImeParent());
     }
 
     @Test
