@@ -18733,6 +18733,40 @@ public class DevicePolicyManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ResourceType {}
 
+    /** @hide */
+    public static final int NOT_A_DPC = -1;
+    /** @hide */
+    public static final int DEFAULT_DEVICE_OWNER = 1;
+    /** @hide */
+    public static final int FINANCED_DEVICE_OWNER = 2;
+    /** @hide */
+    public static final int PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE = 3;
+    /** @hide */
+    public static final int PROFILE_OWNER_ON_USER_0 = 4;
+    /** @hide */
+    public static final int PROFILE_OWNER = 5;
+    /** @hide */
+    public static final int PROFILE_OWNER_ON_USER = 6;
+    /** @hide */
+    public static final int AFFILIATED_PROFILE_OWNER_ON_USER = 7;
+
+    /**
+     * Possible DPC types.
+     *
+     * @hide
+     */
+    @IntDef(value = {
+            NOT_A_DPC,
+            DEFAULT_DEVICE_OWNER,
+            FINANCED_DEVICE_OWNER,
+            PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+            PROFILE_OWNER_ON_USER_0,
+            PROFILE_OWNER,
+            PROFILE_OWNER_ON_USER,
+            AFFILIATED_PROFILE_OWNER_ON_USER
+    })
+    public @interface DpcType {}
+
     /**
      * Sets the given policy.
      *

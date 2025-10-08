@@ -23,6 +23,7 @@ import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.admin.BooleanPolicyValue;
+import android.app.admin.DevicePolicyManager.DpcType;
 import android.app.admin.DevicePolicyManager.PolicyScope;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValue;
@@ -33,7 +34,6 @@ import android.app.admin.metadata.PolicyTransportValueConvertor;
 
 import com.android.server.devicepolicy.CallerIdentity;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
-import com.android.server.devicepolicy.DevicePolicyManagerService.DpcType;
 import com.android.server.devicepolicy.IPermissionChecker;
 import com.android.server.devicepolicy.PolicyDefinition;
 

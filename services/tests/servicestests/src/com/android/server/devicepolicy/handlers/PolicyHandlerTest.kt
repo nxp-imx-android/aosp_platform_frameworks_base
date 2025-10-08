@@ -16,6 +16,7 @@
 
 package com.android.server.devicepolicy.handlers
 
+import android.app.admin.DevicePolicyManager.NOT_A_DPC
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
@@ -33,7 +34,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.infra.AndroidFuture
 import com.android.internal.util.function.QuadFunction
 import com.android.server.devicepolicy.CallerIdentity
-import com.android.server.devicepolicy.DevicePolicyManagerService.NOT_A_DPC
 import com.android.server.devicepolicy.IPermissionChecker
 import com.android.server.devicepolicy.IntegerPolicySerializer
 import com.android.server.devicepolicy.MostRecent

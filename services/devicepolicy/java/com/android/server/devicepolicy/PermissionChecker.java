@@ -95,16 +95,15 @@ import static android.app.admin.DevicePolicyManager.DELEGATION_PACKAGE_ACCESS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PERMISSION_GRANT;
 import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-
-import static com.android.server.devicepolicy.DevicePolicyManagerService.AFFILIATED_PROFILE_OWNER_ON_USER;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.DEFAULT_DEVICE_OWNER;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.DpcType;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.FINANCED_DEVICE_OWNER;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.NOT_A_DPC;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.PROFILE_OWNER;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.PROFILE_OWNER_ON_USER;
-import static com.android.server.devicepolicy.DevicePolicyManagerService.PROFILE_OWNER_ON_USER_0;
+import static android.app.admin.DevicePolicyManager.AFFILIATED_PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.DEFAULT_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.DpcType;
+import static android.app.admin.DevicePolicyManager.FINANCED_DEVICE_OWNER;
+import static android.app.admin.DevicePolicyManager.NOT_A_DPC;
+import static android.app.admin.DevicePolicyManager.PROFILE_OWNER;
+import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER;
+import static android.app.admin.DevicePolicyManager.PROFILE_OWNER_ON_USER_0;
 
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
