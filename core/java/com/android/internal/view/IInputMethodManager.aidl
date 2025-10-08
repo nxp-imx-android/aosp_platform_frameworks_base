@@ -47,12 +47,14 @@ interface IInputMethodManager {
             + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
     InputMethodInfo getCurrentInputMethodInfoAsUser(int userId);
 
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {"
+        + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, "
+        + "android.Manifest.permission.QUERY_INPUT_METHOD}, conditional = true)")
     InputMethodInfoSafeList getInputMethodList(int userId, int directBootAwareness);
 
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {"
+        + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, "
+        + "android.Manifest.permission.QUERY_INPUT_METHOD}, conditional = true)")
     InputMethodInfoSafeList getEnabledInputMethodList(int userId);
 
     // TODO(b/339761278): Remove after getInputMethodList() is fully deployed.
@@ -65,8 +67,9 @@ interface IInputMethodManager {
             + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
     List<InputMethodInfo> getEnabledInputMethodListLegacy(int userId);
 
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {"
+        + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, "
+        + "android.Manifest.permission.QUERY_INPUT_METHOD}, conditional = true)")
     List<InputMethodSubtype> getEnabledInputMethodSubtypeList(in @nullable String imiId,
             boolean allowsImplicitlyEnabledSubtypes, int userId);
 
