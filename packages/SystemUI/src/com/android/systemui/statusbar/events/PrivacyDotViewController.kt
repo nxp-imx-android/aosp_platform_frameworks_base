@@ -619,14 +619,18 @@ constructor(
                 val dot = state.designatedCorner
                 val privacyDotView = dot.findViewById<ImageView>(R.id.privacy_dot)
                 (privacyDotView.drawable?.mutate() as? GradientDrawable)?.let { drawable ->
-                    val colorRes =
-                        PrivacyConfig.Companion.getPrivacyColor(
-                            state.systemPrivacyEventLocationOnlyIsActive
-                        )
-                    val newColor = dot.context.getColor(colorRes)
-                    if (drawable.color?.defaultColor != newColor) {
-                        drawable.setColor(newColor)
+                    val isLocationOnly = state.systemPrivacyEventLocationOnlyIsActive
+                    val colorRes = PrivacyConfig.Companion.getPrivacyColor(isLocationOnly)
+                    val outlineRes = PrivacyConfig.Companion.getPrivacyOutlineColor(isLocationOnly)
+                    val stroke = PrivacyConfig.Companion.getPrivacyOutlineStroke(isLocationOnly)
+                    val color = dot.context.getColor(colorRes)
+                    val outlineColor = dot.context.getColor(outlineRes)
+
+                    if (drawable.color?.defaultColor != color) {
+                        drawable.setColor(color)
                     }
+
+                    drawable.setStroke(stroke, outlineColor)
                 }
             }
         }
