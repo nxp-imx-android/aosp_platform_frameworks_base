@@ -149,7 +149,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     // This is crucial for operations like connecting to the configuration service before other
     // logging activities, and synchronizing queued logging tasks on tracing start and stop.
     @VisibleForTesting
-    public final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor();
+    public final ExecutorService mSingleThreadedExecutor = Executors.newSingleThreadExecutor(
+            (r) -> new Thread(r, "ProtoLogBackground"));
 
     // Set to true once this is ready to accept protolog to logcat requests.
     private boolean mLogcatReady = false;
