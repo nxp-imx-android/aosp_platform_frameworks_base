@@ -16,19 +16,21 @@
 
 package com.android.systemui.complication
 
-import android.database.ContentObserver
-import android.os.UserHandle
 import android.provider.Settings
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.settingslib.dream.DreamBackend
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.SystemUser
 import com.android.systemui.dreams.DreamOverlayStateController
 import com.android.systemui.shared.condition.Monitor
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.util.condition.ConditionalCoreStartable
-import com.android.systemui.util.settings.SecureSettings
-import java.util.concurrent.Executor
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  * [ComplicationTypesUpdater] observes the state of available complication types set by the user,
@@ -39,39 +41,30 @@ class ComplicationTypesUpdater
 @Inject
 constructor(
     private val dreamBackend: DreamBackend,
-    @Main private val executor: Executor,
-    private val secureSettings: SecureSettings,
     private val dreamOverlayStateController: DreamOverlayStateController,
+    private val secureSettingsRepository: SecureSettingsRepository,
+    @Background private val bgScope: CoroutineScope,
     @SystemUser monitor: Monitor,
 ) : ConditionalCoreStartable(monitor) {
 
     override fun onStart() {
-        val settingsObserver =
-            object : ContentObserver(null /*handler*/) {
-                override fun onChange(selfChange: Boolean) {
-                    executor.execute {
-                        dreamOverlayStateController.availableComplicationTypes =
-                            getAvailableComplicationTypes()
-                    }
-                }
-            }
+        val complicationsEnabled: Flow<Boolean> =
+            secureSettingsRepository.boolSetting(Settings.Secure.SCREENSAVER_COMPLICATIONS_ENABLED)
+        val homeControlsEnabled: Flow<Boolean> =
+            secureSettingsRepository.boolSetting(Settings.Secure.SCREENSAVER_HOME_CONTROLS_ENABLED)
+        val lockscreenControlsEnabled: Flow<Boolean> =
+            secureSettingsRepository.boolSetting(Settings.Secure.LOCKSCREEN_SHOW_CONTROLS)
 
-        secureSettings.registerContentObserverForUserSync(
-            Settings.Secure.SCREENSAVER_COMPLICATIONS_ENABLED,
-            settingsObserver,
-            UserHandle.myUserId(),
-        )
-        secureSettings.registerContentObserverForUserSync(
-            Settings.Secure.SCREENSAVER_HOME_CONTROLS_ENABLED,
-            settingsObserver,
-            UserHandle.myUserId(),
-        )
-        secureSettings.registerContentObserverForUserSync(
-            Settings.Secure.LOCKSCREEN_SHOW_CONTROLS,
-            settingsObserver,
-            UserHandle.myUserId(),
-        )
-        settingsObserver.onChange(false)
+        bgScope.launchTraced("ComplicationTypesUpdater#onStart") {
+            combine(complicationsEnabled, homeControlsEnabled, lockscreenControlsEnabled) { _, _, _
+                    ->
+                    getAvailableComplicationTypes()
+                }
+                .distinctUntilChanged()
+                .collect { availableComplications ->
+                    dreamOverlayStateController.availableComplicationTypes = availableComplications
+                }
+        }
     }
 
     /** Returns complication types that are currently available by user setting. */

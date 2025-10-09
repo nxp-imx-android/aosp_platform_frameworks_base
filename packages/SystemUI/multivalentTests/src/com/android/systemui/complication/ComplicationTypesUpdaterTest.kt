@@ -15,20 +15,19 @@
  */
 package com.android.systemui.complication
 
-import android.os.UserHandle
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.dream.DreamBackend
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.condition.SelfExecutingMonitor
 import com.android.systemui.dreams.dreamOverlayStateController
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import com.android.systemui.testKosmos
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -47,11 +46,11 @@ class ComplicationTypesUpdaterTest : SysuiTestCase() {
     private val Kosmos.underTest by
         Kosmos.Fixture {
             ComplicationTypesUpdater(
-                dreamBackend,
-                fakeExecutor,
-                fakeSettings,
-                dreamOverlayStateController,
-                monitor,
+                dreamBackend = dreamBackend,
+                dreamOverlayStateController = dreamOverlayStateController,
+                secureSettingsRepository = secureSettingsRepository,
+                bgScope = applicationCoroutineScope,
+                monitor = monitor,
             )
         }
 
@@ -70,7 +69,6 @@ class ComplicationTypesUpdaterTest : SysuiTestCase() {
                 .thenReturn(hashSetOf(DreamBackend.COMPLICATION_TYPE_TIME))
 
             underTest.start()
-            fakeExecutor.runAllReady()
 
             // DreamOverlayStateController updated immediately on start().
             assertThat(dreamOverlayStateController.availableComplicationTypes)
@@ -81,7 +79,6 @@ class ComplicationTypesUpdaterTest : SysuiTestCase() {
     fun testPushUpdateToDreamOverlayStateControllerOnChange() =
         kosmos.runTest {
             underTest.start()
-            fakeExecutor.runAllReady()
 
             whenever(dreamBackend.enabledComplications)
                 .thenReturn(
@@ -93,12 +90,10 @@ class ComplicationTypesUpdaterTest : SysuiTestCase() {
                 )
 
             // Update the setting to trigger any content observers
-            fakeSettings.putBoolForUser(
-                Settings.Secure.SCREENSAVER_COMPLICATIONS_ENABLED,
-                true,
-                UserHandle.myUserId(),
+            secureSettingsRepository.setBoolean(
+                name = Settings.Secure.SCREENSAVER_COMPLICATIONS_ENABLED,
+                value = true,
             )
-            fakeExecutor.runAllReady()
 
             assertThat(dreamOverlayStateController.availableComplicationTypes)
                 .isEqualTo(
