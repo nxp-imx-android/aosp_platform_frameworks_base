@@ -322,6 +322,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     private final boolean mIsFloatingLayer;
     int mViewVisibility;
 
+    private String mName;
+
     /**
      * Flags to disable system UI functions. This can only be set by the one which has the
      * status bar permission.
@@ -1087,6 +1089,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mInputWindowHandle.setFocusable(false);
         mInputWindowHandle.setOwnerPid(s.mPid);
         mInputWindowHandle.setOwnerUid(s.mUid);
+        updateName();
         mInputWindowHandle.setName(getName());
         mInputWindowHandle.setPackageName(mAttrs.packageName);
         mInputWindowHandle.setLayoutParamsType(mAttrs.type);
@@ -4290,10 +4293,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         pw.println(prefix + "mBufferSeqId=" + mBufferSeqId);
     }
 
+    void updateName() {
+        mName = Integer.toHexString(System.identityHashCode(this)) + " " + getWindowTag();
+    }
+
     @Override
     String getName() {
-        return Integer.toHexString(System.identityHashCode(this))
-                + " " + getWindowTag();
+        return mName;
     }
 
     CharSequence getWindowTag() {
