@@ -246,7 +246,6 @@ java_library_static {
         "mmd_flags_lib",
         "profiling_flags_lib",
         "android.adpf.sessionmanager_aidl-java",
-        "uprobestats_flags_java_lib",
         "clipboard_flags_lib",
         "aconfig_adbdauth_flags_java_lib",
         "AvfBuildFlags",
