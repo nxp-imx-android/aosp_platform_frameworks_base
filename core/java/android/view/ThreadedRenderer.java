@@ -296,7 +296,7 @@ public final class ThreadedRenderer extends HardwareRenderer {
             synchronized (this) {
                 mSurfaceControl = surfaceControl;
                 if (mSurfaceControl != null && mHasWebViewOverlays) {
-                    mTransaction.setOpaque(surfaceControl, false).apply();
+                    mTransaction.setOpaque(mSurfaceControl, false).apply();
                 }
             }
         }
