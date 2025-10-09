@@ -221,6 +221,7 @@ package android {
     field public static final String MANAGE_CA_CERTIFICATES = "android.permission.MANAGE_CA_CERTIFICATES";
     field public static final String MANAGE_CLIPBOARD_ACCESS_NOTIFICATION = "android.permission.MANAGE_CLIPBOARD_ACCESS_NOTIFICATION";
     field public static final String MANAGE_CLOUDSEARCH = "android.permission.MANAGE_CLOUDSEARCH";
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String MANAGE_CONTACTS_PICKER_SESSION = "android.permission.MANAGE_CONTACTS_PICKER_SESSION";
     field public static final String MANAGE_CONTENT_CAPTURE = "android.permission.MANAGE_CONTENT_CAPTURE";
     field public static final String MANAGE_CONTENT_SUGGESTIONS = "android.permission.MANAGE_CONTENT_SUGGESTIONS";
     field public static final String MANAGE_DEBUGGING = "android.permission.MANAGE_DEBUGGING";
