@@ -3089,6 +3089,7 @@ public abstract class ConnectionService extends Service {
             // Conduct cleanup by getting rid of the original connection in Telecom here:
             mConnectionById.remove(id);
             mIdByConnection.remove(originalConnection);
+            onConnectionRemoved(originalConnection);
         } else {
             Log.w(this, "addConferenceFromConnection: Original connection not "
                     + "found in CS.");

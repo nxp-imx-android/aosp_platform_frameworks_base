@@ -1718,7 +1718,7 @@
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Fermer"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Icône de suggestions pour le mode ambiant"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Balayez l\'écran depuis le coin supérieur gauche pour ouvrir les notifications"</string>
-    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Balayez l\'écran depuis le coin supérieur droit pour ouvrir les réglages rapides"</string>
+    <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Balayez l\'écran depuis le coin supérieur droit pour ouvrir les Réglages rapides"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Retour"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Précédent"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Suivant"</string>

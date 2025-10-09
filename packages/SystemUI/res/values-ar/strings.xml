@@ -1102,7 +1102,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"الحدّ الأدنى من عدد المربعات الذي تحتاج إليه هو <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"تعديل"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"تعديل المربّعات"</string>
-    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"يتيح هذا الوضع تغيير حجم مربّعات الإعدادات السريعة"</string>
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"تتيح هذه الأداة تغيير حجم مربّعات \"الإعدادات السريعة\""</string>
     <string name="qs_edit_settings" msgid="3243175290660574156">"الإعدادات"</string>
     <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"الخيارات"</string>
     <string name="tuner_time" msgid="2450785840990529997">"الوقت"</string>
