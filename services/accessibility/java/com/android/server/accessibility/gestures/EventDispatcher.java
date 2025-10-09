@@ -122,10 +122,17 @@ public class EventDispatcher {
             }
         }
         final long downTime;
-        if (action == MotionEvent.ACTION_DOWN) {
+        final long lastInjectedDownEventTime = mState.getLastInjectedDownEventTime();
+        if (action == MotionEvent.ACTION_DOWN || lastInjectedDownEventTime == 0) {
+            // If this is a HOVER event, it is possible that no prior DOWN event was injected into
+            // the system during this TouchState's lifecycle, meaning there is no cached downtime to
+            // refer to.
+            // However, InputDispatcher expects a monotonically increasing downTime for each
+            // injected event during the system lifecycle, which may cover several TouchState's
+            // lifecycles. Therefore, we set downTime = eventTime to meet this requirement.
             downTime = event.getEventTime();
         } else {
-            downTime = mState.getLastInjectedDownEventTime();
+            downTime = lastInjectedDownEventTime;
         }
 
         // The only way to change device id of the motion event is by re-creating the whole thing
