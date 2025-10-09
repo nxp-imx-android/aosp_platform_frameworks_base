@@ -2672,15 +2672,16 @@ public final class ProcessList extends ProcessListInternal
         long startTime = SystemClock.uptimeMillis();
         final long startTimeNs = SystemClock.elapsedRealtimeNanos();
         ProcessRecord app;
+        final int uid = hostingRecord.isPcc() ? info.pccUid : info.uid;
         if (!isolated) {
-            app = getProcessRecordLocked(processName, info.uid);
+            app = getProcessRecordLocked(processName, uid);
             checkSlow(startTime, "startProcess: after getProcessRecord");
 
             if ((intentFlags & Intent.FLAG_FROM_BACKGROUND) != 0) {
                 // If we are in the background, then check to see if this process
                 // is bad.  If so, we will just silently fail.
-                if (mService.mAppErrors.isBadProcess(processName, info.uid)) {
-                    if (DEBUG_PROCESSES) Slog.v(TAG, "Bad process: " + info.uid
+                if (mService.mAppErrors.isBadProcess(processName, uid)) {
+                    if (DEBUG_PROCESSES) Slog.v(TAG, "Bad process: " + uid
                             + "/" + processName);
                     return null;
                 }
@@ -2689,14 +2690,14 @@ public final class ProcessList extends ProcessListInternal
                 // crash count so that we won't make it bad until they see at
                 // least one crash dialog again, and make the process good again
                 // if it had been bad.
-                if (DEBUG_PROCESSES) Slog.v(TAG, "Clearing bad process: " + info.uid
+                if (DEBUG_PROCESSES) Slog.v(TAG, "Clearing bad process: " + uid
                         + "/" + processName);
-                mService.mAppErrors.resetProcessCrashTime(processName, info.uid);
-                if (mService.mAppErrors.isBadProcess(processName, info.uid)) {
+                mService.mAppErrors.resetProcessCrashTime(processName, uid);
+                if (mService.mAppErrors.isBadProcess(processName, uid)) {
                     EventLog.writeEvent(EventLogTags.AM_PROC_GOOD,
-                            UserHandle.getUserId(info.uid), info.uid,
+                            UserHandle.getUserId(uid), uid,
                             info.processName);
-                    mService.mAppErrors.clearBadProcess(processName, info.uid);
+                    mService.mAppErrors.clearBadProcess(processName, uid);
                     if (app != null) {
                         app.mErrorState.setBad(false);
                     }
@@ -2749,7 +2750,7 @@ public final class ProcessList extends ProcessListInternal
         } else if (!isolated) {
             // This app may have been removed from process name maps, probably because we killed it
             // and did the cleanup before the actual death notification. Check the dying processes.
-            predecessor = mDyingProcesses.get(processName, info.uid);
+            predecessor = mDyingProcesses.get(processName, uid);
             if (predecessor != null) {
                 // The process record could have existed but its pid is set to 0. In this case,
                 // the 'app' and 'predecessor' could end up pointing to the same instance;
@@ -2771,7 +2772,7 @@ public final class ProcessList extends ProcessListInternal
                     sdkSandboxUid, sdkSandboxClientAppPackage, hostingRecord);
             if (app == null) {
                 Slog.w(TAG, "Failed making new process record for "
-                        + processName + "/" + info.uid + " isolated=" + isolated);
+                        + processName + "/" + uid + " isolated=" + isolated);
                 return null;
             }
             app.mErrorState.setCrashHandler(crashHandler);
@@ -3395,7 +3396,7 @@ public final class ProcessList extends ProcessListInternal
             String sdkSandboxClientAppPackage, HostingRecord hostingRecord) {
         String proc = customProcess != null ? customProcess : info.processName;
         final int userId = UserHandle.getUserId(info.uid);
-        int uid = info.uid;
+        int uid = hostingRecord.isPcc() ? info.pccUid : info.uid;
         if (isSdkSandbox) {
             uid = sdkSandboxUid;
         }

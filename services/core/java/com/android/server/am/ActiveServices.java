@@ -5925,7 +5925,7 @@ public final class ActiveServices {
         return !mRestartBackoffDisabledPackages.contains(packageName);
     }
 
-    private String bringUpServiceLocked(ServiceRecord r, int intentFlags, boolean execInFg,
+    String bringUpServiceLocked(ServiceRecord r, int intentFlags, boolean execInFg,
             boolean whileRestarting, boolean permissionsReviewRequired, boolean packageFrozen,
             boolean enqueueOomAdj, @ServiceBindingOomAdjPolicy int serviceBindingOomAdjPolicy)
             throws TransactionTooLargeException {
@@ -6006,15 +6006,17 @@ public final class ActiveServices {
 
         final boolean isolated = (r.serviceInfo.flags&ServiceInfo.FLAG_ISOLATED_PROCESS) != 0;
         final String procName = r.processName;
+        final boolean isPcc = (r.serviceInfo.flags & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0;
         HostingRecord hostingRecord = new HostingRecord(
                 HostingRecord.HOSTING_TYPE_SERVICE, r.instanceName,
                 r.definingPackageName, r.definingUid, r.serviceInfo.processName,
-                getHostingRecordTriggerType(r));
+                getHostingRecordTriggerType(r), isPcc);
         ProcessRecord app;
 
         if (!isolated) {
-            app = mAm.getProcessRecordLocked(procName, r.appInfo.uid);
-            if (DEBUG_MU) Slog.v(TAG_MU, "bringUpServiceLocked: appInfo.uid=" + r.appInfo.uid
+            final int uid = isPcc ? r.appInfo.pccUid : r.appInfo.uid;
+            app = mAm.getProcessRecordLocked(procName, uid);
+            if (DEBUG_MU) Slog.v(TAG_MU, "bringUpServiceLocked: uid=" + uid
                         + " app=" + app);
             if (app != null) {
                 final IApplicationThread thread = app.getThread();
@@ -6242,7 +6244,7 @@ public final class ActiveServices {
      * The "start" here means bring up the instance in the client, and this method is called
      * from bindService() as well.
      */
-    private void realStartServiceLocked(ServiceRecord r, ProcessRecord app,
+    void realStartServiceLocked(ServiceRecord r, ProcessRecord app,
             IApplicationThread thread, int pid, UidRecord uidRecord, boolean execInFg,
             boolean enqueueOomAdj, @ServiceBindingOomAdjPolicy int serviceBindingOomAdjPolicy)
             throws RemoteException {
@@ -6489,7 +6491,7 @@ public final class ActiveServices {
         }
     }
 
-    private final boolean isServiceNeededLocked(ServiceRecord r, boolean knowConn,
+    final boolean isServiceNeededLocked(ServiceRecord r, boolean knowConn,
             boolean hasConn) {
         // Are we still explicitly being asked to run?
         if (r.isStartRequested()) {
@@ -7124,6 +7126,19 @@ public final class ActiveServices {
         }
     }
 
+    // Returns whether the process should be used for hosting the passed in ServiceRecord
+    private boolean processMatchesServiceRecord(ProcessRecord proc, String processName,
+            ServiceRecord sr) {
+        final int srUid = Process.isPccUid(proc.uid) ? sr.appInfo.pccUid
+                : sr.appInfo.uid;
+        if (proc == sr.isolationHostProc || (proc.uid == srUid
+                && processName.equals(sr.processName))) {
+            return true;
+        }
+
+        return false;
+    }
+
     boolean attachApplicationLocked(ProcessRecord proc, String processName)
             throws RemoteException {
         boolean didSomething = false;
@@ -7138,11 +7153,9 @@ public final class ActiveServices {
                     OOM_ADJ_REASON_START_SERVICE)) {
                 for (int i=0; i<mPendingServices.size(); i++) {
                     sr = mPendingServices.get(i);
-                    if (proc != sr.isolationHostProc && (proc.uid != sr.appInfo.uid
-                            || !processName.equals(sr.processName))) {
+                    if (!processMatchesServiceRecord(proc, processName, sr)) {
                         continue;
                     }
-
                     final IApplicationThread thread = proc.getThread();
                     final int pid = proc.getPid();
                     final UidRecord uidRecord = proc.getUidRecord();
@@ -7191,8 +7204,7 @@ public final class ActiveServices {
             boolean didImmediateRestart = false;
             for (int i=0; i<mRestartingServices.size(); i++) {
                 sr = mRestartingServices.get(i);
-                if (proc != sr.isolationHostProc && (proc.uid != sr.appInfo.uid
-                        || !processName.equals(sr.processName))) {
+                if (!processMatchesServiceRecord(proc, processName, sr)) {
                     continue;
                 }
                 mAm.mHandler.removeCallbacks(sr.restarter);
