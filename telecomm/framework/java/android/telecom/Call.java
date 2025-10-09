@@ -720,7 +720,7 @@ public final class Call {
          * <p>
          * This property is specific to IMS conference calls originating in Telephony.
          */
-        @FlaggedApi(Flags.FLAG_REMOTELY_HOSTED_PROPERTY)
+        @FlaggedApi(android.telecom.flags.Flags.FLAG_REMOTELY_HOSTED_PROPERTY)
         public static final int PROPERTY_REMOTELY_HOSTED = 0x00010000;
 
         //******************************************************************************************
