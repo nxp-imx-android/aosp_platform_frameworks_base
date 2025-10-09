@@ -9568,6 +9568,8 @@ public final class ContactsContract {
         public static @AccountAttributes.AttributeFlags long getAccountAttributes(
                 @NonNull ContentResolver resolver,
                 @Nullable Account account, @Nullable String dataSet) {
+            Objects.requireNonNull(resolver, "ContentResolver cannot be null");
+
             Bundle extras = new Bundle();
             if (account != null) {
                 extras.putString(ACCOUNT_NAME, account.name);
@@ -9616,6 +9618,8 @@ public final class ContactsContract {
         public static void setAccountAttributes(@NonNull ContentResolver resolver,
                 @Nullable Account account, @Nullable String dataSet,
                 @AccountAttributes.AttributeFlags long newAttributes) {
+            Objects.requireNonNull(resolver, "ContentResolver cannot be null");
+
             Bundle extras = new Bundle();
             if (account != null) {
                 extras.putString(ACCOUNT_NAME, account.name);
@@ -9653,6 +9657,8 @@ public final class ContactsContract {
         @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS)
         public static void resetAccountAttributes(@NonNull ContentResolver resolver,
                 @Nullable Account account, @Nullable String dataSet) {
+            Objects.requireNonNull(resolver, "ContentResolver cannot be null");
+
             Bundle extras = new Bundle();
             if (account != null) {
                 extras.putString(ACCOUNT_NAME, account.name);
