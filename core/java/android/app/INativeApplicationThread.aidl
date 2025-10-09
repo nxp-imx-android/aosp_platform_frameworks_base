@@ -29,7 +29,7 @@ import java.util.Map;
 oneway interface INativeApplicationThread {
     @UnsupportedAppUsage
     void scheduleCreateService(IBinder serviceToken,
-            in List<String> libraryPaths, in String permittedLibsDir,
+            in String libraryPaths, in String permittedLibsDir,
             in String libraryName, in String baseSymbolName, int processState);
 
     @UnsupportedAppUsage

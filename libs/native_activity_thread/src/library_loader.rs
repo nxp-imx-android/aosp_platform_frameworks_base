@@ -71,12 +71,12 @@ impl NamespaceFactory {
     /// Create a linker namespace.
     pub fn create_linker_namespace(
         &mut self,
-        library_paths: &[String],
+        library_paths: &str,
         permitted_libs_dir: &str,
     ) -> Result<LinkerNamespace> {
         let name = CString::new(format!("{}-{}", self.base_name, self.serial))
             .context("invalid namespace name")?;
-        let ld_path = CString::new(library_paths.join(":")).context("invalid library paths")?;
+        let ld_path = CString::new(library_paths).context("invalid library paths")?;
         let permitted_libs_dir =
             CString::new(permitted_libs_dir).context("invalid permitted libs dir")?;
         // SAFETY: `name`, `ld_path`, `permitted_libs_dir` are valid pointers and this function
