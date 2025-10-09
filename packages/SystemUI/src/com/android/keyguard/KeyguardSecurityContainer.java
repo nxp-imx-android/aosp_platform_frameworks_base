@@ -104,6 +104,7 @@ import com.android.systemui.FontStyles;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor;
 import com.android.systemui.bouncer.ui.BouncerColors;
+import com.android.systemui.classifier.Classifier;
 import com.android.systemui.classifier.FalsingA11yDelegate;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.res.R;
@@ -521,7 +522,7 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
     public boolean onTouchEvent(MotionEvent event) {
         final int action = event.getActionMasked();
 
-        boolean result =  mMotionEventListeners.stream()
+        boolean result = mMotionEventListeners.stream()
                 .anyMatch(listener -> listener.onTouchEvent(event))
                 || super.onTouchEvent(event);
 
@@ -562,15 +563,18 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
                 break;
         }
         if (action == MotionEvent.ACTION_UP) {
-            if (-getTranslationY() > TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    MIN_DRAG_SIZE, getResources().getDisplayMetrics())) {
-                if (mSwipeListener != null) {
-                    mSwipeListener.onSwipeUp();
-                }
-            } else if (getTranslationY() > TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    MIN_DRAG_SIZE, getResources().getDisplayMetrics())) {
-                if (mSwipeListener != null) {
-                    mSwipeListener.onSwipeDown();
+            if (!mFalsingManager.isFalseTouch(Classifier.BOUNCER_SWIPE)) {
+                if (-getTranslationY() > TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                        MIN_DRAG_SIZE, getResources().getDisplayMetrics())) {
+                    if (mSwipeListener != null) {
+                        mSwipeListener.onSwipeUp();
+                    }
+                } else if (getTranslationY() > TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        MIN_DRAG_SIZE, getResources().getDisplayMetrics())) {
+                    if (mSwipeListener != null) {
+                        mSwipeListener.onSwipeDown();
+                    }
                 }
             }
         }

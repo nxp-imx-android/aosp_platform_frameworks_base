@@ -54,7 +54,10 @@ public interface FalsingManager {
 
     boolean isUnlockingDisabled();
 
-    /** Returns true if the gesture should be rejected. */
+    /**
+     * Returns true if the gesture should be rejected.
+     * More aptly named "isFalseSwipes". To be used for swipes.
+     */
     boolean isFalseTouch(int interactionType);
 
     /**
