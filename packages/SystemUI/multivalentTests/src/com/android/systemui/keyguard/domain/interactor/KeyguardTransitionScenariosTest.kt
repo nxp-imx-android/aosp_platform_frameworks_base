@@ -1475,12 +1475,8 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
                     to = KeyguardState.DOZING,
                     animatorAssertion = { it.isNull() },
                 )
-            if (Flags.communalPowerTransitionFix()) {
-                verify(communalSceneRepository)
-                    .instantlyTransitionTo(eq(CommunalScenes.Blank), anyOrNull())
-            } else {
-                verify(communalSceneRepository).changeScene(eq(CommunalScenes.Blank), anyOrNull())
-            }
+            verify(communalSceneRepository)
+                .instantlyTransitionTo(eq(CommunalScenes.Blank), anyOrNull())
 
             testScope.coroutineContext.cancelChildren()
         }
