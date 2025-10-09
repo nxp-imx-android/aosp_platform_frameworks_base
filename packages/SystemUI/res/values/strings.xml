@@ -4874,4 +4874,13 @@
     <string name="accessibility_hearing_device_right_battery_level">R battery %1$s</string>
     <!-- Notification channel name for hearing device status [CHAR LIMIT=NONE] -->
     <string name="accessibility_hearing_device_notification_channel_name">Hearing Device Status</string>
+
+    <!-- Label for the 'Edit' action in the more options menu. Tapping this takes you to the edit accessibility shortcuts page. [CHAR LIMIT=NONE] -->
+    <string name="more_options_edit">Edit</string>
+    <!-- Label for the 'Move' action in the more options menu. This action allows the user to change the position of the floating menu. [CHAR LIMIT=NONE] -->
+    <string name="more_options_move">Move</string>
+    <!-- Label for the action to remove all items from the floating menu, found in the more options menu. [CHAR LIMIT=NONE] -->
+    <string name="more_options_remove_all">Remove all</string>
+    <!-- Label for the 'More options' button in the floating menu, which opens a pop up window with more actions. [CHAR LIMIT=NONE] -->
+    <string name="floating_menu_more_options_label">More options</string>
 </resources>

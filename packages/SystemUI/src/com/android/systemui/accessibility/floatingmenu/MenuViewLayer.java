@@ -58,6 +58,7 @@ import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityManager;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -93,7 +94,8 @@ import java.util.Optional;
 @SuppressLint("ViewConstructor")
 class MenuViewLayer extends FrameLayout implements
         ViewTreeObserver.OnComputeInternalInsetsListener, View.OnClickListener, ComponentCallbacks,
-        MenuView.OnMoveToTuckedListener {
+        MenuView.OnMoveToTuckedListener,
+        AccessibilityTargetAdapter.MoreOptionsClickListener {
     private static final int SHOW_MESSAGE_DELAY_MS = 3000;
 
     /**
@@ -132,7 +134,8 @@ class MenuViewLayer extends FrameLayout implements
             this::onDockTooltipVisibilityChanged;
     private final Observer<Boolean> mMigrationTooltipObserver =
             this::onMigrationTooltipVisibilityChanged;
-    private final Observer<MenuPosition> mPositionObserver = this::onPositionChanged;
+    private final Observer<MenuPosition> mPositionObserver =
+            this::onPositionChanged;
     private final Rect mImeInsetsRect = new Rect();
     private boolean mIsMigrationTooltipShowing;
     private boolean mShouldShowDockTooltip;
@@ -230,8 +233,10 @@ class MenuViewLayer extends FrameLayout implements
                     @NonNull
                     @Override
                     public AccessibilityDelegateCompat getItemDelegate() {
-                        return new MenuItemAccessibilityDelegate(/* recyclerViewDelegate= */ this,
-                                mMenuAnimationController, MenuViewLayer.this);
+                        return new MenuItemAccessibilityDelegate(
+                                /* recyclerViewDelegate= */ this,
+                                mMenuAnimationController,
+                                MenuViewLayer.this);
                     }
                 });
         mMenuAnimationController = mMenuView.getMenuAnimationController();
@@ -313,6 +318,41 @@ class MenuViewLayer extends FrameLayout implements
         setClickable(false);
         setFocusable(false);
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+        AccessibilityTargetAdapter adapter =
+                (AccessibilityTargetAdapter) mMenuView.getTargetFeaturesView().getAdapter();
+        adapter.setMoreOptionsClickListener(this);
+    }
+
+    @VisibleForTesting
+    PopupMenu createPopupMenu(Context context, View anchor) {
+        return new PopupMenu(context, anchor);
+    }
+
+    @Override
+    public void onMoreOptionsClicked(View anchorView) {
+        PopupMenu popup = createPopupMenu(anchorView.getContext(), anchorView);
+        popup.getMenuInflater().inflate(
+                R.menu.more_options_menu,
+                popup.getMenu());
+
+        popup.setOnMenuItemClickListener(
+                item -> {
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.action_edit) {
+                        gotoEditScreen();
+                        return true;
+                    } else if (itemId == R.id.action_move) {
+                        mMenuViewModel.cycleMenuPosition();
+                        return true;
+                    } else if (itemId == R.id.action_remove_all) {
+                        mDismissMenuAction.run();
+                        return true;
+                    }
+                    return false;
+                });
+
+        popup.show();
     }
 
     private void onPositionChanged(MenuPosition position) {
@@ -382,6 +422,9 @@ class MenuViewLayer extends FrameLayout implements
         mMenuViewModel.getDockTooltipVisibilityData().observeForever(mDockTooltipObserver);
         mMenuViewModel.getMigrationTooltipVisibilityData().observeForever(
                 mMigrationTooltipObserver);
+        mMenuViewModel
+                .getMigrationTooltipVisibilityData()
+                .observeForever(mMigrationTooltipObserver);
         mMenuViewModel.getPositionData().observeForever(mPositionObserver);
         mMessageView.setUndoListener(view -> undo());
         getContext().registerComponentCallbacks(this);

@@ -19,8 +19,11 @@ package com.android.systemui.accessibility.floatingmenu;
 import static android.view.WindowInsets.Type.displayCutout;
 import static android.view.WindowInsets.Type.systemBars;
 
+import static kotlinx.coroutines.flow.FlowKt.flowOf;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +44,8 @@ import androidx.test.filters.SmallTest;
 
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
+import com.android.systemui.keyboard.data.repository.KeyboardRepository;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.util.settings.SecureSettings;
 
@@ -57,37 +62,46 @@ import org.mockito.junit.MockitoRule;
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
 public class MenuViewLayerControllerTest extends SysuiTestCase {
-    @Rule
-    public MockitoRule mockito = MockitoJUnit.rule();
+    @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
-    @Mock
-    private WindowManager mWindowManager;
+    @Mock private WindowManager mWindowManager;
 
-    @Mock
-    private AccessibilityManager mAccessibilityManager;
-    @Mock
-    private HearingAidDeviceManager mHearingAidDeviceManager;
+    @Mock private AccessibilityManager mAccessibilityManager;
+    @Mock private HearingAidDeviceManager mHearingAidDeviceManager;
 
-    @Mock
-    private SecureSettings mSecureSettings;
+    @Mock private SecureSettings mSecureSettings;
 
-    @Mock
-    private WindowMetrics mWindowMetrics;
+    @Mock private WindowMetrics mWindowMetrics;
+
+    @Mock private KeyboardRepository mKeyboardRepository;
+    @Mock private PointerDeviceRepository mPointerDeviceRepository;
 
     private MenuViewLayerController mMenuViewLayerController;
 
     @Before
     public void setUp() throws Exception {
         final WindowManager wm = mContext.getSystemService(WindowManager.class);
-        doAnswer(invocation -> wm.getMaximumWindowMetrics()).when(
-                mWindowManager).getMaximumWindowMetrics();
+        doAnswer(invocation -> wm.getMaximumWindowMetrics())
+                .when(mWindowManager)
+                .getMaximumWindowMetrics();
         mContext.addMockSystemService(Context.WINDOW_SERVICE, mWindowManager);
         when(mWindowManager.getCurrentWindowMetrics()).thenReturn(mWindowMetrics);
         when(mWindowMetrics.getBounds()).thenReturn(new Rect(0, 0, 1080, 2340));
         when(mWindowMetrics.getWindowInsets()).thenReturn(stubDisplayInsets());
-        mMenuViewLayerController = new MenuViewLayerController(mContext, mWindowManager,
-                mAccessibilityManager, mSecureSettings, mock(NavigationModeController.class),
-                mHearingAidDeviceManager);
+
+        doReturn(flowOf(false)).when(mKeyboardRepository).isAnyKeyboardConnected();
+        doReturn(flowOf(false)).when(mPointerDeviceRepository).isAnyPointerDeviceConnected();
+
+        mMenuViewLayerController =
+                new MenuViewLayerController(
+                        mContext,
+                        mWindowManager,
+                        mAccessibilityManager,
+                        mSecureSettings,
+                        mock(NavigationModeController.class),
+                        mHearingAidDeviceManager,
+                        mKeyboardRepository,
+                        mPointerDeviceRepository);
     }
 
     @Test
@@ -111,7 +125,8 @@ public class MenuViewLayerControllerTest extends SysuiTestCase {
         final int stubNavigationBarHeight = 125;
         return new WindowInsets.Builder()
                 .setVisible(systemBars() | displayCutout(), true)
-                .setInsets(systemBars() | displayCutout(),
+                .setInsets(
+                        systemBars() | displayCutout(),
                         Insets.of(0, stubStatusBarHeight, 0, stubNavigationBarHeight))
                 .build();
     }

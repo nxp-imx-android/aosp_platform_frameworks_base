@@ -43,6 +43,8 @@ import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.Prefs;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.accessibility.utils.TestUtils;
+import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository;
+import com.android.systemui.keyboard.data.repository.FakeKeyboardRepository;
 import com.android.systemui.util.settings.SecureSettings;
 
 import org.junit.After;
@@ -69,39 +71,53 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
     private MenuView mMenuView;
     private TestMenuAnimationController mMenuAnimationController;
 
-    @Rule
-    public MockitoRule mockito = MockitoJUnit.rule();
+    @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
-    @Mock
-    private AccessibilityManager mAccessibilityManager;
-    @Mock
-    private HearingAidDeviceManager mHearingAidDeviceManager;
+    @Mock private AccessibilityManager mAccessibilityManager;
+    @Mock private HearingAidDeviceManager mHearingAidDeviceManager;
 
     @Before
     public void setUp() throws Exception {
-        final WindowManager stubWindowManager = mContext.getSystemService(WindowManager.class);
-        final MenuViewAppearance stubMenuViewAppearance = new MenuViewAppearance(mContext,
-                stubWindowManager);
-        final SecureSettings secureSettings = TestUtils.mockSecureSettings(mContext);
-        final MenuViewModel stubMenuViewModel = new MenuViewModel(mContext, mAccessibilityManager,
-                secureSettings, mHearingAidDeviceManager);
+        FakeKeyboardRepository keyboardRepository = new FakeKeyboardRepository();
+        FakePointerDeviceRepository pointerDeviceRepository = new FakePointerDeviceRepository();
 
-        mMenuView = spy(new MenuView(mContext, stubMenuViewModel, stubMenuViewAppearance,
-                secureSettings));
+        final WindowManager stubWindowManager = mContext.getSystemService(WindowManager.class);
+        final MenuViewAppearance stubMenuViewAppearance =
+                new MenuViewAppearance(mContext, stubWindowManager);
+        final SecureSettings secureSettings = TestUtils.mockSecureSettings(mContext);
+        final MenuViewModel stubMenuViewModel =
+                new MenuViewModel(
+                        mContext,
+                        mAccessibilityManager,
+                        secureSettings,
+                        mHearingAidDeviceManager,
+                        keyboardRepository,
+                        pointerDeviceRepository);
+
+        mMenuView =
+                spy(
+                        new MenuView(
+                                mContext,
+                                stubMenuViewModel,
+                                stubMenuViewAppearance,
+                                secureSettings));
         mViewPropertyAnimator = spy(mMenuView.animate());
         doReturn(mViewPropertyAnimator).when(mMenuView).animate();
 
-        mMenuAnimationController = new TestMenuAnimationController(
-                mMenuView, stubMenuViewAppearance);
-        mLastIsMoveToTucked = Prefs.getBoolean(mContext,
-                Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, /* defaultValue= */ false);
+        mMenuAnimationController =
+                new TestMenuAnimationController(mMenuView, stubMenuViewAppearance);
+        mLastIsMoveToTucked =
+                Prefs.getBoolean(
+                        mContext,
+                        Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED,
+                        /* defaultValue= */ false);
         mEndListenerCaptor = ArgumentCaptor.forClass(DynamicAnimation.OnAnimationEndListener.class);
     }
 
     @After
     public void tearDown() throws Exception {
-        Prefs.putBoolean(mContext, Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED,
-                mLastIsMoveToTucked);
+        Prefs.putBoolean(
+                mContext, Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, mLastIsMoveToTucked);
         mEndListenerCaptor.getAllValues().clear();
         mMenuAnimationController.mPositionAnimations.values().forEach(DynamicAnimation::cancel);
     }
@@ -134,24 +150,30 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
 
     @Test
     public void moveToEdgeAndHide_untucked_expectedSharedPreferenceValue() {
-        Prefs.putBoolean(mContext, Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, /* value= */
-                false);
+        Prefs.putBoolean(
+                mContext, Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, /* value= */ false);
 
         mMenuAnimationController.moveToEdgeAndHide();
-        final boolean isMoveToTucked = Prefs.getBoolean(mContext,
-                Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, /* defaultValue= */ false);
+        final boolean isMoveToTucked =
+                Prefs.getBoolean(
+                        mContext,
+                        Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED,
+                        /* defaultValue= */ false);
 
         assertThat(isMoveToTucked).isTrue();
     }
 
     @Test
     public void moveOutEdgeAndShow_tucked_expectedSharedPreferenceValue() {
-        Prefs.putBoolean(mContext, Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, /* value= */
-                true);
+        Prefs.putBoolean(
+                mContext, Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, /* value= */ true);
 
         mMenuAnimationController.moveOutEdgeAndShow();
-        final boolean isMoveToTucked = Prefs.getBoolean(mContext,
-                Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED, /* defaultValue= */ true);
+        final boolean isMoveToTucked =
+                Prefs.getBoolean(
+                        mContext,
+                        Prefs.Key.HAS_ACCESSIBILITY_FLOATING_MENU_TUCKED,
+                        /* defaultValue= */ true);
 
         assertThat(isMoveToTucked).isFalse();
     }
@@ -194,14 +216,24 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
         final Runnable onSpringAnimationsEndCallback = mock(Runnable.class);
         mMenuAnimationController.setSpringAnimationsEndAction(onSpringAnimationsEndCallback);
 
-        mMenuAnimationController.flingMenuThenSpringToEdge(new PointF(), /* velocityX= */
-                100, /* velocityY= */ 100);
-        mMenuAnimationController.mPositionAnimations.values()
-                .forEach(animation -> verify((FlingAnimation) animation).addEndListener(
-                        mEndListenerCaptor.capture()));
-        mEndListenerCaptor.getAllValues()
-                .forEach(listener -> listener.onAnimationEnd(mock(DynamicAnimation.class),
-                        /* canceled */ false, /* endValue */ 0, /* endVelocity */ 0));
+        mMenuAnimationController.flingMenuThenSpringToEdge(
+                new PointF(), /* velocityX= */ 100, /* velocityY= */ 100);
+        mMenuAnimationController
+                .mPositionAnimations
+                .values()
+                .forEach(
+                        animation ->
+                                verify((FlingAnimation) animation)
+                                        .addEndListener(mEndListenerCaptor.capture()));
+        mEndListenerCaptor
+                .getAllValues()
+                .forEach(
+                        listener ->
+                                listener.onAnimationEnd(
+                                        mock(DynamicAnimation.class),
+                                        /* canceled */ false, /* endValue */
+                                        0, /* endVelocity */
+                                        0));
         mMenuAnimationController.mPositionAnimations.values().forEach(this::skipAnimationToEnd);
 
         verify(onSpringAnimationsEndCallback).run();
@@ -212,18 +244,25 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
         final Runnable onSpringAnimationsEndCallback = mock(Runnable.class);
         mMenuAnimationController.setSpringAnimationsEndAction(onSpringAnimationsEndCallback);
 
-        mMenuAnimationController.flingMenuThenSpringToEdge(new PointF(), /* velocityX= */
-                200, /* velocityY= */ 200);
-        mMenuAnimationController.mPositionAnimations.values()
-                .forEach(animation -> verify((FlingAnimation) animation).addEndListener(
-                        mEndListenerCaptor.capture()));
+        mMenuAnimationController.flingMenuThenSpringToEdge(
+                new PointF(), /* velocityX= */ 200, /* velocityY= */ 200);
+        mMenuAnimationController
+                .mPositionAnimations
+                .values()
+                .forEach(
+                        animation ->
+                                verify((FlingAnimation) animation)
+                                        .addEndListener(mEndListenerCaptor.capture()));
         final Optional<DynamicAnimation.OnAnimationEndListener> anyAnimation =
                 mEndListenerCaptor.getAllValues().stream().findAny();
         anyAnimation.ifPresent(
-                listener -> listener.onAnimationEnd(mock(DynamicAnimation.class), /* canceled */
-                        false, /* endValue */ 0, /* endVelocity */ 0));
-        mMenuAnimationController.mPositionAnimations.values()
-                .stream()
+                listener ->
+                        listener.onAnimationEnd(
+                                mock(DynamicAnimation.class), /* canceled */
+                                false, /* endValue */
+                                0, /* endVelocity */
+                                0));
+        mMenuAnimationController.mPositionAnimations.values().stream()
                 .filter(animation -> animation instanceof SpringAnimation)
                 .forEach(this::skipAnimationToEnd);
 
@@ -234,16 +273,22 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
     public void tuck_animates() {
         mMenuAnimationController.cancelAnimations();
         mMenuAnimationController.moveToEdgeAndHide();
-        assertThat(mMenuAnimationController.getAnimation(
-                DynamicAnimation.TRANSLATION_X).isRunning()).isTrue();
+        assertThat(
+                        mMenuAnimationController
+                                .getAnimation(DynamicAnimation.TRANSLATION_X)
+                                .isRunning())
+                .isTrue();
     }
 
     @Test
     public void untuck_animates() {
         mMenuAnimationController.cancelAnimations();
         mMenuAnimationController.moveOutEdgeAndShow();
-        assertThat(mMenuAnimationController.getAnimation(
-                DynamicAnimation.TRANSLATION_X).isRunning()).isTrue();
+        assertThat(
+                        mMenuAnimationController
+                                .getAnimation(DynamicAnimation.TRANSLATION_X)
+                                .isRunning())
+                .isTrue();
     }
 
     private void setupAndRunSpringAnimations() {
@@ -252,14 +297,18 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
         final float velocity = 100f;
         final float finalPosition = 300f;
 
-        mMenuAnimationController.springMenuWith(DynamicAnimation.TRANSLATION_X, new SpringForce()
-                .setStiffness(stiffness)
-                .setDampingRatio(dampingRatio), velocity, finalPosition,
-                /* writeToPosition = */ true);
-        mMenuAnimationController.springMenuWith(DynamicAnimation.TRANSLATION_Y, new SpringForce()
-                .setStiffness(stiffness)
-                .setDampingRatio(dampingRatio), velocity, finalPosition,
-                /* writeToPosition = */ true);
+        mMenuAnimationController.springMenuWith(
+                DynamicAnimation.TRANSLATION_X,
+                new SpringForce().setStiffness(stiffness).setDampingRatio(dampingRatio),
+                velocity,
+                finalPosition,
+                /* writeToPosition= */ true);
+        mMenuAnimationController.springMenuWith(
+                DynamicAnimation.TRANSLATION_Y,
+                new SpringForce().setStiffness(stiffness).setDampingRatio(dampingRatio),
+                velocity,
+                finalPosition,
+                /* writeToPosition= */ true);
     }
 
     private void skipAnimationToEnd(DynamicAnimation animation) {
@@ -270,17 +319,15 @@ public class MenuAnimationControllerTest extends SysuiTestCase {
         springAnimation.doAnimationFrame(200);
     }
 
-    /**
-     * Wrapper class for testing.
-     */
+    /** Wrapper class for testing. */
     private static class TestMenuAnimationController extends MenuAnimationController {
         TestMenuAnimationController(MenuView menuView, MenuViewAppearance menuViewAppearance) {
             super(menuView, menuViewAppearance);
         }
 
         @Override
-        FlingAnimation createFlingAnimation(MenuView menuView,
-                MenuPositionProperty menuPositionProperty) {
+        FlingAnimation createFlingAnimation(
+                MenuView menuView, MenuPositionProperty menuPositionProperty) {
             return spy(super.createFlingAnimation(menuView, menuPositionProperty));
         }
     }
