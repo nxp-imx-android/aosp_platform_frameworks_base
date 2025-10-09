@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -87,9 +88,6 @@ sealed interface SceneTransitionLayoutState {
      */
     val currentTransitions: List<TransitionState.Transition>
 
-    /** The [SceneTransitions] used when animating this state. */
-    val transitions: SceneTransitions
-
     /**
      * Whether we are idle. If [content] isn't `null`, return `true` if idle and current content
      * contains [content]. If [content] is `null`, will return `true` if idle, regardless of current
@@ -146,11 +144,32 @@ sealed interface SceneTransitionLayoutState {
     fun isInCurrentOverlays(content: OverlayKey): Boolean
 }
 
-/** A [SceneTransitionLayoutState] whose target scene can be imperatively set. */
-sealed interface MutableSceneTransitionLayoutState : SceneTransitionLayoutState {
-    /** The [SceneTransitions] used when animating this state. */
-    override var transitions: SceneTransitions
+/**
+ * The base interface for a [SceneTransitionLayoutState] whose current scene and overlays can be
+ * set.
+ *
+ * This interface doesn't contain the mutation operations that require the state to be bound to a
+ * UI/STL. These ones are in [MutableSceneTransitionLayoutState].
+ */
+sealed interface BaseMutableSceneTransitionLayoutState : SceneTransitionLayoutState {
+    /**
+     * Immediately snap to the given [scene] and/or [overlays], instantly interrupting all ongoing
+     * transitions and settling to a [TransitionState.Idle] state.
+     */
+    fun snapTo(
+        scene: SceneKey = transitionState.currentScene,
+        overlays: Set<OverlayKey> = transitionState.currentOverlays,
+    )
+}
 
+/**
+ * A [SceneTransitionLayoutState] whose current scene and overlays can be set.
+ *
+ * This interface contains all the mutation operations that animate and require the state to be
+ * bound to a UI/STL because they need access to UI values like [MotionScheme], [SceneTransitions],
+ * etc.
+ */
+sealed interface MutableSceneTransitionLayoutState : BaseMutableSceneTransitionLayoutState {
     /**
      * Set the target scene of this state to [targetScene].
      *
@@ -180,15 +199,6 @@ sealed interface MutableSceneTransitionLayoutState : SceneTransitionLayoutState 
         animationScope: CoroutineScope,
         transitionKey: TransitionKey? = null,
     ): Pair<TransitionState.Transition, Job>?
-
-    /**
-     * Immediately snap to the given [scene] and/or [overlays], instantly interrupting all ongoing
-     * transitions and settling to a [TransitionState.Idle] state.
-     */
-    fun snapTo(
-        scene: SceneKey = transitionState.currentScene,
-        overlays: Set<OverlayKey> = transitionState.currentOverlays,
-    )
 
     /**
      * Request to show [overlay] so that it animates in from [currentScene] and ends up being
@@ -260,11 +270,43 @@ sealed interface MutableSceneTransitionLayoutState : SceneTransitionLayoutState 
     suspend fun startTransition(transition: TransitionState.Transition, chain: Boolean = true)
 }
 
+/** A hoisted [SceneTransitionLayoutState] that can be instantiated outside of UI code. */
+sealed interface HoistedSceneTransitionLayoutState : BaseMutableSceneTransitionLayoutState {
+    /**
+     * Return a mirror of this state that is a [MutableSceneTransitionLayoutState] and allows to
+     * animate the current scenes and overlays, or `null` if this state is not
+     * [bound to][rememberUiBoundState] any UI/STL yet.
+     */
+    val uiBoundState: MutableSceneTransitionLayoutState?
+
+    /**
+     * Bind this [HoistedSceneTransitionLayoutState] to [transitions] and the current
+     * UI/composition.
+     *
+     * Important: This method can only be called maximum once per
+     * [HoistedSceneTransitionLayoutState], as a state can be bound only to one UI/composition.
+     *
+     * Note that you usually don't need to call this method yourself as this will be done
+     * automatically by [SceneTransitionLayout]. It can still be called manually if you want this
+     * state to be used by multiple different STLs.
+     *
+     * @return a mirror of this state that is a [MutableSceneTransitionLayoutState].
+     */
+    @Composable
+    fun rememberUiBoundState(
+        transitions: SceneTransitions = SceneTransitions.Empty
+    ): MutableSceneTransitionLayoutState
+}
+
 /**
- * Return a [MutableSceneTransitionLayoutState] initially idle at [initialScene].
+ * Return a [HoistedSceneTransitionLayoutState] initially idle at [initialScene].
+ *
+ * This can be used instead of [rememberMutableSceneTransitionLayoutState] to instantiate a
+ * [SceneTransitionLayoutState] outside of UI code. However, the resulting set of
+ * [mutation operations][BaseMutableSceneTransitionLayoutState] is therefore limited given that most
+ * mutations will animate the UI.
  *
  * @param initialScene the initial scene to which this state is initialized.
- * @param transitions the [SceneTransitions] used when this state is transitioning between scenes.
  * @param canChangeScene whether we can transition to the given scene. This is called when the user
  *   commits a transition to a new scene because of a [UserAction]. If [canChangeScene] returns
  *   `true`, then the gesture will be committed and we will animate to the other scene. Otherwise,
@@ -275,13 +317,68 @@ sealed interface MutableSceneTransitionLayoutState : SceneTransitionLayoutState 
  *   overlay.
  * @param canReplaceOverlay whether we should commit a user action that will result in replacing
  *   `from` overlay by `to` overlay.
- * @param stateLinks the [StateLink] connecting this [SceneTransitionLayoutState] to other
- *   [SceneTransitionLayoutState]s.
+ * @param onTransitionStart callback called right when a transition is started.
+ * @param onTransitionEnd callback called right when a transition has ended.
  * @param deferTransitionProgress whether we should wait for the first composition to be done before
  *   changing the progress of a transition. This can help reduce perceivable jank at the start of a
  *   transition in case the first composition of a content takes a lot of time and we are going to
  *   miss that first frame.
  */
+fun HoistedSceneTransitionLayoutState(
+    initialScene: SceneKey,
+    initialOverlays: Set<OverlayKey> = emptySet(),
+    canChangeScene: (SceneKey) -> Boolean = { true },
+    canShowOverlay: (OverlayKey) -> Boolean = { true },
+    canHideOverlay: (OverlayKey) -> Boolean = { true },
+    canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ -> true },
+    onTransitionStart: (TransitionState.Transition) -> Unit = {},
+    onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+
+    // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
+    deferTransitionProgress: Boolean = false,
+): HoistedSceneTransitionLayoutState {
+    return HoistedSceneTransitionLayoutStateImpl(
+        initialScene,
+        initialOverlays,
+        canChangeScene,
+        canShowOverlay,
+        canHideOverlay,
+        canReplaceOverlay,
+        onTransitionStart,
+        onTransitionEnd,
+        deferTransitionProgress,
+    )
+}
+
+/**
+ * Return a [MutableSceneTransitionLayoutState] initially idle at [initialScene].
+ *
+ * @param initialScene the initial scene to which this state is initialized.
+ * @param transitions the [SceneTransitions] used when this state is transitioning between scenes.
+ * @param motionScheme the Material [MotionScheme] to use when animating and building the transition
+ *   specs.
+ * @param canChangeScene whether we can transition to the given scene. This is called when the user
+ *   commits a transition to a new scene because of a [UserAction]. If [canChangeScene] returns
+ *   `true`, then the gesture will be committed and we will animate to the other scene. Otherwise,
+ *   the gesture will be cancelled and we will animate back to the current scene.
+ * @param canShowOverlay whether we should commit a user action that will result in showing the
+ *   given overlay.
+ * @param canHideOverlay whether we should commit a user action that will result in hiding the given
+ *   overlay.
+ * @param canReplaceOverlay whether we should commit a user action that will result in replacing
+ *   `from` overlay by `to` overlay.
+ * @param onTransitionStart callback called right when a transition is started.
+ * @param onTransitionEnd callback called right when a transition has ended.
+ * @param deferTransitionProgress whether we should wait for the first composition to be done before
+ *   changing the progress of a transition. This can help reduce perceivable jank at the start of a
+ *   transition in case the first composition of a content takes a lot of time and we are going to
+ *   miss that first frame.
+ */
+@Deprecated(
+    "Use HoistedSceneTransitionLayoutState() instead",
+    replaceWith = ReplaceWith("HoistedSceneTransitionLayoutState()"),
+)
+// TODO(b/450236706): Remove this factory.
 fun MutableSceneTransitionLayoutState(
     initialScene: SceneKey,
     motionScheme: MotionScheme,
@@ -297,10 +394,14 @@ fun MutableSceneTransitionLayoutState(
     // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
     deferTransitionProgress: Boolean = false,
 ): MutableSceneTransitionLayoutState {
+    val uiDelegate =
+        object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
+            override var transitions: SceneTransitions = transitions
+            override val motionScheme: MotionScheme = motionScheme
+        }
+
     return MutableSceneTransitionLayoutStateImpl(
         initialScene,
-        motionScheme,
-        transitions,
         initialOverlays,
         canChangeScene,
         canShowOverlay,
@@ -309,6 +410,7 @@ fun MutableSceneTransitionLayoutState(
         onTransitionStart,
         onTransitionEnd,
         deferTransitionProgress,
+        { uiDelegate },
     )
 }
 
@@ -328,25 +430,31 @@ fun rememberMutableSceneTransitionLayoutState(
     deferTransitionProgress: Boolean = false,
 ): MutableSceneTransitionLayoutState {
     val motionScheme = MaterialTheme.motionScheme
+    val uiDelegate = remember {
+        object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
+            override var transitions = transitions
+            override var motionScheme: MotionScheme = motionScheme
+        }
+    }
+
     val layoutState = remember {
         MutableSceneTransitionLayoutStateImpl(
-            initialScene = initialScene,
-            motionScheme = motionScheme,
-            transitions = transitions,
-            initialOverlays = initialOverlays,
-            canChangeScene = canChangeScene,
-            canShowOverlay = canShowOverlay,
-            canHideOverlay = canHideOverlay,
-            canReplaceOverlay = canReplaceOverlay,
-            onTransitionStart = onTransitionStart,
-            onTransitionEnd = onTransitionEnd,
-            deferTransitionProgress = deferTransitionProgress,
+            initialScene,
+            initialOverlays,
+            canChangeScene,
+            canShowOverlay,
+            canHideOverlay,
+            canReplaceOverlay,
+            onTransitionStart,
+            onTransitionEnd,
+            deferTransitionProgress,
+            { uiDelegate },
         )
     }
 
     SideEffect {
-        layoutState.transitions = transitions
-        layoutState.motionScheme = motionScheme
+        uiDelegate.transitions = transitions
+        uiDelegate.motionScheme = motionScheme
         layoutState.canChangeScene = canChangeScene
         layoutState.canShowOverlay = canShowOverlay
         layoutState.canHideOverlay = canHideOverlay
@@ -355,6 +463,7 @@ fun rememberMutableSceneTransitionLayoutState(
         layoutState.onTransitionEnd = onTransitionEnd
         layoutState.deferTransitionProgress = deferTransitionProgress
     }
+
     return layoutState
 }
 
@@ -362,20 +471,23 @@ fun rememberMutableSceneTransitionLayoutState(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 internal class MutableSceneTransitionLayoutStateImpl(
     initialScene: SceneKey,
-    internal var motionScheme: MotionScheme,
-    override var transitions: SceneTransitions = transitions {},
     initialOverlays: Set<OverlayKey> = emptySet(),
-    internal var canChangeScene: (SceneKey) -> Boolean = { true },
-    internal var canShowOverlay: (OverlayKey) -> Boolean = { true },
-    internal var canHideOverlay: (OverlayKey) -> Boolean = { true },
-    internal var canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ ->
-        true
-    },
-    internal var onTransitionStart: (TransitionState.Transition) -> Unit = {},
-    internal var onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+    internal var canChangeScene: (SceneKey) -> Boolean,
+    internal var canShowOverlay: (OverlayKey) -> Boolean,
+    internal var canHideOverlay: (OverlayKey) -> Boolean,
+    internal var canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean,
+    internal var onTransitionStart: (TransitionState.Transition) -> Unit,
+    internal var onTransitionEnd: (TransitionState.Transition) -> Unit,
     // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
-    internal var deferTransitionProgress: Boolean = false,
+    internal var deferTransitionProgress: Boolean,
+    private val uiDelegate: () -> UiDelegate,
 ) : MutableSceneTransitionLayoutState {
+    interface UiDelegate {
+        // TODO(b/450236706): Make this a `val`.
+        var transitions: SceneTransitions
+        val motionScheme: MotionScheme
+    }
+
     private val creationThread: Thread = Thread.currentThread()
 
     /**
@@ -418,6 +530,15 @@ internal class MutableSceneTransitionLayoutStateImpl(
 
     /** The transitions that are finished, i.e. for which [finishTransition] was called. */
     @VisibleForTesting internal val finishedTransitions = mutableSetOf<TransitionState.Transition>()
+
+    var transitions: SceneTransitions
+        get() = uiDelegate().transitions
+        set(value) {
+            uiDelegate().transitions = value
+        }
+
+    val motionScheme: MotionScheme
+        get() = uiDelegate().motionScheme
 
     internal fun checkThread() {
         val current = Thread.currentThread()
@@ -806,6 +927,125 @@ internal class MutableSceneTransitionLayoutStateImpl(
             factory.elevateInContent == content &&
                 (element == null || factory.matcher.matches(element, content))
         }
+    }
+}
+
+/**
+ * A [MutableSceneTransitionLayoutState] that can be created outside of UI code and later bound to a
+ * UI.
+ */
+internal class HoistedSceneTransitionLayoutStateImpl(
+    initialScene: SceneKey,
+    initialOverlays: Set<OverlayKey> = emptySet(),
+    canChangeScene: (SceneKey) -> Boolean,
+    canShowOverlay: (OverlayKey) -> Boolean,
+    canHideOverlay: (OverlayKey) -> Boolean,
+    canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean,
+    onTransitionStart: (TransitionState.Transition) -> Unit,
+    onTransitionEnd: (TransitionState.Transition) -> Unit,
+    deferTransitionProgress: Boolean,
+) : HoistedSceneTransitionLayoutState {
+    /**
+     * A [MutableSceneTransitionLayoutState] whose mutation methods should be used only when bound
+     * to a UI, i.e. only when [_uiDelegate] is not `null`.
+     */
+    private val mutableDelegate =
+        MutableSceneTransitionLayoutStateImpl(
+            initialScene,
+            initialOverlays,
+            canChangeScene,
+            canShowOverlay,
+            canHideOverlay,
+            canReplaceOverlay,
+            onTransitionStart,
+            onTransitionEnd,
+            deferTransitionProgress,
+            { uiDelegate },
+        )
+
+    private var _uiDelegate: MutableSceneTransitionLayoutStateImpl.UiDelegate? by
+        mutableStateOf(null)
+    private val uiDelegate: MutableSceneTransitionLayoutStateImpl.UiDelegate
+        get() =
+            checkNotNull(_uiDelegate) {
+                "HoistedSceneTransitionLayoutState.uiDelegate was accessed before it was set. " +
+                    "This means that the state was animated before it was bound to a UI."
+            }
+
+    override val uiBoundState: MutableSceneTransitionLayoutState?
+        get() = if (_uiDelegate != null) mutableDelegate else null
+
+    @Composable
+    override fun rememberUiBoundState(
+        transitions: SceneTransitions
+    ): MutableSceneTransitionLayoutStateImpl {
+        val motionScheme = MaterialTheme.motionScheme
+        val delegate = remember {
+            object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
+                override var transitions: SceneTransitions = transitions
+                override var motionScheme: MotionScheme = motionScheme
+            }
+        }
+
+        DisposableEffect(Unit) {
+            check(_uiDelegate == null) {
+                "HoistedSceneTransitionLayoutState.rememberUiBoundState() can be called only once" +
+                    " at a time. If you need to use HoistedSceneTransitionLayoutState with " +
+                    "multiple different STLs, you need to call rememberUiBoundState() once " +
+                    "yourself and pass the returned state to these STLs."
+            }
+            _uiDelegate = delegate
+            onDispose { _uiDelegate = null }
+        }
+
+        SideEffect {
+            delegate.transitions = transitions
+            delegate.motionScheme = motionScheme
+        }
+
+        return mutableDelegate
+    }
+
+    // Note: We have to manually delegate here and we can't use `by` delegation because
+    // [mutableDelegate] is created inside this class.
+    override val currentScene: SceneKey
+        get() = mutableDelegate.currentScene
+
+    override val currentOverlays: Set<OverlayKey>
+        get() = mutableDelegate.currentOverlays
+
+    override val transitionState: TransitionState
+        get() = mutableDelegate.transitionState
+
+    override val currentTransitions: List<TransitionState.Transition>
+        get() = mutableDelegate.currentTransitions
+
+    override fun isIdle(content: ContentKey?): Boolean {
+        return mutableDelegate.isIdle()
+    }
+
+    override fun isTransitioning(from: ContentKey?, to: ContentKey?): Boolean {
+        return mutableDelegate.isTransitioning()
+    }
+
+    override fun isTransitioningBetween(content: ContentKey, other: ContentKey): Boolean {
+        return mutableDelegate.isTransitioningBetween(content, other)
+    }
+
+    override fun isTransitioningFromOrTo(content: ContentKey): Boolean {
+        return mutableDelegate.isTransitioningFromOrTo(content)
+    }
+
+    override fun isCurrentScene(content: SceneKey): Boolean {
+        return mutableDelegate.isCurrentScene(content)
+    }
+
+    override fun isInCurrentOverlays(content: OverlayKey): Boolean {
+        return mutableDelegate.isInCurrentOverlays(content)
+    }
+
+    override fun snapTo(scene: SceneKey, overlays: Set<OverlayKey>) {
+        return mutableDelegate.snapTo(scene, overlays)
     }
 }
 
