@@ -25,6 +25,7 @@ import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderComponent
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogSlidersViewModel
 import com.android.systemui.volume.dialog.ui.binder.ViewBinder
@@ -39,9 +40,13 @@ class VolumeDialogSlidersViewBinder
 constructor(
     private val viewModel: VolumeDialogSlidersViewModel,
     private val dialogViewModel: VolumeDialogViewModel,
+    private val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
 ) : ViewBinder {
 
     override fun CoroutineScope.bind(view: View) {
+        // Use horizontal volume dialog if the audio tile details view is enabled
+        val isVolumeDialogVertical = !expandedAudioTileDetailsFeatureInteractor.isEnabled()
+
         val floatingSlidersContainer: ViewGroup =
             view.requireViewById(R.id.volume_dialog_floating_sliders_container)
         val mainSliderContainer: View =
@@ -62,8 +67,14 @@ constructor(
                 )
 
                 val floatingSliderViewBinders = uiModel.floatingSliderComponent
+                val floatingSliderViewLayoutId =
+                    if (isVolumeDialogVertical) {
+                        R.layout.volume_dialog_slider_floating
+                    } else {
+                        R.layout.volume_dialog_slider_floating_horizontal
+                    }
                 floatingSlidersContainer.ensureChildCount(
-                    viewLayoutId = R.layout.volume_dialog_slider_floating,
+                    viewLayoutId = floatingSliderViewLayoutId,
                     count = floatingSliderViewBinders.size,
                 )
                 floatingSliderViewBinders.fastForEachIndexed { index, sliderComponent ->
