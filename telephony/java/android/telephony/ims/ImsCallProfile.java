@@ -351,7 +351,7 @@ public final class ImsCallProfile implements Parcelable {
      * Call(UVS). Vendor IMS stack {@link ImsService} sets this on a call
      * to indicate that the modem/network has identified the call as a UVS call.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE)
     public static final String EXTRA_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE =
             "android.telephony.ims.extra.IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE";
 
