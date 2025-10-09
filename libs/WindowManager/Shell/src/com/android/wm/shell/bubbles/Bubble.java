@@ -798,9 +798,9 @@ public class Bubble implements BubbleViewProvider {
         if (!isInflated()) {
             mIconView = info.imageView;
             mExpandedView = info.expandedView;
-            BubbleLog.d("Bubble.setViewInfo() key=%s setting expanded view info to %s",
-                    mKey, info.bubbleBarExpandedView);
             mBubbleBarExpandedView = info.bubbleBarExpandedView;
+            BubbleLog.d("Bubble.setViewInfo() key=%s setting expanded view info to %s",
+                    mKey, mExpandedView != null ? mExpandedView : mBubbleBarExpandedView);
         }
 
         mShortcutInfo = info.shortcutInfo;
