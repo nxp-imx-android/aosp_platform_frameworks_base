@@ -32,6 +32,7 @@ import android.os.UserHandle;
 import android.view.KeyEvent;
 import android.service.notification.StatusBarNotification;
 
+import com.android.internal.infra.AndroidFuture;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.statusbar.IAddTileResultCallback;
 import com.android.internal.statusbar.ISessionListener;
@@ -113,6 +114,8 @@ interface IStatusBarService
 
     void onGlobalActionsShown();
     void onGlobalActionsHidden();
+    @EnforcePermission("SHOW_POWER_MENU")
+    void showGlobalActionsFromApp(in AndroidFuture future /* T=Boolean */);
 
     /**
      * These methods are needed for global actions control which the UI is shown in sysui.

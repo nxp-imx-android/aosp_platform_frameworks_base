@@ -675,6 +675,8 @@ applications that come with the platform
         <permission name="android.permission.ACCESS_NPU_MODEL_MANAGER_API"/>
         <!-- Permission required for CTS test - CtsProviderUiTestCases -->
         <permission name="android.permission.MANAGE_DOCUMENTS"/>
+        <!-- Permission required for CTS test - StatusBarManagerTest -->
+        <permission name="android.permission.SHOW_POWER_MENU" />
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

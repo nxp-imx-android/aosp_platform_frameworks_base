@@ -153,6 +153,11 @@ oneway interface IStatusBar
     void showPictureInPictureMenu();
 
     /**
+     * Shows the global actions menu. Will not hide it if already showing.
+     */
+    void showGlobalActionsMenu();
+
+    /**
      * Shows the global actions menu if not showing. Hides it if already showing
      */
     void showOrHideGlobalActionsMenu();

@@ -1076,6 +1076,9 @@
     <!-- Permission required for CTS test - CtsProviderUiTestCases -->
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
 
+    <!-- PermissionRequired for CTS test - StatusBarManagerTest -->
+    <uses-permission android:name="android.permission.SHOW_POWER_MENU" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"

@@ -189,6 +189,7 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_WALLET_ACTION_LAUNCH_GESTURE = 83 << MSG_SHIFT;
     private static final int MSG_DISPLAY_REMOVE_SYSTEM_DECORATIONS = 85 << MSG_SHIFT;
     private static final int MSG_DISABLE_ALL  = 86 << MSG_SHIFT;
+    private static final int MSG_SHOW_GLOBAL_ACTIONS = 87 << MSG_SHIFT;
 
     public static final int FLAG_EXCLUDE_NONE = 0;
     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
@@ -377,6 +378,7 @@ public class CommandQueue extends IStatusBar.Stub implements
         default void handleSystemKey(KeyEvent arg1) { }
         default void showPinningEnterExitToast(boolean entering) { }
         default void showPinningEscapeToast() { }
+        default void handleShowGlobalActionsMenu() { }
         default void handleShowOrHideGlobalActionsMenu() { }
         default void handleShowShutdownUi(boolean isReboot, String reason) { }
 
@@ -1080,6 +1082,17 @@ public class CommandQueue extends IStatusBar.Stub implements
 
 
     @Override
+    public void showGlobalActionsMenu() {
+        if (!android.app.Flags.statusbarApiShowPowerMenu()) {
+            return;
+        }
+        synchronized (mLock) {
+            mHandler.removeMessages(MSG_SHOW_GLOBAL_ACTIONS);
+            mHandler.obtainMessage(MSG_SHOW_GLOBAL_ACTIONS).sendToTarget();
+        }
+    }
+
+    @Override
     public void showOrHideGlobalActionsMenu() {
         synchronized (mLock) {
             mHandler.removeMessages(MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS);
@@ -1762,6 +1775,11 @@ public class CommandQueue extends IStatusBar.Stub implements
                 case MSG_HANDLE_SYSTEM_KEY:
                     for (Callbacks callback : mCallbacks) {
                         callback.handleSystemKey((KeyEvent) msg.obj);
+                    }
+                    break;
+                case MSG_SHOW_GLOBAL_ACTIONS:
+                    for (Callbacks callback : mCallbacks) {
+                        callback.handleShowGlobalActionsMenu();
                     }
                     break;
                 case MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS:

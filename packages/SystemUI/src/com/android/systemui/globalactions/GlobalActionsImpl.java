@@ -69,6 +69,14 @@ public class GlobalActionsImpl implements GlobalActions, CommandQueue.Callbacks 
     }
 
     @Override
+    public void showGlobalActions(GlobalActionsManager manager) {
+        if (mDisabled) return;
+        mGlobalActionsDialog.showDialog(mKeyguardStateController.isShowing(),
+                mDeviceProvisionedController.isDeviceProvisioned(), null /* view */,
+                mContext.getDisplayId());
+    }
+
+    @Override
     public void showShutdownUi(boolean isReboot, String reason) {
         mShutdownUi.showShutdownUi(isReboot, reason);
         mShadeController.instantCollapseShade();
