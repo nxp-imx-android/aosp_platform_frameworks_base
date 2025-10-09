@@ -374,7 +374,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
-        mDisplay.addWindowToken(imeToken.token, imeToken);
+        mDisplay.addWindowToken(imeToken);
 
         // By default, the ime container is attached to DC as defined in DAPolicy.
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mDisplay);
@@ -423,7 +423,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
-        mDisplay.addWindowToken(imeToken.token, imeToken);
+        mDisplay.addWindowToken(imeToken);
         final WindowState firstActivityWin = newWindowBuilder("firstActivityWin",
                 TYPE_APPLICATION_STARTING).setWindowToken(mFirstActivity).build();
         spyOn(firstActivityWin);
@@ -457,7 +457,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
-        mDisplay.addWindowToken(imeToken.token, imeToken);
+        mDisplay.addWindowToken(imeToken);
 
         // By default, the ime container is attached to DC as defined in DAPolicy.
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mDisplay);
@@ -492,7 +492,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         setupImeWindow();
         final DisplayArea.Tokens imeContainer = mDisplay.getImeContainer();
         final WindowToken imeToken = tokenOfType(TYPE_INPUT_METHOD);
-        mDisplay.addWindowToken(imeToken.token, imeToken);
+        mDisplay.addWindowToken(imeToken);
 
         // By default, the ime container is attached to DC as defined in DAPolicy.
         assertThat(imeContainer.getRootDisplayArea()).isEqualTo(mDisplay);

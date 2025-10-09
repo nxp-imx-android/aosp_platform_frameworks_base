@@ -79,7 +79,7 @@ public class ShellRoot {
                 .setPersistOnEmpty(true)
                 .setOwnerCanManageAppTokens(true)
                 .build();
-        dc.addWindowToken(mToken.token, mToken);
+        dc.addWindowToken(mToken);
         mSurfaceControl = mToken.makeChildSurface(null)
                 .setContainerLayer()
                 .setName("Shell Root Leash " + dc.getDisplayId())

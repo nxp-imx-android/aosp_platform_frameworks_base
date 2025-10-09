@@ -246,7 +246,7 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
                 TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY)
                 .setFromClientToken(true)
                 .build();
-        mDefaultDisplay.addWindowToken(windowContextCreatedToken.token, windowContextCreatedToken);
+        mDefaultDisplay.addWindowToken(windowContextCreatedToken);
         final DisplayArea<?> da = windowContextCreatedToken.getDisplayArea();
 
         mController.registerWindowContainerListener(mWpc, mClientToken, windowContextCreatedToken,
@@ -282,8 +282,7 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
         // context created WindowToken.
         WindowToken windowContextCreatedToken = new WindowToken.Builder(mWm, mClientToken,
                 TYPE_INPUT_METHOD_DIALOG).setFromClientToken(true).build();
-        dualDisplayContent.addWindowToken(windowContextCreatedToken.token,
-                windowContextCreatedToken);
+        dualDisplayContent.addWindowToken(windowContextCreatedToken);
         mController.registerWindowContainerListener(mWpc, mClientToken, windowContextCreatedToken,
                 TYPE_INPUT_METHOD_DIALOG, false /* callerCanManageAppTokens */, null /* options */);
 

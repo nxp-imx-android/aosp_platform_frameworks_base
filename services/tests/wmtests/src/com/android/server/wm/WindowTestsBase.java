@@ -487,7 +487,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     private WindowToken createWallpaperToken(@NonNull DisplayContent dc) {
         final var wallpaperWindowToken = new WallpaperWindowToken(mWm, mock(IBinder.class),
                 null /* options */);
-        dc.addWindowToken(wallpaperWindowToken.token, wallpaperWindowToken);
+        dc.addWindowToken(wallpaperWindowToken);
         return wallpaperWindowToken;
     }
 
@@ -2053,7 +2053,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         SystemServicesTestRule.checkHoldsLock(dc.mWmService.mGlobalLock);
 
         final var windowToken = new TestWindowToken(dc.mWmService, type, persistOnEmpty);
-        dc.addWindowToken(windowToken.token, windowToken);
+        dc.addWindowToken(windowToken);
         return windowToken;
     }
 
@@ -2064,7 +2064,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
         final var windowToken = new TestWindowToken(dc.mWmService, type, false /* persistOnEmpty */,
                 true /* fromClient */);
-        dc.addWindowToken(windowToken.token, windowToken);
+        dc.addWindowToken(windowToken);
         return windowToken;
     }
 
