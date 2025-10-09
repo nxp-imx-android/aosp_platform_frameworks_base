@@ -254,7 +254,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_PROMOTE_EXTRA_DO_NOT_LOG_CALL_TO_SYSTEM_API)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_PROMOTE_EXTRA_DO_NOT_LOG_CALL_TO_SYSTEM_API)
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
     public static final String EXTRA_DO_NOT_LOG_CALL =
             "android.telecom.extra.DO_NOT_LOG_CALL";
