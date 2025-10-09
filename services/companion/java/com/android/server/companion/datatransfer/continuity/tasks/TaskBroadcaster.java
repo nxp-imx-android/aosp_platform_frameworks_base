@@ -18,7 +18,6 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager.RunningTaskInfo;
-import android.app.ActivityTaskManager;
 import android.app.TaskStackListener;
 import android.content.ComponentName;
 import android.content.Context;
@@ -48,31 +47,14 @@ public class TaskBroadcaster extends TaskStackListener
 
     private static final String TAG = "TaskBroadcaster";
 
-    private final ActivityTaskManager mActivityTaskManager;
-    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final RunningTaskFetcher mRunningTaskFetcher;
 
-    private boolean mIsListeningToActivityTaskManager = false;
-
-    public TaskBroadcaster(
-            @NonNull Context context, @NonNull TaskContinuityMessenger taskContinuityMessenger) {
-        this(
-                Objects.requireNonNull(taskContinuityMessenger),
-                Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
-                Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
-                new RunningTaskFetcher(Objects.requireNonNull(context)));
-    }
-
     public TaskBroadcaster(
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
-            @NonNull ActivityTaskManager activityTaskManager,
-            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
             @NonNull RunningTaskFetcher runningTaskFetcher) {
 
         mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
-        mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
-        mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mRunningTaskFetcher = Objects.requireNonNull(runningTaskFetcher);
     }
 
@@ -81,24 +63,6 @@ public class TaskBroadcaster extends TaskStackListener
         mTaskContinuityMessenger.sendMessage(
                 associationId,
                 new ContinuityDeviceConnected(mRunningTaskFetcher.getRunningTasks()));
-
-        synchronized (this) {
-            if (!mIsListeningToActivityTaskManager) {
-                mActivityTaskManager.registerTaskStackListener(this);
-                mActivityTaskManagerInternal.registerHandoffEnablementListener(this);
-                mIsListeningToActivityTaskManager = true;
-            }
-        }
-    }
-
-    public void onAllDevicesDisconnected() {
-        synchronized (this) {
-            if (mIsListeningToActivityTaskManager) {
-                mActivityTaskManager.unregisterTaskStackListener(this);
-                mActivityTaskManagerInternal.unregisterHandoffEnablementListener(this);
-                mIsListeningToActivityTaskManager = false;
-            }
-        }
     }
 
     @Override

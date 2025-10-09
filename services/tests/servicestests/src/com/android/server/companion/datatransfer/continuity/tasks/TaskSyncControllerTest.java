@@ -26,11 +26,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import android.app.ActivityTaskManager;
 import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
@@ -51,6 +53,8 @@ public class TaskSyncControllerTest {
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private TaskBroadcaster mMockTaskBroadcaster;
     @Mock private RemoteTaskStore mMockRemoteTaskStore;
+    @Mock private ActivityTaskManager mMockActivityTaskManager;
+    @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
 
     private TaskSyncController mTaskSyncController;
 
@@ -59,7 +63,24 @@ public class TaskSyncControllerTest {
         MockitoAnnotations.initMocks(this);
         mTaskSyncController =
                 new TaskSyncController(
-                        mMockTaskContinuityMessenger, mMockTaskBroadcaster, mMockRemoteTaskStore);
+                        mMockTaskContinuityMessenger,
+                        mMockTaskBroadcaster,
+                        mMockRemoteTaskStore,
+                        mMockActivityTaskManager,
+                        mMockActivityTaskManagerInternal);
+    }
+
+    @Test
+    public void onEnableAndDisable_registersAndUnregistersListeners() {
+        mTaskSyncController.enable();
+        verify(mMockActivityTaskManager).registerTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal)
+                .registerHandoffEnablementListener(mMockTaskBroadcaster);
+
+        mTaskSyncController.disable();
+        verify(mMockActivityTaskManager).unregisterTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal)
+                .unregisterHandoffEnablementListener(mMockTaskBroadcaster);
     }
 
     @Test
@@ -102,7 +123,6 @@ public class TaskSyncControllerTest {
         Collection<AssociationInfo> connectedAssociations = new ArrayList<>();
         mTaskSyncController.onAssociationDisconnected(associationId, connectedAssociations);
         verify(mMockRemoteTaskStore).removeDevice(associationId);
-        verify(mMockTaskBroadcaster).onAllDevicesDisconnected();
     }
 
     @Test

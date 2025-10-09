@@ -24,7 +24,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.ArgumentMatchers.eq;
 
 import android.app.ActivityManager.RunningTaskInfo;
-import android.app.ActivityTaskManager;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
@@ -39,7 +38,6 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskI
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.RunningTaskFetcher;
-import com.android.server.wm.ActivityTaskManagerInternal;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,8 +52,6 @@ import java.util.List;
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class TaskBroadcasterTest {
 
-    @Mock private ActivityTaskManager mMockActivityTaskManager;
-    @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
     @Mock private RunningTaskFetcher mMockRunningTaskFetcher;
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
 
@@ -67,32 +63,7 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster =
                 new TaskBroadcaster(
                         mMockTaskContinuityMessenger,
-                        mMockActivityTaskManager,
-                        mMockActivityTaskManagerInternal,
                         mMockRunningTaskFetcher);
-    }
-
-    @Test
-    public void testOnAllDevicesDisconnected_doesNothingIfNoDeviceConnected() {
-        mTaskBroadcaster.onAllDevicesDisconnected();
-        verify(mMockActivityTaskManager, never()).registerTaskStackListener(mTaskBroadcaster);
-        verify(mMockActivityTaskManagerInternal, never())
-                .registerHandoffEnablementListener(mTaskBroadcaster);
-    }
-
-    @Test
-    public void testOnAllDevicesDisconnected_unregistersListener() {
-        // Connect a device, verify the listener is registered.
-        mTaskBroadcaster.onDeviceConnected(1);
-        verify(mMockActivityTaskManager, times(1)).registerTaskStackListener(mTaskBroadcaster);
-        verify(mMockActivityTaskManagerInternal, times(1))
-                .registerHandoffEnablementListener(mTaskBroadcaster);
-
-        // Disconnect all devices, verify the listener is unregistered.
-        mTaskBroadcaster.onAllDevicesDisconnected();
-        verify(mMockActivityTaskManager, times(1)).unregisterTaskStackListener(mTaskBroadcaster);
-        verify(mMockActivityTaskManagerInternal, times(1))
-                .unregisterHandoffEnablementListener(mTaskBroadcaster);
     }
 
     @Test
@@ -114,9 +85,6 @@ public class TaskBroadcasterTest {
                 new ContinuityDeviceConnected(List.of(expectedRemoteTaskInfo));
         verify(mMockTaskContinuityMessenger, times(1))
                 .sendMessage(eq(associationId), eq(expectedMessage));
-
-        // Verify a listener was registered.
-        verify(mMockActivityTaskManager, times(1)).registerTaskStackListener(mTaskBroadcaster);
     }
 
     @Test
