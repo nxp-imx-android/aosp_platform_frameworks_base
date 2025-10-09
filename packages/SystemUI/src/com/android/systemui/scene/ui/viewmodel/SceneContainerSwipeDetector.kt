@@ -116,8 +116,17 @@ sealed class SceneContainerArea(private val resolveArea: (LayoutDirection) -> Re
  * [SceneContainerArea.Resolved.LeftHalf] and [SceneContainerArea.Resolved.RightHalf].
  *
  * @param edgeSize The fixed size of each edge.
+ * @param invocationGestureSplitRatio The ratio split between "start" and "end". Must be in the
+ *   range (0.. 1.0).
  */
-class SceneContainerSwipeDetector(val edgeSize: Dp) : SwipeSourceDetector {
+class SceneContainerSwipeDetector(edgeSize: Dp, private val invocationGestureSplitRatio: Float) :
+    SwipeSourceDetector {
+
+    init {
+        require(invocationGestureSplitRatio > 0f && invocationGestureSplitRatio < 1f) {
+            "invocationGestureSplitRatio must be in the range (0..1.0)"
+        }
+    }
 
     private val fixedEdgeDetector = FixedSizeEdgeDetector(edgeSize)
 
@@ -133,14 +142,14 @@ class SceneContainerSwipeDetector(val edgeSize: Dp) : SwipeSourceDetector {
             Edge.Resolved.Bottom -> SceneContainerArea.Resolved.BottomEdge
             Edge.Resolved.Right -> SceneContainerArea.Resolved.RightEdge
             Edge.Resolved.Top -> {
-                if (position.x < layoutSize.width * 0.5f) {
+                if (position.x < layoutSize.width * invocationGestureSplitRatio) {
                     SceneContainerArea.Resolved.TopEdgeLeftHalf
                 } else {
                     SceneContainerArea.Resolved.TopEdgeRightHalf
                 }
             }
             null -> {
-                if (position.x < layoutSize.width * 0.5f) {
+                if (position.x < layoutSize.width * invocationGestureSplitRatio) {
                     SceneContainerArea.Resolved.LeftHalf
                 } else {
                     SceneContainerArea.Resolved.RightHalf
