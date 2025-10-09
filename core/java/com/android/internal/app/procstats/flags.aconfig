@@ -1,0 +1,9 @@
+package: "com.android.internal.app.procstats"
+container: "system"
+
+flag {
+    name: "remove_pagetypeinfo_from_processstats"
+    namespace: "core_experiments_team_internal"
+    description: "Removes the reading of /proc/pagetypeinfo from ProcessStats.java"
+    bug: "422785248"
+}
