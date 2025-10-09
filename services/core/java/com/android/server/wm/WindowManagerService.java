@@ -140,7 +140,6 @@ import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_R
 import static com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
-import static com.android.server.wm.WallpaperWindowToken.createWallpaperToken;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
@@ -3048,7 +3047,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 return;
             }
 
-            final WindowToken token = dc.getWindowToken(binder);
+            WindowToken token = dc.getWindowToken(binder);
             if (token != null) {
                 ProtoLog.w(WM_ERROR, "addWindowToken: Attempted to add binder token: %s"
                         + " for already created window token: %s"
@@ -3056,15 +3055,15 @@ public class WindowManagerService extends IWindowManager.Stub
                 return;
             }
             if (type == TYPE_WALLPAPER) {
-                createWallpaperToken(this, binder, options, dc);
+                token = new WallpaperWindowToken(this, binder, options);
             } else {
-                final var windowToken = new WindowToken.Builder(this, binder, type)
+                token = new WindowToken.Builder(this, binder, type)
                         .setPersistOnEmpty(true)
                         .setOwnerCanManageAppTokens(true)
                         .setOptions(options)
                         .build();
-                dc.addWindowToken(windowToken.token, windowToken);
             }
+            dc.addWindowToken(token.token, token);
         }
     }
 

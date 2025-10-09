@@ -485,8 +485,10 @@ public class WindowTestsBase extends SystemServiceTestsBase {
 
     @NonNull
     private WindowToken createWallpaperToken(@NonNull DisplayContent dc) {
-        return WallpaperWindowToken.createWallpaperToken(mWm, mock(IBinder.class),
-                null /* options */, dc);
+        final var wallpaperWindowToken = new WallpaperWindowToken(mWm, mock(IBinder.class),
+                null /* options */);
+        dc.addWindowToken(wallpaperWindowToken.token, wallpaperWindowToken);
+        return wallpaperWindowToken;
     }
 
     WindowState createNavBarWithProvidedInsets(DisplayContent dc) {

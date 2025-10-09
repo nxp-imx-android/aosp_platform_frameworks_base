@@ -32,7 +32,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
-import static com.android.server.wm.WallpaperWindowToken.createWallpaperToken;
 import static com.android.window.flags.Flags.multiCrop;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -351,8 +350,9 @@ public class WallpaperControllerTests extends WindowTestsBase {
     @Test
     public void testWallpaperTokenWindowingMode() {
         final DisplayContent dc = mWm.mRoot.getDefaultDisplay();
-        final WallpaperWindowToken token = createWallpaperToken(mWm, mock(IBinder.class),
-                null /* options */, dc);
+        final WallpaperWindowToken token = new WallpaperWindowToken(mWm, mock(IBinder.class),
+                null /* options */);
+        dc.addWindowToken(token.token, token);
 
         // The wallpaper should have requested override fullscreen windowing mode, so the
         // configuration (windowing mode) propagation from display won't change it.
@@ -574,8 +574,9 @@ public class WallpaperControllerTests extends WindowTestsBase {
     }
 
     private WindowState createWallpaperWindow(DisplayContent dc) {
-        final WindowToken wallpaperWindowToken = createWallpaperToken(mWm, mock(IBinder.class),
-                null /* options */, dc);
+        final WindowToken wallpaperWindowToken = new WallpaperWindowToken(mWm, mock(IBinder.class),
+                null /* options */);
+        dc.addWindowToken(wallpaperWindowToken.token, wallpaperWindowToken);
         return newWindowBuilder("wallpaperWindow", TYPE_WALLPAPER).setWindowToken(
                 wallpaperWindowToken).build();
     }
