@@ -16,7 +16,6 @@
 
 package com.android.systemui.theme;
 
-import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
 
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_AWAKE;
@@ -756,8 +755,6 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
 
     @Test
     public void onPrivateProfileAdded_ignoresUntilStartComplete() {
-        mSetFlagsRule.enableFlags(FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         reset(mDeviceProvisionedController);
         when(mUserManager.isManagedProfile(anyInt())).thenReturn(false);
         mBroadcastReceiver.getValue().onReceive(null,
