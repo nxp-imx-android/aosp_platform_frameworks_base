@@ -29,7 +29,6 @@ import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
-import android.media.MediaRoute2Info;
 import android.media.RoutingSessionInfo;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
@@ -40,7 +39,6 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableLooper;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -62,7 +60,6 @@ import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteracto
 import com.android.systemui.kosmos.Kosmos;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
 import com.android.systemui.plugins.ActivityStarter;
-import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
@@ -124,7 +121,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     private List<MediaController> mMediaControllers = new ArrayList<>();
     private MediaOutputDialog mMediaOutputDialog;
     private MediaSwitchingController mMediaSwitchingController;
-    private final List<String> mFeatures = new ArrayList<>();
 
     @Override
     protected boolean shouldFailOnLeakedReceiver() {
@@ -183,59 +179,11 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         mMediaOutputDialog.show();
 
         when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice);
-        when(mMediaDevice.getFeatures()).thenReturn(mFeatures);
     }
 
     @After
     public void tearDown() {
         mMediaOutputDialog.dismiss();
-    }
-
-    @Test
-    public void getStopButtonVisibility_remoteDevice_returnVisible() {
-        mFeatures.add(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.VISIBLE);
-
-        mFeatures.clear();
-        mFeatures.add(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.VISIBLE);
-
-        mFeatures.clear();
-        mFeatures.add(MediaRoute2Info.FEATURE_REMOTE_VIDEO_PLAYBACK);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.VISIBLE);
-
-        mFeatures.clear();
-        mFeatures.add(MediaRoute2Info.FEATURE_REMOTE_GROUP_PLAYBACK);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.VISIBLE);
-    }
-
-    @Test
-    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getStopButtonVisibility_notInBroadcast_returnGone() {
-        when(mLocalMediaManager.getSessionReleaseType()).thenReturn(
-                RoutingSessionInfo.RELEASE_UNSUPPORTED);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.GONE);
-    }
-
-    @Test
-    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getStopButtonVisibility_inBroadcast_returnVisible() {
-        when(mLocalMediaManager.getSessionReleaseType()).thenReturn(
-                RoutingSessionInfo.RELEASE_TYPE_SHARING);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.VISIBLE);
-    }
-
-    @Test
-    public void getStopButtonVisibility_localDevice_returnGone() {
-        mFeatures.add(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.GONE);
     }
 
     @Test
@@ -265,40 +213,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
                 .thenReturn(testSubtitle);
 
         assertThat(mMediaOutputDialog.getHeaderSubtitle().toString()).isEqualTo(testSubtitle);
-    }
-
-    @Test
-    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getStopButtonText_notInBroadcast_returnsDefaultText() {
-        String stopText = mContext.getText(
-                R.string.media_output_dialog_button_stop_casting).toString();
-        MediaSwitchingController mockMediaSwitchingController =
-                mock(MediaSwitchingController.class);
-        when(mockMediaSwitchingController.getSessionReleaseType()).thenReturn(
-                RoutingSessionInfo.RELEASE_UNSUPPORTED);
-
-        withTestDialog(
-                mockMediaSwitchingController,
-                testDialog -> {
-                    assertThat(testDialog.getStopButtonText().toString()).isEqualTo(stopText);
-                });
-    }
-
-    @Test
-    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    public void getStopButtonText_inBroadcast_returnsDefaultText() {
-        String stopText = mContext.getText(
-                R.string.media_output_dialog_button_stop_sharing).toString();
-        MediaSwitchingController mockMediaSwitchingController =
-                mock(MediaSwitchingController.class);
-        when(mockMediaSwitchingController.getSessionReleaseType()).thenReturn(
-                RoutingSessionInfo.RELEASE_TYPE_SHARING);
-
-        withTestDialog(
-                mockMediaSwitchingController,
-                testDialog -> {
-                    assertThat(testDialog.getStopButtonText().toString()).isEqualTo(stopText);
-                });
     }
 
     @Test

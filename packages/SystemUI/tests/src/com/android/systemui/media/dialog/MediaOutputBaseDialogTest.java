@@ -117,7 +117,6 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     private IconCompat mIconCompat;
     private CharSequence mHeaderTitle;
     private CharSequence mHeaderSubtitle;
-    private String mStopText;
 
     @Before
     public void setUp() {
@@ -311,11 +310,21 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
 
     @Test
     public void refresh_checkStopText() {
-        mStopText = "test_string";
+        MediaSwitchingController mockMediaSwitchingController =
+                mock(MediaSwitchingController.class);
+        mMediaOutputBaseDialogImpl =
+                new MediaOutputBaseDialogImpl(
+                        mContext, mBroadcastSender, mockMediaSwitchingController);
+        mMediaOutputBaseDialogImpl.onCreate(new Bundle());
+
+        int stopResId = R.string.media_output_dialog_button_stop_casting;
+        when(mockMediaSwitchingController.getStopButtonStringRes()).thenReturn(stopResId);
+        when(mockMediaSwitchingController.getColorScheme()).thenReturn(
+                mock(MediaOutputColorScheme.class));
         mMediaOutputBaseDialogImpl.refresh();
         final Button stop = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(R.id.stop);
 
-        assertThat(stop.getText().toString()).isEqualTo(mStopText);
+        assertThat(stop.getText().toString()).isEqualTo(mContext.getString(stopResId));
     }
 
     class MediaOutputBaseDialogImpl extends MediaOutputBaseDialog {
@@ -356,16 +365,6 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
         @Override
         CharSequence getHeaderSubtitle() {
             return mHeaderSubtitle;
-        }
-
-        @Override
-        int getStopButtonVisibility() {
-            return 0;
-        }
-
-        @Override
-        public CharSequence getStopButtonText() {
-            return mStopText;
         }
     }
 }

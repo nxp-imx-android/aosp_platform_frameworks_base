@@ -149,7 +149,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private static final int CURRENT_VOLUME = 0;
     private static final boolean VOLUME_FIXED_TRUE = true;
     private static final String PRODUCT_NAME_BUILTIN_MIC = "Built-in Mic";
-    private static final String PRODUCT_NAME_WIRED_HEADSET = "My Wired Headset";
 
     @Mock
     private DialogTransitionAnimator mDialogTransitionAnimator;
@@ -1901,29 +1900,101 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
+    public void hasStopButton_remotePlaybackDevice_returnTrue() {
+        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
+        when(mMediaDevice1.getFeatures()).thenReturn(
+                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+    }
+
+    @Test
+    public void hasStopButton_remoteAudioPlaybackDevice_returnTrue() {
+        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
+        when(mMediaDevice1.getFeatures()).thenReturn(
+                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK));
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+    }
+
+    @Test
+    public void hasStopButton_remoteVideoPlaybackDevice_returnTrue() {
+        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
+        when(mMediaDevice1.getFeatures()).thenReturn(
+                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_VIDEO_PLAYBACK));
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+    }
+
+    @Test
+    public void hasStopButton_remoteGroupPlaybackDevice_returnTrue() {
+        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
+        when(mMediaDevice1.getFeatures()).thenReturn(
+                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_GROUP_PLAYBACK));
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+    }
+
+    @Test
+    public void hasStopButton_localDevice_returnFalse() {
+        when(mMediaDevice1.getFeatures())
+                .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK));
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void hasStopButton_notInBroadcast_returnFalse() {
+        doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void hasStopButton_inBroadcast_returnTrue() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isTrue();
+    }
+
+    @Test
+    public void hasStopButton_mediaSwitchingTypeIsInput_returnFalse() {
+        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT);
+
+        doReturn(mMediaDevice1).when(mLocalMediaManager).getCurrentConnectedDevice();
+        when(mMediaDevice1.getFeatures())
+                .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
+
+        assertThat(mMediaSwitchingController.hasStopButton()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getStopButtonText_notInBroadcast_returnsDefaultText() {
+        doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_casting);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getStopButtonText_inBroadcast_returnsDefaultText() {
+        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING).when(
+                mLocalMediaManager).getSessionReleaseType();
+
+        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isEqualTo(
+                R.string.media_output_dialog_button_stop_sharing);
+    }
+
+    @Test
     public void getAudioSharingButtonState_mediaSwitchingTypeIsInput_returnsNull() {
-        mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mSpyContext,
-                        mPackageName,
-                        mContext.getUser(),
-                        /* token */ null,
-                        MediaSwitchingType.INPUT,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        mClock,
-                        mFakeBackgroundExecutor,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository);
+        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT);
         LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
         LocalBluetoothLeBroadcastAssistant assistantProfile =
                 mock(LocalBluetoothLeBroadcastAssistant.class);
@@ -1956,12 +2027,17 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     private MediaSwitchingController createDefaultMediaSwitchingController() {
+        return createDefaultMediaSwitchingController(/* mediaSwitchingType= */ null);
+    }
+
+    private MediaSwitchingController createDefaultMediaSwitchingController(
+            MediaSwitchingType mediaSwitchingType) {
         return new MediaSwitchingController(
                 mSpyContext,
                 mPackageName,
                 mContext.getUser(),
                 /* token= */ null,
-                /* mediaSwitchingType= */ null,
+                mediaSwitchingType,
                 mMediaSessionManager,
                 mLocalBluetoothManager,
                 mStarter,

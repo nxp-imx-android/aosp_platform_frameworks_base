@@ -305,9 +305,10 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
 
         // Show when remote media session is available or
         //      when the device supports BT LE audio + media is playing
-        mStopButton.setVisibility(getStopButtonVisibility());
+        mStopButton.setVisibility(
+                mMediaSwitchingController.hasStopButton() ? View.VISIBLE : View.GONE);
         mStopButton.setEnabled(true);
-        mStopButton.setText(getStopButtonText());
+        mStopButton.setText(mContext.getString(mMediaSwitchingController.getStopButtonStringRes()));
         mStopButton.setOnClickListener(v -> onStopButtonClick());
 
         if (!mAdapter.isDragging()) {
@@ -417,12 +418,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     abstract CharSequence getHeaderText();
 
     abstract CharSequence getHeaderSubtitle();
-
-    abstract int getStopButtonVisibility();
-
-    public CharSequence getStopButtonText() {
-        return mContext.getText(R.string.keyboard_key_media_stop);
-    }
 
     public void onStopButtonClick() {
         mMediaSwitchingController.releaseSession();

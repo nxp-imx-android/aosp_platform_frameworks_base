@@ -16,15 +16,11 @@
 
 package com.android.systemui.media.dialog;
 
-import static com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing;
-
 import android.annotation.Nullable;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.media.RoutingSessionInfo;
 import android.os.Bundle;
-import android.view.View;
 import android.view.WindowManager;
 
 import androidx.core.graphics.drawable.IconCompat;
@@ -35,7 +31,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.dagger.SysUISingleton;
-import com.android.systemui.res.R;
 
 import java.util.concurrent.Executor;
 
@@ -113,39 +108,6 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
     }
 
     @Override
-    int getStopButtonVisibility() {
-        if (mMediaSwitchingController.getMediaSwitchingType() == MediaSwitchingType.INPUT) {
-            return View.GONE;
-        }
-
-        boolean isActiveRemoteDevice = false;
-        if (mMediaSwitchingController.getCurrentConnectedMediaDevice() != null) {
-            isActiveRemoteDevice =
-                    mMediaSwitchingController.isActiveRemoteDevice(
-                            mMediaSwitchingController.getCurrentConnectedMediaDevice());
-        }
-        boolean inBroadcast =
-                enableOutputSwitcherPersonalAudioSharing()
-                        && mMediaSwitchingController.getSessionReleaseType()
-                                == RoutingSessionInfo.RELEASE_TYPE_SHARING;
-
-        return (isActiveRemoteDevice || inBroadcast)
-                ? View.VISIBLE
-                : View.GONE;
-    }
-
-    @Override
-    public CharSequence getStopButtonText() {
-        if (enableOutputSwitcherPersonalAudioSharing()) {
-            CharSequence stopButtonText = getTextForSessionReleaseType();
-            if (stopButtonText != null) {
-                return stopButtonText;
-            }
-        }
-        return mContext.getText(R.string.media_output_dialog_button_stop_casting);
-    }
-
-    @Override
     public void onStopButtonClick() {
         mMediaSwitchingController.releaseSession();
         mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
@@ -167,17 +129,6 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
         public int getId() {
             return mId;
         }
-    }
-
-    @Nullable
-    private CharSequence getTextForSessionReleaseType() {
-        return switch (mMediaSwitchingController.getSessionReleaseType()) {
-            case RoutingSessionInfo.RELEASE_TYPE_CASTING ->
-                    mContext.getText(R.string.media_output_dialog_button_stop_casting);
-            case RoutingSessionInfo.RELEASE_TYPE_SHARING ->
-                    mContext.getText(R.string.media_output_dialog_button_stop_sharing);
-            default -> null;
-        };
     }
 
     /** Callback for configuration changes . */
