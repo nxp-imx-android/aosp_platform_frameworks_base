@@ -16,13 +16,17 @@
 
 package com.android.systemui.shade.display
 
+import android.content.res.Resources
 import android.util.Log
 import android.view.Display
+import android.view.View
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
+import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.NotificationShadeElement
 import com.android.systemui.shade.domain.interactor.QSShadeElement
 import com.android.systemui.shade.domain.interactor.ShadeExpandedStateInteractor.ShadeElement
@@ -50,6 +54,7 @@ import kotlinx.coroutines.flow.map
 class StatusBarTouchShadeDisplayPolicy
 @Inject
 constructor(
+    @ShadeDisplayAware private val resources: Resources,
     displayRepository: DisplayRepository,
     private val focusedDisplayRepository: FocusedDisplayRepository,
     @Background private val backgroundScope: CoroutineScope,
@@ -67,6 +72,9 @@ constructor(
     override val displayId: StateFlow<Int> = currentDisplayId
 
     private var removalListener: Job? = null
+
+    private val shadeInvocationSplitRatio: Float =
+        resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
 
     /** Called when the status bar on the given display is touched/clicked. */
     fun setExpansionIntentFromStatusBarEvent(eventX: Float, displayId: Int, statusBarWidth: Int) {
@@ -128,8 +136,19 @@ constructor(
     }
 
     private fun classifyStatusBarEvent(eventX: Float, statusBarWidth: Int): ShadeElement {
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
         val xPercentage = eventX / statusBarWidth
-        return if (xPercentage < 0.5f) notificationElement.get() else qsShadeElement.get()
+
+        // Normalize the percentage to be from the "start" edge of the status bar.
+        // For LTR, this is the left edge (xPercentage).
+        // For RTL, this is the right edge (1 - xPercentage).
+        val percentageFromStart = if (isRtl) 1 - xPercentage else xPercentage
+
+        return if (percentageFromStart < shadeInvocationSplitRatio) {
+            notificationElement.get()
+        } else {
+            qsShadeElement.get()
+        }
     }
 
     private fun monitorDisplayRemovals(): Job {

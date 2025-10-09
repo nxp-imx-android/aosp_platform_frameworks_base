@@ -28,6 +28,7 @@ import com.android.systemui.display.data.repository.display
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.statusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.notificationElement
@@ -35,6 +36,7 @@ import com.android.systemui.shade.domain.interactor.qsElement
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import java.util.Locale
 import kotlin.test.Test
 import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
@@ -47,6 +49,8 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val displayRepository = kosmos.displayRepository
     private val focusedDisplayRepository = kosmos.fakeFocusedDisplayRepository
+    private val dualShadeGestureSplitRatio =
+        context.resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
 
     private val underTest = kosmos.statusBarTouchShadeDisplayPolicy
 
@@ -107,6 +111,46 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
             touchStatusBar(displayId = 2, x = RIGHT_SIDE_X)
 
             assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.qsElement)
+        }
+
+    @Test
+    fun onStatusBarOrLauncherTouched_leftSideOfSplit_intentSetToNotifications() =
+        testScope.runTest {
+            val leftSideOfSplit = STATUS_BAR_WIDTH * dualShadeGestureSplitRatio - 1
+            touchStatusBar(displayId = 2, x = leftSideOfSplit)
+
+            assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.notificationElement)
+        }
+
+    @Test
+    fun onStatusBarOrLauncherTouched_rightSideOfSplit_intentSetToQs() =
+        testScope.runTest {
+            val rightSideOfSplit = STATUS_BAR_WIDTH * dualShadeGestureSplitRatio + 1
+            touchStatusBar(displayId = 2, x = rightSideOfSplit)
+
+            assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.qsElement)
+        }
+
+    @Test
+    fun onStatusBarOrLauncherTouched_rtl_leftSideOfSplit_intentSetToQs() =
+        testScope.runTest {
+            setRtlLayoutDirection()
+
+            val leftSideOfSplit = STATUS_BAR_WIDTH * (1 - dualShadeGestureSplitRatio) - 1
+            touchStatusBar(displayId = 2, x = leftSideOfSplit)
+
+            assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.qsElement)
+        }
+
+    @Test
+    fun onStatusBarOrLauncherTouched_rtl_rightSideOfSplit_intentSetToNotifications() =
+        testScope.runTest {
+            setRtlLayoutDirection()
+
+            val rightSideOfSplit = STATUS_BAR_WIDTH * (1 - dualShadeGestureSplitRatio) + 1
+            touchStatusBar(displayId = 2, x = rightSideOfSplit)
+
+            assertThat(underTest.consumeExpansionIntent()).isEqualTo(kosmos.notificationElement)
         }
 
     @Test
@@ -273,6 +317,12 @@ class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
         statusBarWidth: Int = STATUS_BAR_WIDTH,
     ) {
         underTest.setExpansionIntentFromStatusBarEvent(x, displayId, statusBarWidth)
+    }
+
+    private fun SysuiTestCase.setRtlLayoutDirection() {
+        context.orCreateTestableResources.overrideConfiguration(
+            context.resources.configuration.apply { setLayoutDirection(Locale("iw", "IL")) }
+        )
     }
 
     companion object {
