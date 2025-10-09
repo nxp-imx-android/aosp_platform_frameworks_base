@@ -27,17 +27,12 @@ object CanvasUtils {
 
     fun Canvas.translate(pt: VPoint) = this.translate(pt.x.toFloat(), pt.y.toFloat())
 
-    fun <T> Canvas.use(func: (Canvas) -> T): T {
-        val saveNum = save()
-        val result = func(this)
-        restoreToCount(saveNum)
-        return result
-    }
-
-    fun <T> Canvas.useLayer(rect: VRectF, paint: Paint? = null, func: (Canvas) -> T): T {
-        val saveNum = saveLayer(rect.left, rect.top, rect.right, rect.bottom, paint)
-        val result = func(this)
-        restoreToCount(saveNum)
-        return result
+    inline fun Canvas.withLayer(rect: VRectF, paint: Paint? = null, block: Canvas.() -> Unit) {
+        val checkpoint = saveLayer(rect.left, rect.top, rect.right, rect.bottom, paint)
+        try {
+            block()
+        } finally {
+            restoreToCount(checkpoint)
+        }
     }
 }

@@ -19,9 +19,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.util.Log
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.SmallTest
-import androidx.test.runner.AndroidJUnit4
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.assertRunnableLogsWtf
@@ -307,7 +307,7 @@ class PluginInstanceTest : SysuiTestCase() {
             counter.mAllocatedInstances.getAndDecrement()
         }
 
-        override fun onCreate(sysuiContext: Context, pluginContext: Context) {
+        override fun onCreate(hostContext: Context, pluginContext: Context) {
             counter.mCreatedInstances.getAndIncrement()
         }
 

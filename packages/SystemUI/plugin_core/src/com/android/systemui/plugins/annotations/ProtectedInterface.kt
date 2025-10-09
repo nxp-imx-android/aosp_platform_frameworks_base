@@ -27,7 +27,7 @@ annotation class ProtectedInterface(vararg val exTypes: String) {
 
 /**
  * This annotation denotes an interface that serves as a base-type for other interfaces marked by
- * [Protectedinterface]. Annotating an interface with this will not generate a proxy implementation,
+ * [ProtectedInterface]. Annotating an interface with this will not generate a proxy implementation,
  * instead it will generate a static builder method that is used to select the appropriate proxy
  * implementation for a target object.
  */

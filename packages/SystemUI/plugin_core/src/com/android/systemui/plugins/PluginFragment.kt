@@ -21,7 +21,7 @@ import android.view.LayoutInflater
 abstract class PluginFragment : Fragment(), Plugin {
     private var pluginContext: Context? = null
 
-    override fun onCreate(sysuiContext: Context, pluginContext: Context) {
+    override fun onCreate(hostContext: Context, pluginContext: Context) {
         this.pluginContext = pluginContext
     }
 

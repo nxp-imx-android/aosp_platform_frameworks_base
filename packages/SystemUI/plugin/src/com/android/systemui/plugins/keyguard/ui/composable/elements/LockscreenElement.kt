@@ -14,6 +14,7 @@
 
 package com.android.systemui.plugins.keyguard.ui.composable.elements
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -49,6 +50,7 @@ interface LockscreenElement : BaseLockscreenElement {
 
     @Composable
     @ThrowsOnFailure
+    @SuppressLint("NotConstructor")
     /** Compose function which renders this element */
     fun LockscreenScope<ElementContentScope>.LockscreenElement()
 }

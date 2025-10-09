@@ -54,14 +54,14 @@ class TypefaceCache(
     fun getTypeface(res: String): Typeface {
         checkQueue()
         val key = CacheKey(res, null)
-        cache.get(key)?.get()?.let {
+        cache[key]?.get()?.let {
             logHit(key)
             return it
         }
 
         logMiss(key)
         val result = typefaceFactory(res)
-        cache.put(key, WeakTypefaceRef(key, result))
+        cache[key] = WeakTypefaceRef(key, result)
         return result
     }
 
@@ -71,17 +71,17 @@ class TypefaceCache(
             override val fontCache = this@TypefaceCache.fontCache
             override val animationFrameCount = this@TypefaceCache.animationFrameCount
 
-            override fun getTypefaceForVariant(fvar: String?): Typeface? {
+            override fun getTypefaceForVariant(fvar: String?): Typeface {
                 checkQueue()
                 val key = CacheKey(res, fvar)
-                cache.get(key)?.get()?.let {
+                cache[key]?.get()?.let {
                     logHit(key)
                     return it
                 }
 
                 logMiss(key)
                 return TypefaceVariantCache.createVariantTypeface(baseTypeface, fvar).also {
-                    cache.put(key, WeakTypefaceRef(key, it))
+                    cache[key] = WeakTypefaceRef(key, it)
                 }
             }
         }
@@ -121,6 +121,6 @@ class TypefaceCache(
             }
 
     companion object {
-        private val DEBUG_HITS = false
+        private const val DEBUG_HITS = false
     }
 }

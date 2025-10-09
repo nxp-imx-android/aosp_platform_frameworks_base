@@ -14,7 +14,9 @@
 package com.android.systemui.plugins
 
 import android.content.Context
+import android.content.pm.PackageManager
 import com.android.systemui.plugins.annotations.ProtectedBaseInterface
+import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
 
 /**
@@ -88,12 +90,15 @@ import com.android.systemui.plugins.annotations.ProtectedReturn
  */
 @ProtectedBaseInterface
 interface Plugin {
-    @Deprecated("Prefer declaring versions using annotations")
+    @Deprecated(
+        "Prefer declaring versions using annotations",
+        ReplaceWith("@ProvidesInterface(action = ACTION, version = VERSION)"),
+    )
     @get:ProtectedReturn(statement = "return -1;")
     val version: Int
         get() = -1
 
-    fun onCreate(sysuiContext: Context, pluginContext: Context) {}
+    fun onCreate(hostContext: Context, pluginContext: Context) {}
 
     fun onDestroy() {}
 }

@@ -21,8 +21,8 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.customization.clocks.ClockContextImpl
 import com.android.systemui.customization.clocks.ClockLogger
+import com.android.systemui.customization.clocks.FixedTimeKeeper
 import com.android.systemui.customization.clocks.FontTextStyleImpl
-import com.android.systemui.customization.clocks.TestTimeKeeper
 import com.android.systemui.customization.clocks.TypefaceCache
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
 import org.junit.Assert.assertEquals
@@ -57,7 +57,7 @@ class FlexClockTextViewTest : SysuiTestCase() {
                     },
                     messageBuffer,
                     vibrator = null,
-                    timeKeeper = TestTimeKeeper(),
+                    timeKeeper = FixedTimeKeeper(),
                     isAnimationEnabled = false,
                 ),
                 isLargeClock = false,

@@ -23,9 +23,10 @@ import android.graphics.text.PositionedGlyphs
 import android.text.Layout
 import android.text.TextPaint
 import android.text.TextShaper
-import android.util.MathUtils
+import android.util.MathUtils.lerp
+import androidx.core.graphics.withSave
 import com.android.internal.graphics.ColorUtils
-import java.lang.Math.max
+import kotlin.math.max
 
 interface TextInterpolatorListener {
     fun onPaintModified(paint: Paint) {}
@@ -110,8 +111,6 @@ class TextInterpolator(
 
     // Recycling object for glyph drawing and tweaking.
     private val tmpPaint = TextPaint()
-    private val tmpPaintForGlyph by lazy { TextPaint() }
-    private val tmpGlyph by lazy { MutablePositionedGlyph() }
     // Will be extended for the longest font run if needed.
     private var tmpPositionArray = FloatArray(20)
 
@@ -138,7 +137,6 @@ class TextInterpolator(
      * throw runtime exception if they cannot be interpolated.
      */
     var layout: Layout = layout
-        get() = field
         set(value) {
             field = value
             shapeText(value)
@@ -229,22 +227,24 @@ class TextInterpolator(
      * </code> </pre>
      */
     fun rebase() {
-        if (progress == 0f) {
-            listener?.onRebased(progress)
-            return
-        } else if (progress == 1f) {
-            basePaint.set(targetPaint)
-        } else {
-            lerp(basePaint, targetPaint, progress, tmpPaint)
-            basePaint.set(tmpPaint)
+        when (progress) {
+            0f -> {
+                listener?.onRebased(progress)
+                return
+            }
+            1f -> basePaint.set(targetPaint)
+            else -> {
+                lerp(basePaint, targetPaint, progress, tmpPaint)
+                basePaint.set(tmpPaint)
+            }
         }
 
         lines.forEach { line ->
             line.runs.forEach { run ->
                 for (i in run.baseX.indices) {
-                    run.baseX[i] = MathUtils.lerp(run.baseX[i], run.targetX[i], progress)
-                    run.baseY[i] = MathUtils.lerp(run.baseY[i], run.targetY[i], progress)
-                    run.baseOffset = MathUtils.lerp(run.baseOffset, run.targetOffset, progress)
+                    run.baseX[i] = lerp(run.baseX[i], run.targetX[i], progress)
+                    run.baseY[i] = lerp(run.baseY[i], run.targetY[i], progress)
+                    run.baseOffset = lerp(run.baseOffset, run.targetOffset, progress)
                 }
                 run.fontRuns.forEach { fontRun ->
                     fontRun.baseFont =
@@ -274,21 +274,12 @@ class TextInterpolator(
         lerp(basePaint, targetPaint, progress, tmpPaint)
         lines.forEachIndexed { lineNo, line ->
             line.runs.forEach { run ->
-                canvas.save()
-                try {
-                    val offset = MathUtils.lerp(run.baseOffset, run.targetOffset, progress)
+                canvas.withSave {
+                    val offset = lerp(run.baseOffset, run.targetOffset, progress)
                     // Move to drawing origin w/ correction for RTL offset
                     val origin = layout.getLineDrawOrigin(lineNo)
-                    canvas.translate(
-                        origin - (origin + offset),
-                        layout.getLineBaseline(lineNo).toFloat(),
-                    )
-
-                    run.fontRuns.forEach { fontRun ->
-                        drawFontRun(canvas, run, fontRun, lineNo, tmpPaint)
-                    }
-                } finally {
-                    canvas.restore()
+                    translate(origin - (origin + offset), layout.getLineBaseline(lineNo).toFloat())
+                    run.fontRuns.forEach { fontRun -> drawFontRun(this, run, fontRun, tmpPaint) }
                 }
             }
         }
@@ -406,90 +397,15 @@ class TextInterpolator(
         }
     }
 
-    private class MutablePositionedGlyph : TextAnimator.PositionedGlyph() {
-        override var runStart: Int = 0
-            public set
-
-        override var runLength: Int = 0
-            public set
-
-        override var glyphIndex: Int = 0
-            public set
-
-        override lateinit var font: Font
-            public set
-
-        override var glyphId: Int = 0
-            public set
-    }
-
-    var glyphFilter: GlyphCallback? = null
-
     // Draws single font run.
-    private fun drawFontRun(c: Canvas, line: Run, run: FontRun, lineNo: Int, paint: Paint) {
+    private fun drawFontRun(c: Canvas, line: Run, run: FontRun, paint: Paint) {
         var arrayIndex = 0
         val font = fontInterpolator.lerp(run.baseFont, run.targetFont, progress, linearProgress)
-
-        val glyphFilter = glyphFilter
-        if (glyphFilter == null) {
-            for (i in run.start until run.end) {
-                tmpPositionArray[arrayIndex++] =
-                    MathUtils.lerp(line.baseX[i], line.targetX[i], progress)
-                tmpPositionArray[arrayIndex++] =
-                    MathUtils.lerp(line.baseY[i], line.targetY[i], progress)
-            }
-            c.drawGlyphs(line.glyphIds, run.start, tmpPositionArray, 0, run.length, font, paint)
-            return
-        }
-
-        tmpGlyph.font = font
-        tmpGlyph.runStart = run.start
-        tmpGlyph.runLength = run.end - run.start
-        tmpGlyph.lineNo = lineNo
-
-        tmpPaintForGlyph.set(paint)
-        var prevStart = run.start
-
         for (i in run.start until run.end) {
-            tmpGlyph.glyphIndex = i
-            tmpGlyph.glyphId = line.glyphIds[i]
-            tmpGlyph.x = MathUtils.lerp(line.baseX[i], line.targetX[i], progress)
-            tmpGlyph.y = MathUtils.lerp(line.baseY[i], line.targetY[i], progress)
-            tmpGlyph.textSize = paint.textSize
-            tmpGlyph.color = paint.color
-
-            glyphFilter(tmpGlyph, progress)
-
-            if (tmpGlyph.textSize != paint.textSize || tmpGlyph.color != paint.color) {
-                tmpPaintForGlyph.textSize = tmpGlyph.textSize
-                tmpPaintForGlyph.color = tmpGlyph.color
-
-                c.drawGlyphs(
-                    line.glyphIds,
-                    prevStart,
-                    tmpPositionArray,
-                    0,
-                    i - prevStart,
-                    font,
-                    tmpPaintForGlyph,
-                )
-                prevStart = i
-                arrayIndex = 0
-            }
-
-            tmpPositionArray[arrayIndex++] = tmpGlyph.x
-            tmpPositionArray[arrayIndex++] = tmpGlyph.y
+            tmpPositionArray[arrayIndex++] = lerp(line.baseX[i], line.targetX[i], progress)
+            tmpPositionArray[arrayIndex++] = lerp(line.baseY[i], line.targetY[i], progress)
         }
-
-        c.drawGlyphs(
-            line.glyphIds,
-            prevStart,
-            tmpPositionArray,
-            0,
-            run.end - prevStart,
-            font,
-            tmpPaintForGlyph,
-        )
+        c.drawGlyphs(line.glyphIds, run.start, tmpPositionArray, 0, run.length, font, paint)
     }
 
     private fun updatePositionsAndFonts(layoutResult: ShapingResult, updateBase: Boolean) {
@@ -563,41 +479,41 @@ class TextInterpolator(
 
         // Currently only font size & colors are interpolated.
         // TODO(172943390): Add other interpolation or support custom interpolator.
-        out.textSize = MathUtils.lerp(from.textSize, to.textSize, progress)
+        out.textSize = lerp(from.textSize, to.textSize, progress)
         out.color = ColorUtils.blendARGB(from.color, to.color, progress)
-        out.strokeWidth = MathUtils.lerp(from.strokeWidth, to.strokeWidth, progress)
+        out.strokeWidth = lerp(from.strokeWidth, to.strokeWidth, progress)
     }
 
     // Shape the text and stores the result to out argument.
     private fun shapeText(layout: Layout, paint: TextPaint): ShapingResult {
-        var text = StringBuilder()
         val lines = mutableListOf<List<ShapingRun>>()
-        for (lineNo in 0 until layout.lineCount) { // Shape all lines.
-            val lineStart = layout.getLineStart(lineNo)
-            val lineEnd = layout.getLineEnd(lineNo)
-            var count = lineEnd - lineStart
-            // Do not render the last character in the line if it's a newline and unprintable
-            val last = lineStart + count - 1
-            if (last > lineStart && last < layout.text.length && layout.text[last] == '\n') {
-                count--
-            }
+        shapedText = buildString {
+            for (lineNo in 0 until layout.lineCount) { // Shape all lines.
+                val lineStart = layout.getLineStart(lineNo)
+                val lineEnd = layout.getLineEnd(lineNo)
+                var count = lineEnd - lineStart
+                // Do not render the last character in the line if it's a newline and unprintable
+                val last = lineStart + count - 1
+                if (last > lineStart && last < layout.text.length && layout.text[last] == '\n') {
+                    count--
+                }
 
-            val runs = mutableListOf<ShapingRun>()
-            TextShaper.shapeText(
-                layout.text,
-                lineStart,
-                count,
-                layout.textDirectionHeuristic,
-                paint,
-            ) { start, count, glyphs, _ ->
-                runs.add(ShapingRun(layout.text.substring(start, start + count), glyphs))
-            }
-            lines.add(runs)
+                val runs = mutableListOf<ShapingRun>()
+                TextShaper.shapeText(
+                    layout.text,
+                    lineStart,
+                    count,
+                    layout.textDirectionHeuristic,
+                    paint,
+                ) { start, length, glyphs, _ ->
+                    runs.add(ShapingRun(layout.text.substring(start, start + length), glyphs))
+                }
+                lines.add(runs)
 
-            if (lineNo > 0) text.append("\n")
-            text.append(layout.text.substring(lineStart, lineEnd))
+                if (lineNo > 0) append("\n")
+                append(layout.text.substring(lineStart, lineEnd))
+            }
         }
-        shapedText = text.toString()
         return ShapingResult(shapedText, lines, layout)
     }
 
@@ -626,23 +542,23 @@ class TextInterpolator(
                 val nextXPos =
                     when {
                         i + 1 < glyphs.glyphCount() -> glyphs.getGlyphX(i + 1)
-                        !isRtl -> glyphs.getAdvance()
+                        !isRtl -> glyphs.advance
                         else -> 0f
                     }
                 xAdjustment += listener?.getCharWidthAdjustment(font, str[i], nextXPos - xPos) ?: 0f
             }
         }
 
-        listener?.onTotalAdjustmentComputed(paint, glyphs.getAdvance(), xAdjustment)
+        listener?.onTotalAdjustmentComputed(paint, glyphs.advance, xAdjustment)
         return glyphs.offsetX
     }
 
     companion object {
         private fun Layout.getLineDrawOrigin(lineNo: Int): Float {
-            if (getParagraphDirection(lineNo) == Layout.DIR_LEFT_TO_RIGHT) {
-                return getLineLeft(lineNo)
+            return if (getParagraphDirection(lineNo) == Layout.DIR_LEFT_TO_RIGHT) {
+                getLineLeft(lineNo)
             } else {
-                return getLineRight(lineNo)
+                getLineRight(lineNo)
             }
         }
     }

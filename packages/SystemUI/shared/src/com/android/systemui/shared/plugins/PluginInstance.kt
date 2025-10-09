@@ -291,6 +291,7 @@ class PluginInstance<T : Plugin>(
         ) : this(versionChecker, baseClassLoader, config, BuildInfo.CURRENT)
 
         /** Construct a new PluginInstance. */
+        @Suppress("UNCHECKED_CAST")
         open fun <T : Plugin> create(
             hostContext: Context,
             pluginAppInfo: ApplicationInfo,
@@ -356,6 +357,7 @@ class PluginInstance<T : Plugin>(
         private val logger = Logger(DEFAULT_LOGBUFFER, TAG)
 
         /** Creates the related plugin object from the factory */
+        @Suppress("UNCHECKED_CAST")
         fun createPlugin(listener: ProtectedPluginListener?): T? {
             try {
                 val loader = createClassLoader()
@@ -404,6 +406,7 @@ class PluginInstance<T : Plugin>(
         }
 
         /** Check Version for the instance */
+        @Suppress("UNCHECKED_CAST")
         fun checkVersion(target: T?): Boolean {
             var instance = target ?: createPlugin(null) ?: return false
             if (instance is PluginWrapper<*>) instance = instance.plugin as T
@@ -411,6 +414,7 @@ class PluginInstance<T : Plugin>(
         }
 
         /** Get Version Info for the instance */
+        @Suppress("UNCHECKED_CAST")
         fun getVersionInfo(target: T?): VersionInfo? {
             var instance = target ?: createPlugin(null) ?: return null
             if (instance is PluginWrapper<*>) instance = instance.plugin as T
