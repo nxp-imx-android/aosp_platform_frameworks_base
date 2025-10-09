@@ -40,15 +40,13 @@ import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.keyguard.ui.composable.blueprint.LockscreenBlueprintSelector
+import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayActionsViewModel
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.Companion.LockscreenElement
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.shared.model.Overlays
@@ -68,7 +66,7 @@ class NotificationsShadeOverlay
 constructor(
     private val actionsViewModelFactory: NotificationsShadeOverlayActionsViewModel.Factory,
     private val contentViewModelFactory: NotificationsShadeOverlayContentViewModel.Factory,
-    private val blueprintSelectorFactory: LockscreenBlueprintSelector.Factory,
+    private val lockscreenElements: LockscreenElements,
     private val shadeSession: SaveableSession,
     private val stackScrollView: Lazy<NotificationScrollView>,
     private val jankMonitor: InteractionJankMonitor,
@@ -98,10 +96,6 @@ constructor(
         val placeholderViewModel =
             rememberViewModel("NotificationsShadeOverlay-notifPlaceholderViewModel") {
                 viewModel.notificationsPlaceholderViewModelFactory.create()
-            }
-        val blueprintSelector =
-            rememberViewModel("NotificationsShadeOverlay-blueprintSelector") {
-                blueprintSelectorFactory.create()
             }
 
         DisposableEffectWithLifecycle(Unit) {
@@ -151,16 +145,14 @@ constructor(
 
             Column(modifier = Modifier.focusRequester(focusRequester).focusable()) {
                 if (isFullWidth) {
-                    with(blueprintSelector.blueprint) {
-                        Elements(LockscreenElementContext()) {
-                            LockscreenElement(
-                                LockscreenElementKeys.Clock.Small,
-                                Modifier.padding(
-                                    start = notificationStackPadding,
-                                    end = notificationStackPadding,
-                                ),
-                            )
-                        }
+                    with(lockscreenElements) {
+                        LockscreenElement(
+                            LockscreenElementKeys.Clock.Small,
+                            Modifier.padding(
+                                start = notificationStackPadding,
+                                end = notificationStackPadding,
+                            ),
+                        )
                     }
                 }
 

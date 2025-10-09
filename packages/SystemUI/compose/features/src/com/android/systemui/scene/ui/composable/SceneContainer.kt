@@ -29,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,8 +49,8 @@ import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.rememberSystemUiController
-import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
+import com.android.systemui.keyguard.ui.composable.rememberBurnIn
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
