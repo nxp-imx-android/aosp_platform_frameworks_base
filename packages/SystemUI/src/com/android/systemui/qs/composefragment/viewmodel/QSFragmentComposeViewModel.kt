@@ -26,7 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.LifecycleCoroutineScope
-import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.BouncerPanelExpansionCalculator
@@ -341,23 +340,6 @@ constructor(
 
     var shouldUpdateSquishinessOnMedia by mutableStateOf(false)
 
-    val qsMediaTranslationY by derivedStateOf {
-        if (
-            !MediaControlsInComposeFlag.isEnabled &&
-                !Flags.mediaControlsTranslationFix() &&
-                qsExpansion > 0f &&
-                !isKeyguardState &&
-                !qqsMediaVisible &&
-                !qsMediaInRow &&
-                !isInSplitShade
-        ) {
-            val interpolation = Interpolators.ACCELERATE.getInterpolation(1f - qsExpansion)
-            -qsMediaHost.hostView.height * 1.3f * interpolation
-        } else {
-            0f
-        }
-    }
-
     val animateTilesExpansion: Boolean
         get() = inFirstPage && !mediaSuddenlyAppearingInLandscape
 
@@ -634,7 +616,6 @@ constructor(
                 println("qqsMediaExpansion", qqsMediaExpansion)
                 println("shouldUpdateSquishinessOnMedia", shouldUpdateSquishinessOnMedia)
                 println("mediaSquishiness", mediaSquishiness)
-                println("qsMediaTranslationY", qsMediaTranslationY)
             }
         }
     }

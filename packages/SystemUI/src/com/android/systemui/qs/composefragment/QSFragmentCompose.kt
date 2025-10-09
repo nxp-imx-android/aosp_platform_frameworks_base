@@ -156,7 +156,6 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener
 import com.android.systemui.util.LifecycleFragment
-import com.android.systemui.util.animation.UniqueObjectHostView
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.printSection
@@ -909,7 +908,6 @@ constructor(
                                         mediaPresentationStyle = MediaPresentationStyle.Default,
                                         onSwipeToDismiss = viewModel::onMediaSwipeToDismiss,
                                         behavior = viewModel.qsMediaUiBehavior,
-                                        update = { translationY = viewModel.qsMediaTranslationY },
                                     )
                                 }
                             }
@@ -1381,7 +1379,6 @@ private fun ContentScope.MediaObject(
     mediaPresentationStyle: MediaPresentationStyle,
     onSwipeToDismiss: () -> Unit,
     behavior: MediaUiBehavior,
-    update: UniqueObjectHostView.() -> Unit = {},
 ) {
     if (MediaControlsInComposeFlag.isEnabled) {
         Element(key = Media.Elements.mediaCarousel, modifier = modifier) {
@@ -1406,7 +1403,6 @@ private fun ContentScope.MediaObject(
                             )
                     }
                 },
-                update = { view -> view.update() },
                 onReset = {},
             )
         }
