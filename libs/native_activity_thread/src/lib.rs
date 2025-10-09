@@ -24,7 +24,7 @@ use native_application_thread_aidl::aidl::android::app::INativeApplicationThread
 use nix::sys::signal::{pthread_sigmask, SigSet, SigmaskHow, Signal};
 use rustutils::android::process::{android_mallopt, MalloptOpcode};
 
-use utils::apply_runtime_flags;
+use utils::{apply_runtime_flags, setup_process_dumpability};
 
 mod library_loader;
 mod native_activity_thread;
@@ -45,7 +45,8 @@ const SDK_VERSION_UNSET: i32 = 0;
 /// Zygote forks and transition directly into an app process, or when starting
 /// an App Zygote.
 pub fn app_process_init(target_sdk_version: i32, runtime_flags: u32) {
-    // TODO: Handle process dumpability
+    setup_process_dumpability().expect("Failed to set up process dumability");
+
     // TODO: Enable debugging
 
     // SAFETY: This opcode takes no arguments so a nullptr is passed

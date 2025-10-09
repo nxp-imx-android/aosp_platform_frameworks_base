@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use anyhow::{Context, Result};
 use bitflags::bitflags;
 use libc::mallopt;
+use nix::{errno::Errno, unistd::getuid};
 use time_bindgen::tzset;
 
 use std::ffi::c_int;
 use std::io::Error;
+
+const AID_APP_START: u32 = 10000;
 
 /// A safe wrapper around tzset()
 pub fn reset_time_zone() {
@@ -92,4 +96,68 @@ pub fn apply_runtime_flags(runtime_flags: u32) {
             Error::last_os_error()
         );
     }
+}
+
+// Enum corresponding to SUID_DUMP_* defined in linux/sched/coredump.h.
+#[derive(PartialEq)]
+enum Dumpable {
+    Disable,
+    ByUser,
+    ByRoot,
+}
+
+impl TryFrom<i32> for Dumpable {
+    type Error = ();
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        let dumpable = match value {
+            0 => Dumpable::Disable,
+            1 => Dumpable::ByUser,
+            2 => Dumpable::ByRoot,
+            _ => return Err(()),
+        };
+        Ok(dumpable)
+    }
+}
+
+impl From<Dumpable> for i32 {
+    fn from(value: Dumpable) -> Self {
+        match value {
+            Dumpable::Disable => 0,
+            Dumpable::ByUser => 1,
+            Dumpable::ByRoot => 2,
+        }
+    }
+}
+
+// TODO(b/450462991): Use nix::sys::prctl::get_dumpable once `prctl` module is available to android
+// and this issue is fixed: https://github.com/nix-rust/nix/issues/2684.
+fn prctl_get_dumpable() -> nix::Result<Dumpable> {
+    // SAFETY: Trivially safe. See `man PR_GET_DUMPABLE`.
+    let res = unsafe { libc::prctl(libc::PR_GET_DUMPABLE) };
+    if res == -1 {
+        return Err(Errno::last());
+    }
+    Ok(Dumpable::try_from(res).expect("prctl(PR_GET_DUMPABLE) returned an unexpected value: {res}"))
+}
+
+// TODO(b/450462991): Use nix::sys::prctl::set_dumpable once `prctl` module is available to
+// android.
+fn prctl_set_dumpable(dumpable: Dumpable) -> nix::Result<()> {
+    let val: i32 = dumpable.into();
+    // SAFETY: Trivially safe. See `man PR_SET_DUMPABLE`.
+    let res = unsafe { libc::prctl(libc::PR_SET_DUMPABLE, val) };
+    if res == -1 {
+        return Err(Errno::last());
+    }
+    Ok(())
+}
+
+pub fn setup_process_dumpability() -> Result<()> {
+    if prctl_get_dumpable().context("prctl(PR_GET_DUMPABLE) failed")? == Dumpable::ByRoot
+        && getuid().as_raw() >= AID_APP_START
+    {
+        prctl_set_dumpable(Dumpable::Disable).context("prctl(PR_SET_DUMPABLE) failed")?;
+    }
+    Ok(())
 }
