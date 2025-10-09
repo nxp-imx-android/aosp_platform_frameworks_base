@@ -20,7 +20,6 @@ import static android.bluetooth.BluetoothHidHost.ACTION_CONNECTION_STATE_CHANGED
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.DEFAULT_DISPLAY_GROUP;
-import static android.view.Display.TYPE_INTERNAL;
 import static android.view.KeyEvent.ACTION_DOWN;
 import static android.view.KeyEvent.KEYCODE_POWER;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
@@ -87,6 +86,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
 import android.testing.TestableContext;
+import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.KeyEvent;
 
@@ -206,6 +206,7 @@ public class PhoneWindowManagerTests {
                 mDreamManagerInternal);
         mLocalServiceKeeperRule.overrideLocalService(InputManagerInternal.class,
                 mInputManagerInternal);
+        mPhoneWindowManager.mInputManagerInternal = mInputManagerInternal;
         mLocalServiceKeeperRule.overrideLocalService(PowerManagerInternal.class,
                 mPowerManagerInternal);
         mLocalServiceKeeperRule.overrideLocalService(StatusBarManagerInternal.class,
@@ -232,7 +233,7 @@ public class PhoneWindowManagerTests {
 
     @Test
     public void testShouldNotStartDockOrHomeWhenSetup() throws Exception {
-        mockStartDockOrHome();
+        mockStartDockOrHome(Display.TYPE_INTERNAL);
         doReturn(false).when(mPhoneWindowManager).isUserSetupComplete();
 
         mPhoneWindowManager.startDockOrHome(
@@ -243,7 +244,7 @@ public class PhoneWindowManagerTests {
 
     @Test
     public void testShouldStartDockOrHomeAfterSetup() throws Exception {
-        mockStartDockOrHome();
+        mockStartDockOrHome(Display.TYPE_INTERNAL);
         doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
 
         mPhoneWindowManager.startDockOrHome(
@@ -778,6 +779,74 @@ public class PhoneWindowManagerTests {
                 /* drawnListener= */ any());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
+    public void startDockOrHome_externalDisplay_flagEnabled_shouldHandleKeyGesture()
+            throws Exception {
+        mockStartDockOrHome(Display.TYPE_EXTERNAL);
+        doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
+
+        mPhoneWindowManager.startDockOrHome(
+                /* displayId= */ DEFAULT_DISPLAY, /* fromHomeKey= */ true, /* awakenFromDreams= */
+                false);
+
+        verify(mInputManagerInternal).handleKeyGestureInKeyGestureController(
+                any(KeyGestureEvent.class));
+        verify(mAtmInternal, never()).startHomeOnDisplay(anyInt(), anyString(), anyInt(),
+                anyBoolean(), anyBoolean());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
+    public void startDockOrHome_externalDisplay_flagDisabled_shouldStartHome() throws Exception {
+        mockStartDockOrHome(Display.TYPE_EXTERNAL);
+        doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
+
+        mPhoneWindowManager.startDockOrHome(
+                /* displayId= */ DEFAULT_DISPLAY, /* fromHomeKey= */ true, /* awakenFromDreams= */
+                false);
+
+        verify(mInputManagerInternal, never()).handleKeyGestureInKeyGestureController(
+                any(KeyGestureEvent.class));
+        verify(mAtmInternal).startHomeOnDisplay(/* userId= */ anyInt(), /* reason= */
+                anyString(), /* displayId= */ eq(DEFAULT_DISPLAY), /* allowInstrumenting= */
+                eq(true), /* fromHomeKey= */ eq(true));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
+    public void startDockOrHome_internalDisplay_flagEnabled_shouldStartHome() throws Exception {
+        mockStartDockOrHome(Display.TYPE_INTERNAL);
+        doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
+
+        mPhoneWindowManager.startDockOrHome(
+                /* displayId= */DEFAULT_DISPLAY, /* fromHomeKey= */ true, /* awakenFromDreams= */
+                false);
+
+        verify(mInputManagerInternal, never()).handleKeyGestureInKeyGestureController(
+                any(KeyGestureEvent.class));
+        verify(mAtmInternal).startHomeOnDisplay(/* userId= */ anyInt(), /* reason= */
+                anyString(), /* displayId= */ eq(DEFAULT_DISPLAY), /* allowInstrumenting= */
+                eq(true), /* fromHomeKey= */ eq(true));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_LAUNCHER_HANDLE_GO_HOME_KEYBOARD_SHORTCUT)
+    public void startDockOrHome_internalDisplay_flagDisabled_shouldStartHome() throws Exception {
+        mockStartDockOrHome(Display.TYPE_INTERNAL);
+        doReturn(true).when(mPhoneWindowManager).isUserSetupComplete();
+
+        mPhoneWindowManager.startDockOrHome(
+                /* displayId= */ DEFAULT_DISPLAY, /* fromHomeKey= */ true, /* awakenFromDreams= */
+                false);
+
+        verify(mInputManagerInternal, never()).handleKeyGestureInKeyGestureController(
+                any(KeyGestureEvent.class));
+        verify(mAtmInternal).startHomeOnDisplay(/* userId= */ anyInt(), /* reason= */
+                anyString(), /* displayId= */ eq(DEFAULT_DISPLAY), /* allowInstrumenting= */
+                eq(true), /* fromHomeKey= */ eq(true));
+    }
+
     private void initNonSpyPhoneWindowManager() {
         mNonSpyPhoneWindowManager.mDefaultDisplayPolicy = mDisplayPolicy;
         mNonSpyPhoneWindowManager.mDefaultDisplayRotation = mock(DisplayRotation.class);
@@ -792,14 +861,14 @@ public class PhoneWindowManagerTests {
                 new TestInjector(mContext, mock(WindowManagerPolicy.WindowManagerFuncs.class))), 0);
     }
 
-    private void mockStartDockOrHome() throws Exception {
+    private void mockStartDockOrHome(int displayType) throws Exception {
         doNothing().when(ActivityManager.getService()).stopAppSwitches();
         when(mAtmInternal.startHomeOnDisplay(
                 anyInt(), anyString(), anyInt(), anyBoolean(), anyBoolean())).thenReturn(false);
         mPhoneWindowManager.mUserManagerInternal = mock(UserManagerInternal.class);
 
         mPhoneWindowManager.mDisplayManagerInternal = mDisplayManagerInternal;
-        mDisplayInfo.type = TYPE_INTERNAL;
+        mDisplayInfo.type = displayType;
         when(mDisplayManagerInternal.getDisplayInfo(anyInt())).thenReturn(mDisplayInfo);
     }
 
