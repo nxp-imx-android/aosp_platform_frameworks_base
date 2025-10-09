@@ -1169,7 +1169,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     public static final int CALL_CONNECTED_INDICATOR_NONE = 0;
 
     /**
@@ -1182,7 +1182,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     public static final int CALL_CONNECTED_INDICATOR_TONE = (1 << 0);
 
     /**
@@ -1195,12 +1195,12 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     public static final int CALL_CONNECTED_INDICATOR_VIBRATION = (1 << 1);
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     @IntDef(
             prefix = {"CALL_CONNECTED_INDICATOR_"},
             flag = true,
@@ -3130,7 +3130,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public @CallConnectedIndicator int getCallConnectedIndicatorPreference() {
         ITelecomService service = getTelecomService();
@@ -3156,7 +3156,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void setCallConnectedIndicatorPreference(@CallConnectedIndicator int preference) {
         ITelecomService service = getTelecomService();
