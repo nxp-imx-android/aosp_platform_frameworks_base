@@ -60,6 +60,8 @@ import static android.view.flags.Flags.viewVelocityApi;
 import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGATOR;
 import static android.view.inputmethod.Flags.initiationWithoutInputConnection;
 
+import static com.android.hardware.input.Flags.pointerCaptureModes;
+import static com.android.hardware.input.Flags.relativeCaptureModeByDefault;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__DEEP_PRESS;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS;
 import static com.android.internal.util.FrameworkStatsLog.TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__SINGLE_TAP;
@@ -31401,7 +31403,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     public void requestPointerCapture() {
         final ViewRootImpl viewRootImpl = getViewRootImpl();
         if (viewRootImpl != null) {
-            viewRootImpl.requestPointerCapture(POINTER_CAPTURE_MODE_ABSOLUTE);
+            viewRootImpl.requestPointerCapture(
+                    pointerCaptureModes() && relativeCaptureModeByDefault()
+                            ? POINTER_CAPTURE_MODE_RELATIVE
+                            : POINTER_CAPTURE_MODE_ABSOLUTE);
         }
     }
 

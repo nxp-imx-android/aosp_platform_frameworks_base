@@ -249,6 +249,13 @@ flag {
 }
 
 flag {
+    name: "relative_capture_mode_by_default"
+    namespace: "input"
+    description: "Use the RELATIVE pointer capture mode by default, in which touchpad gestures are recognized and converted into mouse-like events. Requires pointer_capture_modes to be enabled"
+    bug: "403531245"
+}
+
+flag {
     name: "enable_partial_screenshot_keyboard_shortcut"
     namespace: "input"
     description: "Enables keyboard shortcut for taking partial screenshots via large screen capture UI"
