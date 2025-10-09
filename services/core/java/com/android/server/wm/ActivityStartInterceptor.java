@@ -102,6 +102,7 @@ class ActivityStartInterceptor {
     private int mStartFlags;
     private String mCallingPackage;
     private @Nullable String mCallingFeatureId;
+    private int mSourceDisplayId;
 
     /*
      * Per-intent states that were load from ActivityStarter and are subject to modifications
@@ -149,13 +150,14 @@ class ActivityStartInterceptor {
      * method should not be changed during intercept.
      */
     void setStates(int userId, int realCallingPid, int realCallingUid, int startFlags,
-            String callingPackage, @Nullable String callingFeatureId) {
+            String callingPackage, @Nullable String callingFeatureId, int sourceDisplayId) {
         mRealCallingPid = realCallingPid;
         mRealCallingUid = realCallingUid;
         mUserId = userId;
         mStartFlags = startFlags;
         mCallingPackage = callingPackage;
         mCallingFeatureId = callingFeatureId;
+        mSourceDisplayId = sourceDisplayId;
     }
 
     private IntentSender createIntentSenderForOriginalIntent(int callingUid, int flags) {
@@ -682,6 +684,7 @@ class ActivityStartInterceptor {
                 .setCallingFeatureId(mCallingFeatureId)
                 .setCheckedOptions(mActivityOptions)
                 .setClearOptionsAnimationRunnable(clearOptionsAnimation)
+                .setSourceDisplayId(mSourceDisplayId)
                 .build();
     }
 

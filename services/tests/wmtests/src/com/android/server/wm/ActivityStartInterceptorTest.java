@@ -97,6 +97,7 @@ public class ActivityStartInterceptorTest {
     private static final UserInfo PARENT_USER_INFO = new UserInfo(0 /* userId */, "parent",
             0 /* flags */);
     private static final String TEST_PACKAGE_NAME = "com.test.package";
+    private static final int TEST_SOURCE_DISPLAY_ID = 99;
 
     @Rule
     public final DexmakerShareClassLoaderRule mDexmakerShareClassLoaderRule =
@@ -144,7 +145,8 @@ public class ActivityStartInterceptorTest {
         mService.mRootWindowContainer = mRootWindowContainer;
         mInterceptor = new ActivityStartInterceptor(mService, mSupervisor, mContext);
         mInterceptor.setStates(TEST_USER_ID, TEST_REAL_CALLING_PID, TEST_REAL_CALLING_UID,
-                TEST_START_FLAGS, TEST_CALLING_PACKAGE, null);
+                TEST_START_FLAGS, TEST_CALLING_PACKAGE, /* callingFeatureId= */ null,
+                TEST_SOURCE_DISPLAY_ID);
 
         // Mock ActivityManagerInternal
         LocalServices.removeServiceForTest(ActivityManagerInternal.class);
