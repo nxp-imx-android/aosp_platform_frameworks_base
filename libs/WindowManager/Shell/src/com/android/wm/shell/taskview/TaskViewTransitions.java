@@ -68,6 +68,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 /**
  * Handles Shell Transitions that involve TaskView tasks.
@@ -728,6 +729,15 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return false;
         }
 
+        if (isBubbleTrampoline(transitionInfo)) {
+            PendingTransition pending = findPending(transition);
+            if (pending != null) {
+                mPending.remove(pending);
+                startNextTransition();
+            }
+            return false;
+        }
+
         if (!Flags.taskViewTransitionsRefactor() && !enableHandlersDebuggingMode()) {
             return startAnimationLegacy(transition, transitionInfo, startTransaction,
                     finishTransaction, finishCallback);
@@ -1065,6 +1075,35 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         finishCallback.onTransitionFinished(wct);
         startNextTransition();
         return true;
+    }
+
+    private static boolean isBubbleTrampoline(TransitionInfo info) {
+        return hasOpeningAppBubble(info) && hasClosingAppBubble(info);
+    }
+
+    private static boolean hasOpeningAppBubble(TransitionInfo info) {
+        return containsChange(info, change ->
+                change.getTaskInfo() != null
+                        && change.getTaskInfo().isAppBubble
+                        && TransitionUtil.isOpeningType(change.getMode()));
+    }
+
+    private static boolean hasClosingAppBubble(TransitionInfo info) {
+        return containsChange(info, change ->
+                change.getTaskInfo() != null
+                        && change.getTaskInfo().isAppBubble
+                        && TransitionUtil.isClosingType(change.getMode()));
+    }
+
+    private static boolean containsChange(TransitionInfo info,
+            Predicate<TransitionInfo.Change> predicate) {
+        for (int i = 0; i < info.getChanges().size(); ++i) {
+            final TransitionInfo.Change chg = info.getChanges().get(i);
+            if (predicate.test(chg)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
