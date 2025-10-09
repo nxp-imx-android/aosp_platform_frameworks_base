@@ -1716,7 +1716,7 @@ public final class CompanionDeviceManager {
      * <p>Caller app must implement the {@link CompanionDeviceService} to receive callbacks via
      * {@link CompanionDeviceService#onDevicePresenceEvent(DevicePresenceEvent)}.
      * The system will bind to the implemented {@link CompanionDeviceService} to deliver the
-     * callbacks./p>
+     * callbacks.</p>
      *
      * <p>Calling app must check for feature presence of
      * {@link PackageManager#FEATURE_COMPANION_DEVICE_SETUP} before calling this API.</p>
