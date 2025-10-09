@@ -32,7 +32,6 @@ import android.os.Binder;
 import android.os.LocaleList;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Postsubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.DisplayMetrics;
@@ -434,38 +433,6 @@ public class ResourcesManagerTest {
                 overrideConfigResources.getConfiguration().windowConfiguration.getBounds());
         assertEquals(newActivityOverrideConfig.windowConfiguration.getBounds(),
                 activityResources.getConfiguration().windowConfiguration.getBounds());
-    }
-
-    @Test
-    @SmallTest
-    @RequiresFlagsEnabled(Flags.FLAG_IGNORE_NON_PUBLIC_CONFIG_DIFF_FOR_RESOURCES_KEY)
-    public void testNonPublicDiffOverrideConfigShareImpl() {
-        final Configuration overrideConfig1 = new Configuration();
-        overrideConfig1.densityDpi = 100;
-        overrideConfig1.windowConfiguration.setAppBounds(0, 0, 500, 1000);
-        final Resources resources1 = mResourcesManager.getResources(
-                null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig1,
-                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
-
-        final Configuration overrideConfig2 = new Configuration(overrideConfig1);
-        // WindowConfiguration is not a public API field. It shouldn't affect resources.
-        overrideConfig2.windowConfiguration.getAppBounds().offset(100, 100);
-        final Resources resources2 = mResourcesManager.getResources(
-                null, APP_ONE_RES_DIR, null, null, null, null, null, overrideConfig2,
-                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
-
-        // Verify that ResourcesKey distinguishes undefined fields.
-        final Configuration emptyConfig = new Configuration();
-        final Resources resources3 = mResourcesManager.getResources(
-                null, APP_ONE_RES_DIR, null, null, null, null, null, emptyConfig,
-                CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
-
-        assertNotNull(resources1);
-        assertNotNull(resources2);
-        assertNotNull(emptyConfig);
-        assertSame(resources1.getImpl(), resources2.getImpl());
-        assertNotSame(resources3.getImpl(), resources1.getImpl());
-        assertNotSame(resources3.getImpl(), resources2.getImpl());
     }
 
     @Test
