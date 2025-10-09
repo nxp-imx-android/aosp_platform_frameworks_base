@@ -3539,7 +3539,7 @@
          @hide @FlaggedApi("android.multiuser.hsu_allowlist_activities")
     -->
     <permission android:name="android.permission.MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS"
-        android:protectionLevel="signature|privileged" />
+        android:protectionLevel="signature|privileged|development" />
 
     <!-- Allows an application to access data blobs across users. -->
     <permission android:name="android.permission.ACCESS_BLOBS_ACROSS_USERS"
