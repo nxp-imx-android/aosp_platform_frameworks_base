@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,6 +51,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -73,6 +75,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
@@ -260,23 +263,20 @@ fun BouncerContent(
         Dialog(bouncerViewModel = viewModel, dialogFactory = dialogFactory)
 
         if (viewModel.showBackButton) {
-            OutlinedButton(
+            TextButton(
                 onClick = viewModel::navigateBack,
-                modifier =
-                    Modifier.align(Alignment.BottomStart).padding(24.dp).testTag("BackButton"),
-                border =
-                    BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.primary
-                    ),
-            ) {
-                Text(
-                    text = stringResource(R.string.back_button_on_bouncer),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
+                text = stringResource(R.string.back_button_on_bouncer),
+                modifier = Modifier.align(Alignment.BottomStart).testTag("BackButton"),
+            )
+        }
+        if (viewModel.showAccessibilityButton) {
+            IconButton(
+                onClick = viewModel::showAccessibilityDialog,
+                imageVector = Icons.Default.AccessibilityNew,
+                contentDescription =
+                    stringResource(R.string.accessibility_button_on_bouncer_description),
+                modifier = Modifier.align(Alignment.BottomEnd).testTag("AccessibilityButton"),
+            )
         }
     }
 }
@@ -1052,6 +1052,46 @@ private fun UserSwitcherDropdownMenu(
             }
         }
     }
+}
+
+@Composable
+private fun TextButton(onClick: () -> Unit, text: String, modifier: Modifier = Modifier) {
+    Button(onClick = onClick, modifier = modifier) {
+        Text(text = text, style = MaterialTheme.typography.titleMedium)
+    }
+}
+
+@Composable
+private fun IconButton(
+    onClick: () -> Unit,
+    imageVector: ImageVector,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+) {
+    Button(onClick = onClick, modifier = modifier) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(24.dp),
+        )
+    }
+}
+
+@Composable
+private fun Button(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.padding(24.dp),
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+        colors =
+            ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+        content = content,
+    )
 }
 
 /**

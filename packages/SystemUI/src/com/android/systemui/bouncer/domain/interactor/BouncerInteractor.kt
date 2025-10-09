@@ -121,6 +121,10 @@ constructor(
     val isImproveLargeScreenInteractionEnabled: Boolean
         get() = repository.isImproveLargeScreenInteractionEnabledInConfig
 
+    /** Whether showing the accessibility button on the bouncer is enabled. */
+    val isShowAccessibilityButtonOnBouncerEnabled: Boolean =
+        repository.isShowAccessibilityButtonOnBouncerEnabledInConfig
+
     /**
      * Preferred side of the screen where the input area on the bouncer should be. This is
      * applicable for large screen devices (foldables and tablets).
