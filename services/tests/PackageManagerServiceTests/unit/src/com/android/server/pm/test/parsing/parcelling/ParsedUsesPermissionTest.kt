@@ -27,7 +27,7 @@ class ParsedUsesPermissionTest : ParcelableComponentTest(
 ) {
 
     override val defaultImpl =
-        ParsedUsesPermissionImpl("", 0, setOf())
+        ParsedUsesPermissionImpl("", 0, setOf(), setOf())
     override val creator = ParsedUsesPermissionImpl.CREATOR
 
     override val baseParams = listOf(
@@ -37,8 +37,9 @@ class ParsedUsesPermissionTest : ParcelableComponentTest(
 
     override fun extraParams() = listOf(
         getter(ParsedUsesPermission::getPurposes, setOf("purpose")),
+        getter(ParsedUsesPermission::getGeneralPurposes, setOf("generalPurpose")),
     )
 
     override fun initialObject() =
-        ParsedUsesPermissionImpl("", 0, setOf())
+        ParsedUsesPermissionImpl("", 0, setOf(), setOf())
 }

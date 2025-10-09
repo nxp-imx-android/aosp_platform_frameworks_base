@@ -20,6 +20,7 @@ import com.android.internal.pm.pkg.component.ParsedPermission
 import com.android.internal.pm.pkg.component.ParsedPermissionGroup
 import com.android.internal.pm.pkg.component.ParsedPermissionGroupImpl
 import com.android.internal.pm.pkg.component.ParsedPermissionImpl
+import com.android.internal.pm.pkg.component.ParsedValidGeneralPurposeImpl
 import com.android.internal.pm.pkg.component.ParsedValidPurposeImpl
 import kotlin.contracts.ExperimentalContracts
 
@@ -48,6 +49,7 @@ class ParsedPermissionTest : ParsedComponentTest(
         ParsedPermission::getRequestRes,
         ParsedPermission::getProtectionLevel,
         ParsedPermission::getRequiresPurposeTargetSdkVersion,
+        ParsedPermission::getRequiresGeneralPurposeTargetSdkVersion,
         ParsedPermission::isTree,
         ParsedPermission::isPurposeRequired,
     )
@@ -61,6 +63,18 @@ class ParsedPermissionTest : ParsedComponentTest(
             transformGet = { it.singleOrNull()?.let { Pair(it.name, it.maxTargetSdkVersion) } },
             transformSet = {
                 listOf(ParsedValidPurposeImpl(
+                    it!!.first,
+                    it.second
+                ))
+            }
+        ),
+        getSetByValue(
+            ParsedPermission::getValidGeneralPurposes,
+            ParsedPermissionImpl::setValidGeneralPurposes,
+            Pair("validGeneralPurpose", 20),
+            transformGet = { it.singleOrNull()?.let { Pair(it.name, it.maxTargetSdkVersion) } },
+            transformSet = {
+                listOf(ParsedValidGeneralPurposeImpl(
                     it!!.first,
                     it.second
                 ))

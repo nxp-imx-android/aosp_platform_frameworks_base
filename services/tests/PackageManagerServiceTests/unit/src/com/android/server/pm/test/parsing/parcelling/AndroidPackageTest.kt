@@ -494,12 +494,13 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
         getSetByValue(
             AndroidPackage::getUsesPermissionMapping,
             PackageImpl::addUsesPermission,
-            mapOf("test.USES_PERMISSION_MAPPING" to ParsedUsesPermissionImpl("test.USES_PERMISSION_MAPPING", 0, setOf())),
+            mapOf("test.USES_PERMISSION_MAPPING" to ParsedUsesPermissionImpl("test.USES_PERMISSION_MAPPING", 0, setOf(), setOf())),
             transformSet = {
                 ParsedUsesPermissionImpl(
                         "test.USES_PERMISSION_MAPPING",
                         0,
                         setOf(),
+                        setOf()
                     )
             },
             compare = { first, second ->
