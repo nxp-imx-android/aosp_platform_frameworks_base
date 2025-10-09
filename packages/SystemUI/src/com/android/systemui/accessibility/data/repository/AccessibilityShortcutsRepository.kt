@@ -254,7 +254,7 @@ constructor(
             icon = icon,
             isAssigned = isShortcutEnabled,
             isToggleable = isToggleable,
-            isToggleOn = if (isToggleable) isStateOn else null,
+            isToggleOn = if (isToggleable) isStateOn else false,
         )
 
     private suspend fun getFeatureName(keyGestureType: Int, targetName: String): CharSequence? {

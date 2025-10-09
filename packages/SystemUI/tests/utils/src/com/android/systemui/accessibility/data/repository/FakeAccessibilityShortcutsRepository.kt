@@ -133,7 +133,7 @@ class FakeAccessibilityShortcutsRepository(
                 icon = fakeIcon,
                 isAssigned = false,
                 isToggleable = false,
-                isToggleOn = null,
+                isToggleOn = false,
             ),
             AccessibilityTargetModel(
                 shortcutType = shortcutType,

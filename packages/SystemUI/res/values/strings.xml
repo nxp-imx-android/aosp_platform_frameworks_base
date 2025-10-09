@@ -2991,6 +2991,18 @@
     <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
     <!-- Text for the confirmation button of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" translatable="false">Add features</string>
+    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <!-- Title text for the dialog where the user chooses a set of accessibility features to be activated by this accessibility shortcut type. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_shortcutchooser_editor_dialog_title" translatable="false">Set up <xliff:g name="shortcut_type" example="top row key">%1$s</xliff:g></string>
+    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <!-- Text for the Done button on the Edit dialog and the Toggle dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_shortcutchooser_done_button" translatable="false">Done</string>
+    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <!-- Title text for the dialog where the user can enable or disable any feature just chosen from shortcut editor dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_shortcutchooser_picker_dialog_title" translatable="false">Select a feature to start using it</string>
+    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <!-- Text for the Edit button on the Toggle dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_shortcutchooser_edit_button" translatable="false">Edit</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->
