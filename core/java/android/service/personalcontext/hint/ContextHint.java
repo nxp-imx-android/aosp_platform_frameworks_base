@@ -23,14 +23,11 @@ import android.annotation.Nullable;
 import android.annotation.TestApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
-import android.service.personalcontext.RenderToken;
 import android.util.Log;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -90,8 +87,6 @@ public abstract class ContextHint {
     // Bundle keys for data stored in the base ContextHint.
     private static final String KEY_HINT_TYPE = "key_hint_type";
     private static final String KEY_HINT_ID = "key_hint_id";
-    private static final String KEY_ATTRIBUTION_HINTS = "key_attribution_hints";
-    private static final String KEY_RENDER_TOKEN = "key_render_token";
 
     /**
      * Bundle key used to store the data from the hint implementation, retrieved through
@@ -105,17 +100,6 @@ public abstract class ContextHint {
     private final UUID mId;
 
     /**
-     * List of hints this hint was derived from.
-     */
-    private List<ContextHint> mAttributionHints;
-
-    /**
-     * Optional token indicating that insights generated from this hint should go straight to a
-     * specific renderer.
-     */
-    private @Nullable RenderToken mRenderToken;
-
-    /**
      * Internal constructor only for use by {@link #createHintFromBundle(Bundle)}. This should be
      * called by subclasses in their private constructors used for
      * {@link #createHintFromBundle(Bundle)}.
@@ -124,10 +108,6 @@ public abstract class ContextHint {
      */
     ContextHint(@NonNull Bundle bundle) {
         mId = UUID.fromString(bundle.getString(KEY_HINT_ID));
-        mAttributionHints = Arrays.stream(
-                bundle.getParcelableArray(KEY_ATTRIBUTION_HINTS, Bundle.class)).map(
-                ContextHint::createHintFromBundle).toList();
-        mRenderToken = bundle.getParcelable(KEY_RENDER_TOKEN, RenderToken.class);
     }
 
     /**
@@ -138,8 +118,6 @@ public abstract class ContextHint {
      */
     ContextHint() {
         mId = UUID.randomUUID();
-        mRenderToken = null;
-        mAttributionHints = new ArrayList<>();
     }
 
     /**
@@ -153,41 +131,6 @@ public abstract class ContextHint {
      */
     public final @NonNull UUID getHintId() {
         return mId;
-    }
-
-    /**
-     * Returns the list of hints that were used to derive this hint.
-     */
-    public final @NonNull List<ContextHint> getAttributionHints() {
-        return mAttributionHints;
-    }
-
-    /**
-     * Returns the {@link RenderToken} associated with this hint, if any. Insights generated from
-     * this hint should only be sent to a specific renderer indicated by the token.
-     */
-    public final @Nullable RenderToken getRenderToken() {
-        return mRenderToken;
-    }
-
-    /**
-     * Sets the {@link RenderToken} associated with this hint.
-     *
-     * @hide
-     */
-    @TestApi
-    public final void setRenderToken(@Nullable RenderToken token) {
-        mRenderToken = token;
-    }
-
-    /**
-     * Sets the set of hints that were used to derive this hint.
-     *
-     * @hide
-     */
-    @TestApi
-    public final void setAttributionHints(@NonNull List<ContextHint> attributionHints) {
-        mAttributionHints = attributionHints;
     }
 
     @NonNull
@@ -205,9 +148,6 @@ public abstract class ContextHint {
         final Bundle b = new Bundle();
         b.putInt(KEY_HINT_TYPE, getHintType());
         b.putString(KEY_HINT_ID, mId.toString());
-        b.putParcelableArray(KEY_ATTRIBUTION_HINTS,
-                mAttributionHints.stream().map(ContextHint::toBundle).toArray(Bundle[]::new));
-        b.putParcelable(KEY_RENDER_TOKEN, mRenderToken);
         b.putBundle(KEY_HINT_DATA, toBundleImpl());
         return b;
     }
@@ -232,5 +172,17 @@ public abstract class ContextHint {
             Log.e(TAG, "Error creating hint", e);
             return ERROR_HINT;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ContextHint that)) return false;
+        return Objects.deepEquals(mId, that.mId)
+                && Objects.deepEquals(getHintType(), that.getHintType());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mId, getHintType());
     }
 }

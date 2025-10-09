@@ -43103,10 +43103,8 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
-    method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getAttributionHints();
     method @NonNull public final java.util.UUID getHintId();
     method public abstract int getHintType();
-    method @Nullable public final android.service.personalcontext.RenderToken getRenderToken();
     field public static final int HINT_TYPE_BUNDLE = 1; // 0x1
     field public static final int HINT_TYPE_ERROR = -1; // 0xffffffff
     field public static final int HINT_TYPE_NOTIFICATION = 2; // 0x2
