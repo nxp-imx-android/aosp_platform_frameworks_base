@@ -2385,7 +2385,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      */
     public static final int PASSWORD_COMPLEXITY_NONE = 0;
@@ -2401,7 +2401,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      *
      * @see #PASSWORD_QUALITY_SOMETHING
@@ -2422,7 +2422,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      *
      * @see #PASSWORD_QUALITY_NUMERIC_COMPLEX
@@ -2444,7 +2444,7 @@ public class DevicePolicyManager {
      *
      * <p> When returned from {@link #getPasswordComplexity()}, the constant represents
      * the exact complexity band the password is in.
-     * When passed to {@link #setRequiredPasswordComplexity(int), it sets the minimum complexity
+     * When passed to {@link #setRequiredPasswordComplexity(int)}, it sets the minimum complexity
      * band which the password must meet.
      *
      * @see #PASSWORD_QUALITY_NUMERIC_COMPLEX
@@ -4936,7 +4936,7 @@ public class DevicePolicyManager {
      * If this method is called on the {@link DevicePolicyManager} instance returned by
      * {@link #getParentProfileInstance(ComponentName)}, then password complexity requirements
      * set on the primary {@link DevicePolicyManager} must be cleared first by calling
-     * {@link #setRequiredPasswordComplexity} with {@link #PASSWORD_COMPLEXITY_NONE) first.
+     * {@link #setRequiredPasswordComplexity} with {@link #PASSWORD_COMPLEXITY_NONE} first.
      *
      * <p><string>Note:</strong> this method is ignored on
      * {PackageManager#FEATURE_AUTOMOTIVE automotive builds}.
@@ -13416,7 +13416,7 @@ public class DevicePolicyManager {
      * Admins can explicitly enable it with this API.
      *
      * <p> This method enables preferential network service with a default configuration.
-     * To fine-tune the configuration, use {@link #setPreferentialNetworkServiceConfigs) instead.
+     * To fine-tune the configuration, use {@link #setPreferentialNetworkServiceConfigs} instead.
      * <p> Before Android version {@link android.os.Build.VERSION_CODES#TIRAMISU}:
      * this method can be called by the profile owner of a managed profile.
      * <p> Starting from Android version {@link android.os.Build.VERSION_CODES#TIRAMISU}:
@@ -15348,7 +15348,7 @@ public class DevicePolicyManager {
 
     /**
      * Called by the device owner (since API 26) or profile owner (since API 24) or holders of the
-     * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY
+     * permission {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY}
      * to retrieve the name of the organization under management.
      *
      * @param admin Which {@link DeviceAdminReceiver} this request is associated with. Null if the

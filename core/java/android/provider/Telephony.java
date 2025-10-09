@@ -3679,7 +3679,7 @@ public final class Telephony {
                 Uri.parse("content://cellbroadcast-legacy");
 
         /**
-         * Method name to {@link android.content.ContentProvider#call(String, String, Bundle)
+         * Method name to {@link android.content.ContentProvider#call(String, String, Bundle)}
          * for {@link #AUTHORITY_LEGACY}. Used to query cellbroadcast {@link Preference},
          * containing following supported entries
          * <ul>

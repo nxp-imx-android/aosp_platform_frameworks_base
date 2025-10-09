@@ -2715,7 +2715,7 @@ public class CarrierConfigManager {
      * When {@code false}, indicates that adding a call is disabled when there is an ongoing video
      * call or when there is an ongoing call on wifi which was downgraded from video and VoWifi is
      * turned off.
-     * When {@code true), indicates that another call can be added during an ongoing video call.
+     * When {@code true}, indicates that another call can be added during an ongoing video call.
      * <p>
      * This is {@code true} by default.
      */

@@ -550,7 +550,7 @@ public final class UsbPortStatus implements Parcelable {
      * Gets the current mode of the port.
      *
      * @return The current mode: {@link #MODE_DFP}, {@link #MODE_UFP},
-     * {@link #MODE_AUDIO_ACCESSORY}, {@link #MODE_DEBUG_ACCESSORY}, or {@link {@link #MODE_NONE} if
+     * {@link #MODE_AUDIO_ACCESSORY}, {@link #MODE_DEBUG_ACCESSORY}, or {@link #MODE_NONE} if
      * nothing is connected.
      */
     public @UsbPortMode int getCurrentMode() {

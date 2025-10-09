@@ -71,7 +71,7 @@ import java.util.function.Consumer;
  *        mClient.close()
  *    }
  *
- * }</pre>
+ * }}</pre>
  *
  * @hide
  */

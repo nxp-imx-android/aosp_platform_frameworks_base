@@ -6454,7 +6454,7 @@
 
     <!-- @SystemApi Allows an application to install DPCs only, an application is
          considered a DPC if it has a {@link android.app.admin.DeviceAdminReceiver}
-         protected by {@link android.Manifest.permission#BIND_DEVICE_ADMIN).
+         protected by {@link android.Manifest.permission#BIND_DEVICE_ADMIN}.
          This is a limited version of
          {@link android.Manifest.permission#INSTALL_PACKAGES}.
          @hide
