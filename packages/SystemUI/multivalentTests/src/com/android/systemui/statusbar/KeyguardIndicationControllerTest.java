@@ -1332,6 +1332,25 @@ public class KeyguardIndicationControllerTest extends KeyguardIndicationControll
     }
 
     @Test
+    public void onBiometricError_faceLockedOutFirstTimeAndFpAllowed_forceAccessibilityLiveRegion() {
+        createController();
+        fingerprintUnlockIsPossibleAndAllowed();
+        onFaceLockoutError("first lockout");
+
+        verify(mRotateTextViewController)
+                .updateIndication(eq(INDICATION_TYPE_BIOMETRIC_MESSAGE),
+                        mKeyguardIndicationCaptor.capture(),
+                        eq(true));
+        assertTrue(mKeyguardIndicationCaptor.getValue().getForceAssertiveAccessibilityLiveRegion());
+
+        verify(mRotateTextViewController)
+                .updateIndication(eq(INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP),
+                        mKeyguardIndicationCaptor.capture(),
+                        eq(true));
+        assertTrue(mKeyguardIndicationCaptor.getValue().getForceAssertiveAccessibilityLiveRegion());
+    }
+
+    @Test
     public void onBiometricError_faceLockedOutFirstTimeAndFpNotAllowed_showsDefaultFollowup() {
         createController();
         fingerprintUnlockIsNotPossible();
