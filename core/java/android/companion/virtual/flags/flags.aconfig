@@ -336,3 +336,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "computer_control_non_dismissible_notifications"
+    namespace: "virtual_devices"
+    description: "Make notifications non-dismissible for ComputerControlSession owners"
+    bug: "447297434"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

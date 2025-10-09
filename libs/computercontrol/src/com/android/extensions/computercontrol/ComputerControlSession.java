@@ -19,6 +19,7 @@ package com.android.extensions.computercontrol;
 import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
 import android.app.Activity;
+import android.app.Notification;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
 import android.companion.virtual.computercontrol.ComputerControlSession.SessionBlockReason;
 import android.companion.virtual.computercontrol.ComputerControlSession.SessionCloseReason;
@@ -236,6 +237,25 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public void clearLifecycleCallback() {
         mSession.clearLifecycleCallback();
+    }
+
+    /**
+     * Attaches notification information to the session, to make the notification non-dismissible.
+     *
+     * <p>This must be called before posting the notification.</p>
+     *
+     * <p>The caller must still call {@link Notification.Builder#setOngoing(boolean)}
+     * with {@code true}, to make the notification non-dismissible.</p>
+     *
+     * @param notificationId id of the notification, as per
+     * {@link android.app.NotificationManager#notify(String, int, Notification)}
+     * @param notificationTag tag of the notification, as per
+     * {@link android.app.NotificationManager#notify(String, int, Notification)}
+     *
+     * @throws IllegalStateException if a notification was already attached.
+     */
+    public void attachNotificationInfo(int notificationId, @Nullable String notificationTag) {
+        mSession.attachNotificationInfo(notificationId, notificationTag);
     }
 
     /**

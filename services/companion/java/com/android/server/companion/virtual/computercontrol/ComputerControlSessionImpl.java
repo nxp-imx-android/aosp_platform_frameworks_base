@@ -90,6 +90,7 @@ import com.android.server.wm.WindowManagerInternal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -209,6 +210,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     releaseResources();
                 }
             };
+
+    private final Object mNotificationLock = new Object();
+    @GuardedBy("mNotificationLock")
+    private NotificationInfo mNotificationInfo = null;
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -397,6 +402,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mOwnerPackageName;
     }
 
+    NotificationInfo getNotificationInfo() {
+        synchronized (mNotificationLock) {
+            return mNotificationInfo;
+        }
+    }
+
     @Override
     @SuppressLint("AndroidFrameworkRequiresPermission")
     public void launchApplication(@NonNull String packageName, @Nullable String className)
@@ -559,6 +570,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public void setLifecycleCallback(IComputerControlLifecycleCallback callback) {
         mLifecycle.setRemoteCallback(callback);
+    }
+
+    @Override
+    public void attachNotificationInfo(int notificationId, String notificationTag) {
+        synchronized (mNotificationLock) {
+            if (mNotificationInfo != null) {
+                throw new IllegalStateException("Notification info already set");
+            }
+            mNotificationInfo = new NotificationInfo(notificationId, notificationTag);
+        }
     }
 
     @Override
@@ -786,5 +807,30 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private void moveAllTasks(int fromDisplayId, int toDisplayId) {
         mActivityTaskManagerInternal.moveAllTasks(fromDisplayId, toDisplayId);
+    }
+
+    static final class NotificationInfo {
+        private final int mNotificationId;
+        private final String mNotificationTag;
+
+        NotificationInfo(int notificationId, String notificationTag) {
+            this.mNotificationId = notificationId;
+            this.mNotificationTag = notificationTag;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            NotificationInfo that = (NotificationInfo) o;
+            return mNotificationId == that.mNotificationId
+                    && Objects.equals(mNotificationTag, that.mNotificationTag);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mNotificationId, mNotificationTag);
+        }
     }
 }
