@@ -1245,6 +1245,16 @@ flag {
 }
 
 flag {
+   name: "sim_next_sub_id"
+   namespace: "systemui"
+   description: "Update for determining the next SIM subscription ID for a given state"
+   bug: "410750970"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "classic_flags_multi_user"
    namespace: "systemui"
    description: "Make the classic feature flag loading multi user aware."
