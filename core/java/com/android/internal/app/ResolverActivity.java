@@ -1233,12 +1233,10 @@ public class ResolverActivity extends Activity implements
             if (activeAdapter != null) {
                 activeAdapter.onDestroy();
             }
-            if (android.service.chooser.Flags.fixResolverMemoryLeak()) {
-                ResolverListAdapter inactiveAdapter =
-                        mMultiProfilePagerAdapter.getInactiveListAdapter();
-                if (inactiveAdapter != null) {
-                    inactiveAdapter.onDestroy();
-                }
+            ResolverListAdapter inactiveAdapter =
+                    mMultiProfilePagerAdapter.getInactiveListAdapter();
+            if (inactiveAdapter != null) {
+                inactiveAdapter.onDestroy();
             }
         }
     }
