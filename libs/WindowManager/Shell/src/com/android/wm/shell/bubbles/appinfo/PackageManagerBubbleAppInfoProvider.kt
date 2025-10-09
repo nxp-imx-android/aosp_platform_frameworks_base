@@ -46,8 +46,7 @@ class PackageManagerBubbleAppInfoProvider @Inject constructor() : BubbleAppInfoP
             )
             val appName = if (appInfo != null) pm.getApplicationLabel(appInfo)?.toString() else null
 
-            // load the app icon with the system user to get the unbadged icon
-            val appIcon = context.packageManager.getApplicationIcon(bubble.packageName)
+            val appIcon = appInfo.loadUnbadgedIcon(pm)
             return BubbleAppInfo(
                 appName = appName,
                 appIcon = appIcon,

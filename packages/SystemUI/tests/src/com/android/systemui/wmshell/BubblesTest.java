@@ -1675,11 +1675,12 @@ public class BubblesTest extends SysuiTestCase {
         final Bubble bubble = createBubble(workProfileUserId, workPkg);
         assertEquals(workProfileUserId, bubble.getUser().getIdentifier());
 
-        final Context context =
-                setUpContextWithPackageManager(workPkg, mock(ApplicationInfo.class));
+        final Context context = setUpContextWithPackageManager(workPkg, /* info= */ null,
+                mock(PackageManager.class));
         when(context.getResources()).thenReturn(mContext.getResources());
+
         final Context userContext = setUpContextWithPackageManager(workPkg,
-                mock(ApplicationInfo.class));
+                mock(ApplicationInfo.class), mock(PackageManager.class));
 
         // If things are working correctly, CentralSurfaces.getPackageManagerForUser will call this
         when(context.createPackageContextAsUser(eq(workPkg), anyInt(), eq(workUser)))
@@ -2812,15 +2813,14 @@ public class BubblesTest extends SysuiTestCase {
     }
 
     /** Creates a context that will return a PackageManager with specific AppInfo. */
-    private Context setUpContextWithPackageManager(String pkg, ApplicationInfo info)
-            throws Exception {
-        final PackageManager pm = mock(PackageManager.class);
+    private Context setUpContextWithPackageManager(String pkg, ApplicationInfo info,
+            PackageManager pm) throws Exception {
         when(pm.getApplicationInfo(eq(pkg), anyInt())).thenReturn(info);
 
         if (info != null) {
             Drawable d = mock(Drawable.class);
             when(d.getBounds()).thenReturn(new Rect());
-            when(pm.getApplicationIcon(anyString())).thenReturn(d);
+            when(info.loadUnbadgedIcon(pm)).thenReturn(d);
             when(pm.getUserBadgedIcon(any(), any())).thenReturn(d);
         }
 
