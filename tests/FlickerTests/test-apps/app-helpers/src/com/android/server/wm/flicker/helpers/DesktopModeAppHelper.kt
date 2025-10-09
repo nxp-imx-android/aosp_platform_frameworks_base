@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.helpers
 
+import android.app.ActivityOptions
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.Context
@@ -832,6 +833,13 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             .withFreeformApp(innerHelper)
             .withAppTransitionIdle()
             .waitForAndVerify()
+    }
+
+    fun launchViaIntentOnDisplay(wmHelper: WindowManagerStateHelper, displayId: Int) {
+        innerHelper.launchViaIntent(
+            wmHelper = wmHelper,
+            options = ActivityOptions.makeBasic().setLaunchDisplayId(displayId)
+        )
     }
 
     private fun getWindowInsets(context: Context, typeMask: Int): Insets {
