@@ -1016,6 +1016,10 @@
      <!-- QuickSettings: Cast detail panel, default device description [CHAR LIMIT=NONE] -->
     <!-- QuickSettings: Cast detail panel, text when there are no items [CHAR LIMIT=NONE] -->
     <string name="quick_settings_cast_detail_empty_text">No devices available</string>
+    <!-- QuickSettings: Cast detail panel, default title for the device chooser view [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_cast_detail_title">Cast screen to device</string>
+    <!-- QuickSettings: Cast detail panel, default subtitle for the device chooser view [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_cast_detail_subtitle">Searching for devices...</string>
     <!-- QuickSettings: Cast unavailable, text when not connected to WiFi or ethernet[CHAR LIMIT=NONE] -->
     <string name="quick_settings_cast_no_network">No Wi\u2011Fi or Ethernet connection</string>
     <!-- QuickSettings: Cast details, text on the disconnect button, click to disconnect a device [CHAR LIMIT=NONE] -->
