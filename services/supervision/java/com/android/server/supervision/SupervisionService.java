@@ -331,8 +331,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public List<Policy> getPolicies(@UserIdInt int userId) {
-        // TODO(b/446218039): Implement list fetching.
-        return new ArrayList<>();
+        return mSupervisionSettings.getUserData(userId).policies;
     }
 
     @Override
