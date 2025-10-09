@@ -10483,7 +10483,7 @@ public class CarrierConfigManager {
     /**
      * Indicates if the carrier supports a video color ring back tone call (CRBT).
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
     public static final String KEY_SUPPORTS_VIDEO_RINGBACK_BOOL =
             "supports_video_back_tone_bool";
 

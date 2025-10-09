@@ -314,7 +314,7 @@ public final class ImsCallProfile implements Parcelable {
      * Call(Video CRBT).  Vendor IMS stack {@link ImsService} sets this on a call
      * to indicate that the modem/network has identified the call as a video CRBT call.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
     public static final String EXTRA_IS_USING_VIDEO_RINGBACK  =
              "android.telephony.ims.extra.IS_USING_VIDEO_RINGBACK";
 
