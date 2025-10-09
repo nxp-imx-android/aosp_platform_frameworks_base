@@ -1853,8 +1853,8 @@ final class ActivityRecord extends WindowToken {
             boolean _rootVoiceInteraction, ActivityTaskSupervisor supervisor,
             ActivityOptions options, ActivityRecord sourceRecord, PersistableBundle persistentState,
             TaskDescription _taskDescription, long _createTime) {
-        super(_service.mWindowManager, new Token(), TYPE_APPLICATION, true,
-                null /* displayContent */, false /* ownerCanManageAppTokens */);
+        super(_service.mWindowManager, new Token(), TYPE_APPLICATION, true /* persistOnEmpty */,
+                false /* ownerCanManageAppTokens */);
 
         mAtmService = _service;
         ((Token) token).mActivityRef = new WeakReference<>(this);

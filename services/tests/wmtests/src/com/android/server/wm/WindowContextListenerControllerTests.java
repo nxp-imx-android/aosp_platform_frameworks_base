@@ -91,7 +91,7 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
     private WindowTokenClient mClientToken;
 
     private WindowProcessController mWpc;
-    private WindowContainer<?> mContainer;
+    private WindowToken mContainer;
 
     @Rule
     public final Expect mExpect = Expect.create();
@@ -144,7 +144,7 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
 
         assertEquals(2, mController.mListeners.size());
 
-        final WindowContainer<?> container = createTestWindowToken(TYPE_APPLICATION_OVERLAY,
+        final WindowToken container = createTestWindowToken(TYPE_APPLICATION_OVERLAY,
                 mDefaultDisplay);
         mController.registerWindowContainerListener(mWpc, mClientToken, container,
                 TYPE_APPLICATION_OVERLAY, false /* callerCanManageAppTokens */, null /* options */);
@@ -180,7 +180,7 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
         assertEquals(mDisplayContent.mDisplayId, clientToken.mDisplayId);
 
         // Update the WindowContainer.
-        final WindowContainer<?> container = createTestWindowToken(TYPE_APPLICATION_OVERLAY,
+        final WindowToken container = createTestWindowToken(TYPE_APPLICATION_OVERLAY,
                 mDefaultDisplay);
         final Configuration config2 = container.getConfiguration();
         final Rect bounds2 = new Rect(0, 0, 20, 20);
@@ -244,9 +244,9 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
     public void testWindowContextCreatedWindowTokenRemoved_SwitchToListenToDA() {
         WindowToken windowContextCreatedToken = new WindowToken.Builder(mWm, mClientToken,
                 TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY)
-                .setDisplayContent(mDefaultDisplay)
                 .setFromClientToken(true)
                 .build();
+        mDefaultDisplay.addWindowToken(windowContextCreatedToken.token, windowContextCreatedToken);
         final DisplayArea<?> da = windowContextCreatedToken.getDisplayArea();
 
         mController.registerWindowContainerListener(mWpc, mClientToken, windowContextCreatedToken,
@@ -281,10 +281,9 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
         // Simulate the behavior to show IME switch dialog: its context switches to register to
         // context created WindowToken.
         WindowToken windowContextCreatedToken = new WindowToken.Builder(mWm, mClientToken,
-                TYPE_INPUT_METHOD_DIALOG)
-                .setDisplayContent(dualDisplayContent)
-                .setFromClientToken(true)
-                .build();
+                TYPE_INPUT_METHOD_DIALOG).setFromClientToken(true).build();
+        dualDisplayContent.addWindowToken(windowContextCreatedToken.token,
+                windowContextCreatedToken);
         mController.registerWindowContainerListener(mWpc, mClientToken, windowContextCreatedToken,
                 TYPE_INPUT_METHOD_DIALOG, false /* callerCanManageAppTokens */, null /* options */);
 

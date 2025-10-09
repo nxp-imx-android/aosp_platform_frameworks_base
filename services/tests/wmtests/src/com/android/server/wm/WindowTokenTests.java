@@ -241,9 +241,9 @@ public class WindowTokenTests extends WindowTestsBase {
     public void testSurfaceCreatedForWindowToken() {
         final WindowToken fromClientToken = new WindowToken.Builder(mDisplayContent.mWmService,
                 mock(IBinder.class), TYPE_APPLICATION_OVERLAY)
-                .setDisplayContent(mDisplayContent)
                 .setFromClientToken(true)
                 .build();
+        mDisplayContent.addWindowToken(fromClientToken.token, fromClientToken);
 
         assertNull(fromClientToken.mSurfaceControl);
 
@@ -253,9 +253,9 @@ public class WindowTokenTests extends WindowTestsBase {
 
         final WindowToken nonClientToken = new WindowToken.Builder(mDisplayContent.mWmService,
                 mock(IBinder.class), TYPE_APPLICATION_OVERLAY)
-                .setDisplayContent(mDisplayContent)
                 .setFromClientToken(false)
                 .build();
+        mDisplayContent.addWindowToken(nonClientToken.token, nonClientToken);
         assertNotNull(nonClientToken.mSurfaceControl);
     }
 
@@ -268,21 +268,21 @@ public class WindowTokenTests extends WindowTestsBase {
 
         final WindowToken token1 = new WindowToken.Builder(mDisplayContent.mWmService,
                 mock(IBinder.class), TYPE_STATUS_BAR)
-                .setDisplayContent(mDisplayContent)
                 .setPersistOnEmpty(true)
                 .setOwnerCanManageAppTokens(true)
                 .build();
+        mDisplayContent.addWindowToken(token1.token, token1);
 
         verify(selectFunc).apply(token1.windowType, null);
 
         final Bundle options = new Bundle();
         final WindowToken token2 = new WindowToken.Builder(mDisplayContent.mWmService,
                 mock(IBinder.class), TYPE_STATUS_BAR)
-                .setDisplayContent(mDisplayContent)
                 .setPersistOnEmpty(true)
                 .setOwnerCanManageAppTokens(true)
                 .setOptions(options)
                 .build();
+        mDisplayContent.addWindowToken(token2.token, token2);
 
         verify(selectFunc).apply(token2.windowType, options);
     }
