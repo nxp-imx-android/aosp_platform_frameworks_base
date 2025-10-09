@@ -131,7 +131,6 @@ public class SupervisionManager {
     public static final String SUPERVISION_SYSTEM_ENTITY = SupervisionManager.class.getName();
 
     /** @hide */
-    @UnsupportedAppUsage
     public SupervisionManager(Context context, @Nullable ISupervisionManager service) {
         mContext = context;
         mService = service;
