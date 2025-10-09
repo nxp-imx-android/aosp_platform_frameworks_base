@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service to manage GPU related features.
@@ -80,7 +81,6 @@ public class GpuService extends SystemService {
     private long mProdDriverVersionCode;
     private SettingsObserver mSettingsObserver;
     private GameDriverDeviceConfigListener mGameDriverListener;
-    private AngleDenylistDenyListListener mAngleDenylistListener;
     @GuardedBy("mLock")
     private Denylists mDenylists;
 
@@ -113,9 +113,6 @@ public class GpuService extends SystemService {
     public void onBootPhase(int phase) {
         if (phase == PHASE_BOOT_COMPLETED) {
             mContentResolver = mContext.getContentResolver();
-            if (android.provider.flags.Flags.angleDynamicDenylist()) {
-                mAngleDenylistListener = new AngleDenylistDenyListListener();
-            }
             if (!mHasProdDriver && !mHasDevDriver) {
                 return;
             }
@@ -163,37 +160,26 @@ public class GpuService extends SystemService {
         @Override
         public void onPropertiesChanged(Properties properties) {
             synchronized (mDeviceConfigLock) {
-                if (properties.getKeyset().contains(
+                final Set<String> keySet = properties.getKeyset();
+                if (keySet.contains(
                         Settings.Global.UPDATABLE_DRIVER_PRODUCTION_DENYLISTS)) {
                     parseDenylists(
                             properties.getString(
                                     Settings.Global.UPDATABLE_DRIVER_PRODUCTION_DENYLISTS, ""));
                     setDenylist();
                 }
-            }
-        }
-    }
-
-    private final class AngleDenylistDenyListListener implements
-            DeviceConfig.OnPropertiesChangedListener {
-        AngleDenylistDenyListListener() {
-            super();
-            DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_GPU,
-                    mContext.getMainExecutor(), this);
-        }
-
-        @Override
-        public void onPropertiesChanged(Properties properties) {
-            synchronized (this) {
-                if (properties.getKeyset().contains(Settings.Global.ANGLE_DYNAMIC_DENYLIST)) {
-                    final String denylistStr = properties.getString(
-                            Settings.Global.ANGLE_DYNAMIC_DENYLIST, "");
-                    if (DEBUG) {
-                        Slog.i(TAG, "Received ANGLE denylist device config update: " + denylistStr);
+                if (android.provider.flags.Flags.angleDynamicDenylist()) {
+                    if (keySet.contains(Settings.Global.ANGLE_DYNAMIC_DENYLIST)) {
+                        final String denylistStr = properties.getString(
+                                Settings.Global.ANGLE_DYNAMIC_DENYLIST, "");
+                        if (DEBUG) {
+                            Slog.i(TAG,
+                                    "Received ANGLE denylist device config update: " + denylistStr);
+                        }
+                        Settings.Global.putString(mContentResolver,
+                                Settings.Global.ANGLE_DYNAMIC_DENYLIST,
+                                denylistStr != null ? denylistStr : "");
                     }
-                    Settings.Global.putString(mContentResolver,
-                            Settings.Global.ANGLE_DYNAMIC_DENYLIST,
-                            denylistStr != null ? denylistStr : "");
                 }
             }
         }
