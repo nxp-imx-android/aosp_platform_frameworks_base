@@ -562,10 +562,10 @@ constructor(
                         }
                     }
                 } else {
-                    transition(edge).mapLatest { it.transitionState.isTransitioning() }
+                    transition(edge).map { it.transitionState.isTransitioning() }
                 }
             } else {
-                transition(edgeWithoutSceneContainer ?: edge).mapLatest {
+                transition(edgeWithoutSceneContainer ?: edge).map {
                     it.transitionState.isTransitioning()
                 }
             }
@@ -587,7 +587,7 @@ constructor(
     ): Flow<Boolean> {
         return repository.transitions
             .filter { it.transitionState != TransitionState.CANCELED }
-            .mapLatest {
+            .map {
                 it.transitionState != TransitionState.FINISHED &&
                     fromStatePredicate(it.from) &&
                     toStatePredicate(it.to)
@@ -604,7 +604,7 @@ constructor(
     ): Flow<Boolean> {
         return repository.transitions
             .filter { it.transitionState != TransitionState.CANCELED }
-            .mapLatest {
+            .map {
                 it.transitionState != TransitionState.FINISHED &&
                     toStatePredicate(
                         it.to,
