@@ -30,7 +30,6 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInter
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
-import com.android.systemui.screencapture.record.ui.viewmodel.ScreenCaptureRecordParametersViewModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
@@ -57,7 +56,6 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
-    screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     private val recordingParameters = screenCaptureUiParams as ScreenCaptureUiParameters.Record
@@ -129,7 +127,13 @@ constructor(
     private fun beginFullscreenScreenshot() {
         // Hide the UI to avoid the parent window closing animation.
         hideUi()
-        backgroundScope.launch { screenshotInteractor.requestFullscreenScreenshot(displayId) }
+        backgroundScope.launch {
+            // Temporary fix to allow enough time for the pre-capture UI to dismiss.
+            // TODO(b/435225255) Implement a more reliable way to ensure the UI is hidden prior to
+            // taking the screenshot.
+            delay(100)
+            screenshotInteractor.requestFullscreenScreenshot(displayId)
+        }
         closeUi()
     }
 
