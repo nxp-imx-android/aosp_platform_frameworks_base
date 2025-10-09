@@ -93,7 +93,6 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -110,7 +109,6 @@ import androidx.test.filters.SmallTest;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
-import com.android.server.wm.WindowTestsBase.ActivityBuilder;
 import com.android.server.wm.utils.MockTracker;
 import com.android.window.flags.Flags;
 
@@ -1202,7 +1200,6 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_BAL_REPARENT_EXISTING_TASK)
     public void testRecycleTaskWhenBalBlocks() {
         final ActivityStarter starter = prepareStarter(0 /* flags */);
         starter.mStartActivity = new ActivityBuilder(mAtm).build();
