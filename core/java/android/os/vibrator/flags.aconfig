@@ -17,7 +17,7 @@ flag {
     name: "vibration_attribute_ime_usage_api"
     is_exported: true
     description: "A public API for IME usage vibration attribute"
-    bug: "332661766"
+    bug: "304262887"
     metadata {
         purpose: PURPOSE_FEATURE
     }
