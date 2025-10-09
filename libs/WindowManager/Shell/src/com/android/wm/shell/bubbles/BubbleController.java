@@ -3215,7 +3215,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 return;
             }
             BubbleLog.d("BubbleController.BubblesImeListener.onImeVisibilityChanged visible=%b"
-                    + "runnable=%s stackView=%s", imeVisible, mOnImeHidden, mStackView);
+                    + " runnable=%s stackView=%s", imeVisible, mOnImeHidden, mStackView);
             // the imeHeight here is actually the ime inset; it only includes the part of the ime
             // that overlaps with the Bubbles window. adjust it to include the bottom screen inset,
             // so we have the total height of the ime.
