@@ -53187,6 +53187,7 @@ package android.view {
     ctor public Surface(android.graphics.SurfaceTexture);
     method public void clearFrameRate();
     method public int describeContents();
+    method @FlaggedApi("com.android.graphics.libgui.flags.bq_producer_backpressure_control") public boolean isProducerThrottlingEnabled();
     method public boolean isValid();
     method public android.graphics.Canvas lockCanvas(android.graphics.Rect) throws java.lang.IllegalArgumentException, android.view.Surface.OutOfResourcesException;
     method public android.graphics.Canvas lockHardwareCanvas();
@@ -53195,6 +53196,7 @@ package android.view {
     method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public void setFrameRate(@NonNull android.view.Surface.FrameRateParams);
     method public void setFrameRate(@FloatRange(from=0.0) float, int, int);
     method public void setFrameRate(@FloatRange(from=0.0) float, int);
+    method @FlaggedApi("com.android.graphics.libgui.flags.bq_producer_backpressure_control") public void setProducerThrottlingEnabled(boolean);
     method @Deprecated public void unlockCanvas(android.graphics.Canvas);
     method public void unlockCanvasAndPost(android.graphics.Canvas);
     method public void writeToParcel(android.os.Parcel, int);
