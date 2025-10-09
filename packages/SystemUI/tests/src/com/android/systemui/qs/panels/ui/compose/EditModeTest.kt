@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.doubleClick
@@ -36,9 +37,12 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.text.AnnotatedString
 import androidx.test.filters.SmallTest
@@ -196,6 +200,25 @@ class EditModeTest(flags: FlagsParameterization) : SysuiTestCase() {
         // Assert tileA moved to tileE's position
         composeRule.assertCurrentTilesGridContainsExactly(
             listOf("tileB", "tileC", "tileD_large", "tileE", "tileA")
+        )
+    }
+
+    @Test
+    fun placementMode_withKeyboard_shouldRepositionTile() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Tab over to the first tile and enter placement mode
+        composeRule.onRoot().performKeyInput { pressKey(Key.Tab) }
+        composeRule.onNodeWithContentDescription("tileA").performKeyInput { pressKey(Key.M) }
+
+        // Tab over to the next tile (tileB) and complete the move
+        composeRule.onRoot().performKeyInput { pressKey(Key.Tab) }
+        composeRule.onNodeWithContentDescription("tileB").performKeyInput { pressKey(Key.Enter) }
+
+        // Assert tileA moved to tileE's position
+        composeRule.assertCurrentTilesGridContainsExactly(
+            listOf("tileB", "tileA", "tileC", "tileD_large", "tileE")
         )
     }
 

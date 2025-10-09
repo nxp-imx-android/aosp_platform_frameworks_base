@@ -126,6 +126,7 @@ fun InteractiveTileContainer(
     val selectionBorderAlpha by transition.animateFloat { it.borderAlpha }
     val isIdle = transition.currentState == transition.targetState
     val isDraggable = tileState == Selected
+    val isClickable = tileState == Selected || tileState == Removable
 
     Box(
         modifier.resizable(tileState == Selected, resizingState).selectionBorder(
@@ -170,7 +171,7 @@ fun InteractiveTileContainer(
                         state = resizingState.anchoredDraggableState,
                         orientation = Orientation.Horizontal,
                     )
-                    .clickable(enabled = tileState != None, onClick = onClick)
+                    .clickable(enabled = isClickable, onClick = onClick)
                     .thenIf(tileState == Selected) {
                         Modifier.dragSpy(
                             onDragStart = resizingState::dragStarted,
