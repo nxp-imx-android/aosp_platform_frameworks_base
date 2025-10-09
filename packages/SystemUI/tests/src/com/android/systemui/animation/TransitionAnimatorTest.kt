@@ -23,14 +23,11 @@ import android.animation.recordMotion
 import android.graphics.Color
 import android.graphics.PointF
 import android.graphics.drawable.GradientDrawable
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.MotionTest
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.EmptyTestActivity
 import com.android.systemui.concurrency.fakeExecutor
@@ -134,21 +131,6 @@ class TransitionAnimatorTest(
             pathManager,
         )
 
-    @DisableFlags(Flags.FLAG_MOVE_TRANSITION_ANIMATION_LAYER)
-    @Test
-    fun backgroundAnimationTimeSeries() {
-        val transitionContainer = createScene()
-        val backgroundLayer = createBackgroundLayer()
-        val animation = createAnimation(transitionContainer, backgroundLayer)
-
-        val recordedMotion = record(backgroundLayer, animation)
-
-        motionRule
-            .assertThat(recordedMotion)
-            .timeSeriesMatchesGolden("backgroundAnimationTimeSeries")
-    }
-
-    @EnableFlags(Flags.FLAG_MOVE_TRANSITION_ANIMATION_LAYER)
     @Test
     fun backgroundAnimationTimeSeries_drawHoleAfterFadeout() {
         val transitionContainer = createScene()

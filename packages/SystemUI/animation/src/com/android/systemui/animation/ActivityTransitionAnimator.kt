@@ -62,7 +62,6 @@ import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.Flags.animationLibraryShellMigration
-import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
@@ -2334,11 +2333,7 @@ constructor(
                         val viewRoot = controller.transitionContainer.viewRootImpl
                         val skipReparenting =
                             skipReparentTransaction || !window.leash.isValid || viewRoot == null
-                        if (
-                            moveTransitionAnimationLayer() &&
-                                isEligibleForReparenting &&
-                                !skipReparenting
-                        ) {
+                        if (isEligibleForReparenting && !skipReparenting) {
                             // Ensure that the launching window is rendered above the view's window,
                             // so it is not obstructed.
                             // Note that it is possible that the leash gets released between the

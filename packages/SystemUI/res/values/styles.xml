@@ -597,6 +597,7 @@
         <item name="android:alertDialogStyle">@style/ScrollableAlertDialogStyle</item>
         <item name="android:buttonBarStyle">@style/ButtonBarStyle</item>
         <item name="android:buttonBarButtonStyle">@style/Widget.Dialog.Button.Large</item>
+        <item name="android:windowElevation">0dp</item>
     </style>
 
     <style name="Theme.SystemUI.BottomSheet" parent="Theme.SystemUI.Dialog">

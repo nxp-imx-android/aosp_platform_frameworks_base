@@ -40,7 +40,6 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.systemui.Flags
-import com.android.systemui.Flags.moveTransitionAnimationLayer
 import java.util.concurrent.Executor
 import kotlin.math.abs
 import kotlin.math.max
@@ -1333,7 +1332,7 @@ class TransitionAnimator(
                 if (drawHole) {
                     drawable.setXfermode(SRC_MODE)
                 }
-            } else if (moveTransitionAnimationLayer() && fadeOutProgress >= 1 && drawHole) {
+            } else if (fadeOutProgress >= 1 && drawHole) {
                 // If [drawHole] is true, draw it once the opening content is done fading in.
                 drawable.alpha = 0x00
                 drawable.setXfermode(SRC_MODE)
