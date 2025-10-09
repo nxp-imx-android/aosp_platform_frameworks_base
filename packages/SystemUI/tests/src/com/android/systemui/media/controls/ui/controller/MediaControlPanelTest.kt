@@ -1938,7 +1938,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(activityStarter).postStartActivityDismissingKeyguard(eq(pendingIntent))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun bindPageArrows() {
         player.attachPlayer(viewHolder)
@@ -1951,7 +1950,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(mediaCarouselScrollHandler).scrollByStep(eq(1))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun setArrowsVisible() {
         val guidePx =
@@ -1972,7 +1970,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(collapsedSet).setGuidelineEnd(eq(R.id.action_button_guideline), eq(guidePx))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun setArrowsVisible_alreadyVisible_noOp() {
         setArrowsVisible()
@@ -1986,7 +1983,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(collapsedSet).setVisibility(R.id.page_right, ConstraintSet.VISIBLE)
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun setArrowsNotVisible() {
         val guidePx =
@@ -2008,7 +2004,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
         verify(collapsedSet).setGuidelineEnd(eq(R.id.action_button_guideline), eq(guidePx))
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun enablePageArrows() {
         player.attachPlayer(viewHolder)

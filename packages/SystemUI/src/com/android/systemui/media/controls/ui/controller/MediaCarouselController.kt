@@ -43,7 +43,6 @@ import com.android.app.tracing.traceSection
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags
 import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -740,8 +739,6 @@ constructor(
     }
 
     private fun updatePageArrows() {
-        if (!Flags.mediaCarouselArrows()) return
-
         val nPlayers = MediaPlayerData.players().size
         MediaPlayerData.players().forEachIndexed { index, mediaPlayer ->
             if (nPlayers == 1 || currentlyDisableScrolling) {
