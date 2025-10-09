@@ -1569,6 +1569,11 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         return mAppIds.getSetting(appId);
     }
 
+    /** Gets the setting associated with the provided PCC App ID */
+    public SettingBase getPccSettingLPr(int pccId) {
+        return mPccIds.getSetting(pccId);
+    }
+
     /** Unregisters the provided app ID. */
     void removeAppIdLPw(int appId) {
         mAppIds.removeSetting(appId);
