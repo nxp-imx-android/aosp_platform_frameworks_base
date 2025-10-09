@@ -105,7 +105,7 @@ public class AdbdServicesManager {
     }
 
     void unregisterAll() {
-        for (AdbdRegistrationListener service : mRegisteredServices.values()) {
+        for (AdbdRegistrationListener service : new ArrayList<>(mRegisteredServices.values())) {
             unregisterService(service.mInstanceName, service.mServiceType);
         }
     }
