@@ -25,6 +25,7 @@ import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUIRepository
 import com.android.wm.shell.compatui.api.CompatUIRequest
 import com.android.wm.shell.compatui.api.CompatUIState
+import com.android.wm.shell.repository.iterate
 import java.util.function.Consumer
 
 /** Default implementation of {@link CompatUIHandler} to handle CompatUI components */
@@ -39,7 +40,7 @@ class DefaultCompatUIHandler(
     private var compatUIEventSender: Consumer<CompatUIEvent>? = null
 
     override fun onCompatInfoChanged(compatUIInfo: CompatUIInfo) {
-        compatUIRepository.iterateOn { spec ->
+        compatUIRepository.iterate { spec ->
             // We get the identifier for the component depending on the task and spec
             val componentId = componentIdGenerator.generateId(compatUIInfo, spec)
             spec.log("Evaluating component $componentId")
@@ -95,7 +96,6 @@ class DefaultCompatUIHandler(
                 }
             }
         }
-        // Empty at the moment
     }
 
     override fun setCallback(compatUIEventSender: Consumer<CompatUIEvent>?) {
