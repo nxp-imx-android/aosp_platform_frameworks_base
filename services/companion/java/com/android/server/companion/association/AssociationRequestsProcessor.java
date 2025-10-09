@@ -453,11 +453,15 @@ public class AssociationRequestsProcessor {
         int userId = association.getUserId();
         Set<String> individualPermissionsToGrant =
                 getIndividualPermissionsFromKeys(permissionSetKeys);
-        PackageManager packageManager = mContext.getPackageManager();
+
+        // Create a Context for the target user
+        Context userContext = mContext.createContextAsUser(UserHandle.of(userId), 0);
+        // Get PackageManager for the target user's context
+        PackageManager userPackageManager = userContext.getPackageManager();
         for (String permissionToGrant : individualPermissionsToGrant) {
-            if (packageManager.checkPermission(permissionToGrant, packageName)
+            if (userPackageManager.checkPermission(permissionToGrant, packageName)
                     != PackageManager.PERMISSION_GRANTED) {
-                packageManager.grantRuntimePermission(packageName, permissionToGrant,
+                mContext.getPackageManager().grantRuntimePermission(packageName, permissionToGrant,
                         UserHandle.of(userId));
                 Slog.i(TAG, "Granted permission " + permissionToGrant + " to package "
                         + packageName);
