@@ -18,6 +18,7 @@ package com.android.server.supervision
 
 import android.app.supervision.PackagePolicy
 import android.app.supervision.Policy
+import android.app.supervision.PolicyKey
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.flags.Flags
 import android.os.PersistableBundle
@@ -283,7 +284,9 @@ class SupervisionSettingsTest {
             this.supervisionLockScreenEnabled = lockScreenEnabled
             this.supervisionLockScreenOptions = lockScreenOptions
             this.supervisionRoleHolders = roleHolders
-            this.policies = policies
+            for (policy in policies) {
+                this.policies.add(policy)
+            }
         }
 
         fun SupervisionUserData.checkUserData(
@@ -304,7 +307,7 @@ class SupervisionSettingsTest {
                     .isEqualTo(lockScreenOptions.toString())
             }
             assertThat(this.supervisionRoleHolders).containsExactlyElementsIn(roleHolders)
-            assertThat(this.policies).containsExactlyElementsIn(policies)
+            assertThat(this.policies.values).containsExactlyElementsIn(policies)
         }
     }
 }

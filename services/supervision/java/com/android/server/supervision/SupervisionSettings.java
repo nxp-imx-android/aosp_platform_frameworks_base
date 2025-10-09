@@ -222,7 +222,7 @@ public class SupervisionSettings {
 
                 // Add policies to the XML.
                 if (Flags.enableSupervisionManagerPolicyApis()) {
-                    addPolicyToXml(xml, data.policies);
+                    addPolicyToXml(xml, (List<Policy>) data.policies.values());
                 }
 
                 if (data.supervisionLockScreenOptions != null) {

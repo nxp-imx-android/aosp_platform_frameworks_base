@@ -23,6 +23,7 @@ import static android.Manifest.permission.MANAGE_USERS;
 import static android.Manifest.permission.QUERY_USERS;
 import static android.app.role.RoleManager.ROLE_SUPERVISION;
 import static android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION;
+import static android.content.pm.PackageInstaller.SessionParams.MAX_PACKAGE_NAME_LENGTH;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED;
 import static android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED;
@@ -333,13 +334,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public List<Policy> getPolicies(@UserIdInt int userId) {
-        return mSupervisionSettings.getUserData(userId).policies;
+        return (List<Policy>) mSupervisionSettings.getUserData(userId).policies.values();
     }
 
     @Override
     public void setPolicy(@UserIdInt int userId, @NonNull Policy policy) {
-        // TODO(b/446218039): Implement policy verification and storage.
-
+        synchronized (getLockObject()) {
+            validatePolicyLocked(userId, policy);
+            policy.incrementVersion();
+            getUserDataLocked(userId).policies.add(policy);
+            mSupervisionSettings.saveUserData();
+        }
         executeOnServiceThread(
                 () -> {
                     applyPolicy(userId, policy);
@@ -396,6 +401,29 @@ public class SupervisionService extends ISupervisionManager.Stub {
         if (dpmi != null) {
             dpmi.setApplicationHiddenBySystem(SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
                     packageName, userId, hidden);
+        }
+    }
+
+    private void validatePolicyLocked(@UserIdInt int userId, @NonNull Policy policy) {
+        switch (policy) {
+            case PackagePolicy pp -> validatePackagePolicy(pp);
+            default -> {
+                throw new IllegalArgumentException(
+                        "Unsupported policy type: " + policy.getClass().getSimpleName());
+            }
+        }
+        long currentPolicyVersion =
+                getUserDataLocked(userId).policies.getCurrentVersion(policy.getPolicyKey());
+        if (currentPolicyVersion != policy.getVersion()) {
+            throw new IllegalArgumentException("Policy version mismatch.");
+        }
+    }
+
+    private void validatePackagePolicy(@NonNull PackagePolicy policy) {
+        if (policy.getPackageName().isEmpty()
+                || policy.getPackageName().length() > MAX_PACKAGE_NAME_LENGTH
+                || policy.getRestrictionType() != PackagePolicy.RESTRICTION_TYPE_BLOCKED) {
+            throw new IllegalArgumentException("Invalid package policy");
         }
     }
 

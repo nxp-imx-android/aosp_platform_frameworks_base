@@ -890,7 +890,7 @@ class SupervisionServiceTest {
     private fun verifySetPackagePolicy(enabled: Boolean) {
         val policy =
             PackagePolicy(
-                /*version=*/ 1,
+                /*version=*/ 0,
                 /*packageName=*/ PACKAGE_NAME,
                 /*restrictionType=*/ PackagePolicy.RESTRICTION_TYPE_BLOCKED,
                 enabled,
