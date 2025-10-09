@@ -355,8 +355,7 @@ public class ActivityManagerServiceTest {
                 true); // expectNotify
 
         // Explicitly setting the seq counter for more verification.
-        // @SuppressWarnings("GuardedBy")
-        mAms.mProcessList.mProcStateSeqCounter = 42;
+        mAms.mProcessList.setProcStateSeqCounter(42);
 
         // Uid state is not moving from background to foreground or vice versa.
         verifySeqCounterAndInteractions(uidRec,
@@ -561,27 +560,27 @@ public class ActivityManagerServiceTest {
 
         uidRec.setSetProcState(prevState);
         uidRec.setCurProcState(curState);
-        final long beforeProcStateSeq = mAms.mProcessList.mProcStateSeqCounter;
+        final long beforeProcStateSeq = mAms.mProcessList.getProcStateSeqCounter();
 
-        mAms.mProcessList.incrementProcStateSeqLOSP(mAms.mProcessList.mActiveUids);
+        mAms.mProcessList.incrementProcStateSeqLSP(mAms.mProcessList.mActiveUids);
         mAms.mProcessList.notifyProcStateChangedForNetworkLOSP(mAms.mProcessList.mActiveUids);
 
         final long afterProcStateSeq = beforeProcStateSeq
                 + mAms.mProcessList.mActiveUids.size();
         assertEquals("beforeProcStateSeq=" + beforeProcStateSeq
                         + ",activeUids.size=" + mAms.mProcessList.mActiveUids.size(),
-                afterProcStateSeq, mAms.mProcessList.mProcStateSeqCounter);
+                afterProcStateSeq, mAms.mProcessList.getProcStateSeqCounter());
         assertTrue("beforeProcStateSeq=" + beforeProcStateSeq
                         + ",afterProcStateSeq=" + afterProcStateSeq
-                        + ",uidCurProcStateSeq=" + uidRec.curProcStateSeq,
-                uidRec.curProcStateSeq > beforeProcStateSeq
-                        && uidRec.curProcStateSeq <= afterProcStateSeq);
+                        + ",uidCurProcStateSeq=" + uidRec.getCurProcStateSeq(),
+                uidRec.getCurProcStateSeq() > beforeProcStateSeq
+                        && uidRec.getCurProcStateSeq() <= afterProcStateSeq);
 
         for (int i = mAms.mProcessList.getLruSizeLOSP() - 1; i >= 0; --i) {
             final ProcessRecord app = mAms.mProcessList.getLruProcessesLOSP().get(i);
             // AMS should notify apps only for block states other than NETWORK_STATE_NO_CHANGE.
             if (app.uid == uidRec.getUid() && expectedBlockState == NETWORK_STATE_BLOCK) {
-                verify(app.getThread()).setNetworkBlockSeq(uidRec.curProcStateSeq);
+                verify(app.getThread()).setNetworkBlockSeq(uidRec.getCurProcStateSeq());
             } else {
                 verifyNoMoreInteractions(app.getThread());
             }
@@ -1229,7 +1228,7 @@ public class ActivityManagerServiceTest {
         final UidRecord uidRecord = new UidRecord(TEST_UID, mAms);
         final int expectedProcState = PROCESS_STATE_SERVICE;
         uidRecord.setSetProcState(expectedProcState);
-        uidRecord.curProcStateSeq = TEST_PROC_STATE_SEQ1;
+        uidRecord.setCurProcStateSeq(TEST_PROC_STATE_SEQ1);
 
         // Test with no pending uid records.
         for (int i = 0; i < UID_RECORD_CHANGES.length; ++i) {
@@ -1468,7 +1467,7 @@ public class ActivityManagerServiceTest {
             long lastNetworkUpdatedProcStateSeq,
             final long procStateSeqToWait, boolean expectWait) throws Exception {
         final UidRecord record = new UidRecord(Process.myUid(), mAms);
-        record.curProcStateSeq = curProcStateSeq;
+        record.setCurProcStateSeq(curProcStateSeq);
         record.lastNetworkUpdatedProcStateSeq = lastNetworkUpdatedProcStateSeq;
         mAms.mProcessList.mActiveUids.put(Process.myUid(), record);
 

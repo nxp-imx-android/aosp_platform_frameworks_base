@@ -42,6 +42,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.psc.AsyncBatchSession;
+import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.SyncBatchSession;
@@ -81,7 +82,7 @@ public class ProcessStateController {
      */
     private final ConcurrentLinkedQueue<Runnable> mStagingQueue = new ConcurrentLinkedQueue<>();
 
-    private ProcessStateController(ActivityManagerService ams, ProcessList processList,
+    private ProcessStateController(ActivityManagerService ams, ProcessListInternal processList,
             ActiveUids activeUids, ServiceThread handlerThread,
             Object lock, Object procLock, Consumer<ProcessRecord> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
@@ -1140,7 +1141,7 @@ public class ProcessStateController {
      */
     public static class Builder {
         private final ActivityManagerService mAms;
-        private final ProcessList mProcessList;
+        private final ProcessListInternal mProcessList;
         private final ActiveUids mActiveUids;
         private final OomAdjuster.Constants mOomConstants;
         private final OomAdjuster.Callback mOomAdjCallback;
@@ -1151,8 +1152,9 @@ public class ProcessStateController {
         private ProcessLruUpdater mProcessLruUpdater = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
-        public Builder(ActivityManagerService ams, ProcessList processList, ActiveUids activeUids,
-                OomAdjuster.Constants oomConstants, OomAdjuster.Callback oomAdjCallback) {
+        public Builder(ActivityManagerService ams, ProcessListInternal processList,
+                ActiveUids activeUids, OomAdjuster.Constants oomConstants,
+                OomAdjuster.Callback oomAdjCallback) {
             mAms = ams;
             mProcessList = processList;
             mActiveUids = activeUids;

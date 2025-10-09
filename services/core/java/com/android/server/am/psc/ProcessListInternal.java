@@ -20,9 +20,11 @@ import android.annotation.Nullable;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** The base class providing common process list operations primarily used by the OomAdjuster. */
 public abstract class ProcessListInternal {
@@ -50,6 +52,15 @@ public abstract class ProcessListInternal {
     /** The ActivityManagerGlobalLock object, which can only be used as a lock object. */
     private Object mProcLock;
 
+    /**
+     * A global counter for generating sequence numbers.
+     * This value will be used when incrementing sequence numbers in individual uidRecords.
+     *
+     * Having a global counter ensures that seq numbers are monotonically increasing for a
+     * particular uid even when the uidRecord is re-created.
+     */
+    private AtomicLong mProcStateSeqCounter = new AtomicLong(0);
+
     /** Current sequence id for process LRU updating. */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
     private int mLruSeq = 0;
@@ -71,6 +82,40 @@ public abstract class ProcessListInternal {
 
     public long getCachedRestoreThresholdKb() {
         return mCachedRestoreThresholdKb;
+    }
+
+    /**
+     * Increments the curProcStateSeq of {@link UidRecordInternal} for all uids using the global
+     * seq counter {@link ProcessListInternal#mProcStateSeqCounter}.
+     */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void incrementProcStateSeqLSP(ActiveUidsInternal activeUids) {
+        for (int i = activeUids.size() - 1; i >= 0; --i) {
+            final UidRecordInternal uidRec = activeUids.valueAt(i);
+            uidRec.setCurProcStateSeq(getNextProcStateSeq());
+        }
+    }
+
+    /**
+     * Returns the next value of the global process state sequence counter.
+     *
+     * TODO: b/450100678 - Remove this method and make mProcStateSeqCounter non-atomic once the
+     *                     out-of-lock usage is refactored.
+     */
+    public long getNextProcStateSeq() {
+        return mProcStateSeqCounter.incrementAndGet();
+    }
+
+    /** Returns the current value of the global process state sequence counter, only for testing. */
+    @VisibleForTesting
+    public long getProcStateSeqCounter() {
+        return mProcStateSeqCounter.get();
+    }
+
+    /** Sets the value of the global process state sequence counter, only for testing. */
+    @VisibleForTesting
+    public void setProcStateSeqCounter(long value) {
+        mProcStateSeqCounter.set(value);
     }
 
     /** Returns a reference to the Least Recently Used (LRU) process list. */

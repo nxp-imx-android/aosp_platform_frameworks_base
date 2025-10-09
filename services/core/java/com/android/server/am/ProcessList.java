@@ -362,16 +362,6 @@ public final class ProcessList extends ProcessListInternal
     final StringBuilder mStringBuilder = new StringBuilder(256);
 
     /**
-     * A global counter for generating sequence numbers.
-     * This value will be used when incrementing sequence numbers in individual uidRecords.
-     *
-     * Having a global counter ensures that seq numbers are monotonically increasing for a
-     * particular uid even when the uidRecord is re-created.
-     */
-    @VisibleForTesting
-    volatile long mProcStateSeqCounter = 0;
-
-    /**
      * A global counter for generating sequence numbers to uniquely identify pending process starts.
      */
     @GuardedBy("mService")
@@ -5317,19 +5307,6 @@ public final class ProcessList extends ProcessListInternal
     }
 
     /**
-     * Increments the {@link UidRecord#curProcStateSeq} for all uids using global seq counter
-     * {@link ProcessList#mProcStateSeqCounter}.
-     */
-    @VisibleForTesting
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    void incrementProcStateSeqLOSP(ActiveUids activeUids) {
-        for (int i = activeUids.size() - 1; i >= 0; --i) {
-            final UidRecord uidRec = activeUids.valueAt(i);
-            uidRec.curProcStateSeq = getNextProcStateSeq();
-        }
-    }
-
-    /**
      * Notifies applications about potential network access changes after the process state
      * sequence has been incremented.
      * <p>This method checks if any UID is transitioning between background and foreground states
@@ -5402,16 +5379,12 @@ public final class ProcessList extends ProcessListInternal
                                 + uidRec);
                     }
                     if (uidRec != null) {
-                        thread.setNetworkBlockSeq(uidRec.curProcStateSeq);
+                        thread.setNetworkBlockSeq(uidRec.getCurProcStateSeq());
                     }
                 } catch (RemoteException ignored) {
                 }
             }
         }
-    }
-
-    long getNextProcStateSeq() {
-        return ++mProcStateSeqCounter;
     }
 
     /**

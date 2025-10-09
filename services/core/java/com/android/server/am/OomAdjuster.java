@@ -321,7 +321,7 @@ public abstract class OomAdjuster {
     final Injector mInjector;
     protected final Constants mOomConstants;
     final GlobalState mGlobalState;
-    final ProcessList mProcessList;
+    final ProcessListInternal mProcessList;
     final ActivityManagerGlobalLock mProcLock;
 
     private final int mNumSlots;
@@ -538,9 +538,9 @@ public abstract class OomAdjuster {
         return adjusterThread;
     }
 
-    OomAdjuster(ActivityManagerService service, ProcessList processList, ActiveUids activeUids,
-            ServiceThread adjusterThread, Constants oomConstants, GlobalState globalState,
-            Injector injector, Callback callback) {
+    OomAdjuster(ActivityManagerService service, ProcessListInternal processList,
+            ActiveUids activeUids, ServiceThread adjusterThread, Constants oomConstants,
+            GlobalState globalState, Injector injector, Callback callback) {
         mCallback = callback;
         mService = service;
         mOomConstants = oomConstants;
@@ -1321,7 +1321,7 @@ public abstract class OomAdjuster {
         // This compares previously set procstate to the current procstate in regards to whether
         // or not the app's network access will be blocked. So, this needs to be called before
         // we update the UidRecord's procstate by calling {@link UidRecord#setSetProcState}.
-        mProcessList.incrementProcStateSeqLOSP(activeUids);
+        mProcessList.incrementProcStateSeqLSP(activeUids);
         mCallback.onProcStateSeqIncremented(activeUids);
 
         ArrayList<UidRecordInternal> becameIdle = mTmpBecameIdle;

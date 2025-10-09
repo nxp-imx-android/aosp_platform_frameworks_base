@@ -24,6 +24,7 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 /**
  * Represents overall state information for a UID that has actively running processes,
@@ -42,6 +43,10 @@ public abstract class UidRecordInternal {
 
     /** The UID represented by this record. */
     protected final int mUid;
+
+    /** Sequence number associated with the {@link #mCurProcState}. */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private long mCurProcStateSeq;
 
     /**
      * The minimum (i.e. most important) process state of the non-isolated processes under the UID
@@ -142,6 +147,17 @@ public abstract class UidRecordInternal {
 
     public int getUid() {
         return mUid;
+    }
+
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    public long getCurProcStateSeq() {
+        return mCurProcStateSeq;
+    }
+
+    @VisibleForTesting
+    @GuardedBy({"mService", "mProcLock"})
+    public void setCurProcStateSeq(long value) {
+        mCurProcStateSeq = value;
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
