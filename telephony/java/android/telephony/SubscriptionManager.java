@@ -503,7 +503,7 @@ public class SubscriptionManager {
      * The slot-index for Bluetooth Remote-SIM subscriptions
      * @hide
      */
-    public static final int SLOT_INDEX_FOR_REMOTE_SIM_SUB = INVALID_SIM_SLOT_INDEX;
+    public static final int SLOT_INDEX_FOR_REMOTE_SIM_SUB = -2;
 
     /**
      * TelephonyProvider column name Subscription-type.
