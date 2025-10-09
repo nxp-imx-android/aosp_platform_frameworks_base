@@ -55,6 +55,8 @@ public class PrebakedSegmentTest {
         original.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
         assertEquals(original, PrebakedSegment.CREATOR.createFromParcel(parcel));
+        parcel.setDataPosition(0);
+        assertEquals(original, VibrationEffectSegment.CREATOR.createFromParcel(parcel));
     }
 
     @Test
