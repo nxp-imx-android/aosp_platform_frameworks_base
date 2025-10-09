@@ -24,6 +24,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
+import android.content.ComponentName;
 import android.content.IntentSender;
 import android.content.RestrictionEntry;
 import android.graphics.Bitmap;
@@ -157,4 +158,6 @@ interface IUserManager {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(anyOf = {android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS})")
     int getBootUser();
     int[] getProfileIdsExcludingHidden(int userId, boolean enabledOnly);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(anyOf = {android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS})")
+    void setTemporaryHsuActivitiesAllowlist(in List<ComponentName> componentNames);
 }

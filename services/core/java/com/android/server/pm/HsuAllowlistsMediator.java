@@ -19,7 +19,6 @@ package com.android.server.pm;
 import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.content.Context;
-import android.util.ArraySet;
 import android.util.Dumpable;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
@@ -31,11 +30,12 @@ import com.android.internal.util.NamedLock;
 import com.android.server.utils.Slogf;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 // TODO(b/412177078): rename to UserAllowlistsMediator or UserTypesAllowlistsMediator
 /**
@@ -74,20 +74,17 @@ final class HsuAllowlistsMediator implements Dumpable {
 
     // Called by 'cmd user', which needs to "build" the temporary allowlist based on incremental
     // actions (like add or remove an activity)
-    Set<ComponentName> getEffectiveActivitiesAllowlist() {
-        ArraySet<ComponentName> allowlist = new ArraySet<>();
-        String[] normalizedNames;
+    List<ComponentName> getEffectiveActivitiesAllowlist() {
         synchronized (mLock) {
-            if (mTemporaryActivitiesAllowlist != null) {
-                normalizedNames = mTemporaryActivitiesAllowlist;
-            } else {
-                normalizedNames = mPermanentActivitiesAllowlist;
-            }
+            String[] normalizedNames = mTemporaryActivitiesAllowlist != null
+                    ? mTemporaryActivitiesAllowlist
+                    : mPermanentActivitiesAllowlist;
+            ArrayList<ComponentName> allowlist = new ArrayList<>(normalizedNames.length);
             for (String name : normalizedNames) {
                 allowlist.add(ComponentName.unflattenFromString(name));
             }
+            return allowlist;
         }
-        return allowlist;
     }
 
     /**

@@ -2821,6 +2821,31 @@ public class UserManager {
     }
 
     /**
+     * Sets a temporary list of activities that can be launched when the
+     * {@link ActivityManager#getCurrentUser() current user} is the
+     * {@link #isHeadlessSystemUserMode() Headless System User}
+     *
+     * <p>The allowlist is valid until the system is restarted, or this method is called with
+     * {@code null}.
+     *
+     * @param activities list of activities that are allowed, or empty to allow any activity, or
+     * {@code null} to reset the temporary list (in which case the allowlist would be defined by the
+     * device config).
+     *
+     * @hide
+     */
+    @RequiresPermission(anyOf = {android.Manifest.permission.MANAGE_USERS,
+            android.Manifest.permission.MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS})
+    public void setTemporaryHsuActivitiesAllowlist(@Nullable Set<ComponentName> activities) {
+        final List<ComponentName> list = activities == null ? null : new ArrayList<>(activities);
+        try {
+            mService.setTemporaryHsuActivitiesAllowlist(list);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * @deprecated use {@link #getUserSwitchability()} instead.
      *
      * @removed

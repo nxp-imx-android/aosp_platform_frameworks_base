@@ -55,9 +55,9 @@ import com.google.errorprone.annotations.FormatString;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -684,14 +684,14 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         ComponentName activity = getRequiredComponentNameNextArg();
         Slogf.i(LOG_TAG, "addToHsuActivitiesAllowlist(%s)", activity);
 
-        Set<ComponentName> allowlist = mService.getEffectiveHsuActivitiesAllowlist();
+        List<ComponentName> allowlist = mService.getEffectiveHsuActivitiesAllowlist();
         if (allowlist.contains(activity)) {
             return printFailed("activity %s already in the allowlist (%s)",
                     activity.flattenToShortString(), toShortString(allowlist));
         }
         allowlist.add(activity);
 
-        mService.setTemporaryHsuActivitiesAllowlist(allowlist);
+        setTemporaryHsuActivitiesAllowlist(allowlist);
         return printSuccess();
     }
 
@@ -699,14 +699,14 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         ComponentName activity = getRequiredComponentNameNextArg();
         Slogf.i(LOG_TAG, "removeFromHsuActivitiesAllowlist(%s)", activity);
 
-        Set<ComponentName> allowlist = mService.getEffectiveHsuActivitiesAllowlist();
+        List<ComponentName> allowlist = mService.getEffectiveHsuActivitiesAllowlist();
         if (!allowlist.contains(activity)) {
             return printFailed("activity %s not in the allowlist (%s)",
                     activity.flattenToShortString(), toShortString(allowlist));
         }
         allowlist.remove(activity);
 
-        mService.setTemporaryHsuActivitiesAllowlist(allowlist);
+        setTemporaryHsuActivitiesAllowlist(allowlist);
         return printSuccess();
     }
 
@@ -714,7 +714,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         ComponentName activity = getRequiredComponentNameNextArg();
         Slogf.i(LOG_TAG, "checkHsuActivityAllowlisted(%s)", activity);
 
-        Set<ComponentName> allowlist = mService.getEffectiveHsuActivitiesAllowlist();
+        List<ComponentName> allowlist = mService.getEffectiveHsuActivitiesAllowlist();
         boolean allowed = allowlist.contains(activity);
 
         getOutPrintWriter().println(allowed);
@@ -729,20 +729,25 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             activities.add(activity);
         }
         Slogf.i(LOG_TAG, "setHsuActivitiesAllowlist(%s)", activities);
-        mService.setTemporaryHsuActivitiesAllowlist(activities);
+        setTemporaryHsuActivitiesAllowlist(activities);
         return printSuccess();
     }
 
     private int resetHsuActivitiesAllowlist() {
         Slogf.i(LOG_TAG, "resetHsuActivitiesAllowlist()");
-        mService.setTemporaryHsuActivitiesAllowlist(null);
+        setTemporaryHsuActivitiesAllowlist(null);
         return printSuccess();
     }
 
     private int disableHsuActivitiesAllowlist() {
         Slogf.i(LOG_TAG, "disableHsuActivitiesAllowlist()");
-        mService.setTemporaryHsuActivitiesAllowlist(Collections.emptyList());
+        setTemporaryHsuActivitiesAllowlist(Collections.emptyList());
         return printSuccess();
+    }
+
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    private void setTemporaryHsuActivitiesAllowlist(@Nullable List<ComponentName> componentNames) {
+        mService.setTemporaryHsuActivitiesAllowlist(componentNames);
     }
 
     /**
@@ -861,7 +866,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         return RESULT_GENERIC_ERROR;
     }
 
-    private static String toShortString(Set<ComponentName> components) {
+    private static String toShortString(Collection<ComponentName> components) {
         return components.stream().map(c -> c.flattenToShortString()).collect(Collectors.toList())
                 .toString();
     }

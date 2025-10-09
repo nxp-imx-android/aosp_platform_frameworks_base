@@ -215,7 +215,6 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -4814,12 +4813,10 @@ public class UserManagerService extends IUserManager.Stub {
      * @throws SecurityException if the caller lacks the required permissions.
      */
     private static void checkManageHsuAllowlistsPermission(String message) {
-        // TODO(b/412177078): for now it's only checking for MANAGE_USERS, but it should call
-        // hasManageUsersOrPermission() with a new permission (like
-        // MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS) instead.
-        // TODO(b/412177078): replace TBD with the new name of the new permission :-)
-        if (!hasManageUsersPermission()) {
-            throw new SecurityException("You need MANAGE_USERS or TBD permission to: "
+        if (!hasManageUsersOrPermission(
+                android.Manifest.permission.MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS)) {
+            throw new SecurityException("You need MANAGE_USERS or "
+                    + "MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS permission to: "
                     + message);
         }
     }
@@ -5158,10 +5155,12 @@ public class UserManagerService extends IUserManager.Stub {
                 null, SystemMessage.NOTE_WRONG_HSUM_STATUS, notification, UserHandle.ALL);
     }
 
-    // NOTE: currently only called by shell cmd
-    void setTemporaryHsuActivitiesAllowlist(@Nullable Collection<ComponentName> componentNames) {
+    @Override
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    public void setTemporaryHsuActivitiesAllowlist(@Nullable List<ComponentName> componentNames) {
         checkManageHsuAllowlistsPermission("set temporary HSU activities allowlist");
         checkHasHam();
+        Slogf.i(LOG_TAG, "Setting temporary HSU activities allowlist to %s", componentNames);
         mHam.setTemporaryActivitiesAllowlist(componentNames);
     }
 
@@ -5170,7 +5169,7 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     // Used by shell cmd
-    Set<ComponentName> getEffectiveHsuActivitiesAllowlist() {
+    List<ComponentName> getEffectiveHsuActivitiesAllowlist() {
         checkManageHsuAllowlistsPermission("get effective HSU activities allowlist");
         checkHasHam();
         return mHam.getEffectiveActivitiesAllowlist();
