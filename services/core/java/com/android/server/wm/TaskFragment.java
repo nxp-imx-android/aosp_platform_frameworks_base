@@ -1297,9 +1297,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      * @param source an activity in this TaskFragment that launches another activity.
      */
     boolean shouldAbortActivityLaunchOnFinishingTf(@NonNull ActivityRecord source) {
-        if (!Flags.activityEmbeddingAbortCrossUidLaunchInFinishingTaskFragment()) {
-            return false;
-        }
         // If the source activity is a cross-uid embedded activity, the newly launched activity is
         // always expected to be in the same TaskFragment. If this TaskFragment is being removed, we
         // should not allow a new activity to be launched by the source, because it may be placed
