@@ -64,8 +64,8 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.statusbar.policy.KeyguardStateController
-import com.android.systemui.statusbar.window.StatusBarWindowController
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
+import com.android.systemui.statusbar.window.fakeStatusBarWindowControllerStore
+import com.android.systemui.statusbar.window.statusBarWindowControllerStore
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
@@ -85,7 +85,9 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -104,8 +106,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Mock private lateinit var activityTransitionAnimator: ActivityTransitionAnimator
     @Mock private lateinit var shadeDialogContextInteractor: ShadeDialogContextInteractor
     @Mock private lateinit var lockScreenUserManager: NotificationLockscreenUserManager
-    @Mock private lateinit var statusBarWindowController: StatusBarWindowController
-    @Mock private lateinit var statusBarWindowControllerStore: StatusBarWindowControllerStore
     @Mock private lateinit var notifShadeWindowController: NotificationShadeWindowController
     @Mock private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
     @Mock private lateinit var keyguardStateController: KeyguardStateController
@@ -123,15 +123,18 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Mock private lateinit var remoteAnimationAdapter: RemoteAnimationAdapter
     @Mock private lateinit var mDesktopFirstRepository: DesktopFirstRepository
     private lateinit var underTest: LegacyActivityStarterInternalImpl
-    private val kosmos = testKosmos()
+    private val kosmos =
+        testKosmos().also {
+            it.statusBarWindowControllerStore = it.fakeStatusBarWindowControllerStore
+        }
     private val mainExecutor = FakeExecutor(FakeSystemClock())
     private val shadeAnimationInteractor =
         ShadeAnimationInteractorLegacyImpl(ShadeAnimationRepository(), FakeShadeRepository())
 
     @Before
     fun setUp() {
+        context.display = mock { on { displayId } doReturn DISPLAY_ID }
         MockitoAnnotations.initMocks(this)
-        `when`(statusBarWindowControllerStore.defaultDisplay).thenReturn(statusBarWindowController)
         `when`(perDisplaySysUiStateRepository[anyInt()]).thenReturn(sysUIState)
         underTest =
             LegacyActivityStarterInternalImpl(
@@ -148,7 +151,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
                 activityTransitionAnimator = activityTransitionAnimator,
                 contextInteractor = shadeDialogContextInteractor,
                 lockScreenUserManager = lockScreenUserManager,
-                statusBarWindowControllerStore = statusBarWindowControllerStore,
+                statusBarWindowControllerStore = kosmos.statusBarWindowControllerStore,
                 wakefulnessLifecycle = wakefulnessLifecycle,
                 keyguardStateController = keyguardStateController,
                 statusBarStateController = statusBarStateController,
@@ -1287,6 +1290,61 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
             )
     }
 
+    @Test
+    @DisableFlags(Flags.FLAG_ACTIVITY_STARTER_DISPLAY_AWARE)
+    fun startActivity_displayAwareFlagDisabled_usesDefaultDisplay() {
+        val intent = Intent()
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)!!
+        `when`(keyguardStateController.isShowing).thenReturn(false)
+        `when`(keyguardStateController.isOccluded).thenReturn(false)
+
+        underTest.startActivity(
+            intent = intent,
+            dismissShade = false,
+            animationController = controller,
+            showOverLockscreenWhenLocked = true,
+            userHandle = UserHandle.CURRENT,
+        )
+
+        val windowControllerStore = kosmos.fakeStatusBarWindowControllerStore
+        assertThat(windowControllerStore.defaultDisplay.wrappedAnimationControllers).isNotEmpty()
+        assertThat(windowControllerStore.forDisplay(context.displayId).wrappedAnimationControllers)
+            .isEmpty()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ACTIVITY_STARTER_DISPLAY_AWARE)
+    fun startActivity_displayAwareFlagEnabled_usesCorrectDisplay() {
+        val intent = Intent()
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)!!
+        `when`(keyguardStateController.isShowing).thenReturn(false)
+        `when`(keyguardStateController.isOccluded).thenReturn(false)
+
+        underTest.startActivity(
+            intent = intent,
+            dismissShade = false,
+            animationController = controller,
+            showOverLockscreenWhenLocked = true,
+            userHandle = UserHandle.CURRENT,
+        )
+        val windowControllerStore = kosmos.fakeStatusBarWindowControllerStore
+        assertThat(windowControllerStore.defaultDisplay.wrappedAnimationControllers).isEmpty()
+        assertThat(windowControllerStore.forDisplay(context.displayId).wrappedAnimationControllers)
+            .isNotEmpty()
+    }
+
     private fun setupDesktopMode(enabled: Boolean) {
         val flags =
             if (enabled) {
@@ -1314,6 +1372,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     }
 
     private companion object {
-        private const val DISPLAY_ID = 0
+        private const val DISPLAY_ID = 123
     }
 }

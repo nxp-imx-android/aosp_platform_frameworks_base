@@ -150,10 +150,18 @@ constructor(
                 ): ActivityTransitionAnimator.Controller {
                     val baseController = controllerFactory.createController(forLaunch)
                     val rootView = baseController.transitionContainer.rootView
-                    val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller> =
-                        statusBarWindowControllerStore.defaultDisplay
-                            .wrapAnimationControllerIfInStatusBar(rootView, baseController)
-                    return if (controllerFromStatusBar.isPresent) {
+                    val statusBarWindowController =
+                        if (Flags.activityStarterDisplayAware()) {
+                            statusBarWindowControllerStore.forDisplay(rootView.context.displayId)
+                        } else {
+                            statusBarWindowControllerStore.defaultDisplay
+                        }
+                    val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller>? =
+                        statusBarWindowController?.wrapAnimationControllerIfInStatusBar(
+                            rootView,
+                            baseController,
+                        )
+                    return if (controllerFromStatusBar?.isPresent == true) {
                         controllerFromStatusBar.get()
                     } else {
                         baseController
@@ -730,12 +738,18 @@ constructor(
             return null
         }
         val rootView = animationController.transitionContainer.rootView
-        val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller> =
-            statusBarWindowControllerStore.defaultDisplay.wrapAnimationControllerIfInStatusBar(
+        val statusBarWindowController =
+            if (Flags.activityStarterDisplayAware()) {
+                statusBarWindowControllerStore.forDisplay(rootView.context.displayId)
+            } else {
+                statusBarWindowControllerStore.defaultDisplay
+            }
+        val controllerFromStatusBar: Optional<ActivityTransitionAnimator.Controller>? =
+            statusBarWindowController?.wrapAnimationControllerIfInStatusBar(
                 rootView,
                 animationController,
             )
-        if (controllerFromStatusBar.isPresent) {
+        if (controllerFromStatusBar?.isPresent == true) {
             return controllerFromStatusBar.get()
         }
 
