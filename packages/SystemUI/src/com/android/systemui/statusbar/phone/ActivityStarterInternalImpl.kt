@@ -663,14 +663,32 @@ constructor(
         isActivityIntent: Boolean,
         showOverLockscreen: Boolean,
     ): Boolean {
+        val keyguardOccluded = isKeyguardOccluded()
         // TODO(b/294418322): always support launch animations when occluded.
         val ignoreOcclusion = showOverLockscreen
-        if (isKeyguardOccluded() && !ignoreOcclusion) {
+        val skipInDesktopFlag = shadeAppLaunchAnimationSkipInDesktop()
+        val isDesktopMode = isInDesktopModeOnCurrentShadeDisplay
+        val isDesktopFirst = desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId)
+        val keyguardShowing = isKeyguardShowing()
+
+        Log.i(
+            TAG,
+            "shouldAnimateLaunch: " +
+                "isActivityIntent=$isActivityIntent, " +
+                "showOverLockscreen=$showOverLockscreen, " +
+                "isKeyguardOccluded=$keyguardOccluded, " +
+                "ignoreOcclusion=$ignoreOcclusion, " +
+                "skipInDesktopFlag=$skipInDesktopFlag, " +
+                "isInDesktopModeOnCurrentShadeDisplay=$isDesktopMode, " +
+                "isDisplayDesktopFirst=$isDesktopFirst, " +
+                "isKeyguardShowing=$keyguardShowing",
+        )
+        if (keyguardOccluded && !ignoreOcclusion) {
             return false
         }
 
         if (
-            shadeAppLaunchAnimationSkipInDesktop() &&
+            skipInDesktopFlag &&
                 (isInDesktopModeOnCurrentShadeDisplay ||
                     desktopFirstRepository.isDisplayDesktopFirst(currentShadeDisplayId))
         ) {
