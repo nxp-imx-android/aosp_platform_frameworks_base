@@ -95,10 +95,6 @@
       "keywords": ["device"]
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-LaunchMultipleBubbleTest",
-      "keywords": ["device"]
-    },
-    {
       "name": "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest",
       "keywords": ["device"]
     },
