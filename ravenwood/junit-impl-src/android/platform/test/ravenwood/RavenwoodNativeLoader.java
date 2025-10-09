@@ -46,6 +46,7 @@ public final class RavenwoodNativeLoader {
 //            android.util.Log.class, // Not using native log: b/377377826
             android.os.Parcel.class,
             android.os.Binder.class,
+            android.os.MessageQueue.class,
             android.os.SystemProperties.class,
             android.content.res.ApkAssets.class,
             android.content.res.AssetManager.class,
