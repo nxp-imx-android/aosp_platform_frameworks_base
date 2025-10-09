@@ -22,8 +22,10 @@ import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.admin.BooleanPolicyValue;
 import android.app.admin.DevicePolicyManager.PolicyScope;
 import android.app.admin.PolicyIdentifier;
+import android.app.admin.PolicyValue;
 import android.app.admin.PolicyValueTransport;
 import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
@@ -33,6 +35,7 @@ import com.android.server.devicepolicy.CallerIdentity;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
 import com.android.server.devicepolicy.DevicePolicyManagerService.DpcType;
 import com.android.server.devicepolicy.IPermissionChecker;
+import com.android.server.devicepolicy.PolicyDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,13 +103,30 @@ public class PolicyHandler<T> {
     public static List<PolicyHandler<?>> HANDLERS = new ArrayList<>();
 
     static {
-        // Currently empty, just waiting for YOU to add the very first handler here :)
+        HANDLERS.add(
+                new PolicyHandler<Integer>(PolicyIdentifier.SCREEN_CAPTURE, null) {
+                    @Override
+                    protected void storePolicyValue(
+                            CallerIdentity caller, int scope, Integer value) {
+                        if (value == null || value == PolicyIdentifier.SCREEN_CAPTURE_ALLOWED) {
+                            clearPolicy(caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
+                        } else {
+                            storePolicy(caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED,
+                                    scope,
+                                    /*isScreenCaptureDisabled=*/new BooleanPolicyValue(true));
+                        }
+                    }
+                });
     }
 
     private final PolicyIdentifier<T> mKey;
     private final PolicyMetadata<T> mPolicyMetadata;
     private final PolicyValidator<T> mValidator;
+    private final PolicyValueConvertor<T> mValueConvertor;
     private final PolicyTransportValueConvertor<T> mTransportValueConvertor;
+
+    // TODO(444641755): obtain policy definition through PolicyMetadata.
+    private final PolicyDefinition<T> mPolicyDefinition;
 
     /**
      * Helper class that provides access to methods used while processing policies. Must be
@@ -116,26 +136,29 @@ public class PolicyHandler<T> {
 
     public PolicyHandler(
             @NonNull PolicyIdentifier<T> key,
-            @NonNull PolicyMetadata<T> policyMetadata) {
+            @NonNull PolicyMetadata<T> policyMetadata,
+            @Nullable PolicyDefinition<T> policyDefinition) {
         mKey = key;
         mPolicyMetadata = policyMetadata;
+        mPolicyDefinition = policyDefinition;
         mValidator = PolicyValidator.getInstance(mPolicyMetadata);
         mTransportValueConvertor = PolicyTransportValueConvertor.getInstance(mPolicyMetadata);
+        mValueConvertor = PolicyValueConvertor.getInstance(mPolicyMetadata);
     }
 
     /** Constructor that uses the generated {@link PolicyMetadata} */
-    public PolicyHandler(@NonNull PolicyIdentifier<T> key) {
-        this(
-                key,
-                GeneratedPolicyMetadata.getPolicyMetadata(key));
+    public PolicyHandler(
+            @NonNull PolicyIdentifier<T> key, @Nullable PolicyDefinition<T> policyDefinition) {
+        this(key, GeneratedPolicyMetadata.getPolicyMetadata(key), policyDefinition);
     }
 
     /** Convenience constructor used by unittests */
     public PolicyHandler(
             @NonNull PolicyIdentifier<T> key,
             @NonNull PolicyMetadata<T> policyMetadata,
+            @Nullable PolicyDefinition<T> policyDefinition,
             @NonNull Delegate delegate) {
-        this(key, policyMetadata);
+        this(key, policyMetadata, policyDefinition);
         setDelegate(delegate);
     }
 
@@ -149,6 +172,11 @@ public class PolicyHandler<T> {
     }
 
     @NonNull
+    protected PolicyValueConvertor<T> getValueConvertor() {
+        return mValueConvertor;
+    }
+
+    @NonNull
     protected PolicyMetadata<T> getPolicyMetadata() {
         return mPolicyMetadata;
     }
@@ -156,7 +184,7 @@ public class PolicyHandler<T> {
     @NonNull
     protected Delegate getDelegate() {
         if (mDelegate == null) {
-            throw new IllegalStateException("Delegate must be set before accessing it");
+            throw new IllegalStateException("Delegate must be set before using the handler");
         }
         return mDelegate;
     }
@@ -164,6 +192,10 @@ public class PolicyHandler<T> {
     public void setDelegate(@NonNull Delegate delegate) {
         mDelegate = delegate;
     }
+
+    /******************************************************************************************
+     * The methods below can be overwritten to change the behavior of your policy.
+     *****************************************************************************************/
 
     /** Performs every step required to set the policy. */
     public void setPolicy(
@@ -222,13 +254,12 @@ public class PolicyHandler<T> {
      * @throws SecurityException when the caller does not have the required permissions.
      */
     protected void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
-        var permissionChecker = getDelegate().getPermissionChecker();
+        var permissionChecker = getPermissionChecker();
 
         permissionChecker.enforce(getPolicyMetadata().getRequiredPermission(), caller);
 
         if (scope != POLICY_SCOPE_USER) {
-            permissionChecker.enforce(
-                    getPolicyMetadata().getRequiredCrossUserPermission(), caller);
+            permissionChecker.enforce(getPolicyMetadata().getRequiredCrossUserPermission(), caller);
         }
     }
 
@@ -253,8 +284,18 @@ public class PolicyHandler<T> {
      */
     protected void storePolicyValue(
             @NonNull CallerIdentity caller, @PolicyScope int scope, @Nullable T value) {
-        // TODO(443666776): Implement
+        PolicyDefinition<T> key = getPolicyDefinition();
+
+        if (value != null) {
+            storePolicy(caller, key, scope, getValueConvertor().toPolicyValue(value));
+        } else {
+            clearPolicy(caller, key, scope);
+        }
     }
+
+    /******************************************************************************************
+     * The methods below are helper methods to be used in your overwritten methods.
+     *****************************************************************************************/
 
     protected static String scopeToString(@PolicyScope int scope) {
         return switch (scope) {
@@ -275,6 +316,45 @@ public class PolicyHandler<T> {
         return mValidator;
     }
 
+    /**
+     * Returns the policy definition used by {@link storePolicyValue} to store the policy in the
+     * DevicePolicyEngine.
+     */
+    @NonNull
+    protected final PolicyDefinition<T> getPolicyDefinition() {
+        if (mPolicyDefinition == null) {
+            throw new IllegalStateException(
+                    "getPolicyDefinition() can not be used for policy "
+                            + getKey().getId()
+                            + ", since no policy definition was passed into the constructor");
+        }
+        return mPolicyDefinition;
+    }
+
+    @DpcType
+    protected final int getDpcType(@NonNull CallerIdentity caller) {
+        return getDelegate().getDpcType(caller);
+    }
+
+    protected final IPermissionChecker getPermissionChecker() {
+        return getDelegate().getPermissionChecker();
+    }
+
+    protected final <StoredType> void storePolicy(
+            @NonNull CallerIdentity caller,
+            @NonNull PolicyDefinition<StoredType> key,
+            @PolicyScope int scope,
+            @NonNull PolicyValue<StoredType> value) {
+        getDelegate().storePolicy(caller, key, scope, value);
+    }
+
+    protected final <StoredType> void clearPolicy(
+            @NonNull CallerIdentity caller,
+            @NonNull PolicyDefinition<StoredType> key,
+            @PolicyScope int scope) {
+        getDelegate().clearPolicy(caller, key, scope);
+    }
+
     /** Helper class that provides access to helper methods used while processing policies. */
     public interface Delegate {
         /** Returns the DPC type of the given caller. */
@@ -283,5 +363,30 @@ public class PolicyHandler<T> {
 
         /** Returns the permission checker that can be used to check permissions. */
         IPermissionChecker getPermissionChecker();
+
+        /**
+         * Helper method to store a policy into the {@code DevicePolicyEngine}. Invoked from {@link
+         * PolicyHandler.storePolicyValue}.
+         *
+         * <p>Will use {@code scope} to decide on the correct storage (global vs local on user vs
+         * local on parent of the user).
+         */
+        <StoredType> void storePolicy(
+                @NonNull CallerIdentity caller,
+                @NonNull PolicyDefinition<StoredType> key,
+                @PolicyScope int scope,
+                @NonNull PolicyValue<StoredType> value);
+
+        /**
+         * Helper method to remove a policy from the {@code DevicePolicyEngine}. Invoked from {@link
+         * PolicyHandler.storePolicyValue}.
+         *
+         * <p>Will use {@link scope} to decide on the correct storage (global vs local on user vs
+         * local on parent of the user).
+         */
+        <StoredType> void clearPolicy(
+                @NonNull CallerIdentity caller,
+                @NonNull PolicyDefinition<StoredType> key,
+                @PolicyScope int scope);
     }
 }

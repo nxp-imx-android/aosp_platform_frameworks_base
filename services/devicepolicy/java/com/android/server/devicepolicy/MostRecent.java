@@ -23,7 +23,7 @@ import android.app.admin.PolicyValue;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-final class MostRecent<V> extends ResolutionMechanism<V> {
+public final class MostRecent<V> extends ResolutionMechanism<V> {
 
     @Override
     ResolvedPolicy<V> resolve(
