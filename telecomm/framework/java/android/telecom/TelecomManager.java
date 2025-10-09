@@ -3241,7 +3241,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public boolean isLocalVoicemailSupported() {
         ITelecomService service = getTelecomService();
@@ -3281,7 +3281,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void enableLocalVoicemail(@NonNull PhoneAccountHandle phoneAccountHandle,
             @NonNull Duration timeout) {
@@ -3317,7 +3317,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void disableLocalVoicemail(@NonNull PhoneAccountHandle phoneAccountHandle) {
         if (phoneAccountHandle == null) {
@@ -3349,7 +3349,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public boolean isLocalVoicemailEnabled(@NonNull PhoneAccountHandle phoneAccountHandle) {
         ITelecomService service = getTelecomService();
@@ -3391,7 +3391,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public @NonNull Duration getLocalVoicemailTimeout(
             @NonNull PhoneAccountHandle phoneAccountHandle) {

@@ -63,7 +63,7 @@ import java.util.concurrent.Executor;
  * @hide
  */
 @SystemApi
-@FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+@FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
 public abstract class LocalVoicemailService extends Service {
     /**
      * The {@link Intent} that must be declared as handled by the service.
