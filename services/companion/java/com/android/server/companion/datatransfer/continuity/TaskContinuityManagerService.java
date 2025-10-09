@@ -20,6 +20,7 @@ import static android.Manifest.permission.READ_REMOTE_TASKS;
 import static android.Manifest.permission.REQUEST_TASK_HANDOFF;
 import static android.Manifest.permission.MODIFY_HANDOFF_SETTINGS;
 import static android.Manifest.permission.READ_HANDOFF_SETTINGS;
+import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
 
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
@@ -75,23 +76,30 @@ public final class TaskContinuityManagerService extends SystemService {
     private final class TaskContinuityManagerServiceImpl extends ITaskContinuityManager.Stub {
         @Override
         @EnforcePermission(READ_REMOTE_TASKS)
-        public void registerRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+        public void registerRemoteTaskListener(int userId, @NonNull IRemoteTaskListener listener) {
             registerRemoteTaskListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
             mTaskSyncController.registerTaskListener(Objects.requireNonNull(listener));
         }
 
         @Override
         @EnforcePermission(READ_REMOTE_TASKS)
-        public void unregisterRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+        public void unregisterRemoteTaskListener(
+                int userId, @NonNull IRemoteTaskListener listener) {
             unregisterRemoteTaskListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
             mTaskSyncController.unregisterTaskListener(Objects.requireNonNull(listener));
         }
 
         @Override
         @EnforcePermission(REQUEST_TASK_HANDOFF)
         public void requestHandoff(
-                int associationId, int remoteTaskId, @NonNull IHandoffRequestCallback callback) {
+                int userId,
+                int associationId,
+                int remoteTaskId,
+                @NonNull IHandoffRequestCallback callback) {
             requestHandoff_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
             Objects.requireNonNull(callback);
 
@@ -105,8 +113,9 @@ public final class TaskContinuityManagerService extends SystemService {
 
         @Override
         @EnforcePermission(MODIFY_HANDOFF_SETTINGS)
-        public void enableHandoffForDevice(boolean enabled) {
+        public void enableHandoffForDevice(int userId, boolean enabled) {
             enableHandoffForDevice_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
             // TODO: Implement this method.
         }
@@ -114,8 +123,9 @@ public final class TaskContinuityManagerService extends SystemService {
         @Override
         @EnforcePermission(READ_HANDOFF_SETTINGS)
         public void registerHandoffFeatureStateListener(
-                @NonNull IHandoffFeatureStateListener listener) {
+                int userId, @NonNull IHandoffFeatureStateListener listener) {
             registerHandoffFeatureStateListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
             // TODO: Implement this method.
         }
@@ -123,8 +133,9 @@ public final class TaskContinuityManagerService extends SystemService {
         @Override
         @EnforcePermission(READ_HANDOFF_SETTINGS)
         public void unregisterHandoffFeatureStateListener(
-                @NonNull IHandoffFeatureStateListener listener) {
+                int userId, @NonNull IHandoffFeatureStateListener listener) {
             unregisterHandoffFeatureStateListener_enforcePermission();
+            enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
             // TODO: Implement this method.
         }

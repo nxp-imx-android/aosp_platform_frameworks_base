@@ -27,6 +27,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.NonNull;
+import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.RemoteException;
 import android.util.ArrayMap;
@@ -37,6 +38,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,8 +58,9 @@ public class TaskContinuityManager {
     private final Context mContext;
     private final ITaskContinuityManager mService;
 
-    private final RemoteTaskListenerHolder mRemoteTaskListenerHolder;
-    private final HandoffFeatureStateListenerHolder mHandoffFeatureStateListenerHolder;
+    private final Map<Integer, RemoteTaskListenerHolder> mRemoteTaskListenerHolderByUserId;
+    private final Map<Integer, HandoffFeatureStateListenerHolder>
+            mHandoffFeatureStateListenerHolderForUsers;
 
     /** @hide */
     @IntDef(
@@ -147,8 +150,8 @@ public class TaskContinuityManager {
 
         mContext = context;
         mService = service;
-        mRemoteTaskListenerHolder = new RemoteTaskListenerHolder(service);
-        mHandoffFeatureStateListenerHolder = new HandoffFeatureStateListenerHolder(service);
+        mRemoteTaskListenerHolderByUserId = new HashMap<>();
+        mHandoffFeatureStateListenerHolderForUsers = new HashMap<>();
     }
 
     /** Listener to be notified when the list of remote tasks changes. */
@@ -201,6 +204,7 @@ public class TaskContinuityManager {
      *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
+    @UserHandleAware
     public void registerRemoteTaskListener(
             @NonNull Executor executor, @NonNull RemoteTaskListener listener) {
 
@@ -208,9 +212,15 @@ public class TaskContinuityManager {
         Objects.requireNonNull(listener);
 
         try {
-            mRemoteTaskListenerHolder.registerListener(executor, listener);
-            // TODO: joeantonetti - Send an initial notification to the listener after it's
-            // attached.
+            synchronized (mRemoteTaskListenerHolderByUserId) {
+                int userId = mContext.getUserId();
+                if (!mRemoteTaskListenerHolderByUserId.containsKey(userId)) {
+                    mRemoteTaskListenerHolderByUserId.put(
+                            userId, new RemoteTaskListenerHolder(userId, mService));
+                }
+
+                mRemoteTaskListenerHolderByUserId.get(userId).registerListener(executor, listener);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -224,11 +234,20 @@ public class TaskContinuityManager {
      *     android.Manifest.permission#READ_REMOTE_TASKS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_REMOTE_TASKS)
+    @UserHandleAware
     public void unregisterRemoteTaskListener(@NonNull RemoteTaskListener listener) {
         Objects.requireNonNull(listener);
 
         try {
-            mRemoteTaskListenerHolder.unregisterListener(listener);
+            synchronized (mRemoteTaskListenerHolderByUserId) {
+                int userId = mContext.getUserId();
+                if (!mRemoteTaskListenerHolderByUserId.containsKey(userId)) {
+                    mRemoteTaskListenerHolderByUserId.put(
+                            userId, new RemoteTaskListenerHolder(userId, mService));
+                }
+
+                mRemoteTaskListenerHolderByUserId.get(userId).unregisterListener(listener);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -246,6 +265,7 @@ public class TaskContinuityManager {
      *     android.Manifest.permission#REQUEST_TASK_HANDOFF} permission.
      */
     @RequiresPermission(android.Manifest.permission.REQUEST_TASK_HANDOFF)
+    @UserHandleAware
     public void requestHandoff(
             int associationId,
             int remoteTaskId,
@@ -259,7 +279,8 @@ public class TaskContinuityManager {
             HandoffRequestCallbackHolder callbackHolder =
                     new HandoffRequestCallbackHolder(executor, callback);
 
-            mService.requestHandoff(associationId, remoteTaskId, callbackHolder);
+            int userId = mContext.getUserId();
+            mService.requestHandoff(userId, associationId, remoteTaskId, callbackHolder);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -275,10 +296,12 @@ public class TaskContinuityManager {
      * @throws SecurityException if the caller does not hold the {@link
      *     android.Manifest.permission#MODIFY_HANDOFF_SETTINGS} permission.
      */
+    @UserHandleAware
     @RequiresPermission(android.Manifest.permission.MODIFY_HANDOFF_SETTINGS)
     public void enableHandoffForDevice(boolean enabled) {
         try {
-            mService.enableHandoffForDevice(enabled);
+            int userId = mContext.getUserId();
+            mService.enableHandoffForDevice(userId, enabled);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -293,13 +316,23 @@ public class TaskContinuityManager {
      *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
+    @UserHandleAware
     public void registerHandoffFeatureStateListener(
             @NonNull Executor executor, @NonNull HandoffFeatureStateListener listener) {
         Objects.requireNonNull(executor);
         Objects.requireNonNull(listener);
 
         try {
-            mHandoffFeatureStateListenerHolder.registerListener(executor, listener);
+            synchronized (mHandoffFeatureStateListenerHolderForUsers) {
+                int userId = mContext.getUserId();
+                if (!mHandoffFeatureStateListenerHolderForUsers.containsKey(userId)) {
+                    mHandoffFeatureStateListenerHolderForUsers.put(
+                            userId, new HandoffFeatureStateListenerHolder(userId, mService));
+                }
+                mHandoffFeatureStateListenerHolderForUsers
+                        .get(userId)
+                        .registerListener(executor, listener);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -314,12 +347,20 @@ public class TaskContinuityManager {
      *     android.Manifest.permission#READ_HANDOFF_SETTINGS} permission.
      */
     @RequiresPermission(android.Manifest.permission.READ_HANDOFF_SETTINGS)
+    @UserHandleAware
     public void unregisterHandoffFeatureStateListener(
             @NonNull HandoffFeatureStateListener listener) {
         Objects.requireNonNull(listener);
 
         try {
-            mHandoffFeatureStateListenerHolder.unregisterListener(listener);
+            synchronized (mHandoffFeatureStateListenerHolderForUsers) {
+                int userId = mContext.getUserId();
+                if (!mHandoffFeatureStateListenerHolderForUsers.containsKey(userId)) {
+                    mHandoffFeatureStateListenerHolderForUsers.put(
+                            userId, new HandoffFeatureStateListenerHolder(userId, mService));
+                }
+                mHandoffFeatureStateListenerHolderForUsers.get(userId).unregisterListener(listener);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -350,6 +391,9 @@ public class TaskContinuityManager {
     private final class HandoffFeatureStateListenerHolder
             extends IHandoffFeatureStateListener.Stub {
 
+        private final int mUserId;
+        private final ITaskContinuityManager mService;
+
         @GuardedBy("mListeners")
         private final Map<HandoffFeatureStateListener, Executor> mListeners = new ArrayMap<>();
 
@@ -363,7 +407,10 @@ public class TaskContinuityManager {
         @GuardedBy("mListeners")
         private boolean mLastReceivedEnabled = false;
 
-        public HandoffFeatureStateListenerHolder(ITaskContinuityManager service) {}
+        public HandoffFeatureStateListenerHolder(int userId, ITaskContinuityManager service) {
+            mUserId = userId;
+            mService = service;
+        }
 
         /**
          * Registers a listener to be notified of Handoff feature state changes.
@@ -380,7 +427,7 @@ public class TaskContinuityManager {
 
             synchronized (mListeners) {
                 if (!mRegistered) {
-                    mService.registerHandoffFeatureStateListener(this);
+                    mService.registerHandoffFeatureStateListener(mUserId, this);
                     mRegistered = true;
                 } else {
                     executor.execute(
@@ -407,7 +454,7 @@ public class TaskContinuityManager {
                 mListeners.remove(listener);
                 if (mListeners.isEmpty() && mRegistered) {
                     mRegistered = false;
-                    mService.unregisterHandoffFeatureStateListener(this);
+                    mService.unregisterHandoffFeatureStateListener(mUserId, this);
                 }
             }
         }
@@ -440,6 +487,9 @@ public class TaskContinuityManager {
      */
     private final class RemoteTaskListenerHolder extends IRemoteTaskListener.Stub {
 
+        private final int mUserId;
+        private final ITaskContinuityManager mService;
+
         @GuardedBy("mListeners")
         private final Map<RemoteTaskListener, Executor> mListeners = new ArrayMap<>();
 
@@ -449,7 +499,10 @@ public class TaskContinuityManager {
         @GuardedBy("mListeners")
         private final List<RemoteTask> mLastReceivedRemoteTasks = new ArrayList<>();
 
-        public RemoteTaskListenerHolder(ITaskContinuityManager service) {}
+        public RemoteTaskListenerHolder(int userId, ITaskContinuityManager service) {
+            mUserId = userId;
+            mService = service;
+        }
 
         /**
          * Registers a listener to be notified of remote task changes.
@@ -466,7 +519,7 @@ public class TaskContinuityManager {
 
             synchronized (mListeners) {
                 if (!mRegistered) {
-                    mService.registerRemoteTaskListener(this);
+                    mService.registerRemoteTaskListener(mUserId, this);
                     mRegistered = true;
                 } else {
                     executor.execute(() -> listener.onRemoteTasksChanged(mLastReceivedRemoteTasks));
@@ -490,7 +543,7 @@ public class TaskContinuityManager {
                 mListeners.remove(listener);
                 if (mListeners.isEmpty() && mRegistered) {
                     mRegistered = false;
-                    mService.unregisterRemoteTaskListener(this);
+                    mService.unregisterRemoteTaskListener(mUserId, this);
                 }
             }
         }
