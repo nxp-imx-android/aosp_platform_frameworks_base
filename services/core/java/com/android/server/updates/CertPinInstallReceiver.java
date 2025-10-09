@@ -31,22 +31,18 @@ public class CertPinInstallReceiver extends ConfigUpdateInstallReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            if (com.android.server.flags.Flags.certpininstallerRemoval()) {
-                File pins = new File(KEYCHAIN_DIR + "pins");
-                if (pins.exists()) {
-                    pins.delete();
-                }
-                File version = new File(KEYCHAIN_DIR + "metadata/version");
-                if (version.exists()) {
-                    version.delete();
-                }
-                File metadata = new File(KEYCHAIN_DIR + "metadata");
-                if (metadata.exists()) {
-                    metadata.delete();
-                }
+            File pins = new File(KEYCHAIN_DIR + "pins");
+            if (pins.exists()) {
+                pins.delete();
             }
-        } else if (!com.android.server.flags.Flags.certpininstallerRemoval()) {
-            super.onReceive(context, intent);
+            File version = new File(KEYCHAIN_DIR + "metadata/version");
+            if (version.exists()) {
+                version.delete();
+            }
+            File metadata = new File(KEYCHAIN_DIR + "metadata");
+            if (metadata.exists()) {
+                metadata.delete();
+            }
         }
     }
 }
