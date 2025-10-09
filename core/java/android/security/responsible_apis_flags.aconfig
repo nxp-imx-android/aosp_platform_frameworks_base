@@ -230,6 +230,13 @@ flag {
 }
 
 flag {
+   name: "uprobestats_bridge_service"
+   namespace: "responsible_apis"
+   description: "Flag that enables the uprobestats bridge system service"
+   bug: "408041227"
+}
+
+flag {
     name: "wtf_bundle_defuse"
     namespace: "responsible_apis"
     description: "Flag for wtf logging when defuse is enabled."
