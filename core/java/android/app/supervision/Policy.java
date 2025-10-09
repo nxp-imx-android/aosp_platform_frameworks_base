@@ -36,7 +36,23 @@ import java.lang.annotation.RetentionPolicy;
 @SuppressLint({"ParcelNotFinal", "ParcelCreator"})
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
 public abstract class Policy implements Parcelable {
-    private static final String PACKAGE_POLICY_IDENTIFIER = "package";
+    /**
+     * The identifier of the package policy. This is used to identify the policy type when
+     * reconstructing the policy from storage, parcel or deserializing.
+     *
+     * @hide
+     */
+    public static final String PACKAGE_POLICY_IDENTIFIER = "package";
+
+    /**
+     * The identifier of the policy. This is used to identify the policy type when reconstructing
+     * the policy from storage, parcel or deserializing.
+     *
+     * @hide
+     */
+    @StringDef({PACKAGE_POLICY_IDENTIFIER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PolicyIdentifier {}
 
     /**
      * The version of this policy. The version is managed by the system and indicates the policy's
@@ -70,6 +86,15 @@ public abstract class Policy implements Parcelable {
     }
 
     /**
+     * Sets the version of this policy.
+     *
+     * @param version The new version of the policy.
+     */
+    public void setVersion(long version) {
+        mVersion = version;
+    }
+
+    /**
      * Constructs a new policy with the given key and version.
      *
      * @param version The version of the policy.
@@ -87,13 +112,20 @@ public abstract class Policy implements Parcelable {
      * when unmarshalling a parcel.
      *
      * @param in The parcel to read from.
+     * @hide
      */
-    public Policy(Parcel in) {
+    public Policy(@NonNull Parcel in) {
         mVersion = in.readLong();
         mIsEnabled = in.readBoolean();
     }
 
-    private String getParcelIdentifier() {
+    /**
+     * Returns the identifier of the policy to be used to identify the policy type.
+     *
+     * @hide
+     */
+    @NonNull
+    public @PolicyIdentifier String getIdentifier() {
         return switch (this) {
             case PackagePolicy pp -> Policy.PACKAGE_POLICY_IDENTIFIER;
             default ->
@@ -104,7 +136,7 @@ public abstract class Policy implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel parcel, @WriteFlags int flags) {
-        parcel.writeString8(getParcelIdentifier());
+        parcel.writeString8(getIdentifier());
         parcel.writeLong(mVersion);
         parcel.writeBoolean(mIsEnabled);
     }
@@ -119,8 +151,8 @@ public abstract class Policy implements Parcelable {
                     return switch (policyIdentifier) {
                         case PACKAGE_POLICY_IDENTIFIER -> new PackagePolicy(in);
                         default ->
-                            throw new IllegalArgumentException(
-                                    "Unsupported policy identifier value: " + policyIdentifier);
+                                throw new IllegalArgumentException(
+                                        "Unsupported policy identifier value: " + policyIdentifier);
                     };
                 }
 

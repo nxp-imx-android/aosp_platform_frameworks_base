@@ -34,7 +34,7 @@ import java.lang.annotation.RetentionPolicy;
  * @hide
  */
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
-final class PackagePolicy extends Policy {
+public final class PackagePolicy extends Policy {
     public static final int RESTRICTION_TYPE_BLOCKED = 1;
 
     @IntDef({
@@ -58,11 +58,10 @@ final class PackagePolicy extends Policy {
      *
      * @param version The version of the policy.
      * @param packageName The package name of the package this policy is applied to.
-     * @hide
      */
     public PackagePolicy(
             long version,
-            String packageName,
+            @NonNull String packageName,
             @RestrictionType int restrictionType,
             boolean isEnabled) {
         super(version, isEnabled);
@@ -76,7 +75,7 @@ final class PackagePolicy extends Policy {
      * @param in The parcel to read from.
      * @hide
      */
-    public PackagePolicy(Parcel in) {
+    public PackagePolicy(@NonNull Parcel in) {
         super(in);
         mPackageName = in.readString8();
         mRestrictionType = in.readInt();
@@ -91,6 +90,15 @@ final class PackagePolicy extends Policy {
         return mRestrictionType;
     }
 
+    /**
+     * Retrieves the package name of the package this policy is applied to.
+     *
+     * @return The package name of the package this policy is applied to.
+     */
+    public @NonNull String getPackageName() {
+        return mPackageName;
+    }
+
     @Override
     public void writeToParcel(@NonNull Parcel parcel, @WriteFlags int flags) {
         super.writeToParcel(parcel, flags);
@@ -98,8 +106,37 @@ final class PackagePolicy extends Policy {
         parcel.writeInt(mRestrictionType);
     }
 
+    @NonNull
+    public static final Creator<PackagePolicy> CREATOR =
+            new Creator<PackagePolicy>() {
+                @Override
+                public PackagePolicy createFromParcel(@NonNull Parcel in) {
+                    // drop the identifier since we know it's a package policy
+                    in.readString8();
+                    return new PackagePolicy(in);
+                }
+
+                @Override
+                public PackagePolicy[] newArray(int size) {
+                    return new PackagePolicy[size];
+                }
+            };
+
     @Override
-    public  int describeContents() {
+    public int describeContents() {
         return 0;
+    }
+
+    @Override
+    public String toString() {
+        return "PackagePolicy{isEnabled="
+                + isEnabled()
+                + ", version="
+                + getVersion()
+                + ", packageName="
+                + mPackageName
+                + ", restrictionType="
+                + mRestrictionType
+                + '}';
     }
 }

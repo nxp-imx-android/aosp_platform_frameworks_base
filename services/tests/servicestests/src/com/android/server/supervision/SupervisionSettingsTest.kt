@@ -16,6 +16,8 @@
 
 package com.android.server.supervision
 
+import android.app.supervision.PackagePolicy
+import android.app.supervision.Policy
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.flags.Flags
 import android.os.PersistableBundle
@@ -150,8 +152,7 @@ class SupervisionSettingsTest {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
         val roleHolders = ArraySet<String>(setOf("package2", "package3", "package4"))
-        userData1.changeUserData(true, "package1", true,
-            null, roleHolders)
+        userData1.changeUserData(true, "package1", true, null, roleHolders)
 
         // Save, change and load user data
         mSupervisionSettings.saveUserData()
@@ -159,8 +160,7 @@ class SupervisionSettingsTest {
         mSupervisionSettings.loadUserData()
 
         // Check if user data was loaded correctly
-        mSupervisionSettings.getUserData(1).checkUserData(true, "package1",
-            true, null, roleHolders)
+        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, null, roleHolders)
     }
 
     @Test
@@ -205,6 +205,39 @@ class SupervisionSettingsTest {
         assertThat(retrievedRecoveryInfo.state).isEqualTo(RECOVERY_INFO.state)
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun saveAndGetSupervisionPolicies_storesAndRetrievesPoliciesCorrectly() {
+        // set up user data with a single policy
+        mSupervisionSettings
+            .getUserData(1)
+            .changeUserData(
+                true,
+                null,
+                true,
+                null,
+                ArraySet<String>(),
+                listOf(TEST_PACKAGE_POLICY, TEST_PACKAGE_POLICY_2),
+            )
+
+        // save user data, update with empty policies and load user data
+        mSupervisionSettings.saveUserData()
+        mSupervisionSettings.removeUserData(1)
+        mSupervisionSettings.loadUserData()
+
+        // check if policy was loaded correctly
+        mSupervisionSettings
+            .getUserData(1)
+            .checkUserData(
+                true,
+                null,
+                true,
+                null,
+                ArraySet<String>(),
+                listOf(TEST_PACKAGE_POLICY, TEST_PACKAGE_POLICY_2),
+            )
+    }
+
     private companion object {
         const val USER_ID = 100
 
@@ -232,18 +265,25 @@ class SupervisionSettingsTest {
                 BUNDLE_1,
             )
 
+        private val TEST_PACKAGE_POLICY =
+            PackagePolicy(1, "test.package", PackagePolicy.RESTRICTION_TYPE_BLOCKED, true)
+        private val TEST_PACKAGE_POLICY_2 =
+            PackagePolicy(1, "test.package2", PackagePolicy.RESTRICTION_TYPE_BLOCKED, true)
+
         fun SupervisionUserData.changeUserData(
             enabled: Boolean,
             appPackage: String?,
             lockScreenEnabled: Boolean,
             lockScreenOptions: PersistableBundle?,
             roleHolders: ArraySet<String> = ArraySet<String>(),
+            policies: List<Policy> = emptyList(),
         ) {
             this.supervisionEnabled = enabled
             this.supervisionAppPackage = appPackage
             this.supervisionLockScreenEnabled = lockScreenEnabled
             this.supervisionLockScreenOptions = lockScreenOptions
             this.supervisionRoleHolders = roleHolders
+            this.policies = policies
         }
 
         fun SupervisionUserData.checkUserData(
@@ -252,6 +292,7 @@ class SupervisionSettingsTest {
             lockScreenEnabled: Boolean,
             lockScreenOptions: PersistableBundle?,
             roleHolders: ArraySet<String> = ArraySet<String>(),
+            policies: List<Policy> = emptyList(),
         ) {
             assertThat(this.supervisionEnabled).isEqualTo(enabled)
             assertThat(this.supervisionAppPackage).isEqualTo(appPackage)
@@ -263,6 +304,7 @@ class SupervisionSettingsTest {
                     .isEqualTo(lockScreenOptions.toString())
             }
             assertThat(this.supervisionRoleHolders).containsExactlyElementsIn(roleHolders)
+            assertThat(this.policies).containsExactlyElementsIn(policies)
         }
     }
 }
