@@ -19,6 +19,7 @@ package com.android.systemui.shade.shared.flag
 import com.android.systemui.Flags
 import com.android.systemui.Flags.dualShade
 import com.android.systemui.Flags.sceneContainer
+import com.android.systemui.Flags.statusBarPopupChips
 import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
 
@@ -32,10 +33,14 @@ object DualShadeFlag {
     val token: FlagToken
         get() = FlagToken(FLAG_NAME, isEnabled)
 
+    // TODO(b/450521231): This is a temporary workaround to enable Dual Shade on Desktop devices.
+    //  Remove it and any usages once the bug is fixed.
+    val isDesktopDevice = statusBarPopupChips()
+
     /** Whether the feature is enabled. */
     @JvmStatic
     inline val isEnabled
-        get() = dualShade() && sceneContainer()
+        get() = (dualShade() || isDesktopDevice) && sceneContainer()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
