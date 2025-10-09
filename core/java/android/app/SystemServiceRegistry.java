@@ -1877,10 +1877,6 @@ public final class SystemServiceRegistry {
                     @Override
                     public SupervisionManager createService(ContextImpl ctx)
                             throws ServiceNotFoundException {
-                        if (!android.app.supervision.flags.Flags.supervisionApi()) {
-                            throw new ServiceNotFoundException(
-                                    "SupervisionManager is not supported");
-                        }
                         IBinder iBinder = ServiceManager.getServiceOrThrow(
                                 Context.SUPERVISION_SERVICE);
                         ISupervisionManager service = ISupervisionManager.Stub.asInterface(iBinder);

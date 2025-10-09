@@ -1677,12 +1677,9 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(ROLE_SERVICE_CLASS);
             t.traceEnd();
 
-            if (android.app.supervision.flags.Flags.supervisionApi()
-                    && (!isWatch || android.app.supervision.flags.Flags.supervisionApiOnWear())) {
-                t.traceBegin("StartSupervisionService");
-                mSystemServiceManager.startService(SupervisionService.Lifecycle.class);
-                t.traceEnd();
-            }
+            t.traceBegin("StartSupervisionService");
+            mSystemServiceManager.startService(SupervisionService.Lifecycle.class);
+            t.traceEnd();
 
             if (!isTv) {
                 t.traceBegin("StartVibratorManagerService");
