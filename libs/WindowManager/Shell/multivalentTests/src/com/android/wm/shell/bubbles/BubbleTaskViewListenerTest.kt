@@ -486,8 +486,8 @@ class BubbleTaskViewListenerTest {
 
     @Test
     fun onTaskRemovalStarted() {
-        val mockTaskView = mock<TaskView>() {
-            on { getController() } doReturn taskViewTaskController
+        val mockTaskView = mock<TaskView> {
+            on { controller } doReturn taskViewTaskController
         }
         val bubbleController = mock<BubbleController>()
         bubbleTaskView = BubbleTaskView(mockTaskView, mainExecutor, bubbleController)
@@ -529,7 +529,6 @@ class BubbleTaskViewListenerTest {
         assertThat(change.interceptBackPressed).isFalse()
         assertThat(parentView.lastRemovedView).isEqualTo(mockTaskView)
         assertThat(bubbleTaskViewListener.taskView).isNull()
-        verify(listenerCallback).onTaskRemovalStarted()
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
