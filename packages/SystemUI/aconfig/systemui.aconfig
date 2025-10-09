@@ -1882,16 +1882,6 @@ flag {
 }
 
 flag {
-    name: "enable_output_switcher_audio_sharing_button"
-    namespace: "cross_device_experiences"
-    description: "Enables audio sharing quick button in the output switcher."
-    bug: "423772889"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "reset_tiles_removes_custom_tiles"
     namespace: "systemui"
     description: "Fixes bug where calling Reset Tiles will not properly mark custom tiles as removed."

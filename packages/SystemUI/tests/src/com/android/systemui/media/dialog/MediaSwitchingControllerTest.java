@@ -1860,7 +1860,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_AUDIO_SHARING_BUTTON)
     public void getAudioSharingButtonState_inAudioSharing_returnsVisible() {
         MutableStateFlow<Boolean> inAudioSharingFlow = MutableStateFlow(false);
         when(mAudioSharingRepository.getInAudioSharing()).thenReturn(inAudioSharingFlow);

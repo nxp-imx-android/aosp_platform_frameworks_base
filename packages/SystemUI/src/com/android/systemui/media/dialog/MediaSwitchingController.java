@@ -21,7 +21,6 @@ import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
-import static com.android.systemui.Flags.enableOutputSwitcherAudioSharingButton;
 import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
 
 import android.app.KeyguardManager;
@@ -297,15 +296,13 @@ public class MediaSwitchingController
         }
         mHasAdjustVolumeUserRestriction = checkIfAdjustVolumeRestrictionEnforced();
 
-        if (enableOutputSwitcherAudioSharingButton()) {
-            mAudioShareJob =
-                    mJavaAdapter.alwaysCollectFlow(
-                            mAudioSharingRepository.getInAudioSharing(),
-                            inAudioSharing -> {
-                                mInAudioSharing = inAudioSharing;
-                                mCallback.onQuickAccessButtonsChanged();
-                            });
-        }
+        mAudioShareJob =
+                mJavaAdapter.alwaysCollectFlow(
+                        mAudioSharingRepository.getInAudioSharing(),
+                        inAudioSharing -> {
+                            mInAudioSharing = inAudioSharing;
+                            mCallback.onQuickAccessButtonsChanged();
+                        });
     }
 
     public boolean isRefreshing() {
