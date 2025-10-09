@@ -17,6 +17,8 @@
 package com.android.server.companion.datatransfer.continuity;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 
 import android.testing.AndroidTestingRunner;
@@ -147,8 +149,11 @@ public class FeatureControllerTest {
 
     @Test
     public void testDisable_removesListenerFromTaskContinuityMessenger() {
+        assertFalse(mFakeFeatureController.isEnabled());
         mFakeFeatureController.enable();
+        assertTrue(mFakeFeatureController.isEnabled());
         mFakeFeatureController.disable();
+        assertFalse(mFakeFeatureController.isEnabled());
         verify(mMockTaskContinuityMessenger).removeListener(mFakeFeatureController);
     }
 
