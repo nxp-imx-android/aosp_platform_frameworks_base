@@ -21,7 +21,6 @@ package android.companion.datatransfer.continuity;
  * @hide
  */
 oneway interface IHandoffFeatureStateListener {
-
     /**
      * Called when the handoff feature state changes.
      *

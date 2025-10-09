@@ -16,9 +16,9 @@
 
 package android.companion.datatransfer.continuity;
 
+import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
-import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 
 /**
@@ -26,7 +26,6 @@ import android.companion.datatransfer.continuity.RemoteTask;
  * @hide
  */
 oneway interface ITaskContinuityManager {
-
     @EnforcePermission("READ_REMOTE_TASKS")
     void registerRemoteTaskListener(IRemoteTaskListener listener);
 
@@ -35,17 +34,13 @@ oneway interface ITaskContinuityManager {
 
     @EnforcePermission("REQUEST_TASK_HANDOFF")
     void requestHandoff(
-        in int associationId,
-        in int remoteTaskId,
-        in IHandoffRequestCallback callback);
+            in int associationId, in int remoteTaskId, in IHandoffRequestCallback callback);
 
-    @EnforcePermission("MODIFY_HANDOFF_SETTINGS")
-    void enableHandoffForDevice(boolean enabled);
+    @EnforcePermission("MODIFY_HANDOFF_SETTINGS") void enableHandoffForDevice(boolean enabled);
 
     @EnforcePermission("READ_HANDOFF_SETTINGS")
     void registerHandoffFeatureStateListener(IHandoffFeatureStateListener listener);
 
     @EnforcePermission("READ_HANDOFF_SETTINGS")
     void unregisterHandoffFeatureStateListener(IHandoffFeatureStateListener listener);
-
 }
