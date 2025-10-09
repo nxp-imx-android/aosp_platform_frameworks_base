@@ -3066,14 +3066,55 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         Objects.requireNonNull(data);
 
         Slog.v(TAG, "Returning HandoffActivityData to receiver.");
-        for (int i = 0; i < data.size(); i++) {
-            final HandoffActivityData activityData = data.get(i);
+        final Task task;
+        final ActivityRecord activity;
+        synchronized (mGlobalLock) {
+            task = mRootWindowContainer.anyTaskForId(taskId);
+            activity = task != null ? task.getTopNonFinishingActivity() : null;
+        }
+        if (task == null) {
+            Slog.w(TAG, "No task found for taskId: " + taskId);
+            mH.post(() -> {
+                notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_UNKNOWN_TASK);
+            });
+            return;
+        }
+
+        if (activity == null) {
+            Slog.w(TAG, "No activities found for taskId: " + taskId);
+            mH.post(() -> {
+                notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_EMPTY_TASK);
+            });
+            return;
+        }
+
+        final String activityPackageName = activity.packageName;
+
+        for (HandoffActivityData activityData : data) {
             if (activityData == null) {
                 Slog.w(TAG, "Received null HandoffActivityData from Activity.");
                 notifyHandoffTaskDataRequestFailed(
-                    receiver,
-                    taskId,
-                    HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+                return;
+            }
+            final ComponentName componentName = activityData.getComponentName();
+            if (!componentName.getPackageName().equals(activityPackageName)) {
+                Slog.w(TAG, "Handoff component package "
+                        + componentName.getPackageName()
+                        + " does not match generating package "
+                        + activityPackageName);
+                notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
                 return;
             }
         }
@@ -3098,7 +3139,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 return;
             }
         }
-
         notifyHandoffTaskDataRequestResultReceived(request.receiver, request.taskId, data);
     }
 

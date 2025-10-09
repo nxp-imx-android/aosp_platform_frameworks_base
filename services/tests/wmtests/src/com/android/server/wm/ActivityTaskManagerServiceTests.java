@@ -411,7 +411,9 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     public void testRequestHandoffTaskData_succeedsWithActivityInForeground()
         throws Exception{
         // Create a test task.
-        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final Task task = new TaskBuilder(mSupervisor)
+                              .setComponent(new ComponentName("pkg", "cls"))
+                              .setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         doReturn(true).when(activity).attachedToProcess();
         doReturn(true).when(activity).isState(RESUMED);
@@ -455,7 +457,9 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final HandoffActivityData handoffActivityData
             = new HandoffActivityData.Builder(new ComponentName("pkg", "cls"))
                 .build();
-        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final Task task = new TaskBuilder(mSupervisor)
+                         .setComponent(new ComponentName("pkg", "cls"))
+                         .setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
         doReturn(false).when(activity).attachedToProcess();
         doReturn(handoffActivityData).when(activity).getHandoffActivityData();
@@ -512,6 +516,85 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         receiver.verifyFailed(
             task.getRootTaskId(),
             HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+    }
+
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @Test
+    public void testRequestHandoffTaskData_failsMismatchedComponentNameInBacground()
+            throws Exception {
+        // Create a test task.
+        final ComponentName generatingComponent =
+                new ComponentName("com.example.generating", "TestActivity");
+        final Task task = new TaskBuilder(mSupervisor)
+                            .setComponent(generatingComponent)
+                            .setCreateActivity(true)
+                            .build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+
+        // Create HandoffActivityData with a different package name
+        final HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
+                new ComponentName("com.example.different", "SomeActivity")).build();
+
+        doReturn(false).when(activity).attachedToProcess();
+        doReturn(handoffActivityData).when(activity).getHandoffActivityData();
+        doReturn(false).when(activity).isProcessRunning();
+        doReturn(true).when(activity).isHandoffEnabled();
+
+        // Setup a fake receiver to receive the result.
+        final TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
+
+        // Request Handoff
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        // Verify that the result code is failure.
+        receiver.verifyFailed(task.getRootTaskId(),
+                HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
+    }
+
+    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @Test
+    public void testRequestHandoffTaskData_failsMismatchedComponentNameRunningActivity()
+            throws Exception {
+        // Create a test task.
+        final ComponentName generatingComponent =
+                new ComponentName("com.example.generating", "TestActivity");
+        final Task task = new TaskBuilder(mSupervisor)
+                            .setComponent(generatingComponent)
+                            .setCreateActivity(true)
+                            .build();
+        final ActivityRecord activity = task.getTopNonFinishingActivity();
+        doReturn(true).when(activity).attachedToProcess();
+        WindowProcessController mockWindowProcessController = mock(WindowProcessController.class);
+        activity.app = mockWindowProcessController;
+        IApplicationThread mockThread = mock(IApplicationThread.class);
+        doReturn(mockThread).when(mockWindowProcessController).getThread();
+        doReturn(true).when(activity).isProcessRunning();
+        doReturn(true).when(activity).isHandoffEnabled();
+
+        // Setup a fake receiver to receive the result.
+        TestHandoffTaskDataReceiver receiver = new TestHandoffTaskDataReceiver();
+
+        // Request Handoff
+        requestHandoffTaskData(task.getRootTaskId(), receiver);
+
+        ArgumentCaptor<IBinder> requestTokenCaptor = ArgumentCaptor.forClass(IBinder.class);
+        ArgumentCaptor<List<IBinder>> activityTokenCaptor =
+                ArgumentCaptor.forClass(List.class);
+        verify(mockThread).requestHandoffActivityData(
+                requestTokenCaptor.capture(),
+                activityTokenCaptor.capture());
+
+        // Finish the request with mismatched package name
+        HandoffActivityData handoffActivityData = new HandoffActivityData.Builder(
+                new ComponentName("com.example.different", "SomeActivity")).build();
+        mAtm.reportHandoffActivityData(
+                requestTokenCaptor.getValue(),
+                List.of(handoffActivityData));
+
+        // Verify that the result code is failure.
+        receiver.verifyFailed(
+                task.getRootTaskId(),
+                HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
     }
 
     private void requestHandoffTaskData(int taskId, IHandoffTaskDataReceiver receiver) {
