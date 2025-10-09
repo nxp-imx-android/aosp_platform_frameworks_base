@@ -41,8 +41,6 @@ import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
-import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallStatusBarInteractor
-import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
@@ -50,7 +48,6 @@ import dagger.Binds
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
-import dagger.multibindings.ElementsIntoSet
 import dagger.multibindings.IntoSet
 import kotlinx.coroutines.CoroutineScope
 
@@ -188,19 +185,6 @@ interface PerDisplayStatusBarModule {
                 context
                     .createWindowContext(display, TYPE_STATUS_BAR, /* options= */ Bundle.EMPTY)
                     .also { it.setTheme(R.style.Theme_SystemUI) }
-            }
-        }
-
-        @Provides
-        @ElementsIntoSet
-        @DisplayAware
-        fun ongoingCallStatusBarInteractorAsLifecycleListener(
-            interactorLazy: Lazy<OngoingCallStatusBarInteractor>
-        ): Set<SystemUIDisplaySubcomponent.LifecycleListener> {
-            return if (PerDisplayOngoingCallStatusBarVisibility.isEnabled) {
-                setOf(interactorLazy.get())
-            } else {
-                emptySet()
             }
         }
     }
