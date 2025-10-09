@@ -1054,49 +1054,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mInFullBackup = inFullBackup;
     }
 
-    @Override
     public boolean hasActivities() {
         return mWindowProcessController.hasActivities();
     }
 
-    @Override
-    public boolean isHeavyWeightProcess() {
-        return mWindowProcessController.isHeavyWeightProcess();
-    }
-
-    @Override
-    public boolean hasVisibleActivities() {
-        return mWindowProcessController.hasVisibleActivities();
-    }
-
-    @Override
-    public boolean isHomeProcess() {
-        return mWindowProcessController.isHomeProcess();
-    }
-
-    @Override
-    public boolean isPreviousProcess() {
-        return mWindowProcessController.isPreviousProcess();
-    }
-
-    @Override
     public boolean hasRecentTasks() {
         return mWindowProcessController.hasRecentTasks();
-    }
-
-    @Override
-    public boolean isShowingUiWhileDozing() {
-        return mWindowProcessController.isShowingUiWhileDozing();
-    }
-
-    @Override
-    public int getActivityStateFlagsLegacy() {
-        return mWindowProcessController.getActivityStateFlags();
-    }
-
-    @Override
-    public long getPerceptibleTaskStoppedTimeMillisLegacy() {
-        return mWindowProcessController.getPerceptibleTaskStoppedTimeMillis();
     }
 
     @Override

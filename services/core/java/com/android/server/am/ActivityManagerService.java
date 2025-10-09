@@ -15538,11 +15538,10 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Nullable
     ProcessRecord getTopApp() {
         final WindowProcessController wpc = mAtmInternal != null ? mAtmInternal.getTopApp() : null;
-        final ProcessRecord r = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-        if (!Flags.pushActivityStateToOomadjuster()) {
-            updateTopAppListeners(r);
+        if (wpc == null) {
+            return null;
         }
-        return r;
+        return (ProcessRecord) wpc.mOwner;
     }
 
     void updateTopAppListeners(ProcessRecord r) {
