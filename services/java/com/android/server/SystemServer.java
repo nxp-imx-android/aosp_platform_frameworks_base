@@ -3084,12 +3084,9 @@ public final class SystemServer implements Dumpable {
         mSystemServiceManager.startService(TracingServiceProxy.class);
         t.traceEnd();
 
-        // UprobeStats DynamicInstrumentationManager
-        if (android.uprobestats.flags.Flags.executableMethodFileOffsets()) {
-            t.traceBegin("StartDynamicInstrumentationManager");
-            mSystemServiceManager.startService(DynamicInstrumentationManagerService.class);
-            t.traceEnd();
-        }
+        t.traceBegin("StartDynamicInstrumentationManager");
+        mSystemServiceManager.startService(DynamicInstrumentationManagerService.class);
+        t.traceEnd();
 
         // It is now time to start up the app processes...
 
