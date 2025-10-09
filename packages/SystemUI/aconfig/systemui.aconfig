@@ -388,17 +388,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_app_handle_tracking"
-    namespace: "systemui"
-    description: "Have status bar track the location of app handles so that tappable status bar "
-        "content doesn't overlap"
-    bug: "397506207"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_show_icons_in_secure_camera"
     namespace: "systemui"
     description: "Show status bar icons in secure camera if user swipes down from top of screen"
