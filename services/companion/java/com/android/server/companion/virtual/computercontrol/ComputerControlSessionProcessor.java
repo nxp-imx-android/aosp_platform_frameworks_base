@@ -257,12 +257,7 @@ public class ComputerControlSessionProcessor {
                 if (session.getDeviceId() != deviceId) {
                     continue;
                 }
-                try {
-                    session.close(CLOSE_REASON_USER_INITIATED);
-                } catch (RemoteException e) {
-                    Slog.w(TAG, "Failed to close ComputerControlSession for deviceId "
-                            + deviceId, e);
-                }
+                session.close(CLOSE_REASON_USER_INITIATED);
                 return;
             }
         }

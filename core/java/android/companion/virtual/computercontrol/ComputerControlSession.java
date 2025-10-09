@@ -134,6 +134,26 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     /**
+     * Reason indicating that the session was blocked due to secure content being present.
+     */
+    public static final int BLOCK_REASON_SECURE_CONTENT = 1;
+
+    /**
+     * Reason indicating that the session was blocked due to a disallowed activity being launched
+     * in the session.
+     */
+    public static final int BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH = 2;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "BLOCK_REASON_", value = {
+            BLOCK_REASON_SECURE_CONTENT,
+            BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH})
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface SessionBlockReason {
+    }
+
+    /**
      * Computer control action that performs back navigation.
      */
     public static final int ACTION_GO_BACK = 1;
@@ -158,7 +178,7 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     private ImageReader mImageReader;
 
     @GuardedBy("mLifecycle")
-    private final SessionLifecycleTracker mLifecycle = new SessionLifecycleTracker();
+    private final LifecycleStateTracker mLifecycle = new LifecycleStateTracker();
     @GuardedBy("mLifecycle")
     private LifecycleCallback mRegisteredLifecycleCallback = null;
 
@@ -421,6 +441,17 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             }
             mRegisteredLifecycleCallback = new LifecycleCallback() {
                 @Override
+                public void onActive() {
+                    Binder.withCleanCallingIdentity(() -> executor.execute(callback::onActive));
+                }
+
+                @Override
+                public void onBlocked(@SessionBlockReason int reason) {
+                    Binder.withCleanCallingIdentity(
+                            () -> executor.execute(() -> callback.onBlocked(reason)));
+                }
+
+                @Override
                 public void onClosed(@SessionCloseReason int reason) {
                     Binder.withCleanCallingIdentity(
                             () -> executor.execute(() -> callback.onClosed(reason)));
@@ -443,6 +474,20 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
             }
             mLifecycle.removeCallback(mRegisteredLifecycleCallback);
             mRegisteredLifecycleCallback = null;
+        }
+    }
+
+    @Override
+    public void onActive() {
+        synchronized (mLifecycle) {
+            mLifecycle.onActive();
+        }
+    }
+
+    @Override
+    public void onBlocked(@SessionBlockReason int reason) {
+        synchronized (mLifecycle) {
+            mLifecycle.onBlocked(reason);
         }
     }
 
@@ -534,8 +579,55 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
 
     /**
      * Callback to be notified about the computer control session lifecycle changes.
+     *
+     * <p>When the callback is first added, implementers of the callback should not make any
+     * assumptions about the starting state of the session. The callback will be notified of the
+     * starting state after being added.
+     *
+     * @see #setLifecycleCallback(Executor, LifecycleCallback)
      */
     public interface LifecycleCallback {
+
+        /**
+         * Called when the computer control session enters the active state.
+         *
+         * <p>When the session is active, the following will apply:
+         *
+         * <ul>
+         *   <li>Interactions with the session (e.g. {@link #tap(int, int)} are allowed.
+         *   <li>Taking screenshots of the content using {@link #getScreenshot()} is allowed.
+         *   <li>Getting Accessibility windows for the session using
+         *     {@link #getAccessibilityWindows()} is allowed.
+         * </ul>
+         */
+        void onActive();
+
+        /**
+         * Called when the computer control session enters the blocked state.
+         *
+         * <p>When the session is blocked, the application will generally not be able to interact
+         * with or access the content of the session:
+         *
+         * <ul>
+         *   <li>Interactions with the session (e.g. {@link #tap(int, int)} are NOT allowed.
+         *   <li>Taking screenshots of the content using {@link #getScreenshot()} is NOT allowed.
+         *   <li>Getting Accessibility windows for the session using
+         *     {@link #getAccessibilityWindows()} is NOT allowed.
+         * </ul>
+         *
+         * <p>However, users can still interact with the contents of the session using the
+         * interactive mirror. The application may choose to guide users to take over the session
+         * using either the {@link #handOverApplications()} API or the interactive mirror.
+         *
+         * @param reason the reason that the session initially entered the blocked
+         *               state.
+         */
+        // TODO: b/441475896: Block interactions and screenshots for
+        //  BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH. Until then, a dialog indicating the blockage
+        //  will show up in the session, and the agent must dismiss it by interacting with the
+        //  session to exit the blocked state.
+        void onBlocked(@SessionBlockReason int reason);
+
         /**
          * Called when the computer control session is closed. This marks the end of the session's
          * lifecycle, and no further lifecycle updates will take place.
