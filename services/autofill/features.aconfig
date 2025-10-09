@@ -67,3 +67,10 @@ flag {
   description: "Supports multiple concurrent users on different displays"
   bug: "280116881"
 }
+
+flag {
+  name: "expressive_fill_dialog"
+  namespace: "autofill"
+  description: "Supports expressive style for fill dialog"
+  bug: "438420320"
+}
