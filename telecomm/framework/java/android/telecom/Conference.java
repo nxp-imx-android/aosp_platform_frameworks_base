@@ -129,7 +129,7 @@ public abstract class Conference extends Conferenceable {
     private final Connection.Listener mConnectionDeathListener = new Connection.Listener() {
         @Override
         public void onDestroyed(Connection c) {
-            if (Flags.multiPartyAnchorConf()) {
+            if (android.telecom.flags.Flags.multiPartyAnchorConf()) {
                 if (mConferenceables.remove(c)) {
                     fireOnConferenceableConnectionsChanged();
                 }
@@ -309,7 +309,7 @@ public abstract class Conference extends Conferenceable {
      *
      * @param conference The {@code Conference} to merge.
      */
-    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
 
     public void onMerge(@NonNull Conference conference) {}
 
@@ -558,14 +558,14 @@ public abstract class Conference extends Conferenceable {
      *
      * @deprecated Use {@link #setConferenceables} instead.
      */
-    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
     @Deprecated
     public final void setConferenceableConnections(List<Connection> conferenceableConnections) {
         clearConferenceableList();
         for (Connection c : conferenceableConnections) {
             // If statement checks for duplicates in input. It makes it N^2 but we're dealing with a
             // small amount of items here.
-            if (Flags.multiPartyAnchorConf()) {
+            if (android.telecom.flags.Flags.multiPartyAnchorConf()) {
                 if (!mConferenceables.contains(c)) {
                     c.addConnectionListener(mConnectionDeathListener);
                     mConferenceables.add(c);
@@ -586,7 +586,7 @@ public abstract class Conference extends Conferenceable {
      *
      * @param conferenceables The set of conferenceables this conference can conference with.
      */
-    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
     public final void setConferenceables(@NonNull List<Conferenceable> conferenceables) {
         clearConferenceableList();
         for (Conferenceable c : conferenceables) {
@@ -653,7 +653,7 @@ public abstract class Conference extends Conferenceable {
 
     private final void fireOnConferenceableConnectionsChanged() {
         for (Listener l : mListeners) {
-            if (Flags.multiPartyAnchorConf()) {
+            if (android.telecom.flags.Flags.multiPartyAnchorConf()) {
                 l.onConferenceablesChanged(this, getConferenceables());
             } else {
                 l.onConferenceableConnectionsChangedLegacy(this,
@@ -666,7 +666,7 @@ public abstract class Conference extends Conferenceable {
      * Returns the {@link Connection}s or {@link Conference}s with which this {@link Conference}
      * can be merged / conferenced.
      */
-    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
     public final @NonNull List<Conferenceable> getConferenceables() {
         return mUnmodifiableConferenceables;
     }
@@ -675,7 +675,7 @@ public abstract class Conference extends Conferenceable {
      * Returns the connections with which this connection can be conferenced.
      */
     public final List<Connection> getConferenceableConnections() {
-        if (Flags.multiPartyAnchorConf()) {
+        if (android.telecom.flags.Flags.multiPartyAnchorConf()) {
             // return the list of Connection instances from mUnmodifiableConferenceables
             List<Connection> connections = new ArrayList<>();
             for (Conferenceable c : mUnmodifiableConferenceables) {
@@ -940,7 +940,7 @@ public abstract class Conference extends Conferenceable {
     }
 
     private final void clearConferenceableList() {
-        if (Flags.multiPartyAnchorConf()) {
+        if (android.telecom.flags.Flags.multiPartyAnchorConf()) {
             for (Conferenceable c : mConferenceables) {
                 if (c instanceof Connection) {
                     Connection connection = (Connection) c;

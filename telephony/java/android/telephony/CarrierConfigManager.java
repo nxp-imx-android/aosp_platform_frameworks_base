@@ -1497,7 +1497,7 @@ public class CarrierConfigManager {
      * {@code true}, merging a locally hosted conference call with a remotely hosted conference
      * into a multi-party anchor conference call is permitted, {@code false otherwise}.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
     public static final String KEY_SUPPORT_MULTI_PARTY_ANCHOR_CONFERENCE_BOOL =
             "support_multi_anchor_conf_bool";
 

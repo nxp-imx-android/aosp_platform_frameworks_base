@@ -2767,7 +2767,7 @@ public abstract class ConnectionService extends Service {
                     // Call 2 is a connection so merge via call 1 (conference).
                     conference1.onMerge(connection2);
                 } else {
-                    if (Flags.multiPartyAnchorConf()) {
+                    if (android.telecom.flags.Flags.multiPartyAnchorConf()) {
                         // Call 2 is ALSO a conference, so merge together.
                         Log.i(this, "conference: merging 2 conferences into a "
                                 + "multi-party anchor conference call. conference1 = [%s] "
