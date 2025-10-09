@@ -2054,3 +2054,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+    name: "fix_cast_dialog_flicker"
+    namespace: "systemui"
+    description: "Fix a flicker in activity launch animations originating from the Cast QS dialog"
+    bug: "437996864"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
