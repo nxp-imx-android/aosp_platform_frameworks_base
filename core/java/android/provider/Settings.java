@@ -13951,6 +13951,13 @@ public final class Settings {
         public static final String AIRPLANE_MODE_ON = "airplane_mode_on";
 
         /**
+         * Whether Airplane Mode should be synced across devices.
+         * (0 disabled, 1 - enabled)
+         * @hide
+         */
+        public static final String AIRPLANE_MODE_SYNC = "airplane_mode_sync";
+
+        /**
          * Whether Theater Mode is on.
          * @hide
          */
