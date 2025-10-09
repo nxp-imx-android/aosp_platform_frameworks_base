@@ -46,6 +46,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.Flags;
+import com.android.server.am.HostingRecord;
 import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
@@ -91,7 +92,9 @@ public class ProcessStateController {
             Object lock, Object procLock, Consumer<ProcessRecordInternal> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
             OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback,
-            OomAdjuster.StateGetter stateGetter) {
+            OomAdjuster.StateGetter stateGetter,
+            OomAdjuster.HostingTypeProvider hostingTypeProvider) {
+
         mLock = lock;
         mProcLock = procLock;
 
@@ -112,7 +115,7 @@ public class ProcessStateController {
         mOomConstants = oomConstants;
         mOomAdjuster = new OomAdjusterImpl(mLock, mProcLock, processList, activeUids,
                 handlerThread, mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter,
-                updateHandler);
+                updateHandler, hostingTypeProvider);
         mTopChangeCallback = topChangeCallback;
         mProcessLruUpdater = lruUpdater;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
@@ -1497,6 +1500,7 @@ public class ProcessStateController {
         private Consumer<ProcessRecordInternal> mTopChangeCallback = null;
         private ProcessLruUpdater mProcessLruUpdater = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
+        private OomAdjuster.HostingTypeProvider mHostingTypeProvider = null;
 
         public Builder(ProcessListInternal processList,
                 ActiveUidsInternal activeUids, OomAdjuster.Constants oomConstants,
@@ -1535,9 +1539,12 @@ public class ProcessStateController {
             if (mOomAdjInjector == null) {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
+            if (mHostingTypeProvider == null) {
+                mHostingTypeProvider = app -> HostingRecord.HOSTING_TYPE_EMPTY;
+            }
             return new ProcessStateController(mProcessList, mActiveUids, mHandlerThread,
                     mLock, mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
-                    mOomConstants, mOomAdjCallback, mOomAdjStateGetter);
+                    mOomConstants, mOomAdjCallback, mOomAdjStateGetter, mHostingTypeProvider);
         }
 
         /**
@@ -1589,6 +1596,14 @@ public class ProcessStateController {
          */
         public Builder setProcessLruUpdater(ProcessLruUpdater updater) {
             mProcessLruUpdater = updater;
+            return this;
+        }
+
+        /**
+         * Set the provider for hosting type.
+         */
+        public Builder setHostingTypeProvider(OomAdjuster.HostingTypeProvider provider) {
+            mHostingTypeProvider = provider;
             return this;
         }
     }
