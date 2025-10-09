@@ -4110,6 +4110,8 @@ final class ActivityRecord extends WindowToken {
         if (mDisplayContent != null) {
             mDisplayContent.mUnknownAppVisibilityController.appRemovedOrHidden(this);
         }
+
+        mAppCompatController.getDisplayCompatModePolicy().onActivityFinishing();
     }
 
     /**
@@ -4133,6 +4135,8 @@ final class ActivityRecord extends WindowToken {
         }
 
         mRootWindowContainer.resumeFocusedTasksTopActivities();
+
+        mAppCompatController.getDisplayCompatModePolicy().onActivityDestroyed();
     }
 
     /**

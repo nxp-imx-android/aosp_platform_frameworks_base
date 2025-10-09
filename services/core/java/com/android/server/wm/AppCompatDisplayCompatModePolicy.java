@@ -22,6 +22,7 @@ import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
@@ -29,7 +30,10 @@ import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import android.annotation.NonNull;
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.os.Binder;
 
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
@@ -73,7 +77,16 @@ class AppCompatDisplayCompatModePolicy {
      */
     private boolean mDisplayChangedWithoutRestart;
 
+    /**
+     * {@code true} if the activity was destroyed during an activity relaunch caused by display
+     * move. This needs to be stored here as we need to wait for the activity to be fully destroyed
+     * asynchronously before relaunching it.
+     */
+    private boolean mDestroyedDuringDisplayMoveActivityRelaunch;
+
     private boolean mDisplayChangedForComputerControlWithoutRestart;
+
+    private int mLastDisplayId = INVALID_DISPLAY;
 
     AppCompatDisplayCompatModePolicy(@NonNull ActivityRecord activityRecord) {
         mActivityRecord = activityRecord;
@@ -109,6 +122,7 @@ class AppCompatDisplayCompatModePolicy {
      */
     void onMovedToDisplay(@NonNull DisplayContent previousDisplay,
             @NonNull DisplayContent newDisplay) {
+        mLastDisplayId = newDisplay.getDisplayId();
         if (previousDisplay.getDisplayInfo().type == TYPE_INTERNAL
                 && newDisplay.getDisplayInfo().type == TYPE_INTERNAL) {
             // A transition between internal displays (fold<->unfold on foldable) is not considered
@@ -155,6 +169,43 @@ class AppCompatDisplayCompatModePolicy {
     void onProcessRestarted() {
         mDisplayChangedWithoutRestart = false;
         mDisplayChangedForComputerControlWithoutRestart = false;
+    }
+
+    /**
+     * Called when the activity is finishing itself.
+     */
+    void onActivityFinishing() {
+        if (shouldRecoverFromSelfKillOnDisplayMove()) {
+            mDestroyedDuringDisplayMoveActivityRelaunch = true;
+        }
+    }
+
+    /**
+     * Called when the activity has been destroyed.
+     */
+    void onActivityDestroyed() {
+        if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
+            return;
+        }
+
+        if (mDestroyedDuringDisplayMoveActivityRelaunch) {
+            // Posting to the handler to wait for the activity to be fully destroyed and to use the
+            // system default identity (not app's identity) because the app process may already be
+            // in background at this point, and relaunching itself can be blocked by BAL.
+            mActivityRecord.mAtmService.mH.post(() -> {
+                final int callingPid = Binder.getCallingPid();
+                final int callingUid = Binder.getCallingUid();
+                final Intent restartIntent = new Intent(mActivityRecord.intent);
+                final SafeActivityOptions options = new SafeActivityOptions(
+                        ActivityOptions.makeBasic().setLaunchDisplayId(mLastDisplayId),
+                        callingPid, callingUid);
+                mActivityRecord.mAtmService.getActivityStartController().startActivityInPackage(
+                        mActivityRecord.getUid(), callingPid, callingUid,
+                        mActivityRecord.packageName, null, restartIntent, null, null, null, 0, 0,
+                        options, mActivityRecord.mUserId, null, "onActivityDestroyed", false, null,
+                        /* allowBalExemptionForSystemProcess */ true);
+            });
+        }
     }
 
     private boolean isInDisplayCompatMode() {
