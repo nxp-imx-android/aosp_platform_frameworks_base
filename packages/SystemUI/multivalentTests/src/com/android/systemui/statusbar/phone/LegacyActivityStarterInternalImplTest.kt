@@ -29,6 +29,7 @@ import android.platform.test.annotations.EnableFlags
 import android.view.RemoteAnimationAdapter
 import android.view.View
 import android.widget.FrameLayout
+import android.window.RemoteTransition
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -118,6 +119,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     @Mock private lateinit var communalSettingsInteractor: CommunalSettingsInteractor
     @Mock private lateinit var perDisplaySysUiStateRepository: PerDisplayRepository<SysUiState>
     @Mock private lateinit var sysUIState: SysUiState
+    @Mock private lateinit var remoteTransition: RemoteTransition
     @Mock private lateinit var remoteAnimationAdapter: RemoteAnimationAdapter
     @Mock private lateinit var mDesktopFirstRepository: DesktopFirstRepository
     private lateinit var underTest: LegacyActivityStarterInternalImpl
@@ -269,8 +271,51 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
             .startIntentWithAnimation(eq(null), eq(false), eq(null), eq(false), any())
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     fun startActivityDismissingKeyguard_includesDisplayLaunchId() {
+        val intent = mock(Intent::class.java)
+        val activityOptions = ActivityOptions.makeBasic().apply { launchDisplayId = 17 }
+
+        underTest.startActivityDismissingKeyguard(
+            ActivityStartOptions(intent, activityOptions = activityOptions)
+        )
+        mainExecutor.runAllReady()
+
+        val intentStarterCaptor = argumentCaptor<(RemoteTransition?) -> Int>()
+        verify(activityTransitionAnimator)
+            .startIntentWithAnimation(
+                eq(null),
+                eq(kosmos.testScope),
+                eq(false),
+                eq(false),
+                eq(false),
+                intentStarterCaptor.capture(),
+            )
+        intentStarterCaptor.lastValue(remoteTransition)
+        val activityOptionsCaptor = argumentCaptor<Bundle>()
+        verify(activityTaskManager)
+            .startActivityAsUser(
+                eq(null),
+                any(),
+                eq(null),
+                eq(intent),
+                eq(null),
+                eq(null),
+                eq(null),
+                any(),
+                any(),
+                eq(null),
+                activityOptionsCaptor.capture(),
+                any(),
+            )
+        val calledActivityOptions = ActivityOptions.fromBundle(activityOptionsCaptor.lastValue)
+        assertThat(calledActivityOptions.launchDisplayId).isEqualTo(17)
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startActivityDismissingKeyguard_includesDisplayLaunchIdLegacy() {
         val intent = mock(Intent::class.java)
         val activityOptions = ActivityOptions.makeBasic().apply { launchDisplayId = 17 }
 
