@@ -1,5 +1,6 @@
 package com.android.systemui.scene
 
+import android.content.res.mainResources
 import android.view.View
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.classifier.domain.interactor.falsingInteractor
@@ -89,6 +90,7 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
             motionEventHandlerReceiver: (SceneContainerViewModel.MotionEventHandler?) -> Unit,
         ): SceneContainerViewModel =
             SceneContainerViewModel(
+                resources = mainResources,
                 sceneInteractor = sceneInteractor,
                 desktopInteractor = desktopInteractor,
                 deviceUnlockedInteractor = deviceUnlockedInteractor,

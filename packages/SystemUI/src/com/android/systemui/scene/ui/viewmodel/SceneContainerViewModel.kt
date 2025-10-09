@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.content.res.Resources
 import android.view.MotionEvent
 import android.view.View
 import androidx.compose.runtime.getValue
@@ -41,12 +42,14 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.AnimateQsTilesViewModel
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.OnBootTransitionInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.logger.SceneLogger
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Overlay
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.core.StatusBarForDesktop
@@ -67,6 +70,7 @@ import kotlinx.coroutines.flow.map
 class SceneContainerViewModel
 @AssistedInject
 constructor(
+    @ShadeDisplayAware private val resources: Resources,
     private val sceneInteractor: SceneInteractor,
     private val desktopInteractor: DesktopInteractor,
     private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
@@ -97,9 +101,10 @@ constructor(
     /** Whether the container is visible. */
     val isVisible: Boolean by hydrator.hydratedStateOf("isVisible", sceneInteractor.isVisible)
 
-    val allContentKeys: List<ContentKey> = sceneInteractor.allContentKeys
-
     val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create(view)
+
+    private val dualShadeGestureSplitRatio =
+        resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
 
     /**
      * The [SwipeSourceDetector] to use for defining which areas of the screen can be defined in the
@@ -112,7 +117,10 @@ constructor(
             source =
                 shadeModeInteractor.shadeMode.map {
                     if (it is ShadeMode.Dual) {
-                        SceneContainerSwipeDetector(edgeSize = 40.dp)
+                        SceneContainerSwipeDetector(
+                            edgeSize = 40.dp,
+                            invocationGestureSplitRatio = dualShadeGestureSplitRatio,
+                        )
                     } else {
                         DefaultEdgeDetector
                     }
