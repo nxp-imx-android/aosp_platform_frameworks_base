@@ -24,6 +24,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
@@ -76,6 +77,7 @@ constructor(
     private val keyguardEnabledInteractor: Lazy<KeyguardEnabledInteractor>,
     private val disabledContentInteractor: DisabledContentInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
+    private val authenticationInteractor: Lazy<AuthenticationInteractor>,
 ) {
 
     interface OnSceneAboutToChangeListener {
@@ -604,9 +606,10 @@ constructor(
             to != Scenes.Gone ||
                 inMidTransitionFromGone ||
                 deviceUnlockedInteractor.get().deviceUnlockStatus.value.isUnlocked ||
+                !authenticationInteractor.get().authenticationMethod.value.isSecure ||
                 !keyguardEnabledInteractor.get().isKeyguardEnabled.value
         check(isChangeAllowed) {
-            "Cannot change to the Gone scene while the device is locked and not currently" +
+            "Cannot change to the Gone scene while the device is locked/secured and not currently" +
                 " transitioning from Gone. Current transition state is ${transitionState.value}." +
                 " Logging reason for scene change was: $loggingReason"
         }
