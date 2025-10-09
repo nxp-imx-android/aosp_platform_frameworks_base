@@ -474,10 +474,10 @@ public final class SystemServer implements Dumpable {
             "com.android.os.profiling.anomaly.AnomalyDetectorService";
     private static final String SIGNAL_COLLECTOR_SERVICE_CLASS =
             "com.android.server.signalcollector.SignalCollectorService";
-    private static final String UPROBESTATS_SERVICE_JAR_PATH =
-            "/apex/com.android.uprobestats/javalib/service-uprobestats.jar";
-    private static final String UPROBESTATS_SERVICE_CLASS =
-            "com.android.os.uprobestats.UprobeStatsService";
+    private static final String UPROBESTATS_BRIDGE_SERVICE_JAR_PATH =
+            "/apex/com.android.uprobestats/javalib/service-uprobestats-bridge.jar";
+    private static final String UPROBESTATS_BRIDGE_SERVICE_CLASS =
+            "com.android.uprobestats.UprobeStatsBridgeService";
 
     private static final String RANGING_APEX_SERVICE_JAR_PATH =
             "/apex/com.android.uwb/javalib/service-ranging.jar";
@@ -3008,14 +3008,14 @@ public final class SystemServer implements Dumpable {
         }
 
         // UprobeStats
-        if (android.security.Flags.serviceUprobestats()) {
+        if (android.security.Flags.uprobestatsBridgeService()) {
             t.traceBegin("StartUprobeStatsService");
             // The service class is defined in a mainline module, and is not providing any
             // core, user facing functionality. It is only used for collecting telemetry
             // and anti-abuse. Thus, catch any startup exceptions and report them as WTFs.
             try {
                 mSystemServiceManager.startServiceFromJar(
-                        UPROBESTATS_SERVICE_CLASS, UPROBESTATS_SERVICE_JAR_PATH);
+                        UPROBESTATS_BRIDGE_SERVICE_CLASS, UPROBESTATS_BRIDGE_SERVICE_JAR_PATH);
             } catch (Throwable e) {
                 reportWtf("StartUprobeStatsService", e);
             }
