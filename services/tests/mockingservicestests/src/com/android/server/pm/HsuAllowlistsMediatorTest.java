@@ -15,10 +15,14 @@
  */
 package com.android.server.pm;
 
+import static com.android.server.pm.HsuAllowlistsMediator.DEBUG;
+
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
@@ -40,6 +44,8 @@ import java.util.Arrays;
 public final class HsuAllowlistsMediatorTest extends ExpectableTestCase {
     private static final String TAG = HsuAllowlistsMediatorTest.class.getSimpleName();
 
+    private static final String INVALID_COMPONENT_NAME = "invalid.I.am"; // missing package
+
     @Rule
     public final MockitoRule mocks = MockitoJUnit.rule();
 
@@ -59,28 +65,38 @@ public final class HsuAllowlistsMediatorTest extends ExpectableTestCase {
     }
 
     @Test
-    public void testIsActivityAllowed_emptyConfig() throws Exception {
+    public void testIsActivityAllowed_null() throws Exception {
         var ham = createHam();
 
-        expectWithMessage("ActivityStarterTests(null)").that(ham.isActivityAllowed(null))
-                .isTrue();
+        assertThrows(NullPointerException.class, () -> ham.isActivityAllowed(null));
+    }
 
-        expectWithMessage("ActivityStarterTests(whatever)").that(ham.isActivityAllowed("whatever"))
-                .isTrue();
+    @Test
+    public void testIsActivityAllowed_emptyConfig() throws Exception {
+        var activity = new ComponentName("whatever", "whatsoever");
+        var ham = createHam();
+
+        expectWithMessage("ActivityStarterTests(%s)", activity)
+                .that(ham.isActivityAllowed(activity)).isTrue();
     }
 
     @Test
     public void testIsActivityAllowed_nonEmptyConfig() throws Exception {
-        var allowlisted = "allowlisted/I.am";
-        var notAllowlisted = "allowlisted/I.am...NOT";
-        var ham = createHam(allowlisted);
+        var allowlistedShortened = new ComponentName("allowlisted", ".I.am");
+        var allowlistedNotShortened = new ComponentName("allowlisted", "allowlisted.me.too");
+        var notAllowlisted = new ComponentName("allowlisted", "I.am...NOT");
+        var ham = createHam(
+                "allowlisted/.I.am",
+                "allowlisted/allowlisted.me.too",
+                INVALID_COMPONENT_NAME);
 
-        expectWithMessage("ActivityStarterTests(null)").that(ham.isActivityAllowed(null))
-                .isFalse();
-        expectWithMessage("isActivitivyAllowed(%s)", allowlisted)
-                .that(ham.isActivityAllowed(allowlisted))
+        expectWithMessage("isActivityAllowed(%s)", allowlistedShortened)
+                .that(ham.isActivityAllowed(allowlistedShortened))
                 .isTrue();
-        expectWithMessage("isActivitivyAllowed(%s)", notAllowlisted)
+        expectWithMessage("isActivityAllowed(%s)", allowlistedNotShortened)
+                .that(ham.isActivityAllowed(allowlistedNotShortened))
+                .isTrue();
+        expectWithMessage("isActivityAllowed(%s)", notAllowlisted)
                 .that(ham.isActivityAllowed(notAllowlisted))
                 .isFalse();
     }
@@ -92,10 +108,11 @@ public final class HsuAllowlistsMediatorTest extends ExpectableTestCase {
         String dump = dump(ham);
 
         expectWithMessage("dump()").that(dump)
-                .isEqualTo("""
+                .isEqualTo(String.format("""
                       HsuAllowlistsMediator (HAM)
+                        DEBUG: %b
                         0 permanently allowlisted activities
-                           """);
+                           """, DEBUG));
     }
 
     @Test
@@ -105,11 +122,12 @@ public final class HsuAllowlistsMediatorTest extends ExpectableTestCase {
         String dump = dump(ham);
 
         expectWithMessage("dump()").that(dump)
-                .isEqualTo("""
+                .isEqualTo(String.format("""
                       HsuAllowlistsMediator (HAM)
+                        DEBUG: %b
                         1 permanently allowlisted activities:
                           allowlisted/I.am
-                          """);
+                          """, DEBUG));
     }
 
     @Test
@@ -119,13 +137,43 @@ public final class HsuAllowlistsMediatorTest extends ExpectableTestCase {
         String dump = dump(ham);
 
         expectWithMessage("dump()").that(dump)
-                .isEqualTo("""
+                .isEqualTo(String.format("""
                       HsuAllowlistsMediator (HAM)
+                        DEBUG: %b
                         2 permanently allowlisted activities:
                           allowlisted/I.am
                           so/am.I
-                          """);
+                          """, DEBUG));
+    }
 
+    @Test
+    public void testDump_configWithOneInvalidActivity() throws Exception {
+        var ham = createHam(INVALID_COMPONENT_NAME);
+
+        String dump = dump(ham);
+
+        expectWithMessage("dump()").that(dump)
+                .isEqualTo(String.format("""
+                        HsuAllowlistsMediator (HAM)
+                          DEBUG: %b
+                          0 permanently allowlisted activities
+                             """, DEBUG));
+    }
+
+    @Test
+    public void testDump_configWithValidAndActivities() throws Exception {
+        var ham = createHam("allowlisted/I.am", "so/am.I", INVALID_COMPONENT_NAME);
+
+        String dump = dump(ham);
+
+        expectWithMessage("dump()").that(dump)
+                .isEqualTo(String.format("""
+                      HsuAllowlistsMediator (HAM)
+                        DEBUG: %b
+                        2 permanently allowlisted activities:
+                          allowlisted/I.am
+                          so/am.I
+                          """, DEBUG));
     }
 
     private HsuAllowlistsMediator createHam(String... configAllowlist) {
