@@ -122,7 +122,7 @@ public abstract class CallRedirectionService extends Service {
      *                                 interact with their device.
      */
 
-    @FlaggedApi(Flags.FLAG_SEND_ORIGINAL_NUMBER_ON_PLACE_CALL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_SEND_ORIGINAL_NUMBER_ON_PLACE_CALL)
     public void onPlaceCall(@NonNull Uri handle, @NonNull Uri originalHandle,
                             @NonNull PhoneAccountHandle initialPhoneAccount,
                             boolean allowInteractiveResponse) {
