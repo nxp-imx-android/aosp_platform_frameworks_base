@@ -2557,6 +2557,9 @@ public final class Display {
          * Returns flags associated with this mode.
          * @hide
          */
+
+        @SuppressWarnings("UnflaggedApi") // For testing only
+        @TestApi
         @ModeFlags
         public int getFlags() {
             return mFlags;

@@ -743,6 +743,8 @@ public final class DisplayManager {
      * @see #registerDisplayListener(DisplayListener, Handler, long, long)
      * @hide
      */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     public static final long PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED = 1L << 1;
 
     /**
@@ -1004,6 +1006,8 @@ public final class DisplayManager {
      *
      * @hide
      */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     public void registerDisplayListener(@NonNull DisplayListener listener,
             @Nullable Handler handler, @EventType long eventFilter,
             @PrivateEventType long privateEventFilter) {
@@ -1176,16 +1180,19 @@ public final class DisplayManager {
      * Enable a connected display that is currently disabled.
      * @hide
      */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @RequiresPermission("android.permission.MANAGE_DISPLAYS")
     public void enableConnectedDisplay(int displayId) {
         mGlobal.enableConnectedDisplay(displayId);
     }
 
-
     /**
      * Disable a connected display that is currently enabled.
      * @hide
      */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @RequiresPermission("android.permission.MANAGE_DISPLAYS")
     public void disableConnectedDisplay(int displayId) {
         mGlobal.disableConnectedDisplay(displayId);
@@ -1741,6 +1748,32 @@ public final class DisplayManager {
     }
 
     /**
+     * Sets the {@link Display.Mode} on display.  The display mode includes preference for
+     * resolution and refresh rate. The mode change is applied per display.
+     * If the mode specified is not supported by the display, then no mode change
+     * occurs for that display.
+     *
+     * @param displayId The id of the display
+     * @param mode The {@link Display.Mode} to set, which can include resolution and/or
+     * refresh-rate. It is created using {@link Display.Mode.Builder}.
+     * @param storeMode whether the mode setting needs to be persisted across reconnections
+     *`
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @RequiresPermission(Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
+    public void setUserPreferredDisplayMode(
+            int displayId, @NonNull Display.Mode mode, boolean storeMode
+    ) {
+        // Create a new object containing default values for the unused fields like mode ID and
+        // alternative refresh rates.
+        Display.Mode preferredMode = new Display.Mode(mode.getPhysicalWidth(),
+                mode.getPhysicalHeight(), mode.getRefreshRate());
+        mGlobal.setUserPreferredDisplayMode(displayId, preferredMode, storeMode);
+    }
+
+    /**
      * Sets the global default {@link Display.Mode}.  The display mode includes preference for
      * resolution and refresh rate. The mode change is applied globally, i.e. to all the connected
      * displays. If the mode specified is not supported by a connected display, then no mode change
@@ -2156,6 +2189,8 @@ public final class DisplayManager {
          * A display is always connected before being added.
          * @hide
          */
+        @TestApi
+        @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         default void onDisplayConnected(int displayId) { }
 
         /**
@@ -2166,6 +2201,8 @@ public final class DisplayManager {
          * received by the listener.
          * @hide
          */
+        @TestApi
+        @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         default void onDisplayDisconnected(int displayId) { }
     }
 
