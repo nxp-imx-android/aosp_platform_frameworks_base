@@ -133,6 +133,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.util.ArraySet;
 import android.util.Slog;
+import android.util.SparseBooleanArray;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.CompositeRWLock;
@@ -486,6 +487,8 @@ public abstract class OomAdjuster {
         public volatile int mCurMaxEmptyProcesses;
         /** The number of empty processes to maintain before starting to trim old ones. */
         public volatile int mCurTrimEmptyProcesses;
+        /** A sparse array of UIDs for which detailed process state change logging is enabled. */
+        public volatile SparseBooleanArray mProcStateDebugUids = new SparseBooleanArray(0);
     }
 
     // TODO(b/346822474): hook up global state usage.
@@ -552,7 +555,7 @@ public abstract class OomAdjuster {
 
         mConstants = mService.mConstants;
 
-        mLogger = new OomAdjusterDebugLogger(this, mService.mConstants);
+        mLogger = new OomAdjusterDebugLogger(this, mOomConstants, mService.mConstants);
 
         mProcessGroupHandler = new Handler(adjusterThread.getLooper(), msg -> {
             final int group = msg.what;
