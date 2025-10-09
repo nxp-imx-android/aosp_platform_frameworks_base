@@ -2027,7 +2027,6 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         assertFalse(taskFragment2.shouldBeFinishedWithCompanionTaskFragment());
     }
 
-    @EnableFlags(com.android.window.flags.Flags.FLAG_TASK_FRAGMENT_COMPANION_ACTIVITY)
     @Test
     public void testApplyTransaction_setCompanionTaskFragment_withCompanionActivity() {
         final Task task = createTask(mDisplayContent);

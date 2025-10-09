@@ -672,9 +672,6 @@ class TaskFragmentContainer {
      */
     @Nullable
     IBinder getActivityToFinishOnExit(@NonNull TaskFragmentContainer container) {
-        if (!com.android.window.flags.Flags.taskFragmentCompanionActivity()) {
-            return null;
-        }
         return getActivityToFinishOnExitInternal(container);
     }
 

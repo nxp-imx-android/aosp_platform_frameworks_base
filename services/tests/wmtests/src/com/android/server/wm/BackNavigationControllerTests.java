@@ -472,7 +472,6 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         assertTrue(predictable);
     }
 
-    @EnableFlags(Flags.FLAG_TASK_FRAGMENT_COMPANION_ACTIVITY)
     @Test
     public void backTypeCrossActivityInTaskFragment_withCompanionActivity() {
         final Task task = createTask(mDefaultDisplay);

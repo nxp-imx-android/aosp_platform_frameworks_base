@@ -478,9 +478,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     void setCompanionTaskFragment(@Nullable TaskFragment companionTaskFragment,
             @Nullable IBinder toBeFinishedActivity) {
         mCompanionTaskFragment = companionTaskFragment;
-        if (Flags.taskFragmentCompanionActivity()) {
-            mCompanionToBeFinishedActivity = toBeFinishedActivity;
-        }
+        mCompanionToBeFinishedActivity = toBeFinishedActivity;
     }
 
     @Nullable
