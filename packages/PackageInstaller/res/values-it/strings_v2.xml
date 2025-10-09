@@ -26,7 +26,7 @@
     <string name="title_reinstall" msgid="1750856338036455388">"Vuoi reinstallare l\'app?"</string>
     <string name="title_reinstalling" msgid="8194821341725321638">"Reinstallazione in corso…"</string>
     <string name="title_reinstalled" msgid="4805694558041089418">"App reinstallata"</string>
-    <string name="title_update" msgid="1747328630716712391">"Vuoi aggiornare l\'app?"</string>
+    <string name="title_update" msgid="1747328630716712391">"Aggiornare l\'app?"</string>
     <string name="title_update_ownership_change" msgid="6628818356381453406">"Vuoi aggiornare l\'app utilizzando <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
     <string name="title_updating" msgid="5449073288264173554">"Aggiornamento in corso…"</string>
     <string name="title_updated" msgid="3286125118804971449">"App aggiornata"</string>
@@ -36,10 +36,10 @@
     <string name="title_install_failed_invalid_package" msgid="3390527559613519562">"Pacchetto non valido"</string>
     <string name="title_install_failed_less_storage" msgid="4854855960405469248">"Spazio di archiviazione insufficiente"</string>
     <string name="title_install_failed_not_installed" msgid="8014023519071426269">"App non installata"</string>
-    <string name="title_uninstall" msgid="428653424812685605">"Vuoi disinstallare l\'app?"</string>
-    <string name="title_uninstall_clone" msgid="7974889929002929136">"Vuoi eliminare il clone dell\'app?"</string>
+    <string name="title_uninstall" msgid="428653424812685605">"Disinstallare l\'app?"</string>
+    <string name="title_uninstall_clone" msgid="7974889929002929136">"Eliminare il clone dell\'app?"</string>
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Vuoi disinstallare gli aggiornamenti dell\'app?"</string>
-    <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Vuoi disinstallare gli aggiornamenti dell\'app per tutti gli utenti?"</string>
+    <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Disinstallare gli aggiornamenti dell\'app per tutti gli utenti?"</string>
     <string name="title_uninstall_all_users" msgid="2008934480150627653">"Vuoi disinstallare l\'app per tutti gli utenti?"</string>
     <string name="title_uninstall_other_user" msgid="2271467467800640363">"Vuoi disinstallare l\'app per l\'utente \"<xliff:g id="USER_NAME">%1$s</xliff:g>\"?"</string>
     <string name="title_uninstall_app_not_found" msgid="501803094061097579">"App non trovata"</string>
