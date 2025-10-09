@@ -293,3 +293,13 @@ flag {
     description: "Enable Bluetooth problem detection and diagnosis"
     bug: "411309851"
 }
+
+flag {
+    name: "enable_limited_app_info_metadata_for_apex"
+    namespace: "modularization"
+    description: "Enable APKs-in-APEX to opt out of limited AppInfo UI behavior"
+    bug: "449011063"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
