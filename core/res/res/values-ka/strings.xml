@@ -2365,8 +2365,10 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI-ის განბლოკვის PIN-კოდი"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"ქსელის ქვედანაყოფის სერვისის მომწოდებლის განბლოკვის PIN-კოდი"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"მიმდინარეობს SIM ქსელის განბლოკვის მოთხოვნა…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"მიმდინარეობს SIM ქსელის ქვედანაყოფის განბლოკვა …"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"მიმდინარეობს SIM სერვისის მომწოდებლის განბლოკვის მოთხოვნა…"</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"მიმდინარეობს SIM-ის კორპორატიული განბლოკვა…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"მიმდინარეობს PUK-კოდით განბლოკვის მოთხოვნა…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"მიმდინარეობს PUK-კოდით განბლოკვის მოთხოვნა…"</string>
@@ -2392,15 +2394,18 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"მიმდინარეობს PUK-კოდით განბლოკვის მოთხოვნა…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"მიმდინარეობს PUK-კოდით განბლოკვის მოთხოვნა…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"SIM ქსელის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"SIM ქსელის ქვედანაყოფის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"SIM სერვისის მომწოდებლის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"SIM-ის კორპორატიული განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM-ის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM ქსელი 1-ს განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM ქსელი 2-ს განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM HRPD-ის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"RUIM-ის კორპორატიული განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"RUIM-სერვისის მომწოდებლის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM-ის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK-კოდით განბლოკვა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK-კოდით განბლოკვა წარუმატებლად დასრულდა."</string>
@@ -2420,13 +2425,15 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"ქსელის ქვედანაყოფის სერვისის მომწოდებლის განბლოკვის მოთხოვნა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM ქსელის განბლოკვა წარმატებით შესრულდა."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"SIM ქსელის ქვედანაყოფის განბლოკვა წარმატებით შესრულდა."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"SIM სერვისის მომწოდებლის განბლოკვა წარმატებით შესრულდა ."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"SIM-ის კორპორატიული განბლოკვა წარმატებით შესრულდა."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM-ს განბლოკვა წარმატებით შესრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM ქსელი 1-ს განბლოკვა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM ქსელი 2-ს განბლოკვა წარუმატებლად დასრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM HRPD-ის განბლოკვა წარმატებით შესრულდა."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"RUIM-სერვისის მომწოდებლის განბლოკვის მოთხოვნა წარმატებით შესრულდა."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"RUIM-ის კორპორატიული განბლოკვა წარმატებით შესრულდა."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM-ის განბლოკვა წარმატებით შესრულდა."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK-კოდით განბლოკვა წარმატებით შესრულდა."</string>

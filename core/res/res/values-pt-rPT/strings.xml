@@ -2366,8 +2366,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN para desbloqueio do IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN para desbloqueio do fornecedor de serviços do subconjunto da rede"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"A solicitar o desbloqueio da rede do cartão SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"A solicitar o desbloqueio da rede do cartão SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"A solicitar o desbloqueio do fornecedor de serviços do cartão SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"A pedir o desbloqueio do subconjunto da rede do cartão SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"A pedir o desbloqueio do fornecedor de serviços do cartão SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"A solicitar o desbloqueio empresarial do cartão SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"A solicitar o desbloqueio do PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"A solicitar o desbloqueio do PUK…"</string>
@@ -2393,15 +2393,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"A solicitar o desbloqueio do PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"A solicitar o desbloqueio do PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"O pedido de desbloqueio da rede do cartão SIM falhou."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"O pedido de desbloqueio do subconjunto da rede do cartão SIM falhou."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"O pedido de desbloqueio do fornecedor de serviços do cartão SIM falhou."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"O pedido de desbloqueio do subconjunto da rede do cartão SIM falhou."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"O pedido de desbloqueio do fornecedor de serviços do cartão SIM falhou."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"O pedido de desbloqueio empresarial do cartão SIM falhou."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"O pedido de desbloqueio do cartão SIM falhou."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"O pedido de desbloqueio da rede 1 do cartão R-UIM falhou."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"O pedido de desbloqueio da Rede 2 do cartão R-UIM falhou."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"O pedido de desbloqueio de HRPD do cartão R-UIM falhou."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"O pedido para desbloqueio empresarial do cartão R-UIM falhou."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"O pedido de desbloqueio do fornecedor de serviços do cartão R-UIM falhou."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"O pedido de desbloqueio do fornecedor de serviços do cartão RUIM falhou."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"O pedido de desbloqueio do cartão R-UIM falhou."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"O desbloqueio do PUK falhou."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"O desbloqueio do PUK falhou."</string>
@@ -2421,13 +2421,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"O pedido de desbloqueio do fornecedor de serviços do subconjunto da rede falhou."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"O desbloqueio da rede do cartão SIM foi bem-sucedido."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"O desbloqueio do subconjunto da rede do cartão SIM foi bem-sucedido."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"O desbloqueio do fornecedor de serviços do cartão SIM foi bem-sucedido."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Desbloqueio do fornecedor de serviços do cartão SIM bem-sucedido."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"O desbloqueio empresarial do cartão SIM foi bem-sucedido."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Desbloqueio do cartão SIM bem-sucedido."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"O desbloqueio da rede 1 do cartão R-UIM foi bem-sucedido."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"O desbloqueio da Rede 2 do cartão R-UIM foi bem-sucedido."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"O desbloqueio de HRPD do cartão R-UIM foi bem-sucedido."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"O pedido de desbloqueio do fornecedor de serviços do cartão R-UIM foi bem-sucedido."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Desbloqueio do fornecedor de serviços do cartão RUIM bem-sucedido."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"O desbloqueio empresarial do cartão R-UIM foi bem-sucedido."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"O desbloqueio de cartão R-UIM foi bem-sucedido."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"O desbloqueio do PUK foi bem-sucedido."</string>
