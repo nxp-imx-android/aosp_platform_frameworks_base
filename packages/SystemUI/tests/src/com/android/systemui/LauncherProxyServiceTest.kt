@@ -371,10 +371,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             subject.mSysUiProxy.onStatusBarTrackpadEvent(event)
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == event.displayId },
-                    anyInt(),
-                )
+                .setExpansionIntentForNotificationElement(eq(event.displayId))
         }
 
     @Test
@@ -399,10 +396,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == event.displayId },
-                    anyInt(),
-                )
+                .setExpansionIntentForNotificationElement(eq(event.displayId))
         }
 
     @Test
@@ -443,8 +437,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
-            verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(argThat<MotionEvent> { displayId == 0 }, anyInt())
+            verify(statusBarShadeDisplayPolicy).setExpansionIntentForNotificationElement(eq(0))
         }
 
     @Test
@@ -465,15 +458,9 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == shadeDisplayId },
-                    anyInt(),
-                )
+                .setExpansionIntentForNotificationElement(eq(shadeDisplayId))
             verify(statusBarShadeDisplayPolicy)
-                .onStatusBarOrLauncherTouched(
-                    argThat<MotionEvent> { displayId == event.displayId },
-                    anyInt(),
-                )
+                .setExpansionIntentForNotificationElement(eq(event.displayId))
         }
 
     private fun createLauncherProxyService(ctx: Context): LauncherProxyService {

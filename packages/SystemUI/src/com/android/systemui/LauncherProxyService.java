@@ -257,8 +257,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 // TODO: b/407496148 - Refactor to use DisplayMetricsRepository instead
                 final DisplayInfo displayInfo = new DisplayInfo();
                 mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
-                int displayWidth = displayInfo.logicalWidth;
-                mShadeDisplayPolicy.onStatusBarOrLauncherTouched(event, displayWidth);
+                // Gestures on the launcher homescreen always open the notifications shade.
+                mShadeDisplayPolicy.setExpansionIntentForNotificationElement(
+                        event.getDisplayId());
                 Trace.endSection();
             }
         }
