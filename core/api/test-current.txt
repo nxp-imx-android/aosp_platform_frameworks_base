@@ -1283,7 +1283,7 @@ package android.content.pm {
   }
 
   @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class UsesPermissionPurposeInfo implements android.os.Parcelable {
-    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public UsesPermissionPurposeInfo(@NonNull String, @NonNull java.util.Set<java.lang.String>);
+    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public UsesPermissionPurposeInfo(@NonNull String, @NonNull java.util.Set<java.lang.String>, @StringRes int);
   }
 
   @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class ValidGeneralPurposeInfo implements android.os.Parcelable {

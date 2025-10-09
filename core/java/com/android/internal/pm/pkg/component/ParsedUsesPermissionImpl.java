@@ -42,6 +42,8 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
     @ParsedUsesPermission.UsesPermissionFlags
     private int usesPermissionFlags;
 
+    private int purposeStringResource;
+
     @DataClass.ParcelWith(Parcelling.BuiltIn.ForStringSet.class)
     @NonNull
     private Set<String> purposes;
@@ -49,6 +51,7 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
     @DataClass.ParcelWith(Parcelling.BuiltIn.ForStringSet.class)
     @NonNull
     private Set<String> generalPurposes;
+
 
 
 
@@ -69,6 +72,7 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
     public ParsedUsesPermissionImpl(
             @NonNull String name,
             @ParsedUsesPermission.UsesPermissionFlags int usesPermissionFlags,
+            int purposeStringResource,
             @NonNull Set<String> purposes,
             @NonNull Set<String> generalPurposes) {
         this.name = name;
@@ -77,6 +81,7 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
         this.usesPermissionFlags = usesPermissionFlags;
         com.android.internal.util.AnnotationValidations.validate(
                 ParsedUsesPermission.UsesPermissionFlags.class, null, usesPermissionFlags);
+        this.purposeStringResource = purposeStringResource;
         this.purposes = purposes;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, purposes);
@@ -95,6 +100,11 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
     @DataClass.Generated.Member
     public @ParsedUsesPermission.UsesPermissionFlags int getUsesPermissionFlags() {
         return usesPermissionFlags;
+    }
+
+    @DataClass.Generated.Member
+    public int getPurposeStringResource() {
+        return purposeStringResource;
     }
 
     @DataClass.Generated.Member
@@ -120,6 +130,12 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
         usesPermissionFlags = value;
         com.android.internal.util.AnnotationValidations.validate(
                 ParsedUsesPermission.UsesPermissionFlags.class, null, usesPermissionFlags);
+        return this;
+    }
+
+    @DataClass.Generated.Member
+    public @NonNull ParsedUsesPermissionImpl setPurposeStringResource( int value) {
+        purposeStringResource = value;
         return this;
     }
 
@@ -180,6 +196,7 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
 
         sParcellingForName.parcel(name, dest, flags);
         dest.writeInt(usesPermissionFlags);
+        dest.writeInt(purposeStringResource);
         sParcellingForPurposes.parcel(purposes, dest, flags);
         sParcellingForGeneralPurposes.parcel(generalPurposes, dest, flags);
     }
@@ -197,6 +214,7 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
 
         String _name = sParcellingForName.unparcel(in);
         int _usesPermissionFlags = in.readInt();
+        int _purposeStringResource = in.readInt();
         Set<String> _purposes = sParcellingForPurposes.unparcel(in);
         Set<String> _generalPurposes = sParcellingForGeneralPurposes.unparcel(in);
 
@@ -206,6 +224,7 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
         this.usesPermissionFlags = _usesPermissionFlags;
         com.android.internal.util.AnnotationValidations.validate(
                 ParsedUsesPermission.UsesPermissionFlags.class, null, usesPermissionFlags);
+        this.purposeStringResource = _purposeStringResource;
         this.purposes = _purposes;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, purposes);
@@ -231,10 +250,10 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
     };
 
     @DataClass.Generated(
-            time = 1758770735569L,
+            time = 1761688735854L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/com/android/internal/pm/pkg/component/ParsedUsesPermissionImpl.java",
-            inputSignatures = "private @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForInternedString.class) @android.annotation.NonNull java.lang.String name\nprivate @com.android.internal.pm.pkg.component.ParsedUsesPermission.UsesPermissionFlags int usesPermissionFlags\nprivate @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForStringSet.class) @android.annotation.NonNull java.util.Set<java.lang.String> purposes\nprivate @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForStringSet.class) @android.annotation.NonNull java.util.Set<java.lang.String> generalPurposes\nclass ParsedUsesPermissionImpl extends java.lang.Object implements [com.android.internal.pm.pkg.component.ParsedUsesPermission, android.os.Parcelable]\n@com.android.internal.util.DataClass(genGetters=true, genSetters=true, genBuilder=false, genParcelable=true, genAidl=false)")
+            inputSignatures = "private @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForInternedString.class) @android.annotation.NonNull java.lang.String name\nprivate @com.android.internal.pm.pkg.component.ParsedUsesPermission.UsesPermissionFlags int usesPermissionFlags\nprivate  int purposeStringResource\nprivate @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForStringSet.class) @android.annotation.NonNull java.util.Set<java.lang.String> purposes\nprivate @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForStringSet.class) @android.annotation.NonNull java.util.Set<java.lang.String> generalPurposes\nclass ParsedUsesPermissionImpl extends java.lang.Object implements [com.android.internal.pm.pkg.component.ParsedUsesPermission, android.os.Parcelable]\n@com.android.internal.util.DataClass(genGetters=true, genSetters=true, genBuilder=false, genParcelable=true, genAidl=false)")
     @Deprecated
     private void __metadata() {}
 

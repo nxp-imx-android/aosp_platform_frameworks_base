@@ -4777,6 +4777,7 @@ package android.content.pm {
     field @NonNull public java.util.Set<java.lang.String> knownCerts;
     field @StringRes public int requestRes;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresGeneralPurposeTargetSdkVersion;
+    field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public int requiresPurposeStringTargetSdkVersion;
     field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") @NonNull public java.util.Map<java.lang.String,android.content.pm.ValidGeneralPurposeInfo> validGeneralPurposes;
   }
 
@@ -4848,6 +4849,7 @@ package android.content.pm {
     method public int describeContents();
     method @NonNull public java.util.Set<java.lang.String> getGeneralPurposes();
     method @NonNull public String getPermissionName();
+    method @StringRes public int getPurposeStringResource();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.UsesPermissionPurposeInfo> CREATOR;
   }
