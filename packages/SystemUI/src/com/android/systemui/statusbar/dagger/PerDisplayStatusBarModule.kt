@@ -37,6 +37,7 @@ import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsR
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
@@ -185,6 +186,21 @@ interface PerDisplayStatusBarModule {
                 context
                     .createWindowContext(display, TYPE_STATUS_BAR, /* options= */ Bundle.EMPTY)
                     .also { it.setTheme(R.style.Theme_SystemUI) }
+            }
+        }
+
+        @Provides
+        @DisplayAware
+        @PerDisplaySingleton
+        fun statusBarLongPressGestureDetector(
+            @DisplayAwareStatusBar context: Context,
+            detectorFactory: StatusBarLongPressGestureDetector.Factory,
+            @Default defaultDetectorLazy: Lazy<StatusBarLongPressGestureDetector>,
+        ): StatusBarLongPressGestureDetector {
+            return if (Flags.statusBarLongPressGestureDetectorPerDisplay()) {
+                detectorFactory.create(context)
+            } else {
+                defaultDetectorLazy.get()
             }
         }
     }

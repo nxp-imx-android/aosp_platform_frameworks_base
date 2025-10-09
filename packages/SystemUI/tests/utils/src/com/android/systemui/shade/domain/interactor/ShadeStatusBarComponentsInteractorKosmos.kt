@@ -21,6 +21,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.statusbar.data.repository.homeStatusBarComponentsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
+import com.android.systemui.statusbar.gesture.statusBarLongPressGestureDetector
 
 val Kosmos.shadeStatusBarComponentsInteractor by
     Kosmos.Fixture {
@@ -30,5 +31,6 @@ val Kosmos.shadeStatusBarComponentsInteractor by
             homeStatusBarComponentsRepository,
             displaySubcomponentPerDisplayRepository,
             { disableFlagsInteractor },
+            { statusBarLongPressGestureDetector },
         )
     }

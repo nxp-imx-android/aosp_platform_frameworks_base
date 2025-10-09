@@ -61,6 +61,7 @@ import com.android.systemui.statusbar.PulseExpansionHandler;
 import com.android.systemui.statusbar.QsFrameTranslateController;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.disableflags.data.repository.FakeDisableFlagsRepository;
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
 import com.android.systemui.statusbar.phone.DozeParameters;
@@ -245,7 +246,7 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
                 mNotificationShadeDepthController,
                 mShadeHeaderController,
                 mShadeTouchableRegionManager,
-                () -> mStatusBarLongPressGestureDetector,
+                mKosmos.getShadeStatusBarComponentsInteractor(),
                 mKeyguardStateController,
                 mKeyguardBypassController,
                 mScrimController,
