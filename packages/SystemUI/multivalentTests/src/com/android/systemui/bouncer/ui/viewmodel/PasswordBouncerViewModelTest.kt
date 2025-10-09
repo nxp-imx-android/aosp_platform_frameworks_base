@@ -445,6 +445,38 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             assertThat(isPasswordRevealed).isFalse()
         }
 
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onInactivity_clearPassword_whenRevealable() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+
+            advanceTimeBy(2.seconds)
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("p")
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("pa")
+
+            advanceTimeBy(30.seconds - 1.milliseconds)
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("pa")
+
+            advanceTimeBy(2.milliseconds)
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun onInactivity_dontClearPassword_whenNotRevealable() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, false)
+
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+
+            advanceTimeBy(31.seconds)
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("p")
+        }
+
     private fun Kosmos.showBouncer() {
         val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
         sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
