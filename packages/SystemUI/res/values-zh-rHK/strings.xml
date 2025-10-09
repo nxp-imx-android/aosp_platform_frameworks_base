@@ -365,8 +365,7 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"位置要求啟動中"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"已啟用「感應器關閉」"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"清除所有通知。"</string>
-    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
-    <skip />
+    <string name="accessibility_notification_bell" msgid="7149451526721220526">"通知"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{裡面還有 # 個通知。}other{裡面還有 # 個通知。}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"螢幕已鎖定為橫向模式。"</string>
@@ -1155,7 +1154,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"不要啟用"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"啟用捷徑"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>鍵盤快速鍵已開啟"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"快捷操作鍵"<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 鍵盤快速鍵，即可使用無障礙功能「<xliff:g id="ID_3">^3</xliff:g>」，此功能可讓你快速放大畫面內容。放大功能啟用後，按下「快捷操作鍵」圖示"<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g>，以及「+」或「-」，即可調整縮放程度。"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"快捷操作鍵 "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是無障礙功能「<xliff:g id="ID_3">^3</xliff:g>」的鍵盤快速鍵，可以快速放大畫面內容。放大功能啟用後，按下快捷操作鍵 "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g>，再按「+」或「-」可調整縮放程度。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"關閉快速鍵"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"保持開啟"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"「操作」"<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用 <xliff:g id="ID_3">^3</xliff:g> 的鍵盤快速鍵。<xliff:g id="ID_4">^3</xliff:g> 是一款螢幕閱讀器，讓你聆聽系統朗讀項目，並讓無法看清楚螢幕的使用者瞭解螢幕內容。這可能會變更裝置的運作方式。"</string>

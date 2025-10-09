@@ -365,8 +365,7 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"පිහිටීම් ඉල්ලීම් සක්‍රියයි"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"සංවේදක ක්‍රියාවිරහිතය සක්‍රියයි"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"සියලු දැනුම්දීම් හිස් කරන්න."</string>
-    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
-    <skip />
+    <string name="accessibility_notification_bell" msgid="7149451526721220526">"දැනුම්දීම්"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ඇතුළත තව # දැනුම්දීමක් ඇත.}one{ඇතුළත තව දැනුම්දීම් #ක් ඇත.}other{ඇතුළත තව දැනුම්දීම් #ක් ඇත.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"තිරය තිරස් දිශානතියෙහි අගුළු දමා ඇත."</string>
