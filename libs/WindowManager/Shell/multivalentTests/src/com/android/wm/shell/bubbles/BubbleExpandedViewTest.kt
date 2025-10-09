@@ -84,7 +84,7 @@ class BubbleExpandedViewTest {
         // The view must be properly inflated for tests to pass.
         val view = TestableBubbleExpandedView(context)
         // onFinishInflate needs a pointer_view to be present.
-        pointerView = View(context).apply { id = R.id.pointer_view }
+        pointerView = createPointerView()
         view.addView(pointerView)
         view.onFinishInflate()
 
@@ -185,6 +185,30 @@ class BubbleExpandedViewTest {
         assertThat(taskView.alpha).isEqualTo(1f)
         assertThat(pointerView.alpha).isEqualTo(1f)
     }
+
+    @Test
+    fun initialize_taskViewGone_taskViewSetVisible() {
+        val localTaskView = TaskView(context, taskViewController, taskViewTaskController)
+        localTaskView.visibility = View.GONE
+        val localBubbleTv = BubbleTaskView(localTaskView, directExecutor(), bubbleController)
+
+        // The view must be properly inflated for tests to pass.
+        val localExpandedView = TestableBubbleExpandedView(context)
+        localExpandedView.addView(createPointerView())
+        localExpandedView.onFinishInflate()
+
+        localExpandedView.initialize(
+            mock<BubbleExpandedViewManager>(),
+            mock<BubbleStackView>(),
+            mock<BubblePositioner>(),
+            false /* isOverflow */,
+            localBubbleTv,
+        )
+
+        assertThat(localTaskView.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    private fun createPointerView(): View = View(context).apply { id = R.id.pointer_view }
 
     /**
      * Testable subclass of [BubbleExpandedView] to expose protected methods for testing.

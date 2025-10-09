@@ -326,8 +326,9 @@ public class BubbleExpandedView extends LinearLayout {
             mManageButton.setVisibility(GONE);
         } else {
             mTaskView = bubbleTaskView.getTaskView();
-            // reset the insets that might left after TaskView is shown in BubbleBarExpandedView
+            // reset properties that may be left if TaskView is reused from BubbleBarExpandedView
             mTaskView.setCaptionInsets(null);
+            mTaskView.setVisibility(VISIBLE);
             mTaskViewListener = new BubbleTaskViewListener(mContext, bubbleTaskView,
                     /* viewParent= */ this, expandedViewManager,
                     new BubbleTaskViewListener.Callback() {
@@ -847,7 +848,6 @@ public class BubbleExpandedView extends LinearLayout {
                 if ((mPendingIntent != null || mBubble.hasMetadataShortcutId())
                         && mTaskView != null) {
                     setContentVisibility(false);
-                    mTaskView.setVisibility(VISIBLE);
                 }
             }
             applyThemeAttrs();
