@@ -186,7 +186,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
         final IDisplayWindowInsetsController insetsController = spy(
                 createDisplayWindowInsetsController());
         mDisplayContent.setRemoteInsetsController(insetsController);
-        mDisplayContent.getDisplayPolicy().setRemoteInsetsControllerControlsSystemBars(true);
+        mDisplayContent.getDisplayPolicy().setSystemBarRemoteInsetsControllerAllowed(true);
 
         final WindowState win = newWindowBuilder("app", TYPE_APPLICATION).setActivityType(
                 ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_MULTI_WINDOW).setDisplay(
@@ -245,7 +245,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
     @Test
     public void testControlsForDispatch_remoteInsetsControllerControlsBars_appHasNoControl() {
         mDisplayContent.setRemoteInsetsController(createDisplayWindowInsetsController());
-        mDisplayContent.getDisplayPolicy().setRemoteInsetsControllerControlsSystemBars(true);
+        mDisplayContent.getDisplayPolicy().setSystemBarRemoteInsetsControllerAllowed(true);
         addStatusBar();
         addNavigationBar();
 

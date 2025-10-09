@@ -215,9 +215,9 @@ public class DisplayPolicy {
     private boolean mCanSystemBarsBeShownByUser;
 
     /**
-     * Let remote insets controller control system bars regardless of other settings.
+     * Let remote insets controller control system bars when appropriate.
      */
-    private boolean mRemoteInsetsControllerControlsSystemBars;
+    private boolean mAllowsSystemBarRemoteInsetsController;
 
     @Nullable
     StatusBarManagerInternal getStatusBarManagerInternal() {
@@ -884,14 +884,14 @@ public class DisplayPolicy {
     }
 
 
-    boolean isRemoteInsetsControllerControllingSystemBars() {
-        return mRemoteInsetsControllerControlsSystemBars;
+    boolean isSystemBarRemoteInsetsControllerAllowed() {
+        return mAllowsSystemBarRemoteInsetsController;
     }
 
     @VisibleForTesting
-    void setRemoteInsetsControllerControlsSystemBars(
-            boolean remoteInsetsControllerControlsSystemBars) {
-        mRemoteInsetsControllerControlsSystemBars = remoteInsetsControllerControlsSystemBars;
+    void setSystemBarRemoteInsetsControllerAllowed(
+            boolean allowsSystemBarRemoteInsetsController) {
+        mAllowsSystemBarRemoteInsetsController = allowsSystemBarRemoteInsetsController;
     }
 
     /** Prepares to turn on screen. The given listener is used to notify that it is ready. */
@@ -1621,11 +1621,15 @@ public class DisplayPolicy {
             // controlling system bars until the second app window is ready.
             final boolean exitingStartingWindow =
                     attrs.type == TYPE_APPLICATION_STARTING && win.mAnimatingExit;
+            // The top window always needs to be sent to System UI regardless of filling
+            // display when the remote insets controller is controlling system bars.
+            final boolean isRemoteControlling =
+                    getInsetsPolicy().remoteInsetsControllerControlsSystemBars(win);
 
             // Record the top-fullscreen-app-window which will be used to determine the system UI
             // controlling window.
             if (mTopFullscreenOpaqueWindowState == null && !exitingStartingWindow
-                    && fillsDisplayWindowingMode(win)) {
+                    && (isRemoteControlling || fillsDisplayWindowingMode(win))) {
                 mTopFullscreenOpaqueWindowState = win;
             }
 
@@ -1873,7 +1877,7 @@ public class DisplayPolicy {
         mRightGestureInset = mGestureNavigationSettingsObserver.getRightSensitivity(res);
         mNavigationBarAlwaysShowOnSideGesture =
                 res.getBoolean(R.bool.config_navBarAlwaysShowOnSideEdgeGesture);
-        mRemoteInsetsControllerControlsSystemBars = res.getBoolean(
+        mAllowsSystemBarRemoteInsetsController = res.getBoolean(
                 R.bool.config_remoteInsetsControllerControlsSystemBars);
 
         updateConfigurationAndScreenSizeDependentBehaviors();
@@ -2573,7 +2577,8 @@ public class DisplayPolicy {
     void updateSystemBarAttributes() {
         // The focused window always needs to be sent to System UI regardless of filling
         // display when the remote insets controller is controlling system bars.
-        final boolean isRemoteControlling = isRemoteInsetsControllerControllingSystemBars();
+        final boolean isRemoteControlling =
+                getInsetsPolicy().remoteInsetsControllerControlsSystemBars(mFocusedWindow);
         // If there is no window focused, there will be nobody to handle the events
         // anyway, so just hang on in whatever state we're in until things settle down.
         WindowState winCandidate =
@@ -3173,8 +3178,8 @@ public class DisplayPolicy {
         pw.print(prefix); pw.print("mForceShowNavigationBarEnabled=");
         pw.print(mForceShowNavigationBarEnabled);
         pw.print(" mAllowLockscreenWhenOn="); pw.println(mAllowLockscreenWhenOn);
-        pw.print(prefix); pw.print("mRemoteInsetsControllerControlsSystemBars=");
-        pw.println(mRemoteInsetsControllerControlsSystemBars);
+        pw.print(prefix); pw.print("mAllowsSystemBarRemoteInsetsController=");
+        pw.println(mAllowsSystemBarRemoteInsetsController);
         pw.print(prefix); pw.println("mDecorInsetsInfo:");
         mDecorInsets.dump(prefixInner, pw);
         if (mCachedDecorInsets != null) {
