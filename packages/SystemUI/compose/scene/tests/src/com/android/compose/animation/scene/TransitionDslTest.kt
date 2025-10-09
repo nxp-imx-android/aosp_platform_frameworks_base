@@ -310,6 +310,22 @@ class TransitionDslTest {
         }
     }
 
+    @Test
+    fun defaultSpec() = runTest {
+        assertThat(transitions {}.defaultTransitionSpec).isNull()
+
+        val spec = tween<Float>(42)
+        val transitionsWithDefault = transitions { default { this.spec = spec } }
+        assertThat(transitionsWithDefault.defaultTransitionSpec).isNotNull()
+        assertThat(
+                transitionsWithDefault
+                    .transitionSpec(SceneA, SceneB, null)
+                    .transformationSpec(aToB())
+                    .progressSpec
+            )
+            .isEqualTo(spec)
+    }
+
     companion object {
         private val TRANSFORMATION_RANGE =
             Correspondence.transforming<TransformationMatcher, TransformationRange?>(

@@ -33,6 +33,7 @@ import com.android.internal.jank.Cuj.CujType
 /** The transitions configuration of a [SceneTransitionLayout]. */
 class SceneTransitions
 internal constructor(
+    internal val defaultTransitionSpec: DefaultTransitionSpec?,
     internal val transitionSpecs: List<TransitionSpecImpl>,
     internal val interruptionHandler: InterruptionHandler,
 ) {
@@ -109,20 +110,23 @@ internal constructor(
         return match
     }
 
-    private fun defaultTransition(from: ContentKey, to: ContentKey) =
-        TransitionSpecImpl(
+    private fun defaultTransition(from: ContentKey, to: ContentKey): TransitionSpecImpl {
+        return TransitionSpecImpl(
             key = null,
             from,
             to,
             cuj = null,
-            previewTransformationSpec = null,
+            previewTransformationSpec = defaultTransitionSpec?.previewTransformationSpec,
             reversePreviewTransformationSpec = null,
-            TransformationSpec.EmptyProvider,
+            transformationSpec =
+                defaultTransitionSpec?.transformationSpec ?: TransformationSpec.EmptyProvider,
         )
+    }
 
     companion object {
         val Empty =
             SceneTransitions(
+                defaultTransitionSpec = null,
                 transitionSpecs = emptyList(),
                 interruptionHandler = DefaultInterruptionHandler,
             )
@@ -249,6 +253,11 @@ internal class TransitionSpecImpl(
         transition: TransitionState.Transition
     ): TransformationSpecImpl? = previewTransformationSpec?.invoke(transition)
 }
+
+internal class DefaultTransitionSpec(
+    val previewTransformationSpec: ((TransitionState.Transition) -> TransformationSpecImpl)?,
+    val transformationSpec: (TransitionState.Transition) -> TransformationSpecImpl,
+)
 
 /**
  * An implementation of [TransformationSpec] that allows the quick retrieval of an element
