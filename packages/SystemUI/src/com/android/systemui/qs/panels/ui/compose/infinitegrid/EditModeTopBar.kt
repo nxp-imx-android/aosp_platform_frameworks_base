@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidthIn
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,13 +56,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.common.ui.icons.MoreVert
@@ -223,16 +219,6 @@ private fun TopBarActionOverflow(
     var showMenu by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-        val density = LocalDensity.current
-        val offset =
-            with(density) {
-                val safeContent = WindowInsets.safeDrawing
-                val layoutDirection = LocalLayoutDirection.current
-                DpOffset(
-                    -safeContent.getLeft(this, layoutDirection).toDp(),
-                    -safeContent.getTop(this).toDp(),
-                )
-            }
         IconButton(
             onClick = { showMenu = !showMenu },
             colors =
@@ -252,7 +238,6 @@ private fun TopBarActionOverflow(
             shape = RoundedCornerShape(26.dp),
             modifier = Modifier.testTag(OPTIONS_DROP_DOWN_TEST_TAG).requiredWidthIn(min = 216.dp),
             containerColor = MaterialTheme.colorScheme.surfaceBright,
-            offset = offset,
         ) {
             actionsViewModel.forEach { action ->
                 key(action.labelId) {
