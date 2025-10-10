@@ -431,11 +431,11 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT)
     fun testDragMove_whenSnappedOrMaximized_restoresBounds() = runOnUiThread {
-        val prevBounds = Rect(100, 300, 600, 700) // width=500, height=400
+        val prevBounds = Rect(100, 250, 200, 500) // width=100, height=250
         whenever(mockDesktopRepository.hasBoundsBeforeSnapOrMaximize(any())).thenReturn(true)
         whenever(mockDesktopRepository.removeBoundsBeforeSnapOrMaximize(TASK_ID))
             .thenReturn(prevBounds)
-        val expectedRestoredBounds = Rect(250, 100, 750, 500)
+        val expectedRestoredBounds = Rect(100, 100, 200, 350) // width=100, height=250
 
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,

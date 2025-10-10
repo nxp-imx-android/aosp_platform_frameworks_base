@@ -477,10 +477,14 @@ class MultiDisplayVeiledResizeTaskPositioner(
         val prevWidth = prevBounds.width()
         val prevHeight = prevBounds.height()
 
+        val touchPointHorizontalRatio = (dragStartX - currentBounds.left) / currentBounds.width()
+        val positionOffset = (prevWidth * touchPointHorizontalRatio).toInt()
+
+        val newLeft = dragStartX - positionOffset
         return Rect(
-            (dragStartX - prevWidth / 2).toInt(),
+            newLeft.toInt(),
             currentBounds.top,
-            (dragStartX + prevWidth / 2).toInt(),
+            (newLeft + prevWidth).toInt(),
             currentBounds.top + prevHeight,
         )
     }
