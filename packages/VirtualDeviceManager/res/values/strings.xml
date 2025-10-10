@@ -42,10 +42,10 @@
     <!-- START NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
 
     <!-- Label for the title of notify computer control blocked activity [CHAR LIMIT=NONE] -->
-    <string name="notify_computer_control_blocked_activity_title">This app is requesting to open another app, which is restricted during automation</string>
+    <string name="notify_computer_control_blocked_activity_title">This agent has requested access to an app it isn’t allowed to open. Take over from the agent or stop the task.</string>
 
     <!-- Label for the title of notify computer control blocked permission dialog [CHAR LIMIT=NONE] -->
-    <string name="notify_computer_control_blocked_permission_dialog_title">This app is requesting a permission, which is restricted during automation</string>
+    <string name="notify_computer_control_blocked_permission_dialog_title">This agent has requested a permission it isn’t allowed to have. Take over from the agent or stop the task.</string>
 
     <!-- Label for the OK button for notify computer control blocked activity dialog. [CHAR LIMIT=40] -->
     <string name="notify_computer_control_blocked_activity_button_ok">OK</string>
