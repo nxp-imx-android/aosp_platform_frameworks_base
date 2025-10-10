@@ -203,7 +203,8 @@ abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
     abstract fun getChildFrame(child: TChild): VRectF
 
     protected fun updateChildFrames(isLayout: Boolean) {
-        children.forEach { child ->
+        for (child in children) {
+            if (child.parent != this) continue
             val rect = getChildFrame(child)
             if (isLayout) {
                 child.layout(rect)
