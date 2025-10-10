@@ -54,3 +54,10 @@ flag {
     description: "Enable protologging for SurfaceControlRegistry"
     bug: "399468864"
 }
+
+flag {
+    name: "java_native_protolog"
+    namespace: "windowing_tools"
+    description: "Enables java native protologging through JNI calls"
+    bug: "450529294"
+}
