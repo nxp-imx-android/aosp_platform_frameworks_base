@@ -2799,7 +2799,7 @@
     <!-- On the keyguard screen, when pattern lock is disabled, only tell them to press menu to unlock.  This is shown in small font at the bottom. -->
     <string name="lockscreen_instructions_when_pattern_disabled">Press Menu to unlock.</string>
 
-    <!-- On the unlock pattern screen, shown at the top of the unlock screen to tell the user what to do. Below this text is the place for theu ser to draw the pattern. -->
+    <!-- On the unlock pattern screen, shown at the top of the unlock screen to tell the user what to do. Below this text is the place for the user to draw the pattern. -->
     <string name="lockscreen_pattern_instructions">Draw pattern to unlock</string>
     <!-- Button at the bottom of the unlock screen to make an emergency call or access other emergency assistance functions. -->
     <string name="lockscreen_emergency_call">Emergency</string>
@@ -2812,7 +2812,14 @@
     <!-- On the unlock password screen, shown when the user enters the wrong lock password and must try again. -->
     <string name="lockscreen_password_wrong">Try again</string>
 
-    <!-- On the keyguard screen, this string explains that some features or data may not be available until the device is unlocked. [CHAR LIMIT=48] -->
+    <!-- On the keyguard screen, this string explains that the user can click anywhere to go to the
+         bouncer and, ultimately, unlock the device. [CHAR LIMIT=48] -->
+    <string name="lockscreen_click_to_unlock_hint">Click to unlock</string>
+    <!-- On the keyguard screen, this string explains that the user can press any key to go to the
+         bouncer and, ultimately, unlock the device. [CHAR LIMIT=48] -->
+    <string name="lockscreen_key_to_unlock_hint">Press any key to unlock</string>
+    <!-- On the keyguard screen, this string explains that some features or data may not be
+         available until the device is unlocked. [CHAR LIMIT=48] -->
     <string name="lockscreen_storage_locked">Unlock for all features and data</string>
 
     <!-- Shown when face unlock failed multiple times so we're just using the backup -->
