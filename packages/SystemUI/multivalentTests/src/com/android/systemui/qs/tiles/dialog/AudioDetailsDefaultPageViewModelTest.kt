@@ -21,9 +21,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.res.R
 import com.android.systemui.testKosmosNew
 import com.android.systemui.volume.panel.shared.model.VolumePanelComponentKey
 import com.android.systemui.volume.panel.shared.model.mockVolumePanelUiComponentProvider
@@ -61,6 +63,17 @@ class AudioDetailsDefaultPageViewModelTest : SysuiTestCase() {
             assertThat(underTest.footerComponents).hasSize(2)
             assertThat(checkNotNull(underTest.footerComponents)[0].key).isEqualTo(COMPONENT_1)
             assertThat(checkNotNull(underTest.footerComponents)[1].key).isEqualTo(COMPONENT_2)
+        }
+
+    @Test
+    fun volumeSliderViewModel_usesStreamMusic() =
+        kosmos.runTest {
+            underTest.activateIn(kosmos.testScope)
+            val slider by collectLastValue(checkNotNull(underTest.volumeSliderViewModel).slider)
+
+            // Slider should be associated with `AudioStream(AudioManager.STREAM_MUSIC)`.
+            assertThat(checkNotNull(slider).label)
+                .isEqualTo(context.getString(R.string.stream_music))
         }
 
     private companion object {

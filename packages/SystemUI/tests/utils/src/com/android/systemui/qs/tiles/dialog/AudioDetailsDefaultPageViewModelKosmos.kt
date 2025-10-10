@@ -17,11 +17,15 @@
 package com.android.systemui.qs.tiles.dialog
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.audioStreamSliderViewModelFactory
 import com.android.systemui.volume.panel.ui.viewmodel.volumePanelViewModelFactory
 
 val Kosmos.audioDetailsDefaultPageViewModel: AudioDetailsDefaultPageViewModel by
     Kosmos.Fixture {
-        AudioDetailsDefaultPageViewModel(volumePanelViewModelFactory = volumePanelViewModelFactory)
+        AudioDetailsDefaultPageViewModel(
+            volumePanelViewModelFactory = volumePanelViewModelFactory,
+            audioStreamSliderViewModelFactory = audioStreamSliderViewModelFactory,
+        )
     }
 
 val Kosmos.audioDetailsDefaultPageViewModelFactory: AudioDetailsDefaultPageViewModel.Factory by
