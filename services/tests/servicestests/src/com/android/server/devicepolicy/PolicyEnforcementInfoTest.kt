@@ -62,6 +62,12 @@ class PolicyEnforcementInfoTest {
     }
 
     @Test
+    fun isOnlyEnforcedBySystem_emptyAdminList_returnsFalse() {
+      val policyEnforcementInfo = PolicyEnforcementInfo(emptyList())
+      assertThat(policyEnforcementInfo.isOnlyEnforcedBySystem).isFalse()
+    }
+
+    @Test
     fun getMostImportantEnforcingAdmin_returnsSupervisionAdmin() {
         val policyEnforcementInfo =
             PolicyEnforcementInfo(listOf(SUPERVISION_ADMIN, DPC_ADMIN, SYSTEM_ADMIN))
