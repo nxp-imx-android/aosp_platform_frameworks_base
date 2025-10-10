@@ -17,18 +17,32 @@
 package com.android.server.serial;
 
 import android.Manifest;
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.serial.SerialManager;
+import android.os.Binder;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.UserHandle;
 import android.util.ArrayMap;
+import android.util.Slog;
 import android.util.SparseBooleanArray;
 
 import com.android.internal.annotations.GuardedBy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class manages app accesses to serial devices.
  */
-class SerialUserAccessManager {
+class SerialUserAccessManager implements SerialUserAccessManagerInterface {
+    private static final String TAG = "SerialUserAccessManager";
+
     private final Context mContext;
 
     /**
@@ -38,28 +52,55 @@ class SerialUserAccessManager {
     private final String[] mPortsInConfig;
 
     /**
+     * Component name of the activity that shows the request for access to a serial port.
+     */
+    private final String mDialogComponent;
+
+    /**
      * Mapping of serial port names to list of UIDs with accesses for the device Each entry last
      * until device is disconnected. There are accesses granted via access request dialog.
      */
     @GuardedBy("mLock")
     private final ArrayMap<String, SparseBooleanArray> mPortAccessMap = new ArrayMap<>();
 
+    @GuardedBy("mLock")
+    private final List<AccessToPortRequest> mPendingAccessRequests = new ArrayList<>();
+
     private final Object mLock = new Object();
 
-    SerialUserAccessManager(Context context, String[] portsInConfig) {
+    SerialUserAccessManager(Context context, String[] portsInConfig, String dialogComponent) {
         mContext = context;
         mPortsInConfig = portsInConfig;
+        mDialogComponent = dialogComponent;
     }
 
-    void requestAccess(
-            String requestedPortName, int pid, int uid, AccessToPortDecidedCallback callback) {
+    @Override
+    public void requestAccess(String requestedPortName, int pid, int uid,
+            String requestingPackageName, AccessToPortDecidedCallback callback) {
         if (hasAccessToPort(requestedPortName, pid, uid)) {
             callback.onAccessToPortDecided(requestedPortName, pid, uid, /* granted */ true);
             return;
         }
 
-        // TODO(b/429003921): Implement access request dialog.
-        callback.onAccessToPortDecided(requestedPortName, pid, uid, /* granted */ false);
+        final AccessToPortRequest request = new AccessToPortRequest(requestedPortName, pid, uid,
+                requestingPackageName, callback);
+        synchronized (mLock) {
+            mPendingAccessRequests.add(request);
+        }
+
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            mContext.startActivityAsUser(
+                    request.getAccessDialogIntent(), UserHandle.of(UserHandle.getUserId(uid)));
+        } catch (RuntimeException e) {
+            Slog.e(TAG, "Failed to start access dialog", e);
+            synchronized (mLock) {
+                mPendingAccessRequests.remove(request);
+            }
+            request.notifyRequestResult(/* granted */ false);
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
     }
 
     private boolean hasAccessToPort(String requestedPortName, int pid, int uid) {
@@ -92,13 +133,102 @@ class SerialUserAccessManager {
         return false;
     }
 
-    void onPortRemoved(String name) {
+    @Override
+    public void grantAccess(String portName, int uid, @Nullable IBinder token) {
+        updatePortAccess(portName, uid, token, /* granted */ true);
+    }
+
+    @Override
+    public void revokeAccess(String portName, int uid, @Nullable IBinder token) {
+        updatePortAccess(portName, uid, token, /* granted */ false);
+    }
+
+    private void updatePortAccess(
+            String portName, int uid, @Nullable IBinder token, boolean granted) {
+        Slog.d(TAG, "updatePortAccess: portName=" + portName + ", granted=" + granted);
+        synchronized (mLock) {
+            AccessToPortRequest pendingRequest = findAndRemovePendingRequest(portName, uid, token);
+            SparseBooleanArray uidToGranted = mPortAccessMap.get(portName);
+            if (uidToGranted == null) {
+                uidToGranted = new SparseBooleanArray();
+                mPortAccessMap.put(portName, uidToGranted);
+            }
+            uidToGranted.put(uid, granted);
+
+            if (pendingRequest != null) {
+                pendingRequest.notifyRequestResult(granted);
+            }
+        }
+    }
+
+    @GuardedBy("mLock")
+    @Nullable
+    private AccessToPortRequest findAndRemovePendingRequest(
+            String portName, int uid, @Nullable IBinder token) {
+        if (token == null) {
+            return null;
+        }
+        for (int i = 0; i < mPendingAccessRequests.size(); ++i) {
+            final AccessToPortRequest request = mPendingAccessRequests.get(i);
+            if (request.mToken == token) {
+                if (request.mRequestingUid != uid || !portName.equals(request.mRequestedPort)) {
+                    throw new IllegalStateException("Found wrong pending request");
+                }
+                mPendingAccessRequests.remove(i);
+                return request;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void onPortRemoved(String name) {
         synchronized (mLock) {
             mPortAccessMap.remove(name);
         }
     }
 
-    interface AccessToPortDecidedCallback {
-        void onAccessToPortDecided(String requestedPort, int pid, int uid, boolean granted);
+    private class AccessToPortRequest {
+        /**
+         * The unique token of this request
+         */
+        private final Binder mToken = new Binder();
+
+        private final String mRequestedPort;
+
+        private final int mRequestingPid;
+
+        private final int mRequestingUid;
+
+        private final String mRequestingPackageName;
+
+        private final AccessToPortDecidedCallback mCallback;
+
+        private AccessToPortRequest(String requestedPort, int requestingPid, int requestingUid,
+                String requestingPackageName, AccessToPortDecidedCallback callback) {
+            mRequestedPort = requestedPort;
+            mRequestingPid = requestingPid;
+            mRequestingUid = requestingUid;
+            mRequestingPackageName = requestingPackageName;
+            mCallback = callback;
+        }
+
+        private Intent getAccessDialogIntent() {
+            Intent intent = new Intent();
+            intent.setComponent(ComponentName.unflattenFromString(mDialogComponent));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Bundle binderExtras = new Bundle();
+            binderExtras.putBinder(SerialManager.EXTRA_REQUEST_TOKEN, mToken);
+            intent.putExtras(binderExtras);
+            intent.putExtra(SerialManager.EXTRA_PORT, mRequestedPort);
+            intent.putExtra(SerialManager.EXTRA_PACKAGE_NAME, mRequestingPackageName);
+            intent.putExtra(SerialManager.EXTRA_UID, mRequestingUid);
+            return intent;
+        }
+
+        private void notifyRequestResult(boolean granted) {
+            mCallback.onAccessToPortDecided(
+                    mRequestedPort, mRequestingPid, mRequestingUid, granted);
+        }
     }
 }

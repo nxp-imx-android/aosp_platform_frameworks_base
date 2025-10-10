@@ -94,3 +94,6 @@ per-file res/values/themes_device_defaults.xml = arteiro@google.com
 per-file res/values/styles_material.xml = arteiro@google.com
 per-file res/values/colors_dynamic.xml= file:platform/frameworks/base:/core/java/android/content/theming/OWNERS
 per-file res/res/values-night/colors_dynamic.xml= file:platform/frameworks/base:/core/java/android/content/theming/OWNERS
+
+# Serial ports
+per-file res/values/config_serial.xml = file:/services/serial/OWNERS

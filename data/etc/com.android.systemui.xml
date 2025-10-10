@@ -36,6 +36,7 @@
         <permission name="android.permission.MANAGE_GAME_MODE" />
         <permission name="android.permission.MANAGE_SECURE_LOCK_DEVICE"/>
         <permission name="android.permission.MANAGE_SENSOR_PRIVACY"/>
+        <permission name="android.permission.MANAGE_SERIAL_PORTS"/>
         <permission name="android.permission.MANAGE_USB"/>
         <permission name="android.permission.MANAGE_USERS"/>
         <permission name="android.permission.MASTER_CLEAR"/>

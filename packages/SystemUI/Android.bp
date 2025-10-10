@@ -577,6 +577,7 @@ android_library {
         "lottie",
         "lottie_compose",
         "LowLightDreamLib",
+        "SerialPortAccessDialog",
         "TraceurCommon",
         "Traceur-res",
         "//frameworks/libs/systemui:motion_tool_lib",

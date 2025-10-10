@@ -2009,6 +2009,15 @@ package android.hardware.location {
 
 }
 
+package android.hardware.serial {
+
+  @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public final class SerialManager {
+    method @RequiresPermission("android.permission.MANAGE_SERIAL_PORTS") public void grantSerialPortAccess(@NonNull String, int, @Nullable android.os.IBinder);
+    method @RequiresPermission("android.permission.MANAGE_SERIAL_PORTS") public void revokeSerialPortAccess(@NonNull String, int, @Nullable android.os.IBinder);
+  }
+
+}
+
 package android.hardware.soundtrigger {
 
   public class KeyphraseEnrollmentInfo {

@@ -649,6 +649,15 @@
             android:excludeFromRecents="true">
         </activity>
 
+        <!-- started from SerialUserAccessManager -->
+        <activity android:name="com.android.serial.accessdialog.AccessDialogActivity"
+            android:exported="true"
+            android:permission="android.permission.MANAGE_SERIAL_PORTS"
+            android:theme="@style/Theme.SystemUI.Dialog.Alert"
+            android:finishOnCloseSystemDialogs="true"
+            android:excludeFromRecents="true">
+        </activity>
+
         <!-- started from SensoryPrivacyService -->
         <activity android:name=".sensorprivacy.SensorUseStartedActivity"
                   android:exported="true"

@@ -31,6 +31,14 @@ interface ISerialManager {
     /** Unregisters a listener to monitor serial port connections and disconnections. */
     void unregisterSerialPortListener(in ISerialPortListener listener);
 
+    /** Grants serial port permission to a package. */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_SERIAL_PORTS)")
+    void grantSerialPortAccess(in String serialPort, in int uid, in IBinder token);
+
+    /** Grants serial port permission to a package. */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_SERIAL_PORTS)")
+    void revokeSerialPortAccess(in String serialPort, in int uid, in IBinder token);
+
     /**
      * Requests opening a file descriptor for the serial port.
      *

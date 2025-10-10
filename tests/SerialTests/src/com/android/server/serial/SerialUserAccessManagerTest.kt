@@ -17,7 +17,9 @@
 package com.android.server.serial
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.serial.SerialManager
 import android.os.Process
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
@@ -30,7 +32,10 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
@@ -68,11 +73,15 @@ class SerialUserAccessManagerTest {
         val port = "ttyS0"
         val portsInConfig = arrayOf(port)
 
-        val accessManager = SerialUserAccessManager(mockContext, portsInConfig)
+        val accessManager = SerialUserAccessManager(mockContext, portsInConfig, "")
 
         var callbackCalled = false
-        accessManager.requestAccess(port, Process.myPid(), Process.FIRST_APPLICATION_UID)
-        { resultPort, pid, uid, granted ->
+        accessManager.requestAccess(
+            port,
+            Process.myPid(),
+            Process.FIRST_APPLICATION_UID,
+            "package_name"
+        ) { resultPort, pid, uid, granted ->
             assertFalse(callbackCalled)
             callbackCalled = true
             assertEquals(port, resultPort)
@@ -92,13 +101,21 @@ class SerialUserAccessManagerTest {
             Process.FIRST_APPLICATION_UID)
 
         val portsInConfig = arrayOf("ttyS0")
-
-        val accessManager = SerialUserAccessManager(mockContext, portsInConfig)
-
         val port = "ttyS1"
+        val accessManager = SerialUserAccessManager(mockContext, portsInConfig, "")
+        doAnswer { invocation ->
+            val intent = invocation.getArgument<Intent>(0)
+            val token = intent.extras?.getBinder(SerialManager.EXTRA_REQUEST_TOKEN)
+            accessManager.revokeAccess(port, Process.FIRST_APPLICATION_UID, token)
+        }.whenever(mockContext).startActivityAsUser(any(), any())
+
         var callbackCalled = false
-        accessManager.requestAccess(port, Process.myPid(), Process.FIRST_APPLICATION_UID)
-        { resultPort, pid, uid, granted ->
+        accessManager.requestAccess(
+            port,
+            Process.myPid(),
+            Process.FIRST_APPLICATION_UID,
+            "package_name"
+        ) { resultPort, pid, uid, granted ->
             assertFalse(callbackCalled)
             callbackCalled = true
             assertEquals(port, resultPort)
@@ -113,12 +130,70 @@ class SerialUserAccessManagerTest {
     fun testDenyAccessToPortsInConfigWithoutSerialPortPermission() {
         val port = "ttyS0"
         val portsInConfig = arrayOf(port)
-
-        val accessManager = SerialUserAccessManager(mockContext, portsInConfig)
+        val accessManager = SerialUserAccessManager(mockContext, portsInConfig, "")
+        doAnswer { invocation ->
+            val intent = invocation.getArgument<Intent>(0)
+            val token = intent.extras?.getBinder(SerialManager.EXTRA_REQUEST_TOKEN)
+            accessManager.revokeAccess(port, Process.FIRST_APPLICATION_UID, token)
+        }.whenever(mockContext).startActivityAsUser(any(), any())
 
         var callbackCalled = false
-        accessManager.requestAccess(port, Process.myPid(), Process.FIRST_APPLICATION_UID)
-        { resultPort, pid, uid, granted ->
+        accessManager.requestAccess(
+            port,
+            Process.myPid(),
+            Process.FIRST_APPLICATION_UID,
+            "package_name"
+        ) { resultPort, pid, uid, granted ->
+            assertFalse(callbackCalled)
+            callbackCalled = true
+            assertEquals(port, resultPort)
+            assertEquals(Process.myPid(), pid)
+            assertEquals(Process.FIRST_APPLICATION_UID, uid)
+            assertFalse(granted)
+        }
+        assertTrue(callbackCalled)
+    }
+
+    @Test
+    fun testGrantAccessByUser() {
+        val port = "ttyS0"
+        val accessManager = SerialUserAccessManager(mockContext, arrayOf(), "")
+        doAnswer { invocation ->
+            val intent = invocation.getArgument<Intent>(0)
+            val token = intent.extras?.getBinder(SerialManager.EXTRA_REQUEST_TOKEN)
+            accessManager.grantAccess(port, Process.FIRST_APPLICATION_UID, token)
+        }.whenever(mockContext).startActivityAsUser(any(), any())
+
+        var callbackCalled = false
+        accessManager.requestAccess(
+            port,
+            Process.myPid(),
+            Process.FIRST_APPLICATION_UID,
+            "package_name"
+        ) { resultPort, pid, uid, granted ->
+            assertFalse(callbackCalled)
+            callbackCalled = true
+            assertEquals(port, resultPort)
+            assertEquals(Process.myPid(), pid)
+            assertEquals(Process.FIRST_APPLICATION_UID, uid)
+            assertTrue(granted)
+        }
+        assertTrue(callbackCalled)
+    }
+
+    @Test
+    fun testAccessDialogFailure() {
+        val port = "ttyS0"
+        val accessManager = SerialUserAccessManager(mockContext, arrayOf(), "")
+        doThrow(RuntimeException()).whenever(mockContext).startActivityAsUser(any(), any())
+
+        var callbackCalled = false
+        accessManager.requestAccess(
+            port,
+            Process.myPid(),
+            Process.FIRST_APPLICATION_UID,
+            "package_name"
+        ) { resultPort, pid, uid, granted ->
             assertFalse(callbackCalled)
             callbackCalled = true
             assertEquals(port, resultPort)
