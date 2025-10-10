@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.data.repository
 
+import android.content.res.mainResources
 import com.android.systemui.display.data.repository.FakeFocusedDisplayRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.keyguard.data.repository.keyguardRepository
@@ -47,6 +48,7 @@ val Kosmos.anyExternalShadeDisplayPolicy: AnyExternalShadeDisplayPolicy by
 val Kosmos.statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy by
     Kosmos.Fixture {
         StatusBarTouchShadeDisplayPolicy(
+            resources = mainResources,
             focusedDisplayRepository = fakeFocusedDisplayRepository,
             displayRepository = displayRepository,
             backgroundScope = testScope.backgroundScope,
