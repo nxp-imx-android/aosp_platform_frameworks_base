@@ -97,6 +97,9 @@ class DevicePermissionPolicy : SchemePolicy() {
             // The package may still be removed even if it was once notified as installed.
             val packageState =
                 newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            // The package may still be unavailable if the storage volume is removed before fully
+            // scanned, in which case we should skip it and wait for the next time.
+            packageState.androidPackage ?: return@forEachIndexed
             trimPermissionStates(packageState.appId)
         }
     }
