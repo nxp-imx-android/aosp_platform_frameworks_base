@@ -82,6 +82,14 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
             naturallyHeld = Vertically,
         )
 
+    data object LaptopScreen :
+        Device(
+            name = "laptop screen",
+            width = Dimensions.LARGE_WIDTH_EXPANDED_HEIGHT,
+            height = Dimensions.MEDIUM_WIDTH_MEDIUM_HEIGHT,
+            naturallyHeld = Horizontally,
+        )
+
     data object ExternalScreen :
         Device(
             name = "external screen",
@@ -132,6 +140,13 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
                         Expected(
                             whenNaturallyHeld = BESIDE_USER_SWITCHER,
                             whenUnnaturallyHeld = BESIDE_USER_SWITCHER,
+                        ),
+                    LaptopScreen to
+                        Expected(
+                            whenNaturallyHeld = BESIDE_USER_SWITCHER,
+                            containerizedWhenNaturallyHeld = true,
+                            whenUnnaturallyHeld = BELOW_USER_SWITCHER,
+                            containerizedWhenUnnaturallyHeld = false,
                         ),
                     ExternalScreen to
                         Expected(
@@ -307,6 +322,7 @@ class BouncerOverlayLayoutTest : SysuiTestCase() {
         const val MEDIUM_WIDTH_MEDIUM_HEIGHT = WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
         const val EXPANDED_WIDTH_MEDIUM_HEIGHT = WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND
         const val EXPANDED_WIDTH_EXPANDED_HEIGHT = WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND
+        const val LARGE_WIDTH_EXPANDED_HEIGHT = WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND
         const val EXTRA_LARGE_WIDTH_EXPANDED_HEIGHT =
             WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND
     }

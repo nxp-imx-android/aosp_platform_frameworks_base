@@ -82,7 +82,7 @@ fun calculateLayoutInternal(
 @VisibleForTesting
 fun shouldBeContainerizedInternal(windowSizeClass: WindowSizeClass): Boolean {
     return windowSizeClass.isAtLeastBreakpoint(
-        WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND,
-        WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND,
+        WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND,
+        WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
     )
 }
