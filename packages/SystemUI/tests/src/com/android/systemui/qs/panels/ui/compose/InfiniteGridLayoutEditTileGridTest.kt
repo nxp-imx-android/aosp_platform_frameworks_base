@@ -16,12 +16,16 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
+import android.content.testableContext
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasText
@@ -35,11 +39,11 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags
 import com.android.systemui.Flags.qsSplitInternetTile
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.DisableSceneContainer
-import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.haptics.msdl.tileHapticsViewModelFactoryProvider
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -58,6 +62,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.infiniteGridViewModelFactory
 import com.android.systemui.qs.panels.ui.viewmodel.textFeedbackContentViewModelFactory
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -323,10 +328,15 @@ class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTe
         }
 
     @Test
-    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DUAL_SHADE)
     fun onlySceneContainer_onlySettingsOption() =
         kosmos.runTest {
-            composeRule.setContent { TestEditTileGrid() }
+            enableDualShade(enabledBySetting = true)
+            composeRule.setContent {
+                CompositionLocalProvider(LocalResources provides testableContext.resources) {
+                    TestEditTileGrid()
+                }
+            }
             composeRule.waitForIdle()
 
             composeRule.onNodeWithContentDescription("Settings").assertExists()
