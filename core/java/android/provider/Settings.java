@@ -13870,12 +13870,29 @@ public final class Settings {
                 "identity_check_promo_card_shown";
 
         /**
+         * Tracks if the user has seen the promo card for Identity Check x MTL.
+         * The promo card should only appear once per user via Safety Center.
+         *
+         * @hide
+         */
+        public static final String IDENTITY_CHECK_WATCH_PROMO_CARD_SHOWN =
+                "identity_check_watch_promo_card_shown";
+
+        /**
          * Tracks if the user has interacted with the Identity Check promo notification.
          * The notification should only appear once per user via Safety Center.
          * @hide
          */
         public static final String IDENTITY_CHECK_NOTIFICATION_VIEW_DETAILS_CLICKED =
                 "identity_check_notification_view_details_clicked";
+
+        /**
+         * Tracks if the user has interacted with the Identity Check x MTL promo notification.
+         * The notification should only appear once per user via Safety Center.
+         * @hide
+         */
+        public static final String IDENTITY_CHECK_WATCH_NOTIFICATION_VIEW_DETAILS_CLICKED =
+                "identity_check_watch_notification_view_details_clicked";
     }
 
     /**
