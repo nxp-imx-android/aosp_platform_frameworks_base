@@ -24,7 +24,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.telecom.PhoneAccount;
-import android.content.pm.ParceledListSlice;
+import com.android.modules.utils.ParceledListSlice;
 import android.telecom.CallAttributes;
 import com.android.internal.telecom.ICallEventCallback;
 
