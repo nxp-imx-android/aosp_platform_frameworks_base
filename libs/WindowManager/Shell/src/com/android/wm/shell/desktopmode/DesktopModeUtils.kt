@@ -400,16 +400,19 @@ fun decideDesktopTaskPlacementBounds(
         if (displayLayout != null) {
             val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
             val initialBounds = Rect(task.configuration.windowConfiguration.bounds)
-            cascadeWindow(
-                context,
-                recentTasksController,
-                taskRepository,
-                shellTaskOrganizer,
-                initialBounds,
-                displayLayout,
-                deskId,
-                stableBounds,
-            )
+            // If bounds are set from activity options, respect existing position.
+            if (!task.leafTaskBoundsFromOptions) {
+                cascadeWindow(
+                    context,
+                    recentTasksController,
+                    taskRepository,
+                    shellTaskOrganizer,
+                    initialBounds,
+                    displayLayout,
+                    deskId,
+                    stableBounds,
+                )
+            }
             return initialBounds
         }
     }

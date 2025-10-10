@@ -1607,6 +1607,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_newFreeformTaskLaunch_boundsSetFromOptions_cascadeNotApplied() {
+        setUpLandscapeDisplay()
+
+        setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS)
+        val freeformTask =
+            setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS, active = false).apply {
+                leafTaskBoundsFromOptions = true
+            }
+
+        val wct = controller.handleRequest(Binder(), createTransition(freeformTask))
+
+        assertNotNull(wct, "should handle request")
+        val finalBounds = findBoundsChange(wct, freeformTask)
+        assertThat(finalBounds).isEqualTo(DEFAULT_LANDSCAPE_BOUNDS)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_newFreeformTaskLaunch_newDesk_desksCascadeIndependently() {
         setUpLandscapeDisplay()
         val stableBounds =

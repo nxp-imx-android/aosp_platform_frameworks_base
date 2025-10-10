@@ -200,6 +200,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                     ? WINDOWING_MODE_FREEFORM
                     : launchMode;
             outParams.mBounds.set(options.getLaunchBounds());
+            outParams.mBoundsSetFromOptions = true;
             appendLog("activity-options-bounds=" + outParams.mBounds);
         } else if (canApplyWindowLayout) {
             mTmpBounds.set(currentParams.mBounds);
