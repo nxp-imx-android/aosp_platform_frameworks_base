@@ -22,7 +22,9 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_MAG
 import static com.android.internal.accessibility.common.ShortcutConstants.SERVICES_SEPARATOR;
 import static com.android.internal.accessibility.common.ShortcutConstants.USER_SHORTCUT_TYPES;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.DEFAULT;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TWOFINGER_DOUBLETAP;
 import static com.android.server.testutils.MockitoUtilsKt.eq;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -30,6 +32,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertThrows;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.UserIdInt;
@@ -52,6 +55,7 @@ import com.android.internal.accessibility.common.ShortcutConstants;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,6 +63,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -344,6 +349,43 @@ public class ShortcutUtilsTest {
                 shortcutType1 | shortcutType2);
     }
 
+    @Test
+    public void convertToKey_doesNotThrow(
+            @TestParameter(valuesProvider = ShortcutTypeValueProvider.class) int type) {
+        ShortcutUtils.convertToKey(type);
+    }
+
+    @Test
+    public void convertToKey_default_throws() {
+        assertThrows(() -> ShortcutUtils.convertToKey(DEFAULT));
+    }
+
+    @Test
+    public void convertToType_doesNotThrow(
+            @TestParameter(valuesProvider = ShortcutSettingValueProvider.class) String setting) {
+        ShortcutUtils.convertToType(setting);
+    }
+
+    @Test
+    public void convertToType_default_throws() {
+        assertThrows(() -> ShortcutUtils.convertToType("Foo"));
+    }
+
+    @Test
+    public void typeToString_doesNotThrow(
+            @TestParameter(valuesProvider = ShortcutTypeValueProvider.class) int shortcutType) {
+        Assume.assumeFalse("Non user-facing shortcut types are excluded",
+                shortcutType == KEY_GESTURE);
+        Assume.assumeFalse("Twofinger doubletap is unsupported",
+                shortcutType == TWOFINGER_DOUBLETAP);
+        ShortcutUtils.typeToString(shortcutType);
+    }
+
+    @Test
+    public void typeToString_default_throws() {
+        assertThrows(() -> ShortcutUtils.typeToString(DEFAULT));
+    }
+
     private void setupShortcutTargets(Set<String> components, String shortcutSettingsKey) {
         final StringJoiner stringJoiner = new StringJoiner(String.valueOf(SERVICES_SEPARATOR));
         for (String target : components) {
@@ -454,6 +496,16 @@ public class ShortcutUtilsTest {
             for (int shortcutType: USER_SHORTCUT_TYPES) {
                 values.add(shortcutType);
             }
+            return values;
+        }
+    }
+
+    static final class ShortcutSettingValueProvider implements
+            TestParameter.TestParameterValuesProvider {
+        @Override
+        public List<String> provideValues() {
+            List<String> values = new ArrayList<>();
+            Collections.addAll(values, ShortcutConstants.MAGNIFICATION_SHORTCUT_SETTINGS);
             return values;
         }
     }

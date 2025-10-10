@@ -3910,6 +3910,13 @@
   <java-symbol type="string" name="accessibility_edit_shortcut_menu_button_title" />
   <java-symbol type="string" name="accessibility_edit_shortcut_menu_volume_title" />
   <java-symbol type="string" name="accessibility_uncheck_legacy_item_warning" />
+  <java-symbol type="string" name="accessibility_shortcut_label_button" />
+  <java-symbol type="string" name="accessibility_shortcut_label_gesture" />
+  <java-symbol type="string" name="accessibility_shortcut_label_volume_keys" />
+  <java-symbol type="string" name="accessibility_shortcut_label_quick_settings" />
+  <java-symbol type="string" name="accessibility_shortcut_label_triple_tap" />
+  <java-symbol type="string" name="accessibility_shortcut_label_top_row_key" />
+
 
   <java-symbol type="layout" name="accessibility_enable_service_warning" />
   <java-symbol type="layout" name="accessibility_service_warning" />
