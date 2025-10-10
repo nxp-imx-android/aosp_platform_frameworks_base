@@ -135,7 +135,7 @@ public final class MessageQueue {
     private static final VarHandle sMptrRefCount;
     private volatile long mMptrRefCountValue = 0;
 
-    private static final VarHandle sSyncBarrier;
+
     private volatile Message mSyncBarrier = null;
 
     /* ------------------------------------------------------------------------------------------ */
@@ -244,8 +244,6 @@ public final class MessageQueue {
                     long.class);
             sMptrRefCount = l.findVarHandle(MessageQueue.class, "mMptrRefCountValue",
                     long.class);
-            sSyncBarrier = l.findVarHandle(MessageQueue.class, "mSyncBarrier",
-                    Message.class);
         } catch (ReflectiveOperationException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -418,8 +416,7 @@ public final class MessageQueue {
             long waitState = mWaitState;
             long newWaitState;
             boolean needWake = false;
-            Message barrier = msg.isAsynchronous() ? null :
-                    (Message) sSyncBarrier.getVolatile(this);
+            Message barrier = msg.isAsynchronous() ? null : mSyncBarrier;
             boolean reCheckBarrier = false;
 
             if (WaitState.isCounter(waitState)) {
@@ -437,7 +434,7 @@ public final class MessageQueue {
                 }
             }
             if (sWaitState.compareAndSet(this, waitState, newWaitState)) {
-                if (reCheckBarrier && barrier != (Message) sSyncBarrier.getVolatile(this)) {
+                if (reCheckBarrier && barrier != mSyncBarrier) {
                     /*
                      * If barrier state changed underneath us and we chose not to wake the
                      * looper thread, we have to recheck to ensure that the barrier we saw was
@@ -699,7 +696,7 @@ public final class MessageQueue {
                 }
             }
 
-            sSyncBarrier.setVolatile(this, syncBarrier);
+            mSyncBarrier = syncBarrier;
             /*
              * Try to swap waitstate back from a counter to a deadline. If we can't then that means
              * the counter was incremented and we need to loop back to pick up any new items.
