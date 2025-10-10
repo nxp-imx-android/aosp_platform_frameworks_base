@@ -24,7 +24,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -62,19 +61,7 @@ class WallpaperWindowToken extends WindowToken {
         super(service, token, TYPE_WALLPAPER, true /* persistOnEmpty */,
                 true /* ownerCanManageAppTokens */, false /* roundedCornerOverlay */,
                 false /* fromClientToken */, options);
-    }
-
-    /** Creates a new WallpaperWindowToken and attaches it to the given display content. */
-    @NonNull
-    static WallpaperWindowToken createWallpaperToken(WindowManagerService service, IBinder token,
-            @Nullable Bundle options, @NonNull DisplayContent dc) {
-        final var wallpaperToken = new WallpaperWindowToken(service, token, options);
-        dc.addWindowToken(wallpaperToken.token, wallpaperToken);
-        dc.mWallpaperController.addWallpaperToken(wallpaperToken);
-        // This must be called after the token is added to the display content, to propagate
-        // the windowing mode configuration change to its parents.
-        wallpaperToken.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        return wallpaperToken;
+        setWindowingMode(WINDOWING_MODE_FULLSCREEN);
     }
 
     @Override

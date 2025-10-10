@@ -1838,7 +1838,8 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertThat(mWm.reparentWindowContextToDisplayArea(mAppThread, windowToken.token,
                 newDisplayId)).isTrue();
 
-        verify(mWm.mWindowPlacerLocked).requestTraversal();
+        // Reparenting the WindowToken also requests a traversal.
+        verify(mWm.mWindowPlacerLocked, times(2)).requestTraversal();
     }
 
     @Test

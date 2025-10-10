@@ -1469,6 +1469,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         mTokenMap.put(binder, token);
 
+        final var wallpaperToken = token.asWallpaperToken();
+        if (wallpaperToken != null) {
+            mWallpaperController.addWallpaperToken(wallpaperToken);
+        }
         if (token.asActivityRecord() == null) {
             // Setting the mDisplayContent to the token is not needed: it is done by da.addChild
             // below, that also calls onDisplayChanged once moved.
@@ -1484,6 +1488,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // the parent container managing them (e.g. Tasks).
             final DisplayArea.Tokens da = findAreaForToken(token).asTokens();
             da.addChild(token);
+            setLayoutNeeded();
+            mWmService.requestTraversal();
         }
     }
 
