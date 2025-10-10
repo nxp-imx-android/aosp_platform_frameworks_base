@@ -1448,7 +1448,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return mTokenMap.get(binder);
     }
 
-    void addWindowToken(IBinder binder, WindowToken token) {
+    void addWindowToken(WindowToken token) {
         final DisplayContent dc = mWmService.mRoot.getWindowTokenDisplay(token);
         if (dc != null) {
             // We currently don't support adding a window token to the display if the display
@@ -1458,16 +1458,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             throw new IllegalArgumentException("Can't map token=" + token + " to display="
                     + getName() + " already mapped to display=" + dc + " tokens=" + dc.mTokenMap);
         }
-        if (binder == null) {
+        if (token == null) {
+            throw new IllegalArgumentException("Can't map null token to display=" + getName());
+        }
+        if (token.token == null) {
             throw new IllegalArgumentException("Can't map token=" + token + " to display="
                     + getName() + " binder is null");
         }
-        if (token == null) {
-            throw new IllegalArgumentException("Can't map null token to display="
-                    + getName() + " binder=" + binder);
-        }
 
-        mTokenMap.put(binder, token);
+        mTokenMap.put(token.token, token);
 
         final var wallpaperToken = token.asWallpaperToken();
         if (wallpaperToken != null) {
@@ -1564,7 +1563,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
 
-        addWindowToken(token.token, token);
+        addWindowToken(token);
 
         if (mWmService.mAccessibilityController.hasCallbacks()) {
             final int prevDisplayId = prevDc != null ? prevDc.getDisplayId() : INVALID_DISPLAY;

@@ -1747,14 +1747,14 @@ public class WindowManagerService extends IWindowManager.Stub
                             .setFromClientToken(true)
                             .setOptions(options)
                             .build();
-                    displayContent.addWindowToken(token.token, token);
+                    displayContent.addWindowToken(token);
                 } else {
                     final IBinder binder = attrs.token != null ? attrs.token : client.asBinder();
                     token = new WindowToken.Builder(this, binder, type)
                             .setOwnerCanManageAppTokens(session.mCanAddInternalSystemWindow)
                             .setRoundedCornerOverlay(isRoundedCornerOverlay)
                             .build();
-                    displayContent.addWindowToken(token.token, token);
+                    displayContent.addWindowToken(token);
                 }
             } else if (rootType >= FIRST_APPLICATION_WINDOW
                     && rootType <= LAST_APPLICATION_WINDOW) {
@@ -1828,7 +1828,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 token = new WindowToken.Builder(this, client.asBinder(), type)
                         .setOwnerCanManageAppTokens(session.mCanAddInternalSystemWindow)
                         .build();
-                displayContent.addWindowToken(token.token, token);
+                displayContent.addWindowToken(token);
             }
 
             final WindowState win = new WindowState(this, session, client, token, parentWindow,
@@ -3063,7 +3063,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         .setOptions(options)
                         .build();
             }
-            dc.addWindowToken(token.token, token);
+            dc.addWindowToken(token);
         }
     }
 

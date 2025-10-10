@@ -243,7 +243,7 @@ public class WindowTokenTests extends WindowTestsBase {
                 mock(IBinder.class), TYPE_APPLICATION_OVERLAY)
                 .setFromClientToken(true)
                 .build();
-        mDisplayContent.addWindowToken(fromClientToken.token, fromClientToken);
+        mDisplayContent.addWindowToken(fromClientToken);
 
         assertNull(fromClientToken.mSurfaceControl);
 
@@ -255,7 +255,7 @@ public class WindowTokenTests extends WindowTestsBase {
                 mock(IBinder.class), TYPE_APPLICATION_OVERLAY)
                 .setFromClientToken(false)
                 .build();
-        mDisplayContent.addWindowToken(nonClientToken.token, nonClientToken);
+        mDisplayContent.addWindowToken(nonClientToken);
         assertNotNull(nonClientToken.mSurfaceControl);
     }
 
@@ -271,7 +271,7 @@ public class WindowTokenTests extends WindowTestsBase {
                 .setPersistOnEmpty(true)
                 .setOwnerCanManageAppTokens(true)
                 .build();
-        mDisplayContent.addWindowToken(token1.token, token1);
+        mDisplayContent.addWindowToken(token1);
 
         verify(selectFunc).apply(token1.windowType, null);
 
@@ -282,7 +282,7 @@ public class WindowTokenTests extends WindowTestsBase {
                 .setOwnerCanManageAppTokens(true)
                 .setOptions(options)
                 .build();
-        mDisplayContent.addWindowToken(token2.token, token2);
+        mDisplayContent.addWindowToken(token2);
 
         verify(selectFunc).apply(token2.windowType, options);
     }

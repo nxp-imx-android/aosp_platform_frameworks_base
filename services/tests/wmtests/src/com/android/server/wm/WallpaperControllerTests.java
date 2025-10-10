@@ -352,7 +352,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
         final DisplayContent dc = mWm.mRoot.getDefaultDisplay();
         final WallpaperWindowToken token = new WallpaperWindowToken(mWm, mock(IBinder.class),
                 null /* options */);
-        dc.addWindowToken(token.token, token);
+        dc.addWindowToken(token);
 
         // The wallpaper should have requested override fullscreen windowing mode, so the
         // configuration (windowing mode) propagation from display won't change it.
@@ -576,7 +576,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
     private WindowState createWallpaperWindow(DisplayContent dc) {
         final WindowToken wallpaperWindowToken = new WallpaperWindowToken(mWm, mock(IBinder.class),
                 null /* options */);
-        dc.addWindowToken(wallpaperWindowToken.token, wallpaperWindowToken);
+        dc.addWindowToken(wallpaperWindowToken);
         return newWindowBuilder("wallpaperWindow", TYPE_WALLPAPER).setWindowToken(
                 wallpaperWindowToken).build();
     }
