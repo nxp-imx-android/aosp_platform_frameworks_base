@@ -23,6 +23,7 @@ import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
 import static android.app.Flags.apiMetricStyle;
 import static android.app.Flags.notificationsRedesignTemplates;
+import static android.app.Flags.richOngoingImprovements;
 import static android.app.admin.DevicePolicyResources.Drawables.Source.NOTIFICATION;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_COLORED;
 import static android.app.admin.DevicePolicyResources.Drawables.WORK_PROFILE_ICON;
@@ -6301,6 +6302,10 @@ public class Notification implements Parcelable
         }
 
         private void bindProfileBadge(RemoteViews contentView, StandardTemplateParams p) {
+            if (richOngoingImprovements() && p.mHideProfileBadge) {
+                return;
+            }
+
             Bitmap profileBadge = Notification.getProfileBadge(mContext);
 
             if (profileBadge != null) {
@@ -6602,9 +6607,12 @@ public class Notification implements Parcelable
                             R.id.notification_header);
                 }
                 result.mTitleMarginSet.applyToView(contentView, R.id.title);
-                // If there is no title, the text (or big_text) needs to wrap around the image
+                // When there's no title, or the title is in the top line, we need to indent the
+                // end of the first line of text (or big_text) to leave space for the large icon.
                 result.mTitleMarginSet.applyToView(contentView, p.mTextViewId);
-                contentView.setInt(p.mTextViewId, "setNumIndentLines", p.hasTitle() ? 0 : 1);
+                boolean shouldWrapAroundImage = !p.hasTitle() || p.mTitleViewId == R.id.alt_title;
+                contentView.setInt(p.mTextViewId, "setNumIndentLines",
+                        shouldWrapAroundImage ? 1 : 0);
             } else if (notificationsRedesignTemplates() && p.mNeedsExtraTextMargin) {
                 // In the collapsed view (except for compact HUNs), the top line needs to
                 // accommodate both the expander and large icon (when present)
@@ -6767,17 +6775,20 @@ public class Notification implements Parcelable
         private void bindNotificationHeader(RemoteViews contentView, StandardTemplateParams p) {
             bindSmallIcon(contentView, p);
 
-            boolean hasTextToLeft = Flags.apiMetricStyle()
-                && p.mTitleViewId == R.id.alt_title && p.hasTitle();
+            boolean hasTextToLeft = p.mTitleViewId == R.id.alt_title && p.hasTitle();
             // Populate text left-to-right so that separators are only shown between strings
             hasTextToLeft |= bindHeaderAppName(contentView, p, false /* force */, hasTextToLeft);
             hasTextToLeft |= bindHeaderTextSecondary(contentView, p, hasTextToLeft);
             hasTextToLeft |= bindHeaderText(contentView, p, hasTextToLeft);
             if (!hasTextToLeft) {
                 // If there's still no text, force add the app name so there is some text.
-                hasTextToLeft |= bindHeaderAppName(contentView, p, true /* force */, hasTextToLeft);
+                hasTextToLeft = bindHeaderAppName(contentView, p, true /* force */, hasTextToLeft);
             }
-            bindHeaderChronometerAndTime(contentView, p, hasTextToLeft);
+            if (richOngoingImprovements()) {
+                bindHeaderChronometerAndTime(contentView, p, hasTextToLeft);
+            } else {
+                bindHeaderChronometerAndTimeLegacy(contentView, p, hasTextToLeft);
+            }
             bindPhishingAlertIcon(contentView, p);
             bindProfileBadge(contentView, p);
             bindAlertedIcon(contentView, p);
@@ -6815,7 +6826,35 @@ public class Notification implements Parcelable
 
         private void bindHeaderChronometerAndTime(RemoteViews contentView,
                 StandardTemplateParams p, boolean hasTextToLeft) {
-            if (!p.mHideTime && showsTimeOrChronometer()) {
+            boolean showsTime = mN.showsTime() && !p.mHideTime;
+            boolean showsChronometer = mN.showsChronometer() && !p.mHideChronometer;
+
+            if ((showsTime || showsChronometer) && hasTextToLeft) {
+                contentView.setViewVisibility(R.id.time_divider, View.VISIBLE);
+                setTextViewColorSecondary(contentView, R.id.time_divider, p);
+            }
+            if (showsChronometer) {
+                contentView.setViewVisibility(R.id.chronometer, View.VISIBLE);
+                contentView.setLong(R.id.chronometer, "setBase", mN.getWhen()
+                        + (SystemClock.elapsedRealtime() - System.currentTimeMillis()));
+                contentView.setBoolean(R.id.chronometer, "setStarted", true);
+                boolean countsDown = mN.extras.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN);
+                contentView.setChronometerCountDown(R.id.chronometer, countsDown);
+                setTextViewColorSecondary(contentView, R.id.chronometer, p);
+            } else if (showsTime) {
+                contentView.setViewVisibility(R.id.time, View.VISIBLE);
+            }
+            // We bind the time even if it's not visible, such that we can show and hide it
+            // on demand in case it's a child notification without anything in the header
+            contentView.setLong(R.id.time, "setTime", mN.getWhen() != 0 ? mN.getWhen() :
+                    mN.creationTime);
+            setTextViewColorSecondary(contentView, R.id.time, p);
+        }
+
+        private void bindHeaderChronometerAndTimeLegacy(RemoteViews contentView,
+                StandardTemplateParams p, boolean hasTextToLeft) {
+            // TODO: b/440125908 - Remove this method when inlining the flag.
+            if (!p.mHideTime && showsTimeOrChronometer(p)) {
                 if (hasTextToLeft) {
                     contentView.setViewVisibility(R.id.time_divider, View.VISIBLE);
                     setTextViewColorSecondary(contentView, R.id.time_divider, p);
@@ -6964,7 +7003,8 @@ public class Notification implements Parcelable
          * @return {@code true} if the built notification will show the time or the chronometer;
          *   {@code false} otherwise
          */
-        private boolean showsTimeOrChronometer() {
+        private boolean showsTimeOrChronometer(StandardTemplateParams p) {
+            // TODO: b/440125908 - Remove this method when inlining the flag.
             return mN.showsTime() || mN.showsChronometer();
         }
 
@@ -7369,11 +7409,15 @@ public class Notification implements Parcelable
                 }
             }
             if (result == null) {
+                // Use "StandardStyle" (a.k.a. no style)
                 if (expandedContentViewRequired()) {
                     StandardTemplateParams p = mParams.reset()
                             .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
                             .allowTextWithProgress(true)
                             .fillTextsFrom(this);
+                    if (richOngoingImprovements() && mN.isPromotedOngoing()) {
+                        p.useMinimalHeader();
+                    }
                     result = applyStandardTemplateWithActions(getExpandedBaseLayoutResource(), p,
                             null /* result */);
                 }
@@ -7477,7 +7521,11 @@ public class Notification implements Parcelable
             // Notification text is shown as secondary header text
             // for the minimal hun when it is provided.
             // Time(when and chronometer) is not shown for the minimal hun.
-            p.headerTextSecondary(p.mText).text(null).hideTime(true).summaryText("");
+            p.headerTextSecondary(p.mText)
+                    .text(null)
+                    .hideTime(true)
+                    .hideChronometer(true)
+                    .summaryText("");
 
             return applyStandardTemplate(
                     getCompactHeadsUpBaseLayoutResource(), p,
@@ -9454,10 +9502,15 @@ public class Notification implements Parcelable
                     .textViewId(R.id.big_text)
                     .fillTextsFrom(mBuilder);
 
+            boolean promoted = mBuilder.mN.isPromotedOngoing();
+            if (richOngoingImprovements() && promoted) {
+                p.useMinimalHeader();
+            }
+
             // Replace the text with the big text, but only if the big text is not empty.
             CharSequence bigTextText = mBuilder.processLegacyText(mBigText);
             // Ongoing promoted notifications are allowed to have styling.
-            if (!mBuilder.mN.isPromotedOngoing() && Flags.cleanUpSpansAndNewLines()) {
+            if (!promoted && Flags.cleanUpSpansAndNewLines()) {
                 bigTextText = normalizeBigText(stripStyling(bigTextText));
             }
             if (!TextUtils.isEmpty(bigTextText)) {
@@ -10368,6 +10421,7 @@ public class Notification implements Parcelable
                     .highlightExpander(isConversationLayout)
                     .fillTextsFrom(mBuilder)
                     .hideTime(true)
+                    .hideChronometer(true)
                     .needsExtraTextMargin(false);
 
             fixTitleAndTextForCompactMessaging(p);
@@ -11239,10 +11293,12 @@ public class Notification implements Parcelable
                         numActions, numActions - 1));
             }
 
+            boolean actionsWiderThanRightIcon = numActionsToShow > 1;
             StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_NORMAL)
-                    .hideTime(numActionsToShow > 1)       // hide if actions wider than a right icon
-                    .hideSubText(numActionsToShow > 1)    // hide if actions wider than a right icon
+                    .hideTime(actionsWiderThanRightIcon)
+                    .hideChronometer(actionsWiderThanRightIcon)
+                    .hideSubText(actionsWiderThanRightIcon)
                     .hideLeftIcon(false)                  // allow large icon on left when grouped
                     .hideRightIcon(numActionsToShow > 0)  // right icon or actions; not both
                     .hideProgress(true)
@@ -12077,6 +12133,9 @@ public class Notification implements Parcelable
                     .text(null)
                     .titleViewId(R.id.alt_title)
                     .hideRightIcon(true);
+            if (Flags.richOngoingImprovements() && mBuilder.mN.isPromotedOngoing()) {
+                p.useMinimalHeader();
+            }
             final TemplateBindResult result = new TemplateBindResult();
             final int expandedLayoutRes;
             if (mMetrics.size() == 1) {
@@ -13769,6 +13828,10 @@ public class Notification implements Parcelable
                     .allowTextWithProgress(true)
                     .hideProgress(true)
                     .fillTextsFrom(mBuilder);
+
+            if (richOngoingImprovements() && mBuilder.mN.isPromotedOngoing()) {
+                p.useMinimalHeader();
+            }
 
             // Replace the text with the big text, but only if the big text is not empty.
             RemoteViews contentView = getStandardView(mBuilder.getProgressLayoutResource(), p,
@@ -16833,6 +16896,8 @@ public class Notification implements Parcelable
         boolean mHideTitle;
         boolean mHideSubText;
         boolean mHideTime;
+        boolean mHideChronometer;
+        boolean mHideProfileBadge;
         boolean mHideActions;
         boolean mHideProgress;
         boolean mHideSnoozeButton;
@@ -16912,6 +16977,22 @@ public class Notification implements Parcelable
 
         public StandardTemplateParams hideTime(boolean hideTime) {
             mHideTime = hideTime;
+            if (!richOngoingImprovements()) {
+                // When the flag is off, hideTime controls both the time and the chronometer. With
+                // the flag on, the chronometer is controlled explicitly through hideChronometer and
+                // hideTime affects only the when.
+                hideChronometer(hideTime);
+            }
+            return this;
+        }
+
+        public StandardTemplateParams hideChronometer(boolean hideChronometer) {
+            mHideChronometer = hideChronometer;
+            return this;
+        }
+
+        public StandardTemplateParams hideProfileBadge(boolean hideProfileBadge) {
+            mHideProfileBadge = hideProfileBadge;
             return this;
         }
 
@@ -17024,6 +17105,20 @@ public class Notification implements Parcelable
          */
         public StandardTemplateParams setMaxRemoteInputHistory(int maxRemoteInputHistory) {
             this.maxRemoteInputHistory = maxRemoteInputHistory;
+            return this;
+        }
+
+        /**
+         * Certain promoted notifications show a simplified version of the header. This also moves
+         * the title to the top line.
+         */
+        public StandardTemplateParams useMinimalHeader() {
+            if (Flags.richOngoingImprovements()) {
+                titleViewId(R.id.alt_title);
+                hideAppName(true);
+                hideTime(true);
+                hideProfileBadge(true);
+            }
             return this;
         }
 

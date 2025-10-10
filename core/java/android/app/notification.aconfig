@@ -301,6 +301,13 @@ flag {
 }
 
 flag {
+  name: "rich_ongoing_improvements"
+  namespace: "systemui"
+  description: "[RONs] Visual Improvements for Live Updates, for glanceability"
+  bug: "440125908"
+}
+
+flag {
   name: "hide_status_bar_notification"
   namespace: "systemui"
   description: "Allows an application running a foreground service to hide the notification icon from the status bar"
