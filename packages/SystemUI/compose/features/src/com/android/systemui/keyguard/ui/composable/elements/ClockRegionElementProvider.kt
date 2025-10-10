@@ -34,8 +34,10 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.customization.clocks.R as clocksR
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.plugins.keyguard.VRectF
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
@@ -47,6 +49,7 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 
+@SysUISingleton
 /** Provides default clock regions, if not overridden by the clock itself */
 class ClockRegionElementProvider
 @Inject
@@ -61,6 +64,7 @@ constructor(
     private inner class SmallClockRegionElement : LockscreenElement {
         override val key = LockscreenElementKeys.Region.Clock.Small
         override val context = this@ClockRegionElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
@@ -116,6 +120,7 @@ constructor(
     private inner class LargeClockRegionElement : LockscreenElement {
         override val key = LockscreenElementKeys.Region.Clock.Large
         override val context = this@ClockRegionElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {

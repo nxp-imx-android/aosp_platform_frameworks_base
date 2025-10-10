@@ -44,7 +44,6 @@ interface LockscreenSceneModule {
     @Binds @IntoSet fun lockscreenScene(scene: LockscreenScene): Scene
 
     companion object {
-
         @Provides
         @SysUISingleton
         @KeyguardRootView

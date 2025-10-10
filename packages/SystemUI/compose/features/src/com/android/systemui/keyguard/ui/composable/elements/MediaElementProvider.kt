@@ -24,12 +24,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ElementContentScope
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.LayoutType
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenUpperRegionElementProvider.Companion.getLayoutType
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardMediaViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
@@ -39,6 +41,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.collections.List
 
+@SysUISingleton
 class MediaElementProvider
 @Inject
 constructor(
@@ -50,6 +53,7 @@ constructor(
     private inner class MediaCarouselElement : LockscreenElement {
         override val key = LockscreenElementKeys.MediaCarousel
         override val context = this@MediaElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {

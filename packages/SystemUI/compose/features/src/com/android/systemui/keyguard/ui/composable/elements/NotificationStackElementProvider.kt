@@ -26,6 +26,7 @@ import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.ui.composable.ConstrainedNotificationStack
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
@@ -58,6 +59,7 @@ constructor(
     private inner class NotificationElement : LockscreenElement {
         override val key = LockscreenElementKeys.Notifications.Stack
         override val context = this@NotificationStackElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {

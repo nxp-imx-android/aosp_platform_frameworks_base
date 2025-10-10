@@ -34,6 +34,7 @@ import com.android.compose.animation.scene.ElementContentScope
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
@@ -60,6 +61,7 @@ constructor(
     private inner class PromotedNotificationElement : LockscreenElement {
         override val key = LockscreenElementKeys.Notifications.AOD.Promoted
         override val context = this@AodPromotedNotificationAreaElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {

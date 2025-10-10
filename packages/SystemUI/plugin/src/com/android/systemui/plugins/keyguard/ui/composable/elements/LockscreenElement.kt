@@ -39,6 +39,21 @@ interface BaseLockscreenElement {
     @get:SimpleProperty
     /** Context override for the composable */
     val context: Context
+
+    @get:SimpleProperty
+    /** Source category of this element */
+    val source: ElementSource
+
+    /**
+     * Source kind that created this element. Used for selecting the correct element when multiple
+     * are provided with the same key. In the event two elements share the same source and key, it
+     * is not defined which one will be used. An error is logged when this occurs.
+     */
+    enum class ElementSource(val priority: Int) {
+        STANDARD(0),
+        VENDOR(1),
+        DYNAMIC(2),
+    }
 }
 
 @Stable
