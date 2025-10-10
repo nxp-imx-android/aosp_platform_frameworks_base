@@ -118,7 +118,7 @@ constructor(
                     requestToggleTextFeedback = textFeedbackViewModel::requestShowFeedback,
                     enableRevealEffect = enableRevealEffect,
                     bounceableInfo = null,
-                    interactionSource = interactionSource,
+                    interactionSourceFromParent = interactionSource,
                 )
             }
         } else {
@@ -155,7 +155,6 @@ constructor(
                         isVisible = listening,
                         requestToggleTextFeedback = textFeedbackViewModel::requestShowFeedback,
                         enableRevealEffect = enableRevealEffect,
-                        interactionSource = null,
                     )
                 }
             }
