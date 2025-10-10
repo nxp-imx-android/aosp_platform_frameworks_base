@@ -21,9 +21,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.security.net.config.ApplicationConfig;
-import android.security.net.config.ManifestConfigSource;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -194,17 +192,5 @@ public class NetworkSecurityPolicy {
         if (config != null) {
             config.handleTrustStorageUpdate();
         }
-    }
-
-    /**
-     * Returns an {@link ApplicationConfig} based on the configuration for {@code packageName}.
-     *
-     * @hide
-     */
-    public static ApplicationConfig getApplicationConfigForPackage(Context context,
-            String packageName) throws PackageManager.NameNotFoundException {
-        Context appContext = context.createPackageContext(packageName, 0);
-        ManifestConfigSource source = new ManifestConfigSource(appContext);
-        return new ApplicationConfig(source);
     }
 }

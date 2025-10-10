@@ -24,6 +24,8 @@ import static libcore.net.NetworkSecurityPolicy.CERTIFICATE_TRANSPARENCY_REASON_
 import android.annotation.NonNull;
 import android.util.Pair;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -62,6 +64,16 @@ public final class ApplicationConfig {
     public boolean hasPerDomainConfigs() {
         ensureInitialized();
         return mConfigs != null && !mConfigs.isEmpty();
+    }
+
+    /**
+     * Returns an {@link ApplicationConfig} based on the configuration for {@code packageName}.
+     */
+    public static ApplicationConfig createApplicationConfigForPackage(Context context,
+            String packageName) throws PackageManager.NameNotFoundException {
+        Context appContext = context.createPackageContext(packageName, 0);
+        ManifestConfigSource source = new ManifestConfigSource(appContext);
+        return new ApplicationConfig(source);
     }
 
     /**
