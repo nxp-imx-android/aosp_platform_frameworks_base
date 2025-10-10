@@ -2365,8 +2365,10 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"ПИН за отключване на IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"ПИН за отключване на доставчика на услуги за подмножеството от мрежи"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Заявява се отключване на мрежата за SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"Заявява се отключване на подмножеството от мрежи за SIM…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"Заявява се отключване на доставчика на услуги за SIM…"</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Заявява се отключване на корпоративната SIM карта…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Заявява се отключване с PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Заявява се отключване с PUK…"</string>
@@ -2392,15 +2394,18 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Заявява се отключване с PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Заявява се отключване с PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Заявката за отключване на мрежата за SIM не бе успешна."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"Заявката за отключване на подмножеството от мрежи за SIM не бе успешна."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"Заявката за отключване на доставчика на услуги за SIM не бе успешна."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Заявката за отключване на корпоративната SIM карта не бе успешна."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Заявката за отключване на SIM не бе успешна."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Заявката за отключване на мрежа 1 за RUIM не бе успешна."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Заявката за отключване на мрежа 2 за RUIM не бе успешна."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Заявката за отключване на HRPD за RUIM не бе успешна."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Заявката за отключване на корпоративната RUIM карта не бе успешна."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"Заявката за отключване на доставчика на услуги за RUIM не бе успешна."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Заявката за отключване на RUIM не бе успешна."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Отключването с PUK не бе успешно."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Отключването с PUK не бе успешно."</string>
@@ -2420,13 +2425,15 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Заявката за отключване на доставчика на услуги за подмножеството от мрежи не бе успешна."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Отключването на мрежата за SIM бе успешно."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Отключването на подмножеството от мрежи за SIM бе успешно."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"Отключването на доставчика на услуги за SIM бе успешно."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Отключването на корпоративната SIM карта бе успешно."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Отключването на SIM бе успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Отключването на мрежа 1 за RUIM бе успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Отключването на мрежа 2 за RUIM бе успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Отключването на HRPD за RUIM бе успешно."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"Отключването на доставчика на услуги за RUIM бе успешно."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Отключването на корпоративната RUIM карта бе успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Отключването на RUIM бе успешно."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Отключването с PUK бе успешно."</string>

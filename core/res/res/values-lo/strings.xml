@@ -2365,8 +2365,10 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN ປົດລັອກ IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN ປົດລັອກຜູ້ໃຫ້ບໍລິການຊຸດຍ່ອຍເຄືອຂ່າຍ"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"ກຳລັງຮ້ອງຂໍການປົດລັອກເຄືອຂ່າຍຊິມ…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"ກຳລັງຮ້ອງຂໍການປົດລັອກຊຸດຍ່ອຍເຄືອຂ່າຍຊິມ…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"ກຳລັງຮ້ອງຂໍການປົດລັອກຜູ້ໃຫ້ບໍລິການຊິມ…"</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"ກຳລັງຮ້ອງຊໍການປົດລັອກ SIM ອົງການ…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"ກຳລັງຮ້ອງຂໍການປົດລັອກ PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"ກຳລັງຮ້ອງຂໍການປົດລັອກ PUK…"</string>
@@ -2392,15 +2394,18 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"ກຳລັງຮ້ອງຂໍການປົດລັອກ PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"ກຳລັງຮ້ອງຂໍການປົດລັອກ PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"ຮ້ອງຂໍການປົດລັອກເຄືອຂ່າຍຊິມສຳເລັດແລ້ວ."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"ຮ້ອງຂໍການປົດລັອກຊຸດຍ່ອຍເຄືອຂ່າຍຊິມບໍ່ສຳເລັດ."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"ຮ້ອງຂໍການປົດລັອກຜູ້ໃຫ້ບໍລິການຊິມບໍ່ສຳເລັດ."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"ຮ້ອງຂໍການປົດລັອກ SIM ອົງການບໍ່ສຳເລັດ."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"ຮ້ອງຂໍການປົດລັອກຊິມບໍ່ສຳເລັດ."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"ຮ້ອງຂໍການປົດລັອກ RUIM Network1 ບໍ່ສຳເລັດ."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"ຮ້ອງຂໍການປົດລັອກ RUIM Network2 ບໍ່ສຳເລັດ."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"ຮ້ອງຂໍປົດລັອກ RUIM Hrpd ບໍ່ສຳເລັດ."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"ຮ້ອງຂໍປົດລັອກ RUIM ອົງການບໍ່ສຳເລັດ."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"ຮ້ອງຂໍການປົດລັອກຜູ້ໃຫ້ບໍລິການ RUIM ບໍ່ສຳເລັດ."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"ຮ້ອງຂໍການປົດລັອກ RUIM ບໍ່ສຳເລັດ."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"ປົດລັອກ PUK ບໍ່ສຳເລັດ."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"ປົດລັອກ PUK ບໍ່ສຳເລັດ."</string>
@@ -2420,13 +2425,15 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"ຮ້ອງຂໍການປົດລັອກຜູ້ໃຫ້ບໍລິການຊຸດຍ່ອຍເຄືອຂ່າຍສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"ປົດລັອກເຄືອຂ່າຍຊິມສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"ປົດລັອກຊຸດຍ່ອຍເຄືອຂ່າຍຊິມສຳເລັດແລ້ວ."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"ປົດລັອກຜູ້ໃຫ້ບໍລິການຊິມສຳເລັດແລ້ວ."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"ປົດລັອກ SIM ອົງການສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"ປົດລັອກຊິມສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"ປົດລັອກ RUIM Network1 ສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"ປົດລັອກ RUIM Network2 ສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"ປົດລັອກ RUIM Hrpd ສຳເລັດແລ້ວ."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"ປົດລັອກຜູ້ໃຫ້ບໍລິການ RUIM ສຳເລັດແລ້ວ."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"ປົດລັອກ RUIM ອົງການສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"ປົດລັອກ RUIM ສຳເລັດແລ້ວ."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"ປົດລັອກ PUK ສຳເລັດແລ້ວ."</string>

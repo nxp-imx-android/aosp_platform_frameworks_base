@@ -2365,8 +2365,10 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI qulfini ochish uchun PIN kod"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"SIM karta tarmoq qismi aloqa operatorini qulfdan chiqarish uchun PIN kod"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"SIM kartaning tarmoqdagi qulfini ochish soʻralmoqda…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"SIM karta tarmoq qismini qulfdan chiqarish soʻralmoqda…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"SIM karta tegishli aloqa operatori qulfini ochish soʻralmoqda…"</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Korporativ SIM kartalar qulfini ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
@@ -2392,15 +2394,18 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"SIM kartaning tarmoqdagi qulfini ochish soʻrovi yuborilmadi."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"SIM karta tarmoq qismi qulfdan chiqarilmadi."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"SIM karta tegishli aloqa operatori qulfini ochish soʻrovi yuborilmadi."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Korporativ SIM kartalar qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM karta qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM kartalaridagi network1 qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM kartalaridagi network2 qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM HRPD kartalari qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Korporativ RUIM kartalar qulfini ochish soʻrovi yuborilmadi."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"RUIM kartalari aloqa operatori qulfini ochish soʻrovi yuborilmadi."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM kartalari qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK kod bilan qulf ochilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK kod bilan qulf ochilmadi."</string>
@@ -2420,13 +2425,15 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Aloqa operatori tarmoq qismini qulfdan chiqarish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM karta tarmoqdagi qulfidan chiqarildi"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"SIM karta tarmoq qismi qulfdan chiqarildi."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"SIM karta tegishli aloqa operatori qulfi ochildi"</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Korporativ SIM kartalar qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM karta qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM kartalaridagi network1 qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM kartalaridagi network2 qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM HRPD kartalari qulfi ochilmadi"</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"RUIM kartalari aloqa operatori qulfi ochildi."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Korporativ RUIM kartasi qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM kartalari qulfi ochilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK kod bilan qulf ochildi."</string>

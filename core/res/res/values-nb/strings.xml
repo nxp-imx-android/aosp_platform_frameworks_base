@@ -2365,8 +2365,10 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN-kode for å låse opp IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN-kode for fjerning av bestemte operatørlåser"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Ber om fjerning av operatørlåser …"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="6742563947637715645">"Ber om fjerning av bestemte operatørlåser …"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="2033399698172403560">"Ber om opplåsing av SIM-tjenesteleverandør …"</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Ber om opplåsing av SIM-kort for bedrifter …"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Ber om PUK-opplåsing …"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Ber om PUK-opplåsing …"</string>
@@ -2392,15 +2394,18 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Ber om PUK-opplåsing …"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Ber om PUK-opplåsing …"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Forespørselen om å fjerne operatørlåser mislyktes."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="3372797822292089708">"Forespørselen om å fjerne bestemte operatørlåser mislyktes."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="1878443146720411381">"Forespørselen om å låse opp SIM-tjenesteleverandør mislyktes."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
+    <skip />
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Forespørselen om å låse opp SIM-kort for bedrifter mislyktes."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Forespørselen om å låse opp SIM-kort mislyktes."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Forespørselen om å låse opp RUIM Network1 mislyktes."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Forespørselen om å låse opp RUIM Network2 mislyktes."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Forespørselen om å låse opp RUIM Hrpd mislyktes."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Forespørselen om å låse opp RUIM for bedrifter mislyktes."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="3801002648649640407">"Forespørselen om å låse opp RUIM-tjenesteleverandører mislyktes."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Forespørselen om å låse opp RUIM mislyktes."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK-opplåsingen mislyktes."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK-opplåsingen mislyktes."</string>
@@ -2420,13 +2425,15 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Forespørselen om fjerning av bestemte operatørlåser mislyktes."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Fjerningen av operatørlåser er fullført."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Fjerningen av bestemte operatørlåser er fullført."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="8249342930499801740">"SIM-tjenesteleverandør er låst opp."</string>
+    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
+    <skip />
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Opplåsingen av SIM-kort for bedrifter er fullført."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM-kortet er låst opp."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Opplåsingen av RUIM Network1 er fullført."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Opplåsingen av RUIM Network2 er fullført."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM Hrpd-opplåsingen er fullført."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6020936629725666932">"Opplåsingen av RUIM-tjenesteleverandører er fullført."</string>
+    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
+    <skip />
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Opplåsingen av RUIM for bedrifter er fullført."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM-opplåsingen er fullført."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK-opplåsingen er fullført."</string>
