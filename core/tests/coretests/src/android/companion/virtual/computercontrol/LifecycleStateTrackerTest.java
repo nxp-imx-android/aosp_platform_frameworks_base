@@ -16,7 +16,10 @@
 
 package android.companion.virtual.computercontrol;
 
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -51,10 +54,19 @@ public class LifecycleStateTrackerTest {
     }
 
     @Test
-    public void addCallback_startsInActiveState() {
+    public void addCallback_startsInUninitializedState() {
         mLifecycle.addCallback(mMockCallback);
 
         verifyNoInteractions(mMockCallback);
+    }
+
+    @Test
+    public void addCallback_notifiesInitialState() {
+        mLifecycle.onActive();
+
+        mLifecycle.addCallback(mMockCallback);
+
+        verify(mMockCallback).onActive();
     }
 
     @Test
@@ -75,5 +87,17 @@ public class LifecycleStateTrackerTest {
 
         verify(mMockCallback, times(1)).onClosed(
                 eq(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED));
+    }
+
+    @Test
+    public void changeStateFromCallback_throwsIllegalStateException() {
+        mLifecycle.addCallback(mMockCallback);
+        doAnswer((inv) -> {
+            mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
+            return null;
+        }).when(mMockCallback).onBlocked(anyInt());
+
+        assertThrows(IllegalStateException.class,
+                () -> mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT));
     }
 }
