@@ -4760,7 +4760,7 @@ public class DisplayManagerServiceTest {
         DisplayManagerService.BinderService displayManagerBinderService =
                 mDisplayManager.new BinderService();
         FakeDisplayDevice displayDevice = createFakeDisplayDevice(mDisplayManager,
-                new float[]{60f});
+                new float[]{60f}, Display.TYPE_INTERNAL);
         displayDevice.mDisplayDeviceConfig = mMockDisplayDeviceConfig;
         when(mMockDisplayDeviceConfig.isAutoBrightnessAvailable()).thenReturn(true);
         when(mMockDisplayDeviceConfig.getNits()).thenReturn(new float[]{0, 1300});
