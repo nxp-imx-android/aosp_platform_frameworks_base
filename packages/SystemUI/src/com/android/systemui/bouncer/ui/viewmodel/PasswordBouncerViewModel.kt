@@ -32,6 +32,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -40,10 +42,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 
 /** Holds UI state and handles user input for the password bouncer UI. */
+@OptIn(FlowPreview::class)
 class PasswordBouncerViewModel
 @AssistedInject
 constructor(
@@ -85,6 +92,9 @@ constructor(
     private val _isPasswordRevealed = MutableStateFlow(false)
     /** Informs the UI whether the password should be currently revealed in clear text. */
     val isPasswordRevealed: StateFlow<Boolean> = _isPasswordRevealed.asStateFlow()
+
+    /** Hides the password if it's been revealed and there was no user interaction. */
+    private val HIDE_PASSWORD_DELAY = 5.seconds
 
     private val _selectedUserId = MutableStateFlow(selectedUserInteractor.getSelectedUserId())
     /** The ID of the currently-selected user. */
@@ -147,6 +157,16 @@ constructor(
                             }
                         }
                 }
+                launch {
+                    // Hide the password 5s after the password has been revealed or the text in the
+                    // password input field has changed.
+                    val textChangeEvents = snapshotFlow { textFieldState.text }.map { Unit }
+                    val revealEvents = _isPasswordRevealed.filter { it == true }.map { Unit }
+                    val hidePasswordTrigger =
+                        merge(textChangeEvents, revealEvents).debounce(HIDE_PASSWORD_DELAY)
+
+                    hidePasswordTrigger.collect { _isPasswordRevealed.value = false }
+                }
                 awaitCancellation()
             }
         } finally {
@@ -184,7 +204,6 @@ constructor(
             return
         }
 
-        // TODO(b/427681136): Hide after 5 seconds if the user does not type additional text.
         // TODO(b/427681136): Reset password after 30 seconds if showing the password is visible and
         // the user does not type additional text.
         _isPasswordRevealed.value = true
