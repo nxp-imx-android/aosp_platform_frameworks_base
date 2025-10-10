@@ -1012,7 +1012,8 @@ public class BubbleTransitions {
             startTransaction.setAlpha(closingBubbleTaskLeash, 1f)
                     .setPosition(closingBubbleTaskLeash, 0, 0)
                     .reparent(closingBubbleTaskLeash, closingBubbleTaskView)
-                    .show(closingBubbleTaskLeash);
+                    .show(closingBubbleTaskLeash)
+                    .setAlpha(enterBubbleTask.getLeash(), 0);
 
             startTransaction.apply();
 
