@@ -40,9 +40,12 @@ class ToggleAllowListingFeatureTarget extends AccessibilityTarget {
         super(context, shortcutType, AccessibilityFragmentType.TOGGLE, isShortcutSwitched, id,
                 uid, label, icon, key);
 
-        final int statusResId = isFeatureEnabled()
-                ? R.string.accessibility_shortcut_menu_item_status_on
-                : R.string.accessibility_shortcut_menu_item_status_off;
+        final boolean isStateOn = isFeatureEnabled();
+        final int statusResId =
+                isStateOn
+                        ? R.string.accessibility_shortcut_menu_item_status_on
+                        : R.string.accessibility_shortcut_menu_item_status_off;
+        setIsStateOn(isStateOn);
         setStateDescription(getContext().getString(statusResId));
     }
 
@@ -55,6 +58,11 @@ class ToggleAllowListingFeatureTarget extends AccessibilityTarget {
                 shortcutMenuMode == ShortcutMenuMode.EDIT;
         holder.mStatusView.setVisibility(isEditMenuMode ? View.GONE : View.VISIBLE);
         holder.mStatusView.setText(getStateDescription());
+    }
+
+    @Override
+    public boolean isToggleable() {
+        return true;
     }
 
     private boolean isFeatureEnabled() {

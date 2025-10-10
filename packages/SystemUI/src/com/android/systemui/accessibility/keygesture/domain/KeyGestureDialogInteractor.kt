@@ -23,6 +23,7 @@ import android.os.UserHandle
 import android.view.Display.INVALID_DISPLAY
 import androidx.annotation.VisibleForTesting
 import com.android.internal.accessibility.common.KeyGestureEventConstants
+import com.android.internal.accessibility.common.ShortcutConstants
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
@@ -61,7 +62,11 @@ constructor(
             .map { intent -> processDialogRequest(intent) }
 
     fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
-        repository.enableShortcutsForTargets(enable, targetName)
+        repository.enableShortcutsForTargets(
+            enable,
+            ShortcutConstants.UserShortcutType.KEY_GESTURE,
+            targetName,
+        )
     }
 
     fun enableMagnificationAndZoomIn(displayId: Int) {

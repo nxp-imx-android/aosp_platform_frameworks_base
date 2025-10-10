@@ -17,11 +17,15 @@
 package com.android.systemui.accessibility.data.repository
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
 import android.view.Display.DEFAULT_DISPLAY
+import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
+import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import org.mockito.Mockito.mock
@@ -42,6 +46,7 @@ class FakeAccessibilityShortcutsRepository(
     var isMagnificationAndZoomInEnabled: Boolean = false
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""
+    var shortcutTypeAssigned: Int = 0
 
     override suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
@@ -77,8 +82,13 @@ class FakeAccessibilityShortcutsRepository(
             else -> null
         }
 
-    override fun enableShortcutsForTargets(enable: Boolean, targetName: String) {
+    override fun enableShortcutsForTargets(
+        enable: Boolean,
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    ) {
         areShortcutsEnabled = enable
+        shortcutTypeAssigned = shortcutType
     }
 
     override fun enableMagnificationAndZoomIn(displayId: Int) {
@@ -88,5 +98,60 @@ class FakeAccessibilityShortcutsRepository(
     override fun createTtsPromptForText(text: CharSequence): TtsPrompt {
         ttsText = text
         return mock(TtsPrompt::class.java).also { ttsPrompt = it }
+    }
+
+    override fun performAccessibilityShortcut(
+        displayId: Int,
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    ) {
+        shortcutTypeAssigned = shortcutType
+    }
+
+    override fun getAllAccessibilityTargetsInfo(
+        @UserShortcutType shortcutType: Int
+    ): List<AccessibilityTargetModel> {
+        shortcutTypeAssigned = shortcutType
+
+        // Helper Drawable for the fake models
+        val fakeIcon = ColorDrawable(Color.BLACK)
+
+        return listOf(
+            AccessibilityTargetModel(
+                shortcutType = shortcutType,
+                targetName = "fakeTargetNameForTalkBack",
+                featureName = "Screen Reader",
+                icon = fakeIcon,
+                isAssigned = false,
+                isToggleable = true,
+                isToggleOn = false,
+            ),
+            AccessibilityTargetModel(
+                shortcutType = shortcutType,
+                targetName = "fakeTargetNameForMagnification",
+                featureName = "Magnification",
+                icon = fakeIcon,
+                isAssigned = false,
+                isToggleable = false,
+                isToggleOn = null,
+            ),
+            AccessibilityTargetModel(
+                shortcutType = shortcutType,
+                targetName = "fakeTargetNameForVoiceAccess",
+                featureName = "Voice Access",
+                icon = fakeIcon,
+                isAssigned = false,
+                isToggleable = true,
+                isToggleOn = false,
+            ),
+        )
+    }
+
+    override fun getSelectedAccessibilityTargetsInfo(
+        @UserShortcutType shortcutType: Int
+    ): List<AccessibilityTargetModel> {
+        shortcutTypeAssigned = shortcutType
+
+        return emptyList()
     }
 }
