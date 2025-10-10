@@ -466,6 +466,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) throws RemoteException {
+        if (shouldDisallowInteractions("tap")) {
+            return;
+        }
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
@@ -475,6 +478,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public void swipe(
             @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
             @IntRange(from = 0) int toX, @IntRange(from = 0) int  toY) throws RemoteException {
+        if (shouldDisallowInteractions("swipe")) {
+            return;
+        }
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
@@ -484,6 +490,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public void longPress(@IntRange(from = 0) int x, @IntRange(from = 0) int y)
             throws RemoteException {
+        if (shouldDisallowInteractions("longPress")) {
+            return;
+        }
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
@@ -497,6 +506,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public void performAction(@ComputerControlSession.Action int actionCode)
             throws RemoteException {
+        if (shouldDisallowInteractions("performAction")) {
+            return;
+        }
         if (actionCode == ComputerControlSession.ACTION_GO_BACK) {
             mVirtualDpad.sendKeyEvent(
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN));
@@ -527,6 +539,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @SuppressLint("WrongConstant")
     @Override
     public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
+        if (shouldDisallowInteractions("insertText")) {
+            return;
+        }
         cancelOngoingKeyGestures();
         if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
             IRemoteComputerControlInputConnection ic = getInputConnection(mVirtualDisplayId);
@@ -875,5 +890,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public int hashCode() {
             return Objects.hash(mNotificationId, mNotificationTag);
         }
+    }
+
+    private boolean shouldDisallowInteractions(String callsite) {
+        // TODO: b/452428736 - Find a long term solution for blocking agent interactions.
+        if (Flags.computerControlBlockedState() && Flags.computerControlBlockInputAndScreenshots()
+                && !(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+            Slog.w(TAG, "Computer control interaction blocked since session is not active: "
+                    + callsite);
+            return true;
+        }
+        return false;
     }
 }
