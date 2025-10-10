@@ -26,6 +26,7 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_HOME
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN
@@ -76,6 +77,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to System,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to System,
             KEY_GESTURE_TYPE_ALL_APPS to System,
+            KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH to System,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to MultiTasking,
@@ -127,6 +129,8 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.shortcut_helper_category_system_apps,
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.shortcut_helper_category_system_apps,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to
+                R.string.shortcut_helper_category_system_apps,
+            KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH to
                 R.string.shortcut_helper_category_system_apps,
 
             // Multitasking Category
@@ -192,6 +196,8 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to R.string.group_system_access_google_assistant,
             KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT to
                 R.string.group_system_access_google_assistant,
+            KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH to
+                R.string.group_system_access_contextual_search,
 
             // Multitasking Category
             KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER to R.string.group_system_cycle_forward,
