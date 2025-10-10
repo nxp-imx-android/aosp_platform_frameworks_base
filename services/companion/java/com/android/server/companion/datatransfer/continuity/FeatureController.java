@@ -48,6 +48,13 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
         this.mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
     }
 
+    /** Returns true if the feature is enabled. */
+    public boolean isEnabled() {
+        synchronized (this) {
+            return mEnabled;
+        }
+    }
+
     /** Enables the feature. If the feature is already enabled, this method does nothing. */
     public void enable() {
         synchronized (this) {
