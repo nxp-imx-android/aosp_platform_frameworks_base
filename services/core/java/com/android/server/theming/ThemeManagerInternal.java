@@ -16,7 +16,6 @@
 
 package com.android.server.theming;
 
-import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.theming.IThemeSettingsCallback;
@@ -37,6 +36,7 @@ import com.android.internal.annotations.GuardedBy;
 public class ThemeManagerInternal {
     private final Context mContext;
     private final ThemeSettingsManager mThemeSettingsManager;
+    private final SystemPropertiesReader mSystemPropertiesReader;
 
     private final Object mLock = new Object();
 
@@ -47,14 +47,11 @@ public class ThemeManagerInternal {
     @GuardedBy("mLock")
     private final SparseArray<ThemeSettings> mCurrentSettings = new SparseArray<>();
 
-    @NonNull
-    private final ThemeSettings mDefaultSettings;
-
     ThemeManagerInternal(Context context, ThemeSettingsManager themeSettingsManager,
-            @NonNull ThemeSettings defaultSettings) {
+            SystemPropertiesReader systemPropertiesReader) {
         mContext = context;
         mThemeSettingsManager = themeSettingsManager;
-        mDefaultSettings = defaultSettings;
+        mSystemPropertiesReader = systemPropertiesReader;
     }
 
     void notifySettingsChange(@UserIdInt int userId, ThemeSettings newSettings) {
@@ -199,6 +196,7 @@ public class ThemeManagerInternal {
         if (storedSettings != null) {
             return storedSettings;
         }
-        return mDefaultSettings;
+        return mThemeSettingsManager.createDefaultThemeSettings(mContext.getResources(),
+                mSystemPropertiesReader, userId);
     }
 }

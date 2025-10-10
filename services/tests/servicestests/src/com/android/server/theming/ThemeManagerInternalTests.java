@@ -16,22 +16,32 @@
 
 package com.android.server.theming;
 
+import static android.content.theming.FieldColorSource.VALUE_PRESET;
+
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
+
+import android.app.WallpaperColors;
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeSettings;
-import android.content.theming.ThemeSettingsPreset;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
 import android.provider.Settings;
 import android.testing.TestableContext;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+
+import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
@@ -44,22 +54,31 @@ public class ThemeManagerInternalTests {
 
     private final int mUserId = 0;
     private ThemeManagerInternal mUnderTest;
-    private ThemeSettings mDefaultSettings = ThemeSettings
-            .builder(0, ThemeStyle.TONAL_SPOT)
-            .buildFromPreset(Color.valueOf(Color.GRAY), Color.valueOf(Color.GRAY));
+    private TestableContext mContext;
+    private SystemPropertiesReader mSystemPropertiesReader;
+    private ThemeSettingsManager mThemeSettingsManager;
+    @Mock
+    private WallpaperManagerInternal mWallpaperManagerInternal;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        TestableContext context = new TestableContext(InstrumentationRegistry.getTargetContext(),
-                null);
+        mContext = new TestableContext(InstrumentationRegistry.getTargetContext(), null);
 
-        Settings.Secure.putStringForUser(context.getContentResolver(),
+        Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
 
-        ThemeSettingsManager themeSettingsManager = new ThemeSettingsManager();
-        mUnderTest = new ThemeManagerInternal(context, themeSettingsManager, mDefaultSettings);
+        mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
+        mSystemPropertiesReader = new SystemPropertiesReader() {
+            @NonNull
+            @Override
+            public String get(@NonNull String key, @Nullable String def) {
+                return "";
+            }
+        };
+        mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
+                mSystemPropertiesReader);
     }
 
     @Test
@@ -97,8 +116,11 @@ public class ThemeManagerInternalTests {
     @Test
     public void testCallback_receivesNewValue() {
         final Color testColor = Color.valueOf(Color.parseColor("#FF0000"));
-        final ThemeSettingsPreset newPayload = ThemeSettings.builder(2,
-                ThemeStyle.VIBRANT).buildFromPreset(testColor, testColor);
+        final ThemeSettings newPayload = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(testColor)
+                .build();
         final ThemeSettings[] returnedOldSettings = {null};
         final ThemeSettings[] returnedNewSettings = {null};
 
@@ -122,12 +144,18 @@ public class ThemeManagerInternalTests {
     @Test
     public void testCallback_receivesOldAndNewValue() {
         final Color oldColor = Color.valueOf(Color.BLUE);
-        final ThemeSettingsPreset oldPayload = ThemeSettings.builder(1,
-                ThemeStyle.TONAL_SPOT).buildFromPreset(oldColor, oldColor);
+        final ThemeSettings oldPayload = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(oldColor)
+                .build();
 
         final Color newColor = Color.valueOf(Color.RED);
-        final ThemeSettingsPreset newPayload = ThemeSettings.builder(2,
-                ThemeStyle.VIBRANT).buildFromPreset(newColor, newColor);
+        final ThemeSettings newPayload = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(newColor)
+                .build();
 
         final ThemeSettings[] returnedOldSettings = {null};
         final ThemeSettings[] returnedNewSettings = {null};
@@ -153,14 +181,12 @@ public class ThemeManagerInternalTests {
         assertThat(returnedNewSettings[0]).isEqualTo(newPayload);
 
         // Verify the old payload field-by-field due to timestamp precision loss on save/load.
-        ThemeSettingsPreset returnedOldPreset = (ThemeSettingsPreset) returnedOldSettings[0];
+        ThemeSettings returnedOldPreset = returnedOldSettings[0];
         assertThat(returnedOldPreset).isNotNull();
         assertThat(returnedOldPreset.timeStamp().toEpochMilli()).isEqualTo(
                 oldPayload.timeStamp().toEpochMilli());
-        assertThat(returnedOldPreset.colorIndex()).isEqualTo(oldPayload.colorIndex());
         assertThat(returnedOldPreset.themeStyle()).isEqualTo(oldPayload.themeStyle());
         assertThat(returnedOldPreset.systemPalette()).isEqualTo(oldPayload.systemPalette());
-        assertThat(returnedOldPreset.accentColor()).isEqualTo(oldPayload.accentColor());
     }
 
     @Test
@@ -172,48 +198,60 @@ public class ThemeManagerInternalTests {
     @Test
     public void getThemeSettings_withSetting_returnsStored() {
         final Color testColor = Color.valueOf(Color.RED);
-        final ThemeSettingsPreset storedSettings = ThemeSettings.builder(2,
-                ThemeStyle.VIBRANT).buildFromPreset(testColor, testColor);
+        final ThemeSettings storedSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(testColor)
+                .build();
         mUnderTest.updateThemeSettings(mUserId, storedSettings);
 
         ThemeSettings settings = mUnderTest.getThemeSettings(mUserId);
 
         // Verify the loaded payload field-by-field due to timestamp precision loss on save/load.
-        assertThat(settings).isInstanceOf(ThemeSettingsPreset.class);
-        ThemeSettingsPreset returnedPreset = (ThemeSettingsPreset) settings;
+        ThemeSettings returnedPreset = settings;
         assertThat(returnedPreset).isNotNull();
         assertThat(returnedPreset.timeStamp().toEpochMilli()).isEqualTo(
                 storedSettings.timeStamp().toEpochMilli());
-        assertThat(returnedPreset.colorIndex()).isEqualTo(storedSettings.colorIndex());
         assertThat(returnedPreset.themeStyle()).isEqualTo(storedSettings.themeStyle());
         assertThat(returnedPreset.systemPalette()).isEqualTo(storedSettings.systemPalette());
-        assertThat(returnedPreset.accentColor()).isEqualTo(storedSettings.accentColor());
     }
 
     @Test
     public void getThemeSettingsOrDefault_noSetting_returnsDefault() {
+        Color cyan = Color.valueOf(Color.CYAN);
+        WallpaperColors wallpaperColors = new WallpaperColors(cyan, null, null);
+        when(mWallpaperManagerInternal.getWallpaperColors(anyInt(), anyInt()))
+                .thenReturn(wallpaperColors);
+
+        ThemeSettings expectedDefault = mThemeSettingsManager.createDefaultThemeSettings(
+                mContext.getResources(), mSystemPropertiesReader, mUserId);
         ThemeSettings settings = mUnderTest.getThemeSettingsOrDefault(mUserId);
-        assertThat(settings).isEqualTo(mDefaultSettings);
+
+        assertThat(settings.themeStyle()).isEqualTo(expectedDefault.themeStyle());
+        assertThat(settings.colorSource()).isEqualTo(expectedDefault.colorSource());
+        assertThat(settings.systemPalette()).isEqualTo(expectedDefault.systemPalette());
+        assertThat(settings.timeStamp().toEpochMilli()).isAtLeast(
+                expectedDefault.timeStamp().toEpochMilli());
     }
 
     @Test
     public void getThemeSettingsOrDefault_withSetting_returnsStored() {
         final Color testColor = Color.valueOf(Color.RED);
-        final ThemeSettingsPreset storedSettings = ThemeSettings.builder(2,
-                ThemeStyle.VIBRANT).buildFromPreset(testColor, testColor);
+        final ThemeSettings storedSettings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(testColor)
+                .build();
         mUnderTest.updateThemeSettings(mUserId, storedSettings);
 
         ThemeSettings settings = mUnderTest.getThemeSettingsOrDefault(mUserId);
 
         // Verify the loaded payload field-by-field due to timestamp precision loss on save/load.
-        assertThat(settings).isInstanceOf(ThemeSettingsPreset.class);
-        ThemeSettingsPreset returnedPreset = (ThemeSettingsPreset) settings;
+        ThemeSettings returnedPreset = settings;
         assertThat(returnedPreset).isNotNull();
         assertThat(returnedPreset.timeStamp().toEpochMilli()).isEqualTo(
                 storedSettings.timeStamp().toEpochMilli());
-        assertThat(returnedPreset.colorIndex()).isEqualTo(storedSettings.colorIndex());
         assertThat(returnedPreset.themeStyle()).isEqualTo(storedSettings.themeStyle());
         assertThat(returnedPreset.systemPalette()).isEqualTo(storedSettings.systemPalette());
-        assertThat(returnedPreset.accentColor()).isEqualTo(storedSettings.accentColor());
     }
 }
