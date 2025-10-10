@@ -2970,6 +2970,16 @@
     <!-- Text for showing inside the Voice Access dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_voice_access_dialog_content">Pressing Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="V">^2</xliff:g> turns on <xliff:g name="feature_name" example="Voice Access">^3</xliff:g>, an accessibility feature. This lets you control your device hands-free.</string>
 
+    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <!-- Text for the title of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" translatable="false">Accessibility key</string>
+    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <!-- Text for the content of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" translatable="false">You can press the accessibility action key to activate accessibility features. Add features you would like to activate using this key</string>
+    <!-- TODO: b/450609147 - Update to final string and remove "translatable" -->
+    <!-- Text for the confirmation button of top row key tutorial dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" translatable="false">Add features</string>
+
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->
     <string name="plugins" translatable="false">Plugins</string>
