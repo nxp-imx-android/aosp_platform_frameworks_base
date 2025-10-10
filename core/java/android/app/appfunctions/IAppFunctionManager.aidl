@@ -20,6 +20,7 @@ import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
+import android.app.appfunctions.IAppFunctionExecutor;
 import android.os.ICancellationSignal;
 import android.os.UserHandle;
 import android.content.Intent;
@@ -40,8 +41,7 @@ interface IAppFunctionManager {
     */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
     ICancellationSignal executeAppFunction(
-        in ExecuteAppFunctionAidlRequest request,
-        in IExecuteAppFunctionCallback callback
+        in ExecuteAppFunctionAidlRequest request, in IExecuteAppFunctionCallback callback
     );
 
     /**
@@ -77,6 +77,10 @@ interface IAppFunctionManager {
         int flagMask,
         int flags
     );
+
+    void registerAppFunction(in String packageName, in String functionId, in IAppFunctionExecutor executor);
+
+    void unregisterAppFunction(in String packageName, in String functionId, in IAppFunctionExecutor executor);
 
     void revokeSelfAccess(in String targetPackageName);
 

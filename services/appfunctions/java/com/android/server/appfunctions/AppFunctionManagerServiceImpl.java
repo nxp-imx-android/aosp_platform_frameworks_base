@@ -42,6 +42,7 @@ import android.app.appfunctions.AppFunctionUriGrant;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionEnabledCallback;
+import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
@@ -88,6 +89,7 @@ import android.permission.flags.Flags;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -148,6 +150,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private final MultiUserAppFunctionAccessHistory mMultiUserAppFunctionAccessHistory;
 
     private final Object mAgentAllowlistLock = new Object();
+
+    private final Object mAppFunctionRegistrationLock = new Object();
+
+    @GuardedBy("mAppFunctionRegistrationLock")
+    private ArrayMap<String, IAppFunctionExecutor> mAppFunctionCallbacksRegistrations =
+            new ArrayMap<>();
+
+    // TODO (b/438413084) unregister when caller died
+    // TODO (b/438413084) support multiuser
 
     // Any agents hardcoded by the system
     private static final List<SignedPackage> sSystemAllowlist =
@@ -403,7 +414,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             "Cannot run on a user with a restricted enterprise policy"));
             return;
         }
-
         String targetPackageName = requestInternal.getClientRequest().getTargetPackageName();
         if (TextUtils.isEmpty(targetPackageName)) {
             safeExecuteAppFunctionCallback.onError(
@@ -412,7 +422,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             "Target package name cannot be empty."));
             return;
         }
-
         mCallerValidator
                 .verifyCallerCanExecuteAppFunction(
                         callingUid,
@@ -454,8 +463,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             if (canExecuteResult
                                     == CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION) {
                                 // If the caller doesn't have the permission, do not use
-                                // BIND_FOREGROUND_SERVICE to avoid it raising its process state by
-                                // calling its own AppFunctions.
+                                // BIND_FOREGROUND_SERVICE to avoid it raising its process state
+                                // by calling its own AppFunctions.
                                 bindFlags |= Context.BIND_FOREGROUND_SERVICE;
                             }
                             Intent serviceIntent =
@@ -594,6 +603,41 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 targetUserId,
                 flagMask,
                 flags);
+    }
+
+    @Override
+    public void registerAppFunction(
+            String packageName, String functionIdentifier, IAppFunctionExecutor session) {
+        String documentId =
+                AppFunctionRuntimeMetadata.getDocumentIdForAppFunction(
+                        packageName, functionIdentifier);
+        mCallerValidator.validateCallingPackage(packageName);
+
+        synchronized (mAppFunctionRegistrationLock) {
+            if (mAppFunctionCallbacksRegistrations.containsKey(documentId)) {
+                throw new IllegalStateException("App function already registered");
+            }
+            mAppFunctionCallbacksRegistrations.put(documentId, session);
+        }
+    }
+
+    @Override
+    public void unregisterAppFunction(
+            String packageName, String functionIdentifier, IAppFunctionExecutor session) {
+        mCallerValidator.validateCallingPackage(packageName);
+
+        String documentId =
+                AppFunctionRuntimeMetadata.getDocumentIdForAppFunction(
+                        packageName, functionIdentifier);
+        synchronized (mAppFunctionRegistrationLock) {
+            if (mAppFunctionCallbacksRegistrations.containsKey(documentId)) {
+                IAppFunctionExecutor registeredExecutor =
+                        Objects.requireNonNull(mAppFunctionCallbacksRegistrations.get(documentId));
+                if (registeredExecutor.asBinder().equals(session.asBinder())) {
+                    mAppFunctionCallbacksRegistrations.remove(documentId);
+                }
+            }
+        }
     }
 
     @Override
