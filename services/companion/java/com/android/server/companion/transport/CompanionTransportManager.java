@@ -17,6 +17,7 @@
 package com.android.server.companion.transport;
 
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PERMISSION_RESTORE;
+import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_TRUSTED_DEVICE;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
@@ -342,6 +343,25 @@ public class CompanionTransportManager {
                 return CompletableFuture.failedFuture(new IOException("Missing transport"));
             }
             return transport.sendMessage(MESSAGE_REQUEST_PERMISSION_RESTORE, data);
+        }
+    }
+
+    /**
+     * Send HKDF-computed MAC token derived from the previously verified session key and the
+     * current session key. The receiving device will mark this device as trusted if it matches the
+     * locally computed value.
+     *
+     * @param associationId Association to request verification from.
+     * @param mac HKDF-computed MAC token for the remote device to verify.
+     */
+    public CompletableFuture<byte[]> requestTrustedDeviceVerification(int associationId,
+            byte[] mac) {
+        synchronized (mTransports) {
+            Transport transport = mTransports.get(associationId);
+            if (transport == null) {
+                return CompletableFuture.failedFuture(new IOException("Missing transport"));
+            }
+            return transport.sendMessage(MESSAGE_REQUEST_TRUSTED_DEVICE, mac);
         }
     }
 

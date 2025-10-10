@@ -20,13 +20,14 @@ import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_CROSS_DEVI
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_FROM_WEARABLE;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_PCC;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_PING;
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TO_WEARABLE;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_CONTEXT_SYNC;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_METADATA_UPDATE;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PERMISSION_RESTORE;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PING;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_REMOTE_AUTHENTICATION;
-import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
+import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_TRUSTED_DEVICE;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -52,7 +53,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -219,7 +219,11 @@ public abstract class Transport {
      */
     public CompletableFuture<byte[]> sendMessage(int message, byte[] data) {
         final CompletableFuture<byte[]> pending = new CompletableFuture<>();
-        if (isOneway(message)) {
+        if (data == null) {
+            pending.completeExceptionally(new IllegalArgumentException(
+                    "The payload cannot be null."
+            ));
+        } else if (isOneway(message)) {
             return sendAndForget(message, data);
         } else if (isRequest(message)) {
             return requestForResponse(message, data);
@@ -346,6 +350,7 @@ public abstract class Transport {
                 }
                 break;
             }
+            case MESSAGE_REQUEST_TRUSTED_DEVICE:
             case MESSAGE_REQUEST_CONTEXT_SYNC:
             case MESSAGE_REQUEST_REMOTE_AUTHENTICATION:
             case MESSAGE_REQUEST_METADATA_UPDATE: {
