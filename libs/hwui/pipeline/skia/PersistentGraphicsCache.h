@@ -36,6 +36,11 @@ class PersistentGraphicsCache : public GrContextOptions::PersistentCache {
     static constexpr useconds_t kDefaultWriteThrottleInterval = 4 * 1000 * 1000;
 
 public:
+    struct PipelineCacheStats {
+        bool inUse = false;
+        size_t sizeBytes = 0;
+    };
+
     static PersistentGraphicsCache& get();
 
     void initPipelineCache(std::string path,
@@ -44,6 +49,8 @@ public:
 
     sk_sp<SkData> load(const SkData& key) override;
     void store(const SkData& key, const SkData& data, const SkString& description) override;
+
+    PipelineCacheStats getPipelineCacheStats() const;
 
 private:
     std::unique_ptr<PipelineCache> mPipelineCache;

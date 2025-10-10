@@ -261,6 +261,16 @@ void CacheManager::dumpMemoryUsage(String8& log, const RenderState* renderState)
 
     log.appendFormat("Total GPU memory usage:\n");
     gpuTracer.logTotals(log);
+
+    auto stats = skiapipeline::PersistentGraphicsCache::get().getPipelineCacheStats();
+    if (stats.inUse) {
+        log.appendFormat(R"(Pipeline Cache: active
+  Cache Disk Size: %zu bytes
+)",
+                         stats.sizeBytes);
+    } else {
+        log.appendFormat("Pipeline Cache: inactive");
+    }
 }
 
 void CacheManager::onFrameCompleted() {
