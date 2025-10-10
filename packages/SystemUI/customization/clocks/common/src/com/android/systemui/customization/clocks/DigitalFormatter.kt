@@ -55,8 +55,8 @@ protected constructor(
             }
         }
 
-    private lateinit var textFormat: SimpleDateFormat
-    private var descriptionFormat: SimpleDateFormat? = null
+    protected lateinit var textFormat: SimpleDateFormat
+    protected var descriptionFormat: SimpleDateFormat? = null
 
     protected fun initialize() {
         timeKeeper.callbacks.add(this)
@@ -91,10 +91,7 @@ protected constructor(
             as SimpleDateFormat
     }
 
-    private fun applyPattern() {
-        textFormat.applyPattern(textPattern)
-        descriptionFormat?.applyPattern(descriptionPattern)
-    }
+    protected abstract fun applyPattern()
 
     fun getText(): String {
         return textModifier(textFormat.format(timeKeeper.time))
@@ -114,6 +111,10 @@ class DigitalDateFormatter(
     override fun getTextPattern(formatKind: TimeFormatKind) = pattern
 
     override fun getDescriptionPattern(formatKind: TimeFormatKind) = "EEEE MMMM d"
+
+    override fun applyPattern() {
+        /* No-op */
+    }
 
     init {
         initialize()
@@ -138,6 +139,11 @@ class DigitalTimeFormatter(
             TimeFormatKind.HALF_DAY -> "hh:mm"
             TimeFormatKind.FULL_DAY -> "HH:mm"
         }
+    }
+
+    override fun applyPattern() {
+        textFormat.applyPattern(textPattern)
+        descriptionFormat?.applyPattern(descriptionPattern)
     }
 
     init {
