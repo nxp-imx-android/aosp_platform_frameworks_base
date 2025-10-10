@@ -47,6 +47,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.systemui.Flags.glanceableHubV2;
+import static com.android.systemui.Flags.simNextSubId;
 import static com.android.systemui.Flags.simPinBouncerReset;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED;
 
@@ -4182,6 +4183,22 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      * @return subid or {@link SubscriptionManager#INVALID_SUBSCRIPTION_ID} if none found
      */
     public int getNextSubIdForState(int state) {
+        if (simNextSubId()) {
+            int resultSubId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+            int bestSlotId = Integer.MAX_VALUE; // Favor lowest slot first
+
+            synchronized (mSimDataLockObject) {
+                for (var simDataBySlotId : mSimDatasBySlotId.entrySet()) {
+                    final int subId = simDataBySlotId.getValue().subId;
+                    final int slotId = simDataBySlotId.getKey();
+                    if (state == getSimStateForSlotId(slotId) && bestSlotId > slotId) {
+                        resultSubId = subId;
+                        bestSlotId = slotId;
+                    }
+                }
+            }
+            return resultSubId;
+        }
         List<SubscriptionInfo> list = getSubscriptionInfo(false /* forceReload */);
         int resultId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
         int bestSlotId = Integer.MAX_VALUE; // Favor lowest slot first
