@@ -42,7 +42,7 @@ constructor(@Assisted override val model: ScreenCaptureAppContent) :
     override suspend fun activate(): Nothing = awaitCancellation()
 
     @AssistedFactory
-    interface Factory : TargetViewModel.Factory<ScreenCaptureAppContent> {
-        override fun create(model: ScreenCaptureAppContent): AppContentViewModel
+    interface Factory {
+        fun create(model: ScreenCaptureAppContent): AppContentViewModel
     }
 }

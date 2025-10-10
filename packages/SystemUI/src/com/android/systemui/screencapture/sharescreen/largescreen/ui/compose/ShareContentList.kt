@@ -41,8 +41,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
+import com.android.systemui.screencapture.common.domain.model.TargetModel
+import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
 /**
  * A composable that displays a scrollable list of shareable content (e.g., recent apps).
@@ -51,30 +52,31 @@ import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewMod
  * @param viewModel The ViewModel that provides the list of tasks and manages selection state.
  */
 @Composable
-fun ShareContentList(modifier: Modifier = Modifier, viewModel: RecentTasksViewModel) {
-    val recentTasks by viewModel.targets
+fun <T : TargetModel> ShareContentList(
+    modifier: Modifier = Modifier,
+    viewModel: TargetsViewModel<T>,
+) {
+    val targets by viewModel.targets
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceBright,
         modifier = modifier.heightIn(min = 24.dp, max = 224.dp).width(286.dp),
     ) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            // Use the real list of recent tasks, handling the nullable case.
-            recentTasks?.let { tasks ->
-                items(items = tasks) { task ->
-                    val currentRecentTaskViewModel: RecentTaskViewModel =
+            targets?.let { targets ->
+                items(items = targets) { target ->
+                    val targetViewModel =
                         rememberViewModel(
-                            traceName = "ShareContentListItemViewModel#${task.taskId}",
-                            key = task,
+                            traceName = "ShareContentListItemViewModel#${target.traceTag}",
+                            key = target,
                         ) {
-                            viewModel.createViewModelFor(task) as RecentTaskViewModel
+                            viewModel.createViewModelFor(target)
                         }
+                    val selectedModel by viewModel.selectedTarget
                     SelectorItem(
-                        currentRecentTaskViewModel = currentRecentTaskViewModel,
-                        isSelected =
-                            currentRecentTaskViewModel.model ==
-                                viewModel.selectedTarget.value?.model,
-                        onItemSelected = { viewModel.setSelectedTarget(currentRecentTaskViewModel) },
+                        targetViewModel = targetViewModel,
+                        isSelected = targetViewModel.model == selectedModel,
+                        onItemSelected = { viewModel.setSelectedTarget(targetViewModel) },
                     )
                 }
             }
@@ -85,20 +87,19 @@ fun ShareContentList(modifier: Modifier = Modifier, viewModel: RecentTasksViewMo
 /**
  * A composable that displays a single item in the share content list.
  *
- * @param currentRecentTaskViewModel The [RecentTaskViewModel] that holds the state for this
- *   specific item.
- * @param isSelected The boolean if the currentRecentTaskViewModel is selected.
+ * @param targetViewModel The view model for this item.
+ * @param isSelected Whether this item is selected.
  * @param onItemSelected The callback to be invoked when this item is clicked.
  */
 @Composable
-private fun SelectorItem(
-    currentRecentTaskViewModel: RecentTaskViewModel,
+private fun <T : TargetModel> SelectorItem(
+    targetViewModel: TargetViewModel<T>,
     isSelected: Boolean,
     onItemSelected: () -> Unit,
 ) {
     // Get the icon and label from the item's ViewModel.
-    val icon = currentRecentTaskViewModel.icon?.getOrNull()
-    val label = currentRecentTaskViewModel.label?.getOrNull()
+    val icon = targetViewModel.icon?.getOrNull()
+    val label = targetViewModel.label?.getOrNull()
 
     Surface(
         shape = if (isSelected) RoundedCornerShape(20.dp) else RoundedCornerShape(4.dp),
