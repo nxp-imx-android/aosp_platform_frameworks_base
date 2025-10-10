@@ -23,6 +23,7 @@ import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermis
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -170,6 +171,36 @@ class MultitaskingController extends IMultitaskingController.Stub {
                 mBubbleTokens.add(token);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception creating bubble", e);
+            } finally {
+                Binder.restoreCallingIdentity(origId);
+            }
+        }
+
+        @RequiresPermission(REQUEST_SYSTEM_MULTITASKING_CONTROLS)
+        @Override
+        public void launchInBubble(@NonNull IBinder token, @NonNull PendingIntent pendingIntent,
+                boolean collapsed) {
+            if (DEBUG) {
+                Slog.d(TAG, "launchInBubble token: " + token + " pendingIntent: " + pendingIntent
+                        + " collapsed: " + collapsed);
+            }
+            enforceMultitaskingControlPermission("launchInBubble()");
+            Objects.requireNonNull(token);
+            if (mBubbleTokens.contains(token)) {
+                throw new IllegalArgumentException("Bubble already exists for token");
+            }
+            Objects.requireNonNull(pendingIntent);
+            if (!pendingIntent.isActivity()) {
+                Slog.e(TAG, "Only activities can be launched into a Bubble.");
+                return;
+            }
+            final long origId = Binder.clearCallingIdentity();
+            try {
+                // TODO: sanitize the incoming intent?
+                mShellDelegate.launchInBubble(token, pendingIntent, collapsed);
+                mBubbleTokens.add(token);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Exception launching in bubble", e);
             } finally {
                 Binder.restoreCallingIdentity(origId);
             }

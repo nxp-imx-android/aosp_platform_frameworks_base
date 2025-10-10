@@ -20,6 +20,7 @@ import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.RequiresPermission;
 import android.app.ActivityTaskManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -104,6 +105,20 @@ public class BubbleContainerManager {
             mControllerInterface.createBubble(token, intent, collapsed);
         } catch (RemoteException e) {
             Log.e(TAG, "Remote exception creating a Bubble", new RuntimeException(e));
+        }
+    }
+
+    /**
+     * Request to create a new Bubble.
+     * @param token a token uniquely identifying a bubble.
+     * @param pendingIntent pending intent to launch an activity.
+     * @param collapsed initial Bubble state.
+     */
+    public void launchInBubble(IBinder token, PendingIntent pendingIntent, boolean collapsed) {
+        try {
+            mControllerInterface.launchInBubble(token, pendingIntent, collapsed);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Remote exception launching in a Bubble", new RuntimeException(e));
         }
     }
 
