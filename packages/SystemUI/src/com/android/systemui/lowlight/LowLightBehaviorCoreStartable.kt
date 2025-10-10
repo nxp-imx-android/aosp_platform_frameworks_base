@@ -211,6 +211,22 @@ constructor(
             activeLowLightAction
                 .flatMapLatestConflated { activeAction ->
                     activeAction?.let {
+                        if (
+                            com.android.systemui.Flags.disableScreenOffLowLightBehavior() &&
+                                it.behavior == LowLightDisplayBehavior.SCREEN_OFF
+                        ) {
+                            // TODO(b/444624435): This low light action choice is not currently
+                            //  selectable in settings and does not work as intended. Suppressing
+                            //  the dream while it is running causes it to finish immediately. We
+                            //  don't track low light state or activate low light actions when
+                            //  unlocked, meaning pressing power button starts the dream, then
+                            //  activates this action, which causes the dream to immediately finish.
+                            //  To the user, it will seem like the power button did nothing. Due to
+                            //  these issues, we do nothing here to prevent users from seeing more
+                            //  serious bugs.
+                            return@flatMapLatestConflated flowOf(null)
+                        }
+
                         shouldTrackLowLight(it.behavior).map { enabled ->
                             if (enabled) it.action.get() else null
                         }
