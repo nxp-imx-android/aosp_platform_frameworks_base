@@ -119,15 +119,12 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
-public class ComputerControlSessionTest {
-    @Rule
-    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
+public class ComputerControlSessionImplTest {
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
-
     private static final int USER_ID = UserHandle.USER_SYSTEM;
     private static final int MAIN_DISPLAY_ID = 41;
     private static final int VIRTUAL_DISPLAY_ID = 42;
@@ -144,14 +141,8 @@ public class ComputerControlSessionTest {
     private static final Set<UserHandle> ALLOWED_USERS =
             Set.of(UserHandle.of(100), UserHandle.of(200));
 
-    private final Context mContext =
-            spy(
-                    new ContextWrapper(
-                            InstrumentationRegistry.getInstrumentation().getTargetContext()));
-    private final Context mOwnerContext =
-            spy(
-                    new ContextWrapper(
-                            InstrumentationRegistry.getInstrumentation().getTargetContext()));
+    @Rule
+    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private IDisplayManager mDisplayManager;
     @Mock
@@ -173,7 +164,7 @@ public class ComputerControlSessionTest {
     @Mock
     private IComputerControlLifecycleCallback mLifecycleCallback;
     @Mock
-    private ComputerControlSessionImpl.OnClosedListener mOnClosedListener;
+    private Consumer<ComputerControlSessionImpl> mOnClosedListener;
     @Mock
     private VirtualDevice mVirtualDevice;
     @Mock
@@ -211,13 +202,19 @@ public class ComputerControlSessionTest {
 
     private SurfaceControl.Transaction mTransaction;
     private AutoCloseable mMockitoSession;
+    private ComputerControlSessionImpl mSession;
     private final IBinder mAppToken = new Binder();
     private final ComputerControlSessionParams mDefaultParams =
             new ComputerControlSessionParams.Builder()
-                    .setName(ComputerControlSessionTest.class.getSimpleName())
+                    .setName(ComputerControlSessionImplTest.class.getSimpleName())
                     .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                     .build();
-    private ComputerControlSessionImpl mSession;
+    private final Context mContext =
+            spy(new ContextWrapper(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext()));
+    private final Context mOwnerContext =
+            spy(new ContextWrapper(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext()));
 
     @Before
     public void setUp() throws Exception {
@@ -343,7 +340,7 @@ public class ComputerControlSessionTest {
         verify(mVirtualDevice, never()).setDevicePolicy(eq(POLICY_TYPE_ACTIVITY), anyInt());
 
         verify(mVirtualDevice).addActivityPolicyExemption(
-                argThat(new MatchesActivityPolicyExcemption(PERMISSION_CONTROLLER_PACKAGE)));
+                argThat(new MatchesActivityPolicyExemption(PERMISSION_CONTROLLER_PACKAGE)));
     }
 
     @Test
@@ -355,7 +352,7 @@ public class ComputerControlSessionTest {
 
         for (String expected : TARGET_PACKAGE_NAMES) {
             verify(mVirtualDevice).addActivityPolicyExemption(
-                    argThat(new MatchesActivityPolicyExcemption(expected)));
+                    argThat(new MatchesActivityPolicyExemption(expected)));
         }
     }
 
@@ -364,7 +361,7 @@ public class ComputerControlSessionTest {
         createComputerControlSession(mDefaultParams);
         mSession.close();
         verify(mVirtualDevice).close();
-        verify(mOnClosedListener).onClosed(mSession);
+        verify(mOnClosedListener).accept(mSession);
         verify(mLifecycleCallback).onClosed(eq(CLOSE_REASON_CALLER_INITIATED));
     }
 
@@ -415,7 +412,7 @@ public class ComputerControlSessionTest {
         mSession.launchApplication(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS);
 
         verify(mVirtualDevice).addActivityPolicyExemption(
-                argThat(new MatchesActivityPolicyExcemption(UNDECLARED_TARGET_PACKAGE)));
+                argThat(new MatchesActivityPolicyExemption(UNDECLARED_TARGET_PACKAGE)));
         assertLaunchedApplication(UNDECLARED_TARGET_PACKAGE);
     }
 
@@ -693,12 +690,11 @@ public class ComputerControlSessionTest {
         assertThat(intent.getComponent()).isEqualTo(new ComponentName(packageName, TARGET_CLASS));
     }
 
-    private static class MatchesActivityPolicyExcemption implements
+    private static final class MatchesActivityPolicyExemption implements
             ArgumentMatcher<ActivityPolicyExemption> {
-
         private final String mPackageName;
 
-        MatchesActivityPolicyExcemption(String packageName) {
+        MatchesActivityPolicyExemption(String packageName) {
             mPackageName = packageName;
         }
 
@@ -708,8 +704,7 @@ public class ComputerControlSessionTest {
         }
     }
 
-    private static class MatchesTouchEvent implements ArgumentMatcher<VirtualTouchEvent> {
-
+    private static final class MatchesTouchEvent implements ArgumentMatcher<VirtualTouchEvent> {
         private final int mX;
         private final int mY;
         private final int mAction;
@@ -744,8 +739,7 @@ public class ComputerControlSessionTest {
         }
     }
 
-    private static class MatchesVirtualKeyEvent implements ArgumentMatcher<VirtualKeyEvent> {
-
+    private static final class MatchesVirtualKeyEvent implements ArgumentMatcher<VirtualKeyEvent> {
         private final int mKeyCode;
         private final int mAction;
 
@@ -760,8 +754,7 @@ public class ComputerControlSessionTest {
         }
     }
 
-    private static class MatchesKeyEvent implements ArgumentMatcher<KeyEvent> {
-
+    private static final class MatchesKeyEvent implements ArgumentMatcher<KeyEvent> {
         private final int mKeyCode;
 
         private final int mAction;

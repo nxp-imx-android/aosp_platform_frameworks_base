@@ -96,6 +96,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -154,7 +155,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Context mOwnerContext;
     private final String mOwnerPackageName;
 
-    private final OnClosedListener mOnClosedListener;
+    private final Consumer<ComputerControlSessionImpl> mOnClosedListener;
     private final VirtualDevice mVirtualDevice;
     private final VirtualDisplay mVirtualDisplay;
     private final int mVirtualDisplayId;
@@ -178,10 +179,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ViewConfiguration mViewConfiguration;
     private final long mGlobalSessionTimeoutDurationMs;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
-
-    private ScheduledFuture<?> mSwipeFuture;
-    private ScheduledFuture<?> mInsertTextFuture;
-    private ScheduledFuture<?> mCloseSessionFuture;
 
     // Keeps track of the current lifecycle state. Thread safe.
     private final SessionLifecycle mLifecycle = new SessionLifecycle();
@@ -216,10 +213,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @GuardedBy("mNotificationLock")
     private NotificationInfo mNotificationInfo = null;
 
+    private ScheduledFuture<?> mSwipeFuture;
+    private ScheduledFuture<?> mInsertTextFuture;
+    private ScheduledFuture<?> mCloseSessionFuture;
+
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Set<UserHandle> allowedUsers, OnClosedListener onClosedListener) {
+            Set<UserHandle> allowedUsers, Consumer<ComputerControlSessionImpl> onClosedListener) {
         this(context, DisplayManagerGlobal.getInstance(), ViewConfiguration.get(context),
                 DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS, SurfaceControl.Transaction::new,
                 appToken, params, attributionSource, virtualDeviceFactory, allowedUsers,
@@ -232,7 +233,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Supplier<SurfaceControl.Transaction> transactionSupplier, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Set<UserHandle> allowedUsers, OnClosedListener onClosedListener) {
+            Set<UserHandle> allowedUsers, Consumer<ComputerControlSessionImpl> onClosedListener) {
         mContext = context;
         mViewConfiguration = viewConfiguration;
         mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
@@ -366,28 +367,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    private void applyActivityPolicy() throws RemoteException {
-        List<String> exemptedPackageNames = new ArrayList<>();
-        if (Flags.computerControlActivityPolicyStrict()) {
-            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-            exemptedPackageNames.addAll(mAllowlistedPackages);
-        } else {
-            // This legacy policy allows all apps other than PermissionController to be automated.
-            String permissionControllerPackage =
-                    mContext.getPackageManager().getPermissionControllerPackageName();
-            exemptedPackageNames.add(permissionControllerPackage);
-        }
-        for (int i = 0; i < exemptedPackageNames.size(); i++) {
-            String exemptedPackageName = exemptedPackageNames.get(i);
-            mVirtualDevice.addActivityPolicyExemption(
-                    new ActivityPolicyExemption.Builder()
-                            .setPackageName(exemptedPackageName)
-                            .build());
-        }
-    }
-
-    public int getVirtualDisplayId() {
+    int getVirtualDisplayId() {
         return mVirtualDisplayId;
     }
 
@@ -601,17 +581,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         });
     }
 
-    private void releaseResources() {
-        cancelOngoingKeyGestures();
-        cancelOngoingTouchGestures();
-        cancelPendingCloseSession();
-        mAudioInjector.stopAudioInjection();
-        mAudioCapture.stopAudioCapture();
-        mVirtualDevice.close(); // closes also the VirtualAudioDevice
-        mAppToken.unlinkToDeath(this, 0);
-        mOnClosedListener.onClosed(this);
-    }
-
     @Override
     public void binderDied() {
         try {
@@ -621,26 +590,36 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
-    VirtualTouchEvent createTouchEvent(int x, int y, @VirtualTouchEvent.Action int action) {
-        return new VirtualTouchEvent.Builder()
-                .setX(x)
-                .setY(y)
-                .setAction(action)
-                .setPointerId(4)
-                .setToolType(
-                        action == VirtualTouchEvent.ACTION_CANCEL
-                                ? VirtualTouchEvent.TOOL_TYPE_PALM
-                                : VirtualTouchEvent.TOOL_TYPE_FINGER)
-                .setPressure(255)
-                .setMajorAxisSize(1)
-                .build();
+    private void releaseResources() {
+        cancelOngoingKeyGestures();
+        cancelOngoingTouchGestures();
+        cancelPendingCloseSession();
+        mAudioInjector.stopAudioInjection();
+        mAudioCapture.stopAudioCapture();
+        mVirtualDevice.close(); // closes also the VirtualAudioDevice
+        mAppToken.unlinkToDeath(this, 0);
+        mOnClosedListener.accept(this);
     }
 
-    VirtualKeyEvent createKeyEvent(int keyCode, @VirtualKeyEvent.Action int action) {
-        return new VirtualKeyEvent.Builder()
-                .setAction(action)
-                .setKeyCode(keyCode)
-                .build();
+    private void applyActivityPolicy() throws RemoteException {
+        List<String> exemptedPackageNames = new ArrayList<>();
+        if (Flags.computerControlActivityPolicyStrict()) {
+            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
+
+            exemptedPackageNames.addAll(mAllowlistedPackages);
+        } else {
+            // This legacy policy allows all apps other than PermissionController to be automated.
+            String permissionControllerPackage =
+                    mContext.getPackageManager().getPermissionControllerPackageName();
+            exemptedPackageNames.add(permissionControllerPackage);
+        }
+        for (int i = 0; i < exemptedPackageNames.size(); i++) {
+            String exemptedPackageName = exemptedPackageNames.get(i);
+            mVirtualDevice.addActivityPolicyExemption(
+                    new ActivityPolicyExemption.Builder()
+                            .setPackageName(exemptedPackageName)
+                            .build());
+        }
     }
 
     private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step, int stepCount) {
@@ -715,6 +694,56 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 : prefix;
     }
 
+    private Intent getLaunchIntent(String packageName, String className) {
+        if (className == null) {
+            return mOwnerContext.getPackageManager().getLaunchIntentForPackage(packageName);
+        }
+        final Intent intent = new Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_LAUNCHER)
+                .setClassName(packageName, className);
+        final List<ResolveInfo> resolveInfos = mOwnerContext.getPackageManager()
+                .queryIntentActivities(intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+        if (resolveInfos.isEmpty()) {
+            return null;
+        }
+        return intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    }
+
+    private IRemoteComputerControlInputConnection getInputConnection(int displayId) {
+        // getUserAssignedToDisplay returns the main userId, if we want to support cross
+        // profile CC interactions and typing on CC display, we need to find the right user
+        // profile here for the CC input connection
+        return mInputMethodManagerInternal.getComputerControlInputConnection(
+                mUserManagerInternal.getUserAssignedToDisplay(displayId), displayId);
+    }
+
+    private void moveAllTasks(int fromDisplayId, int toDisplayId) {
+        mActivityTaskManagerInternal.moveAllTasks(fromDisplayId, toDisplayId);
+    }
+
+    private static VirtualTouchEvent createTouchEvent(int x, int y,
+            @VirtualTouchEvent.Action int action) {
+        return new VirtualTouchEvent.Builder()
+                .setX(x)
+                .setY(y)
+                .setAction(action)
+                .setPointerId(4)
+                .setToolType(
+                        action == VirtualTouchEvent.ACTION_CANCEL
+                                ? VirtualTouchEvent.TOOL_TYPE_PALM
+                                : VirtualTouchEvent.TOOL_TYPE_FINGER)
+                .setPressure(255)
+                .setMajorAxisSize(1)
+                .build();
+    }
+
+    private static VirtualKeyEvent createKeyEvent(int keyCode, @VirtualKeyEvent.Action int action) {
+        return new VirtualKeyEvent.Builder()
+                .setAction(action)
+                .setKeyCode(keyCode)
+                .build();
+    }
+
     private class ComputerControlActivityListener implements VirtualDeviceManager.ActivityListener {
         @Override
         public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {
@@ -753,8 +782,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         @Override
         @SuppressLint("AndroidFrameworkRequiresPermission")
-        public void onActivityLaunchBlocked(int displayId, ComponentName componentName,
-                UserHandle user, IntentSender intentSender) {
+        public void onActivityLaunchBlocked(int displayId, @NonNull ComponentName componentName,
+                @NonNull UserHandle user, IntentSender intentSender) {
             Slog.v(TAG, "Blocked activity launch for " + componentName + " on session "
                     + mParams.getName());
             final var changedState = mLifecycle.updateLifecycleState(
@@ -774,8 +803,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
 
         @Override
-        public void onSecureWindowShown(int displayId, ComponentName componentName,
-                UserHandle user) {
+        public void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
+                @NonNull UserHandle user) {
             Slog.v(TAG, "Secure window shown for " + componentName);
             mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = true);
         }
@@ -785,38 +814,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Slog.v(TAG, "Secure window hidden");
             mLifecycle.updateLifecycleState((config) -> config.mSecureWindowVisible = false);
         }
-    }
-
-    /** Interface for listening for closing of sessions. */
-    interface OnClosedListener {
-        void onClosed(@NonNull ComputerControlSessionImpl session);
-    }
-
-    private Intent getLaunchIntent(String packageName, String className) {
-        if (className == null) {
-            return mOwnerContext.getPackageManager().getLaunchIntentForPackage(packageName);
-        }
-        final Intent intent = new Intent(Intent.ACTION_MAIN)
-                .addCategory(Intent.CATEGORY_LAUNCHER)
-                .setClassName(packageName, className);
-        final List<ResolveInfo> resolveInfos = mOwnerContext.getPackageManager()
-                .queryIntentActivities(intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
-        if (resolveInfos.isEmpty()) {
-            return null;
-        }
-        return intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    }
-
-    private IRemoteComputerControlInputConnection getInputConnection(int displayId) {
-        // getUserAssignedToDisplay returns the main userId, if we want to support cross
-        // profile CC interactions and typing on CC display, we need to find the right user
-        // profile here for the CC input connection
-        return mInputMethodManagerInternal.getComputerControlInputConnection(
-                mUserManagerInternal.getUserAssignedToDisplay(displayId), displayId);
-    }
-
-    private void moveAllTasks(int fromDisplayId, int toDisplayId) {
-        mActivityTaskManagerInternal.moveAllTasks(fromDisplayId, toDisplayId);
     }
 
     static final class NotificationInfo {

@@ -95,7 +95,7 @@ public class ComputerControlSessionProcessorTest {
             UserHandle.getUid(CALLING_USER_ID, 0), OWNER_PACKAGE_NAME, "tag");
     private static final ComputerControlSessionParams PARAMS =
             new ComputerControlSessionParams.Builder()
-                    .setName(ComputerControlSessionTest.class.getSimpleName())
+                    .setName(ComputerControlSessionImplTest.class.getSimpleName())
                     .setTargetPackageNames(List.of(TARGET_PACKAGE))
                     .build();
 
@@ -302,7 +302,7 @@ public class ComputerControlSessionProcessorTest {
     public void validateParams_invalidPackageNames_permissionController() {
         String packageName = PACKAGE_NAME_PERMISSION_CONTROLLER;
         ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionTest.class.getSimpleName())
+                .setName(ComputerControlSessionImplTest.class.getSimpleName())
                 .setTargetPackageNames(List.of(packageName))
                 .build();
 
@@ -320,7 +320,7 @@ public class ComputerControlSessionProcessorTest {
     public void validateParams_invalidPackageNames_packageWithoutLauncherIntent() {
         String packageName = "package.name";
         ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionTest.class.getSimpleName())
+                .setName(ComputerControlSessionImplTest.class.getSimpleName())
                 .setTargetPackageNames(List.of(packageName))
                 .build();
 
@@ -415,7 +415,7 @@ public class ComputerControlSessionProcessorTest {
         String packageName = "package.name";
         when(mPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(new Intent());
         return new ComputerControlSessionParams.Builder()
-                .setName(ComputerControlSessionTest.class.getSimpleName())
+                .setName(ComputerControlSessionImplTest.class.getSimpleName())
                 .setTargetPackageNames(List.of(packageName))
                 .build();
     }
