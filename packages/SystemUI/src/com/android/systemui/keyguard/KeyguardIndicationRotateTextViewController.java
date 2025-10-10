@@ -46,15 +46,15 @@ import java.util.Map;
  * Animates through messages to show on the keyguard bottom area on the lock screen.
  * Utilizes a {@link KeyguardIndicationTextView} for animations. This class handles the rotating
  * nature of the messages including:
- *  - ensuring a message is shown for its minimum amount of time. Minimum time is determined by
- *  {@link KeyguardIndication#getMinVisibilityMillis()}
- *  - showing the next message after a default of 3.5 seconds before animating to the next
- *  - statically showing a single message if there is only one message to show
- *  - showing certain messages immediately, assuming te current message has been shown for
- *  at least {@link KeyguardIndication#getMinVisibilityMillis()}. For example, transient and
- *  biometric messages are meant to be shown immediately.
- *  - ending animations when dozing begins, and resuming when dozing ends. Rotating messages on
- *  AoD is undesirable since it wakes up the AP too often.
+ * - ensuring a message is shown for its minimum amount of time. Minimum time is determined by
+ * {@link KeyguardIndication#getMinVisibilityMillis()}
+ * - showing the next message after a default of 3.5 seconds before animating to the next
+ * - statically showing a single message if there is only one message to show
+ * - showing certain messages immediately, assuming the current message has been shown for
+ * at least {@link KeyguardIndication#getMinVisibilityMillis()}. For example, transient and
+ * biometric messages are meant to be shown immediately.
+ * - ending animations when dozing begins, and resuming when dozing ends. Rotating messages on
+ * AoD is undesirable since it wakes up the AP too often.
  */
 public class KeyguardIndicationRotateTextViewController extends
         ViewController<KeyguardIndicationTextView> implements Dumpable {
@@ -77,7 +77,8 @@ public class KeyguardIndicationRotateTextViewController extends
     private final DelayableExecutor mExecutor;
 
     @VisibleForTesting
-    @Nullable ShowNextIndication mShowNextIndicationRunnable;
+    @Nullable
+    ShowNextIndication mShowNextIndicationRunnable;
 
     // List of indication types to show. The next indication to show is always at index 0
     private final List<Integer> mIndicationQueue = new ArrayList<>();
@@ -122,11 +123,12 @@ public class KeyguardIndicationRotateTextViewController extends
 
     /**
      * Update the indication type with the given String.
-     * @param type of indication
+     *
+     * @param type          of indication
      * @param newIndication message to associate with this indication type
-     * @param showAsap if true: shows this indication message as soon as possible. If false,
-     *                   the text associated with this type is updated and will show when its turn
-     *                   in the IndicationQueue comes around.
+     * @param showAsap      if true: shows this indication message as soon as possible. If false,
+     *                      the text associated with this type is updated and will show when its
+     *                      turn in the IndicationQueue comes around.
      */
     public void updateIndication(@IndicationType int type, KeyguardIndication newIndication,
             boolean showAsap) {
@@ -195,7 +197,7 @@ public class KeyguardIndicationRotateTextViewController extends
 
     /**
      * Stop showing the following indication type.
-     *
+     * <p>
      * If the current indication is of this type, immediately stops showing the message.
      */
     public void hideIndication(@IndicationType int type) {
@@ -418,7 +420,8 @@ public class KeyguardIndicationRotateTextViewController extends
             INDICATION_TYPE_SECURE_LOCK_DEVICE
     })
     @Retention(RetentionPolicy.SOURCE)
-    public @interface IndicationType{}
+    public @interface IndicationType {
+    }
 
     /**
      * Get human-readable string representation of the indication type.
