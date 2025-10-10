@@ -18,25 +18,14 @@ package com.android.systemui.media.dialog;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.app.KeyguardManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.AudioManager;
-import android.media.session.MediaController;
-import android.media.session.MediaSessionManager;
-import android.media.session.PlaybackState;
 import android.os.Bundle;
-import android.os.PowerExemptionManager;
 import android.testing.TestableLooper;
 import android.view.View;
 import android.widget.Button;
@@ -48,34 +37,15 @@ import androidx.core.graphics.drawable.IconCompat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
-import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast;
-import com.android.settingslib.bluetooth.LocalBluetoothManager;
-import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
-import com.android.settingslib.media.LocalMediaManager;
-import com.android.settingslib.volume.data.repository.AudioSharingRepository;
+import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.SysuiTestCase;
-import com.android.systemui.SysuiTestCaseExtKt;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastSender;
-import com.android.systemui.kosmos.Kosmos;
-import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
-import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
-import com.android.systemui.settings.UserTracker;
-import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
-import com.android.systemui.util.concurrency.FakeExecutor;
-import com.android.systemui.util.kotlin.JavaAdapter;
-import com.android.systemui.util.time.FakeSystemClock;
-import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
-import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorKosmosKt;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -84,108 +54,36 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
 
     private static final String TEST_PACKAGE = "test_package";
 
-    private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
-
     // Mock
     private MediaOutputAdapter mMediaOutputAdapter = mock(MediaOutputAdapter.class);
-    private MediaController mMediaController = mock(MediaController.class);
-    private PlaybackState mPlaybackState = mock(PlaybackState.class);
-    private MediaSessionManager mMediaSessionManager = mock(MediaSessionManager.class);
-    private LocalBluetoothManager mLocalBluetoothManager = mock(LocalBluetoothManager.class);
-    private final LocalBluetoothProfileManager mLocalBluetoothProfileManager = mock(
-            LocalBluetoothProfileManager.class);
-    private final LocalBluetoothLeBroadcast mLocalBluetoothLeBroadcast = mock(
-            LocalBluetoothLeBroadcast.class);
-    private ActivityStarter mStarter = mock(ActivityStarter.class);
     private BroadcastSender mBroadcastSender = mock(BroadcastSender.class);
-    private final CommonNotifCollection mNotifCollection = mock(CommonNotifCollection.class);
-    private NearbyMediaDevicesManager mNearbyMediaDevicesManager = mock(
-            NearbyMediaDevicesManager.class);
     private final DialogTransitionAnimator mDialogTransitionAnimator = mock(
             DialogTransitionAnimator.class);
-    private final AudioManager mAudioManager = mock(AudioManager.class);
-    private PowerExemptionManager mPowerExemptionManager = mock(PowerExemptionManager.class);
-    private KeyguardManager mKeyguardManager = mock(KeyguardManager.class);
-    private UserTracker mUserTracker = mock(UserTracker.class);
-    private JavaAdapter mJavaAdapter = mock(JavaAdapter.class);
-    private AudioSharingRepository mAudioSharingRepository = mock(AudioSharingRepository.class);
+    private final UiEventLogger mUiEventLogger = mock(UiEventLogger.class);
 
-    private List<MediaController> mMediaControllers = new ArrayList<>();
-    private MediaOutputBaseDialogImpl mMediaOutputBaseDialogImpl;
-    private MediaSwitchingController mMediaSwitchingController;
-    private int mHeaderIconRes;
-    private IconCompat mIconCompat;
-    private CharSequence mHeaderTitle;
-    private CharSequence mHeaderSubtitle;
+    private MediaOutputDialog mMediaOutputDialog;
+    private MediaSwitchingController mMediaSwitchingController = mock(
+            MediaSwitchingController.class);
 
     @Before
     public void setUp() {
-        when(mLocalBluetoothManager.getProfileManager()).thenReturn(mLocalBluetoothProfileManager);
-        final CachedBluetoothDeviceManager cachedBluetoothDeviceManager = mock(
-                CachedBluetoothDeviceManager.class);
-        when(mLocalBluetoothManager.getCachedDeviceManager()).thenReturn(
-                cachedBluetoothDeviceManager);
-        when(cachedBluetoothDeviceManager.findDevice(any())).thenReturn(null);
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(null);
-        when(mMediaController.getPlaybackState()).thenReturn(mPlaybackState);
-        when(mPlaybackState.getState()).thenReturn(PlaybackState.STATE_NONE);
-        when(mMediaController.getPackageName()).thenReturn(TEST_PACKAGE);
-        mMediaControllers.add(mMediaController);
-        when(mMediaSessionManager.getActiveSessions(any())).thenReturn(mMediaControllers);
-        createMediaSwitchingController(TEST_PACKAGE);
-
-        // Using a fake package will cause routing operations to fail, so we intercept
-        // scanning-related operations.
-        mMediaSwitchingController.mLocalMediaManager = mock(LocalMediaManager.class);
-        doNothing().when(mMediaSwitchingController.mLocalMediaManager).startScan();
-        doNothing().when(mMediaSwitchingController.mLocalMediaManager).stopScan();
-
-        mMediaOutputBaseDialogImpl =
-                new MediaOutputBaseDialogImpl(
-                        mContext, mBroadcastSender, mMediaSwitchingController);
-        mMediaOutputBaseDialogImpl.onCreate(new Bundle());
-    }
-
-    private void createMediaSwitchingController(String testPackage) {
-        VolumePanelGlobalStateInteractor volumePanelGlobalStateInteractor =
-                VolumePanelGlobalStateInteractorKosmosKt.getVolumePanelGlobalStateInteractor(
-                        mKosmos);
-
-        FakeSystemClock fakeSystemClock = new FakeSystemClock();
-        mMediaSwitchingController =
-                new MediaSwitchingController(
-                        mContext,
-                        testPackage,
-                        mContext.getUser(),
-                        /* token= */ null,
-                        /* mediaSwitchingType= */ null,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyguardManager,
-                        fakeSystemClock,
-                        new FakeExecutor(fakeSystemClock),
-                        volumePanelGlobalStateInteractor,
-                        mUserTracker,
-                        mJavaAdapter,
-                        mAudioSharingRepository);
+        MediaOutputColorScheme mockedColorScheme = mock(MediaOutputColorScheme.class);
+        when(mMediaSwitchingController.getColorScheme()).thenReturn(mockedColorScheme);
+        when(mMediaSwitchingController.getStopButtonStringRes()).thenReturn(
+                R.string.media_output_dialog_button_stop_casting);
+        mMediaOutputDialog = createDialog();
+        mMediaOutputDialog.mAdapter = mMediaOutputAdapter;
+        mMediaOutputDialog.onCreate(new Bundle());
     }
 
     @Test
     public void onCreate_noAppOpenIntent_metadataSectionNonClickable() {
-        createMediaSwitchingController(null);
+        when(mMediaSwitchingController.getAppLaunchIntent()).thenReturn(null);
 
-        mMediaOutputBaseDialogImpl =
-                new MediaOutputBaseDialogImpl(
-                        mContext, mBroadcastSender, mMediaSwitchingController);
-        mMediaOutputBaseDialogImpl.onCreate(new Bundle());
+        mMediaOutputDialog = createDialog();
+        mMediaOutputDialog.onCreate(new Bundle());
         final LinearLayout mediaMetadataSectionLayout =
-                mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
+                mMediaOutputDialog.mDialogView.requireViewById(
                         R.id.media_metadata_section);
 
         assertThat(mediaMetadataSectionLayout.isClickable()).isFalse();
@@ -193,40 +91,24 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
 
     @Test
     public void onCreate_appOpenIntentAvailable_metadataSectionClickable() {
-        final PackageManager packageManager = mock(PackageManager.class);
-        mContext.setMockPackageManager(packageManager);
-        Intent intent = new Intent(TEST_PACKAGE);
-        doReturn(intent).when(packageManager).getLaunchIntentForPackage(TEST_PACKAGE);
-        createMediaSwitchingController(TEST_PACKAGE);
+        when(mMediaSwitchingController.getAppLaunchIntent()).thenReturn(new Intent(TEST_PACKAGE));
 
-        mMediaOutputBaseDialogImpl =
-                new MediaOutputBaseDialogImpl(
-                        mContext, mBroadcastSender, mMediaSwitchingController);
-        mMediaOutputBaseDialogImpl.onCreate(new Bundle());
+        mMediaOutputDialog = createDialog();
+        mMediaOutputDialog.onCreate(new Bundle());
         final LinearLayout mediaMetadataSectionLayout =
-                mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
+                mMediaOutputDialog.mDialogView.requireViewById(
                         R.id.media_metadata_section);
 
         assertThat(mediaMetadataSectionLayout.isClickable()).isTrue();
     }
 
     @Test
-    public void refresh_withIconRes_iconIsVisible() {
-        mHeaderIconRes = 1;
-        mMediaOutputBaseDialogImpl.refresh();
-        final ImageView view = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
-                R.id.header_icon);
-
-        assertThat(view.getVisibility()).isEqualTo(View.VISIBLE);
-    }
-
-    @Test
     public void refresh_withIconCompat_iconIsVisible() {
-        mIconCompat = IconCompat.createWithBitmap(
-                Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888));
+        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(IconCompat.createWithBitmap(
+                Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)));
 
-        mMediaOutputBaseDialogImpl.refresh();
-        final ImageView view = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
+        mMediaOutputDialog.refresh();
+        final ImageView view = mMediaOutputDialog.mDialogView.requireViewById(
                 R.id.header_icon);
 
         assertThat(view.getVisibility()).isEqualTo(View.VISIBLE);
@@ -234,10 +116,10 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
 
     @Test
     public void refresh_noIcon_iconLayoutNotVisible() {
-        mHeaderIconRes = 0;
-        mIconCompat = null;
-        mMediaOutputBaseDialogImpl.refresh();
-        final ImageView view = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
+        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(null);
+
+        mMediaOutputDialog.refresh();
+        final ImageView view = mMediaOutputDialog.mDialogView.requireViewById(
                 R.id.header_icon);
 
         assertThat(view.getVisibility()).isEqualTo(View.GONE);
@@ -245,32 +127,34 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
 
     @Test
     public void refresh_checkTitle() {
-        mHeaderTitle = "test_string";
+        String headerTitle = "test_string";
+        when(mMediaSwitchingController.getHeaderTitle()).thenReturn(headerTitle);
 
-        mMediaOutputBaseDialogImpl.refresh();
-        final TextView titleView = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
+        mMediaOutputDialog.refresh();
+        final TextView titleView = mMediaOutputDialog.mDialogView.requireViewById(
                 R.id.header_title);
 
         assertThat(titleView.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(titleView.getText()).isEqualTo(mHeaderTitle);
+        assertThat(titleView.getText().toString()).isEqualTo(headerTitle);
     }
 
     @Test
     public void refresh_withSubtitle_checkSubtitle() {
-        mHeaderSubtitle = "test_string";
+        String headerSubtitle = "test_string";
+        when(mMediaSwitchingController.getHeaderSubTitle()).thenReturn(headerSubtitle);
 
-        mMediaOutputBaseDialogImpl.refresh();
-        final TextView subtitleView = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
+        mMediaOutputDialog.refresh();
+        final TextView subtitleView = mMediaOutputDialog.mDialogView.requireViewById(
                 R.id.header_subtitle);
 
         assertThat(subtitleView.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(subtitleView.getText()).isEqualTo(mHeaderSubtitle);
+        assertThat(subtitleView.getText().toString()).isEqualTo(headerSubtitle);
     }
 
     @Test
     public void refresh_noSubtitle_checkSubtitle() {
-        mMediaOutputBaseDialogImpl.refresh();
-        final TextView subtitleView = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(
+        mMediaOutputDialog.refresh();
+        final TextView subtitleView = mMediaOutputDialog.mDialogView.requireViewById(
                 R.id.header_subtitle);
 
         assertThat(subtitleView.getVisibility()).isEqualTo(View.GONE);
@@ -279,7 +163,7 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     @Test
     public void refresh_inDragging_notUpdateAdapter() {
         when(mMediaOutputAdapter.isDragging()).thenReturn(true);
-        mMediaOutputBaseDialogImpl.refresh();
+        mMediaOutputDialog.refresh();
 
         verify(mMediaOutputAdapter, never()).notifyDataSetChanged();
     }
@@ -287,7 +171,7 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     @Test
     public void refresh_inDragging_directSetRefreshingToFalse() {
         when(mMediaOutputAdapter.isDragging()).thenReturn(true);
-        mMediaOutputBaseDialogImpl.refresh();
+        mMediaOutputDialog.refresh();
 
         assertThat(mMediaSwitchingController.isRefreshing()).isFalse();
     }
@@ -296,75 +180,52 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     public void refresh_notInDragging_verifyUpdateAdapter() {
         when(mMediaOutputAdapter.getCurrentActivePosition()).thenReturn(-1);
         when(mMediaOutputAdapter.isDragging()).thenReturn(false);
-        mMediaOutputBaseDialogImpl.refresh();
+        mMediaOutputDialog.refresh();
 
         verify(mMediaOutputAdapter).updateItems();
     }
 
     @Test
     public void dismissDialog_closesDialogByBroadcastSender() {
-        mMediaOutputBaseDialogImpl.dismissDialog();
+        mMediaOutputDialog.dismissDialog();
 
         verify(mBroadcastSender).closeSystemDialogs();
     }
 
     @Test
     public void refresh_checkStopText() {
-        MediaSwitchingController mockMediaSwitchingController =
-                mock(MediaSwitchingController.class);
-        mMediaOutputBaseDialogImpl =
-                new MediaOutputBaseDialogImpl(
-                        mContext, mBroadcastSender, mockMediaSwitchingController);
-        mMediaOutputBaseDialogImpl.onCreate(new Bundle());
-
         int stopResId = R.string.media_output_dialog_button_stop_casting;
-        when(mockMediaSwitchingController.getStopButtonStringRes()).thenReturn(stopResId);
-        when(mockMediaSwitchingController.getColorScheme()).thenReturn(
-                mock(MediaOutputColorScheme.class));
-        mMediaOutputBaseDialogImpl.refresh();
-        final Button stop = mMediaOutputBaseDialogImpl.mDialogView.requireViewById(R.id.stop);
+        when(mMediaSwitchingController.getStopButtonStringRes()).thenReturn(stopResId);
+        mMediaOutputDialog.refresh();
+        final Button stop = mMediaOutputDialog.mDialogView.requireViewById(R.id.stop);
 
         assertThat(stop.getText().toString()).isEqualTo(mContext.getString(stopResId));
     }
 
-    class MediaOutputBaseDialogImpl extends MediaOutputBaseDialog {
+    @Test
+    public void onStopButtonClick_releaseSession() {
+        when(mMediaSwitchingController.hasStopButton()).thenReturn(true);
+        mMediaOutputDialog.onStopButtonClick();
 
-        MediaOutputBaseDialogImpl(
-                Context context,
-                BroadcastSender broadcastSender,
-                MediaSwitchingController mediaSwitchingController) {
-            super(
-                    context,
-                    broadcastSender,
-                    mediaSwitchingController, /* includePlaybackAndAppMetadata */
-                    true);
+        verify(mMediaSwitchingController).releaseSession();
+        verify(mDialogTransitionAnimator).disableAllCurrentDialogsExitAnimations();
+    }
 
-            mAdapter = mMediaOutputAdapter;
-        }
+    @Test
+    public void onCreate_ShouldLogVisibility() {
+        verify(mUiEventLogger)
+                .log(MediaOutputDialog.MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
+    }
 
-        @Override
-        IconCompat getAppSourceIcon() {
-            return null;
-        }
-
-        @Override
-        int getHeaderIconRes() {
-            return mHeaderIconRes;
-        }
-
-        @Override
-        IconCompat getHeaderIcon() {
-            return mIconCompat;
-        }
-
-        @Override
-        CharSequence getHeaderText() {
-            return mHeaderTitle;
-        }
-
-        @Override
-        CharSequence getHeaderSubtitle() {
-            return mHeaderSubtitle;
-        }
+    private MediaOutputDialog createDialog() {
+        return new MediaOutputDialog(
+                mContext,
+                false,
+                mBroadcastSender,
+                mMediaSwitchingController,
+                mDialogTransitionAnimator,
+                mUiEventLogger,
+                true,
+                null);
     }
 }
