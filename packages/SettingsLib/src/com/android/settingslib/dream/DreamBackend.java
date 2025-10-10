@@ -439,12 +439,12 @@ public class DreamBackend {
     }
 
     /** Gets all complications which have been enabled by the user. */
-    public Set<Integer> getEnabledComplications() {
+    public Set<Integer> getEnabledComplications(UserHandle user) {
         final Set<Integer> enabledComplications =
-                getComplicationsEnabled()
+                getComplicationsEnabled(user)
                         ? new ArraySet<>(mSupportedComplications) : new ArraySet<>();
 
-        if (!getHomeControlsEnabled()) {
+        if (!getHomeControlsEnabled(user)) {
             enabledComplications.remove(COMPLICATION_TYPE_HOME_CONTROLS);
         } else if (mSupportedComplications.contains(COMPLICATION_TYPE_HOME_CONTROLS)) {
             // Add home control type to list of enabled complications, even if other complications
@@ -469,24 +469,27 @@ public class DreamBackend {
     }
 
     /** Gets whether home controls button is enabled on the dream */
-    private boolean getHomeControlsEnabled() {
-        return Settings.Secure.getInt(
+    private boolean getHomeControlsEnabled(UserHandle user) {
+        final int userId = user.getIdentifier();
+        return Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.LOCKSCREEN_SHOW_CONTROLS,
-                LOCKSCREEN_SHOW_CONTROLS_DEFAULT) == 1
-                && Settings.Secure.getInt(
+                LOCKSCREEN_SHOW_CONTROLS_DEFAULT,
+                userId) == 1
+                && Settings.Secure.getIntForUser(
                         mContext.getContentResolver(),
                         Settings.Secure.SCREENSAVER_HOME_CONTROLS_ENABLED,
-                        SCREENSAVER_HOME_CONTROLS_ENABLED_DEFAULT) == 1;
+                        SCREENSAVER_HOME_CONTROLS_ENABLED_DEFAULT,
+                        userId) == 1;
     }
 
     /**
      * Gets whether complications are enabled on this device
      */
-    public boolean getComplicationsEnabled() {
-        return Settings.Secure.getInt(
+    public boolean getComplicationsEnabled(UserHandle user) {
+        return Settings.Secure.getIntForUser(
                 mContext.getContentResolver(),
-                Settings.Secure.SCREENSAVER_COMPLICATIONS_ENABLED, 1) == 1;
+                Settings.Secure.SCREENSAVER_COMPLICATIONS_ENABLED, 1, user.getIdentifier()) == 1;
     }
 
     /** Set whether to restrict showing dreams to only when charging wirelessly. */
@@ -656,8 +659,8 @@ public class DreamBackend {
                 isEnabled(), /*enabled*/
                 getActiveDreamComponentForStatsd(), /*dream_component*/
                 getWhenToDreamForStatsd(), /*when_to_dream*/
-                getComplicationsEnabled(), /*show_additional_info*/
-                getHomeControlsEnabled(), /*show_home_controls*/
+                getComplicationsEnabled(UserHandle.CURRENT), /*show_additional_info*/
+                getHomeControlsEnabled(UserHandle.CURRENT), /*show_home_controls*/
                 dreamSettingType /*dream_setting_type*/
         );
     }

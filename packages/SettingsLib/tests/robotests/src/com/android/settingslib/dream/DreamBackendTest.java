@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 
@@ -101,8 +102,8 @@ public final class DreamBackendTest {
     @Test
     public void testComplicationsEnabledByDefault() {
         setControlsEnabledOnLockscreen(true);
-        assertThat(mBackend.getComplicationsEnabled()).isTrue();
-        assertThat(mBackend.getEnabledComplications()).containsExactlyElementsIn(
+        assertThat(mBackend.getComplicationsEnabled(UserHandle.CURRENT)).isTrue();
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT)).containsExactlyElementsIn(
                 SUPPORTED_DREAM_COMPLICATIONS_LIST);
     }
 
@@ -110,18 +111,18 @@ public final class DreamBackendTest {
     public void testEnableComplicationExplicitly() {
         setControlsEnabledOnLockscreen(true);
         mBackend.setComplicationsEnabled(true);
-        assertThat(mBackend.getEnabledComplications()).containsExactlyElementsIn(
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT)).containsExactlyElementsIn(
                 SUPPORTED_DREAM_COMPLICATIONS_LIST);
-        assertThat(mBackend.getComplicationsEnabled()).isTrue();
+        assertThat(mBackend.getComplicationsEnabled(UserHandle.CURRENT)).isTrue();
     }
 
     @Test
     public void testDisableComplications() {
         setControlsEnabledOnLockscreen(true);
         mBackend.setComplicationsEnabled(false);
-        assertThat(mBackend.getEnabledComplications())
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT))
                 .containsExactly(COMPLICATION_TYPE_HOME_CONTROLS);
-        assertThat(mBackend.getComplicationsEnabled()).isFalse();
+        assertThat(mBackend.getComplicationsEnabled(UserHandle.CURRENT)).isFalse();
     }
 
     @Test
@@ -151,7 +152,7 @@ public final class DreamBackendTest {
         // Home controls should not be enabled, only date and time.
         final List<Integer> enabledComplications =
                 Arrays.asList(COMPLICATION_TYPE_DATE, COMPLICATION_TYPE_TIME);
-        assertThat(mBackend.getEnabledComplications())
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT))
                 .containsExactlyElementsIn(enabledComplications);
     }
 
@@ -160,7 +161,7 @@ public final class DreamBackendTest {
         setControlsEnabledOnLockscreen(true);
         mBackend.setComplicationsEnabled(false);
         mBackend.setHomeControlsEnabled(false);
-        assertThat(mBackend.getEnabledComplications()).isEmpty();
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT)).isEmpty();
     }
 
     @Test
@@ -170,7 +171,7 @@ public final class DreamBackendTest {
         mBackend.setHomeControlsEnabled(true);
         final List<Integer> enabledComplications =
                 Collections.singletonList(COMPLICATION_TYPE_HOME_CONTROLS);
-        assertThat(mBackend.getEnabledComplications())
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT))
                 .containsExactlyElementsIn(enabledComplications);
     }
 
@@ -185,7 +186,7 @@ public final class DreamBackendTest {
                         COMPLICATION_TYPE_DATE,
                         COMPLICATION_TYPE_TIME
                 );
-        assertThat(mBackend.getEnabledComplications())
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT))
                 .containsExactlyElementsIn(enabledComplications);
     }
 
@@ -200,7 +201,7 @@ public final class DreamBackendTest {
                         COMPLICATION_TYPE_DATE,
                         COMPLICATION_TYPE_TIME
                 );
-        assertThat(mBackend.getEnabledComplications())
+        assertThat(mBackend.getEnabledComplications(UserHandle.CURRENT))
                 .containsExactlyElementsIn(enabledComplications);
     }
 
@@ -295,9 +296,9 @@ public final class DreamBackendTest {
     }
 
     private void setControlsEnabledOnLockscreen(boolean enabled) {
-        Settings.Secure.putInt(
+        Settings.Secure.putIntForUser(
                 mContext.getContentResolver(),
                 Settings.Secure.LOCKSCREEN_SHOW_CONTROLS,
-                enabled ? 1 : 0);
+                enabled ? 1 : 0, UserHandle.USER_CURRENT);
     }
 }
