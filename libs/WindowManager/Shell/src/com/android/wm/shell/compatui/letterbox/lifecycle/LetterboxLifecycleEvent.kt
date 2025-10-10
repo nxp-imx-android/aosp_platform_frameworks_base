@@ -43,6 +43,7 @@ data class LetterboxLifecycleEvent(
     val letterboxBounds: Rect? = null,
     val containerToken: WindowContainerToken? = null,
     val taskLeash: SurfaceControl? = null,
+    val activityLeash: SurfaceControl? = null,
     val isBubble: Boolean = false,
     val isTranslucent: Boolean = false,
     val supportsInput: Boolean = true,

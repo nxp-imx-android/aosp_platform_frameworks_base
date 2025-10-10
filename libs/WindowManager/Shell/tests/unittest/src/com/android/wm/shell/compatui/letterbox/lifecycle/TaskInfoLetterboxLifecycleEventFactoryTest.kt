@@ -202,6 +202,35 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_APP_COMPAT_REFACTORING,
+        Flags.FLAG_APP_COMPAT_REFACTORING_USE_ACTIVITY_LEASH_FOR_LETTERBOXING,
+    )
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
+    fun `ActivityLeash from Change to Event`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                val inputToken = mock<WindowContainerToken>()
+                val inputTopCompatActivityLeash = mock<SurfaceControl>()
+                inputChange {
+                    topCompatActivityLeash { inputTopCompatActivityLeash }
+                    runningTaskInfo { ti ->
+                        ti.taskId = 10
+                        ti.token = inputToken
+                    }
+                    endAbsBounds = Rect(0, 0, 500, 1000)
+                    endRelOffset = Point(100, 200)
+                }
+                validateCanHandle { canHandle -> assertTrue(canHandle) }
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertEquals(inputTopCompatActivityLeash, event.activityLeash)
+                }
+            }
+        }
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `supportsInput comes from LetterboxDependencyHelper`() {

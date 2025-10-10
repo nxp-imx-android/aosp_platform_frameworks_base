@@ -17,6 +17,7 @@
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.graphics.Rect
+import android.view.SurfaceControl
 import android.window.TransitionInfo.Change
 import com.android.window.flags.Flags
 import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
@@ -50,6 +51,10 @@ class TaskInfoLetterboxLifecycleEventFactory(
                     Rect(absBounds).apply { offset(-taskBoundsAbs.left, -taskBoundsAbs.top) }
                 }
             val shouldSupportInput = letterboxDependenciesHelper.shouldSupportInputSurface(change)
+            var activityLeash: SurfaceControl? = null
+            if (Flags.appCompatRefactoringUseActivityLeashForLetterboxing()) {
+                activityLeash = change.topCompatActivityLeash
+            }
             if (Flags.appCompatRefactoringRoundedCorners()) {
                 // Sometimes the [TransitionObserver] is notified before than the
                 // [TaskAppearedListener] and the related information (e.g. [Configuration])
@@ -85,6 +90,7 @@ class TaskInfoLetterboxLifecycleEventFactory(
                         letterboxBounds = letterboxBounds,
                         containerToken = item.containerToken,
                         taskLeash = item.containerLeash,
+                        activityLeash = activityLeash,
                         isBubble = ti.isAppBubble,
                         isTranslucent = change.isTranslucent(),
                         supportsInput = shouldSupportInput,
@@ -99,6 +105,7 @@ class TaskInfoLetterboxLifecycleEventFactory(
                     letterboxBounds = letterboxBounds,
                     containerToken = ti.token,
                     taskLeash = change.leash,
+                    activityLeash = activityLeash,
                     isBubble = ti.isAppBubble,
                     isTranslucent = change.isTranslucent(),
                     supportsInput = shouldSupportInput,
