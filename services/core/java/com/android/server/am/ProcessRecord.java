@@ -1099,12 +1099,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return mWindowProcessController.getPerceptibleTaskStoppedTimeMillis();
     }
 
-
-    @Override
-    public boolean isReceivingBroadcast(int[] outSchedGroup) {
-        return mService.isReceivingBroadcastLocked(this, outSchedGroup);
-    }
-
     @Override
     public boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId) {
         return mService.mOomAdjuster.isChangeEnabled(cachedCompatChangeId, info,

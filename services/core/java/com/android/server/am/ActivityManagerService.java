@@ -189,7 +189,6 @@ import static com.android.server.am.psc.Constants.PERSISTENT_PROC_ADJ;
 import static com.android.server.am.psc.Constants.PERSISTENT_SERVICE_ADJ;
 import static com.android.server.am.psc.Constants.PREVIOUS_APP_ADJ;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_TOP_APP;
-import static com.android.server.am.psc.Constants.SCHED_GROUP_UNDEFINED;
 import static com.android.server.am.psc.Constants.SERVICE_ADJ;
 import static com.android.server.am.psc.Constants.SERVICE_B_ADJ;
 import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
@@ -482,7 +481,6 @@ import com.android.server.ThreadPriorityBooster;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.LowMemDetector.MemFactor;
-import com.android.server.am.MemoryUsageStats;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ProcessListInternal.ProcessChangeItem;
 import com.android.server.am.psc.ProcessRecordInternal;
@@ -15132,12 +15130,6 @@ public class ActivityManagerService extends IActivityManager.Stub
     // =========================================================
     // LIFETIME MANAGEMENT
     // =========================================================
-
-    boolean isReceivingBroadcastLocked(ProcessRecord app, int[] outSchedGroup) {
-        final int res = mBroadcastQueue.getPreferredSchedulingGroupLocked(app);
-        outSchedGroup[0] = res;
-        return res != SCHED_GROUP_UNDEFINED;
-    }
 
     Association startAssociationLocked(int sourceUid, String sourceProcess, int sourceState,
             int targetUid, long targetVersionCode, ComponentName targetComponent,
