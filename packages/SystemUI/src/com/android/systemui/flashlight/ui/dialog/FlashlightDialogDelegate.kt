@@ -141,6 +141,7 @@ constructor(
                         Text(stringResource(R.string.flashlight_dialog_turn_off))
                     }
                 },
+                contentTopPadding = 12.dp,
                 contentBottomPadding = 8.dp,
             )
         }
