@@ -169,15 +169,14 @@ constructor(
                     ambientCueInteractor.isTaskBarVisible,
                     ambientCueInteractor.recentsButtonPosition,
                 ) { isGestureNav, isTaskBarVisible, recentsButtonPosition ->
-                    if (isGestureNav && !isTaskBarVisible) {
-                        PillStyleViewModel.NavBarPillStyle
+                    if (isGestureNav) {
+                        if (isTaskBarVisible) {
+                            PillStyleViewModel.NoPillStyle
+                        } else {
+                            PillStyleViewModel.NavBarPillStyle
+                        }
                     } else {
-                        val position =
-                            if (isGestureNav) {
-                                null
-                            } else {
-                                recentsButtonPosition
-                            }
+                        val position = recentsButtonPosition
                         PillStyleViewModel.ShortPillStyle(position?.toComposeRect())
                     }
                 },

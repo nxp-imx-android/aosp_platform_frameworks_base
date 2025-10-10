@@ -216,15 +216,14 @@ class AmbientCueViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun pillStyle_gestureNavAndTaskBar_shortPillEndAligned() =
+    fun pillStyle_gestureNavAndTaskBar_notShowPill() =
         kosmos.runTest {
             viewModel.activateIn(kosmos.testScope)
             ambientCueRepository.fake.setIsGestureNav(true)
             ambientCueRepository.fake.setTaskBarVisible(true)
 
             runCurrent()
-            assertThat(viewModel.pillStyle)
-                .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
+            assertThat(viewModel.pillStyle).isInstanceOf(PillStyleViewModel.NoPillStyle::class.java)
         }
 
     @Test
