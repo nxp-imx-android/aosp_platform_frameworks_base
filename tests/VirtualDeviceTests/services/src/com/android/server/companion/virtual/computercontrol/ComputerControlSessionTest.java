@@ -278,6 +278,7 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
     public void createSessionWithoutDisplaySurface_appliesCorrectParams() throws Exception {
         createComputerControlSession(mDefaultParams);
 
