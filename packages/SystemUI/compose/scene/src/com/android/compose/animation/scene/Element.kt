@@ -388,6 +388,7 @@ internal class ElementNode(
         measurable: Measurable,
         constraints: Constraints,
     ): MeasureResult {
+        syncAncestorElementState()
         val elementState = elementState(layoutImpl, element, currentTransitionStates)
         if (elementState == null) {
             // If the element is not part of any transition, place it normally in its idle scene.
@@ -407,7 +408,6 @@ internal class ElementNode(
                 doNotPlace(measurable, constraints)
             }
         }
-        syncAncestorElementState()
 
         val transition = elementState as? TransitionState.Transition
 

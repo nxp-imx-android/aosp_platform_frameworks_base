@@ -16,12 +16,17 @@
 
 package com.android.compose.animation.scene.transformation
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutStateForTests
+import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.SceneTransitionLayoutImpl
@@ -37,6 +42,7 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.test.setContentAndCreateMainScope
 import com.android.compose.test.transition
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.junit.Rule
 import org.junit.Test
@@ -45,6 +51,85 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NestedSceneTransitionLayoutTest {
     @get:Rule val rule = createComposeRule()
+
+    // Parent scenes
+    private val parentSceneA = SceneKey("ParentA")
+    private val parentSceneB = SceneKey("ParentB")
+
+    // Nested scenes
+    private val nestedSceneC = SceneKey("NestedC")
+    private val nestedSceneD = SceneKey("NestedD")
+
+    private val testElement = ElementKey("TestElement")
+
+    @Test
+    // Regression test for b/442640840
+    fun syncAncestorState_removesState_andDoesNotCrash() {
+        lateinit var parentState: MutableSceneTransitionLayoutState
+        lateinit var nestedState: MutableSceneTransitionLayoutState
+        lateinit var coroutineScope: CoroutineScope
+
+        rule.setContent {
+            parentState =
+                rememberMutableSceneTransitionLayoutState(
+                    initialScene = parentSceneA,
+                    transitions =
+                        transitions {
+                            from(parentSceneA, to = parentSceneB) {
+                                spec = tween(durationMillis = 300)
+
+                                // Transformation only applies to the element in ParentB.
+                                // This ensures `isElementAffectedByTransition` is true.
+                                fade(testElement and inContent(parentSceneB))
+                            }
+                        },
+                )
+
+            nestedState =
+                rememberMutableSceneTransitionLayoutState(
+                    initialScene = nestedSceneC,
+                    transitions =
+                        transitions {
+                            from(nestedSceneC, to = nestedSceneD) {
+                                spec = tween(durationMillis = 100)
+                            }
+                        },
+                )
+            coroutineScope = rememberCoroutineScope()
+
+            SceneTransitionLayout(state = parentState) {
+                scene(parentSceneA) {
+                    // The element needs to be in parentSceneA but no transformation is defined
+                    // for this element in this scene.
+                    Box(Modifier.element(testElement))
+                }
+
+                scene(parentSceneB) {
+                    NestedSceneTransitionLayout(
+                        state = nestedState,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        // The nested layout starts with the element present...
+                        scene(nestedSceneC) { Box(Modifier.element(testElement)) }
+                        // ... and will transition to a scene where it is absent.
+                        scene(nestedSceneD) {}
+                    }
+                }
+            }
+        }
+
+        // Trigger both transitions to create the race condition.
+        // In previous code versions the parent transition would be selected and while it is still
+        // running the nestedTransitions stops. This triggers `syncAncestorElementState()` to remove
+        // the testElement from `stateByContent`. This was causing a crash in
+        // `getTransformationContentKey` because the parent transition is now missing a state.
+        rule.runOnIdle {
+            parentState.setTargetScene(parentSceneB, coroutineScope)
+            nestedState.setTargetScene(nestedSceneD, coroutineScope)
+        }
+
+        rule.waitForIdle()
+    }
 
     @Test
     fun nestedStls_testZIndex() {
