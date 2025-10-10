@@ -91,6 +91,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.SystemService;
 import com.android.server.ondeviceintelligence.callbacks.ListenableDownloadCallback;
+import com.android.server.ondeviceintelligence.callbacks.ListenableStreamingResponseCallback;
 import com.android.server.ondeviceintelligence.executors.InferenceServiceExecutor;
 import com.android.server.ondeviceintelligence.executors.IntelligenceServiceExecutor;
 
@@ -694,11 +695,15 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                         request, requestType,
                                         wrapCancellationFuture(cancellationSignalFuture),
                                         wrapProcessingFuture(processingSignalFuture),
-                                        wrapWithValidation(streamingCallback,
-                                                resourceClosingExecutor, future,
-                                                mInferenceInfoStore, shouldAddInferenceInfo));
-                                return future.orTimeout(getIdleTimeoutMs(),
-                                        TimeUnit.MILLISECONDS);
+                                        new ListenableStreamingResponseCallback(
+                                                wrapWithValidation(streamingCallback,
+                                                        resourceClosingExecutor, future,
+                                                        mInferenceInfoStore,
+                                                        shouldAddInferenceInfo),
+                                                mMainHandler, future, getIdleTimeoutMs()));
+                                return future; // this future has no timeout because, actual
+                                // streaming might take long, we fail early if there is no progress
+                                // callbacks
                             });
                     if (result != null) {
                         result.whenCompleteAsync((c, e) -> BundleUtil.tryCloseResource(request),

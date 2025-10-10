@@ -648,7 +648,7 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
             @Override
             public void onPartialResult(@NonNull Bundle partialResult) {
                 try {
-                    callback.onNewContent(partialResult);
+                    callback.onPartialResult(partialResult);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Error sending result: " + e);
                 }
