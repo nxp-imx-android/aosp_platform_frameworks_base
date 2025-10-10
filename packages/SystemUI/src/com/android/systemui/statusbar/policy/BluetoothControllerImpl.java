@@ -272,12 +272,17 @@ public class BluetoothControllerImpl implements BluetoothController, BluetoothCa
     }
 
     private void updateConnected() {
+        mLogger.logUpdatingConnected();
         mBluetoothRepository.fetchConnectionStatusInBackground(
                 getDevices(), this::onConnectionStatusFetched);
     }
 
     // Careful! This may be invoked in the main thread.
     private void onConnectionStatusFetched(ConnectionStatusModel status) {
+        mLogger.logConnectionStatus(
+                status.getConnectedDevices(),
+                status.getMaxConnectionState()
+        );
         List<CachedBluetoothDevice> newList = status.getConnectedDevices();
         int state = status.getMaxConnectionState();
         synchronized (mConnectedDevices) {
@@ -292,6 +297,7 @@ public class BluetoothControllerImpl implements BluetoothController, BluetoothCa
     }
 
     private void updateActive() {
+        mLogger.logUpdatingActive();
         boolean isActive = false;
 
         for (CachedBluetoothDevice device : getDevices()) {
