@@ -114,11 +114,12 @@ public class BubbleContainerManager {
      * @param pendingIntent pending intent to launch an activity.
      * @param collapsed initial Bubble state.
      */
-    public void launchInBubble(IBinder token, PendingIntent pendingIntent, boolean collapsed) {
+    public void createPendingIntentBubble(IBinder token, PendingIntent pendingIntent,
+            boolean collapsed) {
         try {
-            mControllerInterface.launchInBubble(token, pendingIntent, collapsed);
+            mControllerInterface.createPendingIntentBubble(token, pendingIntent, collapsed);
         } catch (RemoteException e) {
-            Log.e(TAG, "Remote exception launching in a Bubble", new RuntimeException(e));
+            Log.e(TAG, "Remote exception creating pending intent Bubble", new RuntimeException(e));
         }
     }
 
