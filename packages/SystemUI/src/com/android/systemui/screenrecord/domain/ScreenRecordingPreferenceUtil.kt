@@ -40,7 +40,7 @@ class ScreenRecordingPreferenceUtil(private val context: Context) {
         }
     }
 
-    fun restoreShowTapsSetting() {
+    private fun restoreShowTapsSetting() {
         setShowTaps(sharedPreference().getBoolean(STORED_SHOW_TAPS_VALUE, false))
         sharedPreference().edit { putBoolean(UPDATE_SHOW_TAPS, false) }
     }
