@@ -24,6 +24,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.SyncTransactionQueue
+import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIComponentState
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUIRepository
@@ -48,6 +49,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
     lateinit var compatUIRepository: CompatUIRepository
     lateinit var compatUIHandler: DefaultCompatUIHandler
     lateinit var compatUIState: CompatUIState
+    lateinit var compatUICompatUIRepository: CompatUIComponentRepository
     lateinit var fakeIdGenerator: FakeCompatUIComponentIdGenerator
     lateinit var syncQueue: SyncTransactionQueue
     lateinit var displayController: DisplayController
@@ -59,13 +61,21 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         shellExecutor = TestShellExecutor()
         compatUIRepository = CompatUIRepository()
         compatUIState = CompatUIState()
+        compatUICompatUIRepository = CompatUIComponentRepository()
         fakeIdGenerator = FakeCompatUIComponentIdGenerator("compId")
         syncQueue = mock<SyncTransactionQueue>()
         displayController = mock<DisplayController>()
-        componentFactory = FakeCompatUIComponentFactory(mContext, syncQueue, displayController)
+        componentFactory =
+            FakeCompatUIComponentFactory(
+                mContext,
+                syncQueue,
+                displayController,
+                compatUICompatUIRepository,
+            )
         compatUIHandler =
             DefaultCompatUIHandler(
                 compatUIRepository,
+                compatUICompatUIRepository,
                 compatUIState,
                 fakeIdGenerator,
                 componentFactory,
@@ -92,15 +102,15 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(0)
         fakeLifecycle.assertInitialStateInvocation(0)
-        compatUIState.assertHasNoStateFor(generatedId)
-        compatUIState.assertHasNoComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateFor(generatedId, expected = false)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = false)
 
         compatUIHandlerRule.postBlocking { compatUIHandler.onCompatInfoChanged(testCompatUIInfo()) }
         fakeLifecycle.assertCreationInvocation(2)
         fakeLifecycle.assertRemovalInvocation(0)
         fakeLifecycle.assertInitialStateInvocation(0)
-        compatUIState.assertHasNoStateFor(generatedId)
-        compatUIState.assertHasNoComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateFor(generatedId, expected = false)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = false)
     }
 
     @Test
@@ -121,16 +131,16 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(0)
         fakeLifecycle.assertInitialStateInvocation(1)
-        compatUIState.assertHasNoStateFor(generatedId)
-        compatUIState.assertHasComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateFor(generatedId, expected = false)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = true)
 
         compatUIHandlerRule.postBlocking { compatUIHandler.onCompatInfoChanged(testCompatUIInfo()) }
 
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(1)
         fakeLifecycle.assertInitialStateInvocation(1)
-        compatUIState.assertHasNoStateFor(generatedId)
-        compatUIState.assertHasComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateFor(generatedId, expected = false)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = true)
     }
 
     @Test
@@ -156,16 +166,16 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(0)
         fakeLifecycle.assertInitialStateInvocation(1)
-        compatUIState.assertHasStateEqualsTo(generatedId, fakeComponentState)
-        compatUIState.assertHasComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateEqualsTo(generatedId, fakeComponentState)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = true)
 
         compatUIHandlerRule.postBlocking { compatUIHandler.onCompatInfoChanged(testCompatUIInfo()) }
 
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(1)
         fakeLifecycle.assertInitialStateInvocation(1)
-        compatUIState.assertHasStateEqualsTo(generatedId, fakeComponentState)
-        compatUIState.assertHasComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateEqualsTo(generatedId, fakeComponentState)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = true)
     }
 
     @Test
@@ -191,16 +201,16 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(0)
         fakeLifecycle.assertInitialStateInvocation(1)
-        compatUIState.assertHasStateEqualsTo(generatedId, fakeComponentState)
-        compatUIState.assertHasComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateEqualsTo(generatedId, fakeComponentState)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = true)
 
         compatUIHandlerRule.postBlocking { compatUIHandler.onCompatInfoChanged(testCompatUIInfo()) }
 
         fakeLifecycle.assertCreationInvocation(1)
         fakeLifecycle.assertRemovalInvocation(1)
         fakeLifecycle.assertInitialStateInvocation(1)
-        compatUIState.assertHasNoStateFor(generatedId)
-        compatUIState.assertHasNoComponentFor(generatedId)
+        compatUICompatUIRepository.assertHasStateFor(generatedId, expected = false)
+        compatUICompatUIRepository.assertHasComponentFor(generatedId, expected = false)
     }
 
     @Test

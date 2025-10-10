@@ -19,6 +19,7 @@ package com.android.wm.shell.compatui.impl
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.compatui.api.CompatUIComponentFactory
 import com.android.wm.shell.compatui.api.CompatUIComponentIdGenerator
+import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIEvent
 import com.android.wm.shell.compatui.api.CompatUIHandler
 import com.android.wm.shell.compatui.api.CompatUIInfo
@@ -31,6 +32,7 @@ import java.util.function.Consumer
 /** Default implementation of {@link CompatUIHandler} to handle CompatUI components */
 class DefaultCompatUIHandler(
     private val compatUIRepository: CompatUIRepository,
+    private val compatUIComponentRepository: CompatUIComponentRepository,
     private val compatUIState: CompatUIState,
     private val componentIdGenerator: CompatUIComponentIdGenerator,
     private val componentFactory: CompatUIComponentFactory,
@@ -45,7 +47,7 @@ class DefaultCompatUIHandler(
             val componentId = componentIdGenerator.generateId(compatUIInfo, spec)
             spec.log("Evaluating component $componentId")
             // We check in the state if the component does not yet exist
-            var component = compatUIState.getUIComponent(componentId)
+            var component = compatUIComponentRepository.find(componentId)?.component
             if (component == null) {
                 spec.log("Component $componentId not present")
                 // We evaluate the predicate
@@ -60,7 +62,11 @@ class DefaultCompatUIHandler(
                     val compState =
                         spec.lifecycle.stateBuilder(compatUIInfo, compatUIState.sharedState)
                     spec.log("Component $componentId initial state $compState")
-                    compatUIState.registerUIComponent(componentId, component, compState)
+                    compatUIComponentRepository.registerUIComponent(
+                        componentId,
+                        component,
+                        compState,
+                    )
                     spec.log("Component $componentId registered")
                     // We initialize the layout for the component
                     component.initLayout(compatUIInfo)
@@ -78,14 +84,14 @@ class DefaultCompatUIHandler(
                     spec.lifecycle.removalPredicate(
                         compatUIInfo,
                         compatUIState.sharedState,
-                        compatUIState.stateForComponent(componentId),
+                        compatUIComponentRepository.stateForComponent(componentId),
                     )
                 ) {
                     spec.log("Component $componentId should be removed")
                     // We clean the component
                     component.release()
                     spec.log("Component $componentId released")
-                    compatUIState.unregisterUIComponent(componentId)
+                    compatUIComponentRepository.unregisterUIComponent(componentId)
                     spec.log("Component $componentId removed from registry")
                 } else {
                     executor.execute {
