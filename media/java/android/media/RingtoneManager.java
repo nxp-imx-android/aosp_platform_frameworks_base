@@ -16,9 +16,12 @@
 
 package android.media;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
@@ -26,6 +29,7 @@ import android.annotation.SystemApi;
 import android.annotation.WorkerThread;
 import android.app.Activity;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.content.ComponentName;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -49,6 +53,8 @@ import android.provider.MediaStore.Audio.AudioColumns;
 import android.provider.MediaStore.MediaColumns;
 import android.provider.Settings;
 import android.provider.Settings.System;
+import android.telecom.PhoneAccountHandle;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.internal.database.SortCursor;
@@ -264,6 +270,38 @@ public class RingtoneManager {
     private Ringtone mPreviousRingtone;
 
     private boolean mIncludeParentRingtones;
+
+    private static final String EMERGENCY_PHONE_ACCOUNT_HANDLE_ID = "E";
+
+    /** @hide */
+    public static final String RINGTONE_DELIMITER_FOR_PHONE_ACCOUNT_HANDLE = "_id_";
+
+    /**
+     * Query parameter key used in a ringtone {@link Uri} to store the string representation of the
+     * {@link ComponentName} of a {@link PhoneAccountHandle}.
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @FlaggedApi(Flags.FLAG_SUPPORT_PER_PHONE_ACCOUNT_RINGTONE)
+    public static final String PHONE_ACCOUNT_HANDLE_COMPONENT_NAME = "phone_account_component";
+
+    /**
+     * Query parameter key used in a ringtone {@link Uri} to store the ID of a
+     * {@link PhoneAccountHandle}.
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @FlaggedApi(Flags.FLAG_SUPPORT_PER_PHONE_ACCOUNT_RINGTONE)
+    public static final String PHONE_ACCOUNT_HANDLE_ID = "phone_account_id";
+
+    /**
+     * Query parameter key used in a ringtone {@link Uri} to store the user ID of a
+     * {@link PhoneAccountHandle}.
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @FlaggedApi(Flags.FLAG_SUPPORT_PER_PHONE_ACCOUNT_RINGTONE)
+    public static final String PHONE_ACCOUNT_HANDLE_USER_HANDLE = "phone_account_user_handle";
 
     /**
      * Constructs a RingtoneManager. This constructor is recommended as its
@@ -891,6 +929,64 @@ public class RingtoneManager {
         return null;
     }
 
+
+    /**
+     * Given a {@link Uri} representing a default ringtone, returns the {@link Uri} of the actual
+     * sound for that default ringtone.
+     * <p>
+     * This is the counterpart to {@link #getDefaultUri(int)}.
+     *
+     * @param context A context used to query.
+     * @param uri The {@link Uri} of a default ringtone.
+     * @return The {@link Uri} of the actual sound.
+     * @hide
+     */
+    static Uri getActualUriFromSettingsUri(Context context, Uri uri) {
+        final PhoneAccountHandle phoneAccountHandle = createPhoneAccountHandleFromUri(uri);
+        final int type = getDefaultType(uri);
+        return type == TYPE_RINGTONE
+                ? getRingtoneUriForPhoneAccountHandle(context, phoneAccountHandle)
+                : getActualDefaultRingtoneUri(context, type);
+    }
+
+    /**
+     * Given a {@link Uri} representing a default ringtone setting, returns the {@link Uri} of the
+     * cache for that ringtone.
+     * <p>
+     * This can be used to invalidate the cache of a default ringtone.
+     * This is the counterpart to {@link #getCacheForType(int, int)}.
+     *
+     * @param context A context used for the operation.
+     * @param uri The {@link Uri} of a default ringtone setting.
+     * @return The {@link Uri} of the cache.
+     * @hide
+     */
+    static Uri getCacheUriFromSettingsUri(Context context, Uri uri) {
+        final PhoneAccountHandle phoneAccountHandle = createPhoneAccountHandleFromUri(uri);
+        final int type = getDefaultType(uri);
+        return type == TYPE_RINGTONE
+                ? getRingtoneCacheForPhoneAccountHandle(context.getUserId(), phoneAccountHandle)
+                : getCacheForType(type, context.getUserId());
+    }
+
+    private static PhoneAccountHandle createPhoneAccountHandleFromUri(Uri uri) {
+        if (uri == null) {
+            return null;
+        }
+        String component = uri.getQueryParameter(
+                RingtoneManager.PHONE_ACCOUNT_HANDLE_COMPONENT_NAME);
+        String id = uri.getQueryParameter(RingtoneManager.PHONE_ACCOUNT_HANDLE_ID);
+        String userId = uri.getQueryParameter(RingtoneManager.PHONE_ACCOUNT_HANDLE_USER_HANDLE);
+        if (TextUtils.isEmpty(component) || TextUtils.isEmpty(id) || TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        final ComponentName componentName = ComponentName.unflattenFromString(component);
+        if (componentName == null) {
+            return null;
+        }
+        return new PhoneAccountHandle(componentName, id, UserHandle.of(Integer.parseInt(userId)));
+    }
+
     /**
      * Gets the current default sound's {@link Uri}. This will give the actual
      * sound {@link Uri}, instead of using this, most clients can use
@@ -905,6 +1001,33 @@ public class RingtoneManager {
      */
     public static Uri getActualDefaultRingtoneUri(Context context, int type) {
         String setting = getSettingForType(type);
+        return getRingtoneUriForSetting(context, setting);
+    }
+
+    /**
+     * Gets TYPE_RINGTONE's {@link Uri} by id of {@link PhoneAccountHandle}.
+     *
+     * @param context A context used for querying.
+     * @param phoneAccountHandle The {@link PhoneAccountHandle} whose sound should be returned.
+     *                           If null, the default ringtone will be returned.
+     * @return A {@link Uri} pointing to the sound for TYPE_RINGTONE.
+     * @see #setRingtoneUri(Context, Uri, PhoneAccountHandle)
+     */
+    @Nullable
+    @FlaggedApi(Flags.FLAG_SUPPORT_PER_PHONE_ACCOUNT_RINGTONE)
+    public static Uri getRingtoneUriForPhoneAccountHandle(@NonNull Context context,
+            @Nullable PhoneAccountHandle phoneAccountHandle) {
+        String setting = getRingtoneSettingForPhoneAccountHandle(phoneAccountHandle);
+        Uri ringtoneUri = getRingtoneUriForSetting(context, setting);
+        // If the ringtoneUri for targeted phoneAccountHandle is null,
+        // try to use the default ringtone which is saved in Settings.System.RINGTONE.
+        if (ringtoneUri == null) {
+            ringtoneUri = getRingtoneUriForSetting(context, Settings.System.RINGTONE);
+        }
+        return ringtoneUri;
+    }
+
+    private static Uri getRingtoneUriForSetting(Context context, String setting) {
         if (setting == null) return null;
         final String uriString = Settings.System.getStringForUser(context.getContentResolver(),
                 setting, context.getUserId());
@@ -932,6 +1055,29 @@ public class RingtoneManager {
      */
     public static void setActualDefaultRingtoneUri(Context context, int type, Uri ringtoneUri) {
         String setting = getSettingForType(type);
+        setRingtoneUriForSetting(context, setting, ringtoneUri);
+    }
+
+    /**
+     * Sets the {@link Uri} of the sound by {@link PhoneAccountHandle} for TYPE_RINGTONE.
+     *
+     * @param context A context used for querying.
+     * @param ringtoneUri A {@link Uri} pointing to the sound to set. This parameter can be null, in
+     *                    which case the API behaves like
+     *                    {@link #setActualDefaultRingtoneUri(Context, int, Uri)}.
+     * @param phoneAccountHandle The {@link PhoneAccountHandle} whose sound should be set.
+     *                           This parameter can be null, in which case the API behaves
+     *                           like {@link #setActualDefaultRingtoneUri(Context, int, Uri)}.
+     * @see #getRingtoneUriForPhoneAccountHandle(Context, PhoneAccountHandle)
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_PER_PHONE_ACCOUNT_RINGTONE)
+    public static void setRingtoneUri(@NonNull Context context,
+            @Nullable Uri ringtoneUri, @Nullable PhoneAccountHandle phoneAccountHandle) {
+        String setting = getRingtoneSettingForPhoneAccountHandle(phoneAccountHandle);
+        setRingtoneUriForSetting(context, setting, ringtoneUri);
+    }
+
+    private static void setRingtoneUriForSetting(Context context, String setting, Uri ringtoneUri) {
         if (setting == null) return;
 
         final ContentResolver resolver = context.getContentResolver();
@@ -942,7 +1088,7 @@ public class RingtoneManager {
         if (ringtoneUri != null) {
             final String mimeType = resolver.getType(ringtoneUri);
             if (mimeType == null) {
-                Log.e(TAG, "setActualDefaultRingtoneUri for URI:" + ringtoneUri
+                Log.e(TAG, "Set ringtoneUri for URI:" + ringtoneUri
                         + " ignored: failure to find mimeType (no access from this context?)");
                 return;
             }
@@ -950,7 +1096,7 @@ public class RingtoneManager {
                     || mimeType.equals("application/x-flac")
                     // also check for video ringtones
                     || mimeType.startsWith("video/") || mimeType.equals("application/mp4"))) {
-                Log.e(TAG, "setActualDefaultRingtoneUri for URI:" + ringtoneUri
+                Log.e(TAG, "Set ringtoneUri for URI:" + ringtoneUri
                         + " ignored: associated MIME type:" + mimeType
                         + " is not a recognized audio or video type");
                 return;
@@ -1066,6 +1212,15 @@ public class RingtoneManager {
         }
     }
 
+    private static String getRingtoneSettingForPhoneAccountHandle(
+            PhoneAccountHandle phoneAccountHandle) {
+        return (phoneAccountHandle == null || !Flags.supportPerPhoneAccountRingtone())
+                ? Settings.System.RINGTONE
+                : Settings.System.RINGTONE
+                        + RINGTONE_DELIMITER_FOR_PHONE_ACCOUNT_HANDLE
+                        + phoneAccountHandle.getId();
+    }
+
     /** @hide */
     public static Uri getCacheForType(int type) {
         return getCacheForType(type, UserHandle.getCallingUserId());
@@ -1082,6 +1237,16 @@ public class RingtoneManager {
             return ContentProvider.maybeAddUserId(Settings.System.ALARM_ALERT_CACHE_URI, userId);
         }
         return null;
+    }
+
+    private static Uri getRingtoneCacheForPhoneAccountHandle(int userId,
+            PhoneAccountHandle phoneAccountHandle) {
+        Uri uri = (phoneAccountHandle == null || !Flags.supportPerPhoneAccountRingtone())
+                ? Settings.System.RINGTONE_CACHE_URI
+                : Settings.System.getUriFor(Settings.System.RINGTONE_CACHE
+                        + RINGTONE_DELIMITER_FOR_PHONE_ACCOUNT_HANDLE
+                        + phoneAccountHandle.getId());
+        return ContentProvider.maybeAddUserId(uri, userId);
     }
 
     /**
@@ -1122,6 +1287,11 @@ public class RingtoneManager {
                     .contains(Settings.System.DEFAULT_ALARM_ALERT_URI.toString())) {
                 return TYPE_ALARM;
             }
+        }
+
+        if (Flags.supportPerPhoneAccountRingtone() && defaultRingtoneUri.toString()
+                .contains(Settings.System.DEFAULT_RINGTONE_URI.toString())) {
+            return TYPE_RINGTONE;
         }
 
         if (defaultRingtoneUri.equals(Settings.System.DEFAULT_RINGTONE_URI)) {

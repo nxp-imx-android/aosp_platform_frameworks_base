@@ -26025,6 +26025,7 @@ package android.media {
     method public static android.media.Ringtone getRingtone(android.content.Context, android.net.Uri);
     method public int getRingtonePosition(android.net.Uri);
     method public android.net.Uri getRingtoneUri(int);
+    method @FlaggedApi("android.media.audio.support_per_phone_account_ringtone") @Nullable public static android.net.Uri getRingtoneUriForPhoneAccountHandle(@NonNull android.content.Context, @Nullable android.telecom.PhoneAccountHandle);
     method public boolean getStopPreviousRingtone();
     method public static android.net.Uri getValidRingtoneUri(android.content.Context);
     method public boolean hasHapticChannels(int);
@@ -26035,6 +26036,7 @@ package android.media {
     method @Nullable public static android.content.res.AssetFileDescriptor openDefaultRingtoneUri(@NonNull android.content.Context, @NonNull android.net.Uri) throws java.io.FileNotFoundException;
     method public static void setActualDefaultRingtoneUri(android.content.Context, int, android.net.Uri);
     method @Deprecated public void setIncludeDrm(boolean);
+    method @FlaggedApi("android.media.audio.support_per_phone_account_ringtone") public static void setRingtoneUri(@NonNull android.content.Context, @Nullable android.net.Uri, @Nullable android.telecom.PhoneAccountHandle);
     method public void setStopPreviousRingtone(boolean);
     method public void setType(int);
     method public void stopPreviousRingtone();

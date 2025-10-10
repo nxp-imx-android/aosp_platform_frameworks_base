@@ -1107,10 +1107,15 @@ public class MediaPlayer extends PlayerBase
                 && Settings.AUTHORITY.equals(authority)) {
             // Try cached ringtone first since the actual provider may not be
             // encryption aware, or it may be stored on CE media storage
-            final int type = RingtoneManager.getDefaultType(uri);
-            final Uri cacheUri = RingtoneManager.getCacheForType(type, context.getUserId());
-            final Uri actualUri = RingtoneManager.getActualDefaultRingtoneUri(context, type);
+            final Uri cacheUri = RingtoneManager.getCacheUriFromSettingsUri(context, uri);
+            final Uri actualUri = RingtoneManager.getActualUriFromSettingsUri(context, uri);
             if (attemptDataSource(resolver, cacheUri)) {
+                return;
+            } else if (RingtoneManager.getDefaultType(uri) == RingtoneManager.TYPE_RINGTONE
+                    && attemptDataSource(resolver, RingtoneManager.getCacheForType(
+                            RingtoneManager.TYPE_RINGTONE, context.getUserId()))) {
+                // For TYPE_RINGTONE, if the cache for targeted Settings Uri
+                // is not available, try to use the default ringtone cache.
                 return;
             } else if (attemptDataSource(resolver, actualUri)) {
                 return;
