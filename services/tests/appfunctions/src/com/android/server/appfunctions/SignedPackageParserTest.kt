@@ -17,14 +17,23 @@
 package com.android.server.appfunctions
 
 import android.content.pm.Signature
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.permission.flags.Flags
+import android.platform.test.flag.junit.CheckFlagsRule
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
+@RequiresFlagsEnabled(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
 class SignedPackageParserTest {
+
+    @get:Rule
+    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Test
     fun parseList_emptyInput_returnsEmptyList() {
@@ -44,7 +53,7 @@ class SignedPackageParserTest {
         assertThat(result).hasSize(1)
         assertThat(result[0].packageName).isEqualTo(TEST_PACKAGE_NAME_1)
         assertThat(result[0].certificateDigest).isEmpty()
-        assertThat(result[0].certificateDigestOrNull).isNull()
+        assertThat(result[0].hasCertificateDigest()).isFalse()
     }
 
     @Test
@@ -69,7 +78,7 @@ class SignedPackageParserTest {
         assertThat(result[0].certificateDigest).isEqualTo(TEST_CERTIFICATE_DIGEST_1)
         assertThat(result[1].packageName).isEqualTo(TEST_PACKAGE_NAME_2)
         assertThat(result[1].certificateDigest).isEmpty()
-        assertThat(result[1].certificateDigestOrNull).isNull()
+        assertThat(result[1].hasCertificateDigest()).isFalse()
     }
 
     @Test

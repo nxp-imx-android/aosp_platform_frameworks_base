@@ -60,15 +60,15 @@ public class SignedPackage {
         return mData.packageName;
     }
 
-    /** @return the certificate digest. If none was provided, an empty array will be returned */
+    /** @return the certificate digest. If none was provided, the method will throw an Exception */
     public @NonNull byte[] getCertificateDigest() {
-        return Objects.requireNonNullElseGet(mData.certificateDigest, () -> new byte[0]);
+        return Objects.requireNonNull(mData.certificateDigest);
     }
 
-    /** @return the certificate digest. If none was provided, null will be returned */
+    /** @return true if this SignedPackage has a certificate attached, false otherwise */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public @Nullable byte[] getCertificateDigestOrNull() {
-        return mData.certificateDigest;
+    public boolean hasCertificateDigest() {
+        return mData.certificateDigest != null;
     }
 
     @Override
