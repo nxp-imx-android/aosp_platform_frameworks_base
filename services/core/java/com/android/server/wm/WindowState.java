@@ -2110,16 +2110,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     @Override
     void onResize() {
-        final ArrayList<WindowState> resizingWindows = mWmService.mResizingWindows;
-        if (mHasSurface && !isGoneForLayout() && !resizingWindows.contains(this)) {
-            ProtoLog.d(WM_DEBUG_RESIZE, "onResize: Resizing %s", this);
-            resizingWindows.add(this);
-            if (mWmService.mAlwaysSeqId) {
-                if (mSyncState != SYNC_STATE_NONE && !getSyncGroup().mReady) {
-                    mPendingSyncResize = true;
-                }
-            }
-        }
         if (mControllableInsetProvider != null) {
             mControllableInsetProvider.onWindowBoundsChanged();
         }
