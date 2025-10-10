@@ -16,6 +16,7 @@
 
 package com.android.systemui.complication
 
+import android.os.UserHandle
 import android.provider.Settings
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.settingslib.dream.DreamBackend
@@ -25,6 +26,7 @@ import com.android.systemui.dagger.qualifiers.SystemUser
 import com.android.systemui.dreams.DreamOverlayStateController
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.condition.ConditionalCoreStartable
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +45,7 @@ constructor(
     private val dreamBackend: DreamBackend,
     private val dreamOverlayStateController: DreamOverlayStateController,
     private val secureSettingsRepository: SecureSettingsRepository,
+    private val selectedUserInteractor: SelectedUserInteractor,
     @Background private val bgScope: CoroutineScope,
     @SystemUser monitor: Monitor,
 ) : ConditionalCoreStartable(monitor) {
@@ -56,9 +59,13 @@ constructor(
             secureSettingsRepository.boolSetting(Settings.Secure.LOCKSCREEN_SHOW_CONTROLS)
 
         bgScope.launchTraced("ComplicationTypesUpdater#onStart") {
-            combine(complicationsEnabled, homeControlsEnabled, lockscreenControlsEnabled) { _, _, _
-                    ->
-                    getAvailableComplicationTypes()
+            combine(
+                    complicationsEnabled,
+                    homeControlsEnabled,
+                    lockscreenControlsEnabled,
+                    selectedUserInteractor.selectedUserInfo,
+                ) { _, _, _, userInfo ->
+                    getAvailableComplicationTypes(userInfo.userHandle)
                 }
                 .distinctUntilChanged()
                 .collect { availableComplications ->
@@ -69,7 +76,9 @@ constructor(
 
     /** Returns complication types that are currently available by user setting. */
     @Complication.ComplicationType
-    private fun getAvailableComplicationTypes(): Int {
-        return ComplicationUtils.convertComplicationTypes(dreamBackend.getEnabledComplications())
+    private fun getAvailableComplicationTypes(user: UserHandle): Int {
+        return ComplicationUtils.convertComplicationTypes(
+            dreamBackend.getEnabledComplications(user)
+        )
     }
 }

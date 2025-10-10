@@ -28,10 +28,12 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import com.android.systemui.testKosmos
+import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -50,13 +52,14 @@ class ComplicationTypesUpdaterTest : SysuiTestCase() {
                 dreamOverlayStateController = dreamOverlayStateController,
                 secureSettingsRepository = secureSettingsRepository,
                 bgScope = applicationCoroutineScope,
+                selectedUserInteractor = selectedUserInteractor,
                 monitor = monitor,
             )
         }
 
     @Before
     fun setUp() {
-        whenever(kosmos.dreamBackend.enabledComplications).thenReturn(HashSet())
+        whenever(kosmos.dreamBackend.getEnabledComplications(any())).thenReturn(emptySet())
     }
 
     @Test
@@ -65,7 +68,7 @@ class ComplicationTypesUpdaterTest : SysuiTestCase() {
             // DreamOverlayStateController shouldn't be updated before start().
             assertThat(dreamOverlayStateController.availableComplicationTypes).isEqualTo(0)
 
-            whenever(dreamBackend.enabledComplications)
+            whenever(dreamBackend.getEnabledComplications(any()))
                 .thenReturn(hashSetOf(DreamBackend.COMPLICATION_TYPE_TIME))
 
             underTest.start()
@@ -80,7 +83,7 @@ class ComplicationTypesUpdaterTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.start()
 
-            whenever(dreamBackend.enabledComplications)
+            whenever(dreamBackend.getEnabledComplications(any()))
                 .thenReturn(
                     hashSetOf(
                         DreamBackend.COMPLICATION_TYPE_TIME,
