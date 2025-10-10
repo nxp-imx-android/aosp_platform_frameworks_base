@@ -108,6 +108,9 @@ class AppIdPermissionPolicy : SchemePolicy() {
             // The package may still be removed even if it was once notified as installed.
             val packageState =
                 newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            // The package may still be unavailable if the storage volume is removed before fully
+            // scanned, in which case we should skip it and wait for the next time.
+            packageState.androidPackage ?: return@forEachIndexed
             adoptPermissions(packageState, changedPermissionNames)
             addPermissionGroups(packageState)
             addPermissions(packageState, changedPermissionNames)
@@ -121,12 +124,14 @@ class AppIdPermissionPolicy : SchemePolicy() {
         packageNames.forEachIndexed { _, packageName ->
             val packageState =
                 newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            packageState.androidPackage ?: return@forEachIndexed
             val installedPackageState = if (isSystemUpdated) packageState else null
             evaluateAllPermissionStatesForPackage(packageState, installedPackageState)
         }
         packageNames.forEachIndexed { _, packageName ->
             val packageState =
                 newState.externalState.packageStates[packageName] ?: return@forEachIndexed
+            packageState.androidPackage ?: return@forEachIndexed
             newState.externalState.userIds.forEachIndexed { _, userId ->
                 inheritImplicitPermissionStates(packageState.appId, userId)
             }
