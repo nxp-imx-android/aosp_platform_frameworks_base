@@ -162,6 +162,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final int mMainDisplayId;
     private final VirtualTouchscreen mVirtualTouchscreen;
     private final VirtualDpad mVirtualDpad;
+    @Nullable
     private final VirtualKeyboard mVirtualKeyboard;
     private final ComputerControlAudioCapture mAudioCapture;
     private final ComputerControlAudioInjector mAudioInjector;
@@ -324,15 +325,19 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             .build();
             mVirtualDpad = mVirtualDevice.createVirtualDpad(virtualDpadConfig);
 
-            final String keyboardName = inputDeviceNamePrefix + "-kbrd";
-            final VirtualKeyboardConfig virtualKeyboardConfig =
-                    new VirtualKeyboardConfig.Builder()
-                            .setAssociatedDisplayId(mVirtualDisplayId)
-                            .setInputDeviceName(keyboardName)
-                            .setVendorId(VENDOR_ID)
-                            .setProductId(PRODUCT_ID_KEYBOARD)
-                            .build();
-            mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(virtualKeyboardConfig);
+            if (!android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
+                final String keyboardName = inputDeviceNamePrefix + "-kbrd";
+                final VirtualKeyboardConfig virtualKeyboardConfig =
+                        new VirtualKeyboardConfig.Builder()
+                                .setAssociatedDisplayId(mVirtualDisplayId)
+                                .setInputDeviceName(keyboardName)
+                                .setVendorId(VENDOR_ID)
+                                .setProductId(PRODUCT_ID_KEYBOARD)
+                                .build();
+                mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(virtualKeyboardConfig);
+            } else {
+                mVirtualKeyboard = null;
+            }
 
             final String touchscreenName = inputDeviceNamePrefix + "-tscr";
             final VirtualTouchscreenConfig virtualTouchscreenConfig =
@@ -662,6 +667,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     private void performKeyStep(List<VirtualKeyEvent> keysToSend, int currStep) {
+        if (mVirtualKeyboard == null) {
+            return;
+        }
         final int nextStep = currStep + 1;
         mVirtualKeyboard.sendKeyEvent(keysToSend.get(currStep));
         if (nextStep >= keysToSend.size()) {
