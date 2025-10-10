@@ -1092,8 +1092,6 @@ public class MediaControlPanel {
     }
 
     private void bindPageButtons() {
-        if (!Flags.mediaCarouselArrows()) return;
-
         ImageButton pageLeft = mMediaViewHolder.getPageLeft();
         pageLeft.setOnClickListener(v -> {
             mMediaCarouselController.getMediaCarouselScrollHandler().scrollByStep(-1);
@@ -1108,7 +1106,7 @@ public class MediaControlPanel {
     }
 
     void setPageArrowsVisible(boolean visible) {
-        if (!Flags.mediaCarouselArrows() || mPageArrowsVisible == visible) return;
+        if (mPageArrowsVisible == visible) return;
         mPageArrowsVisible = visible;
 
         ConstraintSet expandedSet = mMediaViewController.getExpandedLayout();
@@ -1128,13 +1126,11 @@ public class MediaControlPanel {
     }
 
     void setPageLeftEnabled(boolean enabled) {
-        if (!Flags.mediaCarouselArrows()) return;
         ImageButton pageLeft = mMediaViewHolder.getPageLeft();
         pageLeft.setEnabled(enabled);
     }
 
     void setPageRightEnabled(boolean enabled) {
-        if (!Flags.mediaCarouselArrows()) return;
         ImageButton pageRight = mMediaViewHolder.getPageRight();
         pageRight.setEnabled(enabled);
     }

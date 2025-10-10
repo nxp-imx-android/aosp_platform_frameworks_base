@@ -975,7 +975,6 @@ class MediaCarouselControllerTest : SysuiTestCase() {
         verify(mediaDataManager).dismissMediaData(eq(PAUSED_LOCAL), anyLong(), eq(true))
     }
 
-    @EnableFlags(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun singleMediaPlayer_disablePageArrows() {
         verify(mediaDataManager).addListener(capture(listener))
@@ -995,7 +994,6 @@ class MediaCarouselControllerTest : SysuiTestCase() {
         verify(player).setPageArrowsVisible(eq(false))
     }
 
-    @EnableFlags(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @Test
     fun multipleMediaPlayers_enablePageArrows() {
         verify(mediaDataManager).addListener(capture(listener))
@@ -1034,7 +1032,6 @@ class MediaCarouselControllerTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(Flags.FLAG_MEDIA_CAROUSEL_ARROWS)
     @DisableSceneContainer
     @Test
     fun multipleMediaPlayers_disableScrolling_noPageArrows() {
