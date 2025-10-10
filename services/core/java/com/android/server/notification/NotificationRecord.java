@@ -613,9 +613,7 @@ public final class NotificationRecord {
                 + " found valid? " + (mShortcutInfo != null));
         pw.println(prefix + "mUserVisOverride=" + getPackageVisibilityOverride());
         pw.println(prefix + "hasSummarization=" + (mSummarization != null));
-        if (android.service.notification.Flags.notificationClassification()) {
-            pw.println(prefix + "bundleType=" + getBundleType());
-        }
+        pw.println(prefix + "bundleType=" + getBundleType());
     }
 
     private void dumpNotification(PrintWriter pw, String prefix, Notification notification,
@@ -878,33 +876,32 @@ public final class NotificationRecord {
                         signals.remove(KEY_SENSITIVE_CONTENT);
                     }
                 }
-                if (android.service.notification.Flags.notificationClassification()) {
-                    if (signals.containsKey(KEY_TYPE) && !keysToSkip.contains(KEY_TYPE)) {
-                        // Store original channel visibility before re-assigning channel
-                        if (!NotificationChannel.SYSTEM_RESERVED_IDS.contains(mChannel.getId())) {
-                            setOriginalChannelVisibility(mChannel.getLockscreenVisibility());
-                        }
-                        updateNotificationChannel(signals.getParcelable(KEY_TYPE,
-                                NotificationChannel.class));
-                        EventLogTags.writeNotificationAdjusted(
-                                getKey(), KEY_TYPE, mChannel.getId());
-                        if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                            signals.remove(KEY_TYPE);
-                        }
+                if (signals.containsKey(KEY_TYPE) && !keysToSkip.contains(KEY_TYPE)) {
+                    // Store original channel visibility before re-assigning channel
+                    if (!NotificationChannel.SYSTEM_RESERVED_IDS.contains(mChannel.getId())) {
+                        setOriginalChannelVisibility(mChannel.getLockscreenVisibility());
                     }
-                    if (signals.containsKey(KEY_UNCLASSIFY)
-                            && !keysToSkip.contains(KEY_UNCLASSIFY)) {
-                        // reset original channel visibility as we're returning to the original
-                        setOriginalChannelVisibility(NotificationManager.VISIBILITY_NO_OVERRIDE);
-                        updateNotificationChannel(signals.getParcelable(KEY_UNCLASSIFY,
-                                NotificationChannel.class));
-                        EventLogTags.writeNotificationAdjusted(getKey(),
-                                KEY_UNCLASSIFY, mChannel.getId());
-                        if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
-                            signals.remove(KEY_UNCLASSIFY);
-                        }
+                    updateNotificationChannel(signals.getParcelable(KEY_TYPE,
+                            NotificationChannel.class));
+                    EventLogTags.writeNotificationAdjusted(
+                            getKey(), KEY_TYPE, mChannel.getId());
+                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
+                        signals.remove(KEY_TYPE);
                     }
                 }
+                if (signals.containsKey(KEY_UNCLASSIFY)
+                        && !keysToSkip.contains(KEY_UNCLASSIFY)) {
+                    // reset original channel visibility as we're returning to the original
+                    setOriginalChannelVisibility(NotificationManager.VISIBILITY_NO_OVERRIDE);
+                    updateNotificationChannel(signals.getParcelable(KEY_UNCLASSIFY,
+                            NotificationChannel.class));
+                    EventLogTags.writeNotificationAdjusted(getKey(),
+                            KEY_UNCLASSIFY, mChannel.getId());
+                    if (com.android.server.notification.Flags.showNoisyBundledNotifications()) {
+                        signals.remove(KEY_UNCLASSIFY);
+                    }
+                }
+
                 if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())
                         && signals.containsKey(KEY_SUMMARIZATION)
                         && !keysToSkip.contains(KEY_SUMMARIZATION)) {

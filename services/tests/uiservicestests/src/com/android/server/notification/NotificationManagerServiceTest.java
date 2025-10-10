@@ -125,7 +125,6 @@ import static android.service.notification.Condition.SOURCE_CONTEXT;
 import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_TRUE;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOADING;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
@@ -2056,7 +2055,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void updateChannel_blocking_cancelsPostedNotificationsEvenIfClassified()
             throws Exception {
         // Have two notifications on two different channels.
@@ -3157,7 +3155,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testCancelGroupChildrenAfterBundling_summaryCanceled() throws Exception {
         when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
         when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
@@ -5198,7 +5196,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAppsCannotDeleteBundleChannel() throws Exception {
         when(mCompanionMgr.getAssociations(mPkg, mUserId))
                 .thenReturn(singletonList(mock(AssociationInfo.class)));
@@ -5313,8 +5310,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({
-            FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT,
-            FLAG_NOTIFICATION_CLASSIFICATION
+            FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT
     })
     public void createConversationChannelForPkgFromPrivilegedListener_classified_fail()
             throws Exception {
@@ -8295,7 +8291,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testClassificationChannelAdjustmentsLogged() throws Exception {
         NotificationManagerService.WorkerHandler handler = mock(
                 NotificationManagerService.WorkerHandler.class);
@@ -13365,7 +13360,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testArchiveCanceledBundledGroupSummary_restoresSummaryFlag() throws Exception {
         // Enables Notification History setting
         setUpPrefsForHistory(mUserId, true /* =enabled */);
@@ -13407,7 +13401,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testArchiveCanceledBundledGroupSummaryOtherReason_doesNotRestoreSummaryFlag()
             throws Exception {
         // Enables Notification History setting
@@ -13493,7 +13486,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void createConversationNotificationChannel_classified_noChannelCreated()
             throws Exception {
         int userId = UserManager.isHeadlessSystemUserMode()
@@ -18653,7 +18645,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void testApplyAdjustment_keyType_validType() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
@@ -18697,7 +18688,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public void applyAdjustment_classify_withUpdatesEnqueued_appliesChannel() throws Exception {
         when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
         when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
@@ -18736,8 +18726,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
-            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
+    @EnableFlags({android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testApplyAdjustment_keyTypeForDisallowedPackage_DoesNotApply() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
@@ -18774,8 +18763,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
-            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI,
+    @EnableFlags({android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI,
             FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testApplyAdjustment_keyType_storesOriginalChannelVisibility() throws Exception {
@@ -18848,9 +18836,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({
-            android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
-            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
+    @EnableFlags({android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testApplyAdjustment_promotedOngoingNotification_doesNotApply() throws Exception {
         // promoted ongoing notification which should not have the adjustment applied
         Notification n = createPromotableNotification(/* addFlagManually= */ true);
@@ -19220,7 +19206,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAppCannotUseReservedBundleChannels() throws Exception {
         mService.mPreferencesHelper.createReservedChannel(mPkg, mUid, TYPE_NEWS);
         NotificationChannel news = mBinderService.getNotificationChannel(
@@ -19236,9 +19221,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
-            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testUnclassifyNotification_ungrouped_restoresOriginalChannel() throws Exception {
         NotificationManagerService.WorkerHandler handler = mock(
@@ -19289,8 +19272,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testUnclassifyNotification_grouped_restoresOriginalChannel() throws Exception {
@@ -19349,8 +19331,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testUnclassifyNotification_groupedSummaryCanceled_restoresOriginalChannel()
@@ -19414,8 +19395,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testReclassifyNotification_restoresBundleChannel() throws Exception {
@@ -19475,8 +19455,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testDisallowTypeAdj_unclassifiesAllNotifications() throws Exception {
@@ -19542,8 +19521,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testDisableBundleAdjustmentByType_unclassifiesNotifications() throws Exception {
@@ -19615,8 +19593,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testDisableBundleAdjustmentByPkg_unclassifiesNotifications() throws Exception {
@@ -19713,8 +19690,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testDisableBundleAdjustmentByPkg_unclassifiesEnqueuedNotifications()
@@ -19776,8 +19752,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testDisableBundleAdjustmentByType_unclassifiesEnqueuedNotifications()
@@ -19851,8 +19826,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testDisallowTypeAdj_unclassifiesAllEnqueuedNotifications() throws Exception {
@@ -19919,8 +19893,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testAllowAndDisallowTypeAdj_modifiesNotificationsOnlyForUserAndProfile()
@@ -20025,8 +19998,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testAllowAndDisallowTypeAdjForPkg_modifiesNotificationsOnlyForUserAndNotProfile()
@@ -20118,8 +20090,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUPING,
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testAllowAndDisallowClassificationType_modifiesNotificationsForUserAndProfile()
@@ -20216,7 +20187,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAllowAndDisallowBundling_updatesChannels() throws Exception {
         NotificationManagerService.WorkerHandler handler = mock(
                 NotificationManagerService.WorkerHandler.class);
@@ -20258,7 +20228,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAllowBundleTypes_updatesChannels() throws Exception {
         NotificationManagerService.WorkerHandler handler = mock(
                 NotificationManagerService.WorkerHandler.class);
@@ -20293,7 +20262,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testNoChildrenYet_summaryNotSilent() throws Exception {
         // Post summary
         final String originalGroupName = "originalGroup";
@@ -20313,7 +20281,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testSomeChildrenBundled_summaryNotSilent() throws Exception {
         when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
         when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
@@ -20357,7 +20324,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAllChildrenBundled_summaryIsSilent() throws Exception {
         when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
         when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
@@ -20407,7 +20373,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testAllChildrenBundled_summaryCanceled() throws Exception {
         when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
         when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
@@ -20473,7 +20438,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testSomeChildrenBundled_summaryNotCanceled() throws Exception {
         when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
         when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
@@ -20520,7 +20484,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testUpdateBundledChild_doesNotUnAutogroup() throws Exception {
         when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
         when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
@@ -20587,7 +20550,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     public void testUpdateNotBundledChild_doesUnAutogroup() throws Exception {
         when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
         when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),

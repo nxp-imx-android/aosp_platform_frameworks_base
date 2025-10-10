@@ -87,32 +87,27 @@ public final class NotificationChannel implements Parcelable {
      *  @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final String PROMOTIONS_ID = "android.app.promotions";
     /**
      * A reserved id for a system channel reserved for non-conversation social media notifications.
      *  @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final String SOCIAL_MEDIA_ID = "android.app.social";
     /**
      * A reserved id for a system channel reserved for news notifications.
      *  @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final String NEWS_ID = "android.app.news";
     /**
      * A reserved id for a system channel reserved for content recommendation notifications.
      *  @hide
      */
     @TestApi
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final String RECS_ID = "android.app.recs";
 
     /** @hide */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
     public static final ArrayList<String> SYSTEM_RESERVED_IDS = new ArrayList<>(
             List.of(NEWS_ID, SOCIAL_MEDIA_ID, PROMOTIONS_ID, RECS_ID));
 

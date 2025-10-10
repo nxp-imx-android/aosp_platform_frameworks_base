@@ -23,7 +23,6 @@ import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.SourceType
-import com.android.systemui.statusbar.notification.collection.NotificationClassificationFlag
 import com.android.systemui.statusbar.notification.collection.render.MediaContainerController
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.AlertingHeader
@@ -133,7 +132,7 @@ internal constructor(
         if (!SceneContainerFlag.isEnabled) {
             keyguardMediaController.attachSinglePaneContainer(mediaControlsView)
         }
-        if (NotificationClassificationFlag.isEnabled) {
+        if (!NotificationBundleUi.isEnabled) {
             newsHeaderController.reinflateView(parent)
             socialHeaderController.reinflateView(parent)
             recsHeaderController.reinflateView(parent)
@@ -147,7 +146,7 @@ internal constructor(
             view === peopleHeaderView ||
             view === alertingHeaderView ||
             view === incomingHeaderView ||
-            (NotificationClassificationFlag.isEnabled &&
+            (!NotificationBundleUi.isEnabled &&
                 (view === newsHeaderView ||
                     view === socialHeaderView ||
                     view === recsHeaderView ||
@@ -303,7 +302,7 @@ internal constructor(
         peopleHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         silentHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         alertingHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-        if (NotificationClassificationFlag.isEnabled) {
+        if (!NotificationBundleUi.isEnabled) {
             newsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
             socialHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
             recsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)

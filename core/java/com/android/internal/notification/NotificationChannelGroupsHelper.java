@@ -153,8 +153,7 @@ public class NotificationChannelGroupsHelper {
                             || (params.includeAllBlockedWithFilter
                                     && nc.getImportance() == IMPORTANCE_NONE)
                             || params.channelFilter.contains(nc.getId()))
-                    && (!Flags.notificationClassification()
-                            || !SYSTEM_RESERVED_IDS.contains(nc.getId()));
+                    && (!SYSTEM_RESERVED_IDS.contains(nc.getId()));
             if (includeChannel) {
                 if (nc.getGroup() != null) {
                     if (allGroups.get(nc.getGroup()) != null) {

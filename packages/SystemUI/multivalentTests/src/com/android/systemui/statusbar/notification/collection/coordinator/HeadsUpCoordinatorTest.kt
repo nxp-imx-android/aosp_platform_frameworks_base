@@ -21,7 +21,6 @@ import android.app.NotificationChannel
 import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.platform.test.annotations.EnableFlags
-import android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -996,7 +995,6 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
     fun testNoTransfer_toBundleChild() {
         for (id in SYSTEM_RESERVED_IDS) {
             helpTestNoTransferToBundleChildForChannel(id)
