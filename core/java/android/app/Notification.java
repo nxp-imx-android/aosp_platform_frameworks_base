@@ -1454,7 +1454,6 @@ public class Notification implements Parcelable
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final String EXTRA_SHORT_CRITICAL_TEXT = "android.shortCriticalText";
 
     /**
@@ -1769,7 +1768,6 @@ public class Notification implements Parcelable
      * This extra is a parcelable array list of bundles.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final String EXTRA_PROGRESS_SEGMENTS = "android.progressSegments";
 
     /**
@@ -1781,7 +1779,6 @@ public class Notification implements Parcelable
      * This extra is a parcelable array list of bundles.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final String EXTRA_PROGRESS_POINTS = "android.progressPoints";
 
     /**
@@ -1790,7 +1787,6 @@ public class Notification implements Parcelable
      * This extra is a boolean.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final String EXTRA_STYLED_BY_PROGRESS = "android.styledByProgress";
 
     /**
@@ -1799,7 +1795,6 @@ public class Notification implements Parcelable
      * {@link ProgressStyle#setProgressTrackerIcon(Icon)}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final String EXTRA_PROGRESS_TRACKER_ICON = "android.progressTrackerIcon";
 
     /**
@@ -1808,7 +1803,6 @@ public class Notification implements Parcelable
      * {@link ProgressStyle#setProgressStartIcon(Icon)}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final String EXTRA_PROGRESS_START_ICON = "android.progressStartIcon";
 
     /**
@@ -1817,7 +1811,6 @@ public class Notification implements Parcelable
      * {@link ProgressStyle#setProgressEndIcon(Icon)}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final String EXTRA_PROGRESS_END_ICON = "android.progressEndIcon";
 
     /**
@@ -3596,7 +3589,6 @@ public class Notification implements Parcelable
     /**
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableStyle() {
         final Class<? extends Style> notificationStyle = getNotificationStyle();
 
