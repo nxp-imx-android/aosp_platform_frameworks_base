@@ -255,9 +255,9 @@ constructor(
             authenticationResult.isDuplicate,
         )
 
-        if (authenticationResult.lockoutDurationMs > 0) {
+        if (authenticationResult.lockoutDuration.isPositive()) {
             // Lockout has been triggered.
-            repository.reportLockoutStarted(authenticationResult.lockoutDurationMs)
+            repository.reportLockoutStarted(authenticationResult.lockoutDuration)
         }
 
         _onAuthenticationResult.emit(false)

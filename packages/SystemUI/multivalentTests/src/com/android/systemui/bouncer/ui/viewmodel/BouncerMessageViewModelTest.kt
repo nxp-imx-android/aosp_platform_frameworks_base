@@ -739,9 +739,9 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
     fun startLockdownCountdown_onActivatedShowsSeconds() =
         testScope.runTest {
             val bouncerMessage by collectLastValue(underTest.message)
-            val lockoutSeconds = 200 * 1000 // 200 second lockout
+            val lockout = 200.seconds
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            kosmos.fakeAuthenticationRepository.reportLockoutStarted(lockoutSeconds)
+            kosmos.fakeAuthenticationRepository.reportLockoutStarted(lockout)
             runCurrent()
 
             assertThat(bouncerMessage?.text).isEqualTo("Try again in 200 seconds.")
@@ -756,9 +756,9 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
     fun startLockdownCountdown_onActivatedShowsLargerUnits() =
         testScope.runTest {
             val bouncerMessage by collectLastValue(underTest.message)
-            val lockoutSeconds = 200 * 1000 // 200 second lockout
+            val lockout = 200.seconds
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            kosmos.fakeAuthenticationRepository.reportLockoutStarted(lockoutSeconds)
+            kosmos.fakeAuthenticationRepository.reportLockoutStarted(lockout)
             runCurrent()
 
             assertThat(bouncerMessage?.text).isEqualTo("Try again in 4 minutes")
@@ -779,7 +779,7 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
-            fun assertTextFor(timeout: Duration, text: String) {
+            suspend fun assertTextFor(timeout: Duration, text: String) {
                 // set end time as plus one second so that when we tick one second, we end up
                 // at the target timeout.
                 val current = currentTime.milliseconds

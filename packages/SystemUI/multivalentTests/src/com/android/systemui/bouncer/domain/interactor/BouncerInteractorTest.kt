@@ -54,7 +54,6 @@ import com.android.systemui.scene.transitionState
 import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.fakeGlobalSettings
 import com.google.common.truth.Truth.assertThat
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
@@ -305,7 +304,7 @@ class BouncerInteractorTest : SysuiTestCase() {
             assertThat(lockoutStartedEvents.size).isEqualTo(1)
 
             // Advance the time to finish the lockout:
-            advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS.seconds)
+            advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION)
             assertThat(authenticationInteractor.lockoutEndTime).isNull()
             assertThat(lockoutStartedEvents.size).isEqualTo(1)
 

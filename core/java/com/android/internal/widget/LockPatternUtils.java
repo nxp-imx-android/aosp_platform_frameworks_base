@@ -84,6 +84,7 @@ import java.util.function.Supplier;
 public class LockPatternUtils {
     private static final String TAG = "LockPatternUtils";
     private static final boolean FRP_CREDENTIAL_ENABLED = true;
+    private static final Duration MAX_INT_DURATION = Duration.ofMillis(Integer.MAX_VALUE);
 
     /**
      * The interval of the countdown for showing progress of the lockout.
@@ -262,24 +263,6 @@ public class LockPatternUtils {
         }
     }
 
-    public static final class RequestThrottledException extends Exception {
-        private int mTimeoutMs;
-        @UnsupportedAppUsage
-        public RequestThrottledException(int timeoutMs) {
-            mTimeoutMs = timeoutMs;
-        }
-
-        /**
-         * @return The amount of time in ms before another request may
-         * be executed
-         */
-        @UnsupportedAppUsage
-        public int getTimeoutMs() {
-            return mTimeoutMs;
-        }
-
-    }
-
     @UnsupportedAppUsage
     public DevicePolicyManager getDevicePolicyManager() {
         if (mDevicePolicyManager == null) {
@@ -414,12 +397,29 @@ public class LockPatternUtils {
         }
     }
 
-    public void reportPasswordLockout(int timeoutMs, int userId) {
+    /**
+     * Reports a password lockout to services that need to be aware of it.
+     */
+    public void reportPasswordLockout(Duration timeout, int userId) {
         if (isSpecialUserId(mContext, userId, /* checkDeviceSupported= */ true)) {
             return;
         }
-        getTrustManager().reportUnlockLockout(timeoutMs, userId);
+        getTrustManager().reportUnlockLockout(clamp(timeout), userId);
     }
+
+    /**
+     * Clamps the given duration to an integer. If the duration is negative or greater than {@link
+     * Integer#MAX_VALUE}, returns {@link Integer#MAX_VALUE}.
+     *
+     * @hide
+     */
+    public static int clamp(Duration duration) {
+        if (duration.compareTo(MAX_INT_DURATION) > 0 || duration.isNegative()) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) duration.toMillis();
+    }
+
 
     public int getCurrentFailedPasswordAttempts(int userId) {
         if (isSpecialUserId(mContext, userId, /* checkDeviceSupported= */ true)) {
@@ -513,32 +513,9 @@ public class LockPatternUtils {
      * @param credential The credential to check.
      * @param userId The user whose credential is being checked
      * @param progressCallback callback to deliver early signal that the credential matches
-     * @return {@code true} if credential matches, {@code false} otherwise
-     * @throws RequestThrottledException if credential verification is being throttled due to
-     *         to many incorrect attempts.
      * @throws IllegalStateException if called on the main thread.
      */
-    public boolean checkCredential(@NonNull LockscreenCredential credential, int userId,
-            @Nullable CheckCredentialProgressCallback progressCallback)
-            throws RequestThrottledException {
-        final VerifyCredentialResponse response =
-                checkCredentialWithResponse(credential, userId, progressCallback);
-        if (response.isMatched()) {
-            return true;
-        } else if (response.hasTimeout()) {
-            throw new RequestThrottledException(response.getTimeout());
-        }
-        return false;
-    }
-
-    /**
-     * Check to see if a credential matches the saved one.
-     *
-     * @param credential The credential to check.
-     * @param userId The user whose credential is being checked
-     * @param progressCallback callback to deliver early signal that the credential matches
-     */
-    public VerifyCredentialResponse checkCredentialWithResponse(
+    public VerifyCredentialResponse checkCredential(
             @NonNull LockscreenCredential credential,
             int userId,
             @Nullable CheckCredentialProgressCallback progressCallback) {
@@ -1193,22 +1170,22 @@ public class LockPatternUtils {
      * @return the chosen deadline.
      * @deprecated this function just returns the current lockout end time after
      *     <tt>android.security.manage_lockout_end_time_in_service</tt> is launched. Call-sites will
-     *     be removed and replaced with {@link #getLockoutAttemptDeadline(int)} as needed.
+     *     be removed and replaced with {@link #getLockoutEndTime(int)} as needed.
      */
     @UnsupportedAppUsage
     @Deprecated
-    public long setLockoutAttemptDeadline(int userId, int timeoutMs) {
-        final long deadline = mTimeSinceBootSupplier.get().toMillis() + timeoutMs;
+    public Duration setLockoutAttemptDeadline(int userId, Duration timeout) {
+        final Duration deadline = mTimeSinceBootSupplier.get().plus(timeout);
         if (android.security.Flags.manageLockoutEndTimeInService()) {
-            final long lockoutEndTime = getLockoutAttemptDeadline(userId);
-            return Math.max(lockoutEndTime, deadline);
+            final Duration lockoutEndTime = getLockoutEndTime(userId);
+            return lockoutEndTime.compareTo(deadline) > 0 ? lockoutEndTime : deadline;
         }
         if (userId == USER_FRP) {
             // For secure password storage (that is required for FRP), the underlying storage also
             // enforces the deadline. Since we cannot store settings for the FRP user, don't.
             return deadline;
         }
-        mLockoutDeadlines.put(userId, deadline);
+        mLockoutDeadlines.put(userId, deadline.toMillis());
         return deadline;
     }
 
@@ -1217,31 +1194,23 @@ public class LockPatternUtils {
      *     Duration#ZERO} if the user is currently allowed.
      */
     public Duration getLockoutEndTime(int userId) {
-        Duration lockoutEndTime = mLockoutEndTimeCache.query(userId);
-        if (!lockoutEndTime.isZero()
-                && lockoutEndTime.compareTo(mTimeSinceBootSupplier.get()) <= 0) {
-            return mLockoutEndTimeCache.recompute(userId);
-        }
-        return lockoutEndTime;
-    }
-
-    /**
-     * @return The elapsed time in millis since boot when the user is allowed to attempt to enter
-     *     their lock pattern, or 0 if the user is welcome to enter a pattern.
-     */
-    public long getLockoutAttemptDeadline(int userId) {
         if (android.security.Flags.softwareRatelimiter()
                 && android.security.Flags.manageLockoutEndTimeInService()) {
-            return getLockoutEndTime(userId).toMillis();
+            Duration lockoutEndTime = mLockoutEndTimeCache.query(userId);
+            if (!lockoutEndTime.isZero()
+                    && lockoutEndTime.compareTo(mTimeSinceBootSupplier.get()) <= 0) {
+                return mLockoutEndTimeCache.recompute(userId);
+            }
+            return lockoutEndTime;
         }
         final long deadline = mLockoutDeadlines.get(userId, 0L);
         final long now = mTimeSinceBootSupplier.get().toMillis();
         if (deadline < now && deadline != 0) {
             // timeout expired
             mLockoutDeadlines.put(userId, 0);
-            return 0L;
+            return Duration.ZERO;
         }
-        return deadline;
+        return Duration.ofMillis(deadline);
     }
 
     private boolean getBoolean(String secureSettingKey, boolean defaultValue, int userId) {

@@ -179,11 +179,8 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
     fun lockoutEndTime() =
         testScope.runTest {
             val lockoutEnd = clock.elapsedRealtime().milliseconds + 30.seconds
-            whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[0].id))
-                .thenReturn(lockoutEnd.inWholeMilliseconds)
             whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[0].id))
                 .thenReturn(lockoutEnd.toJavaDuration())
-            whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[1].id)).thenReturn(0)
             whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[1].id))
                 .thenReturn(0.seconds.toJavaDuration())
 
@@ -210,7 +207,7 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             val hasLockoutOccurred by collectLastValue(underTest.hasLockoutOccurred)
             assertThat(hasLockoutOccurred).isFalse()
 
-            underTest.reportLockoutStarted(1000)
+            underTest.reportLockoutStarted(1.seconds)
             assertThat(hasLockoutOccurred).isTrue()
 
             clock.setElapsedRealtime(clock.elapsedRealtime() + 60.seconds.inWholeMilliseconds)

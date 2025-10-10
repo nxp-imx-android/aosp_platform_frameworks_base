@@ -504,9 +504,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             repeat(failedAttemptCount) {
                 fakeAuthenticationRepository.reportAuthenticationAttempt(false)
             }
-            fakeAuthenticationRepository.reportLockoutStarted(
-                30.seconds.inWholeMilliseconds.toInt()
-            )
+            fakeAuthenticationRepository.reportLockoutStarted(30.seconds)
         } else {
             fakeAuthenticationRepository.reportAuthenticationAttempt(true)
         }
