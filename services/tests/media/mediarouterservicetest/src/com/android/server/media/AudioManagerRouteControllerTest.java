@@ -105,6 +105,9 @@ public class AudioManagerRouteControllerTest {
             createAudioDeviceInfo(
                     AudioSystem.DEVICE_OUT_EARPIECE, /* name= */ "", /* address= */ "");
 
+    private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_INFO_MIC =
+            createAudioDeviceInfo(AudioSystem.DEVICE_IN_BUILTIN_MIC, "mic", "");
+
     private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_NO_NAME =
             createAudioDeviceInfo(
                     AudioSystem.DEVICE_OUT_DGTL_DOCK_HEADSET,
@@ -252,6 +255,49 @@ public class AudioManagerRouteControllerTest {
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP);
         verify(mMockAudioManager).removePreferredDeviceForStrategy(mMediaAudioProductStrategy);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PREFERRED_DEVICE_FIXES)
+    public void onAudioDevicesAdded_withNonSinkDevice_doesNotRemovePreferredDevice() {
+        setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ false);
+        addAvailableAudioDeviceInfo(
+                /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
+                /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
+        mLooperManager.execute(mLooperManager.next());
+        // Make a transfer so that a preferred device is set.
+        MediaRoute2Info builtinSpeakerRoute =
+                getAvailableRouteWithType(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
+        mControllerUnderTest.transferTo(/* requestId= */ 0L, builtinSpeakerRoute.getId());
+        mLooperManager.execute(mLooperManager.next());
+        verify(mMockAudioManager)
+                .setPreferredDeviceForStrategy(
+                        mMediaAudioProductStrategy,
+                        createAudioDeviceAttribute(
+                                AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, /* address= */ ""));
+        clearInvocations(mMockAudioManager);
+
+        // Trigger onAudioDevicesAdded with a non-sink device.
+        mAudioDeviceCallback.onAudioDevicesAdded(
+                new AudioDeviceInfo[] {FAKE_AUDIO_DEVICE_INFO_MIC});
+
+        // We verify there are no pending messages in the queue to ensure that a call to the audio
+        // manager has not been posted to the handler, making the test spuriously pass.
+        assertThat(mLooperManager.poll()).isNull();
+        verify(mMockAudioManager, never()).removePreferredDeviceForStrategy(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PREFERRED_DEVICE_FIXES)
+    public void onAudioDevicesAdded_whenNoPreferredDeviceSet_doesNotRemovePreferredDevice() {
+        setUpControllerUnderTest(false);
+
+        addAvailableAudioDeviceInfo(
+                /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
+                /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
+        mLooperManager.execute(mLooperManager.next());
+
+        verify(mMockAudioManager, never()).removePreferredDeviceForStrategy(any());
     }
 
     @Test
