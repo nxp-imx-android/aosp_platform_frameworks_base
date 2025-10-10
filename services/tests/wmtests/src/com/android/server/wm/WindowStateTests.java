@@ -111,6 +111,7 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.MergedConfiguration;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.IWindow;
 import android.view.InputDevice;
@@ -1974,7 +1975,7 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    public void testIsWindowTrustedOverlay_noPrivateFlagTrustedOverlay_internalWindowPermission() {
+    public void testIsWindowTrustedOverlay_noFlag_internalWindowPermission() {
         SystemUtil.runWithShellPermissionIdentity(() -> {
             final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
 
@@ -1994,22 +1995,21 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    public void testIsWindowTrustedOverlay_withoutPrivateFlag_applicationOverlayPermission() {
-        SystemUtil.runWithShellPermissionIdentity(() -> {
-            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
-
-            assertThat(window.isWindowTrustedOverlay()).isFalse();
-        });
-    }
-
-    @Test
-    public void testIsWindowTrustedOverlay_withPrivateFlag_applicationOverlayPermission() {
+    public void testIsWindowTrustedOverlay_privateFlagSystemApplicationOverlay_applicationOverlayPermission() {
         SystemUtil.runWithShellPermissionIdentity(() -> {
             final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
             window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
 
             assertThat(window.isWindowTrustedOverlay()).isTrue();
         });
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_pprivateFlagSystemApplicationOverlay_noPermission() {
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY)
+                .build();
+        window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+        assertThat(window.isWindowTrustedOverlay()).isFalse();
     }
 
     @Test
@@ -2075,5 +2075,74 @@ public class WindowStateTests extends WindowTestsBase {
             mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
                     mContext.getPackageName(), originalState);
         }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_DISPLAY_CAN_CREATE_SYSTEM_APPLICATION_OVERLAY)
+    public void testIsWindowTrustedOverlay_privateFlagSystemApplicationOverlay_virtualDisplay_sameUid() {
+        final DisplayContent virtualDisplay = createNewDisplay();
+        Display display = virtualDisplay.getDisplay();
+        spyOn(display);
+        doReturn(Display.TYPE_VIRTUAL).when(display).getType();
+
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY)
+                .setDisplay(virtualDisplay)
+                .build();
+        window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+        virtualDisplay.getDisplayInfo().ownerUid = getTestSession().mUid;
+        assertThat(window.isWindowTrustedOverlay()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_DISPLAY_CAN_CREATE_SYSTEM_APPLICATION_OVERLAY)
+    public void testIsWindowTrustedOverlay_privateFlagSystemApplicationOverlay_virtualDisplay_differentUid() {
+        final DisplayContent virtualDisplay = createNewDisplay();
+        Display display = virtualDisplay.getDisplay();
+        spyOn(display);
+        doReturn(Display.TYPE_VIRTUAL).when(display).getType();
+
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY)
+                .setDisplay(virtualDisplay)
+                .build();
+        window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+        virtualDisplay.getDisplayInfo().ownerUid = getTestSession().mUid + 1;
+        assertThat(window.isWindowTrustedOverlay()).isFalse();
+    }
+
+    @Test
+    public void testSessionCanCreateSystemApplicationOverlay_noPermission() {
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+
+        assertThat(window.mSession.canCreateSystemApplicationOverlay(window)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_DISPLAY_CAN_CREATE_SYSTEM_APPLICATION_OVERLAY)
+    public void testSessionCanCreateSystemApplicationOverlay_virtualDisplay_sameUid() {
+        final DisplayContent virtualDisplay = createNewDisplay();
+        Display display = virtualDisplay.getDisplay();
+        spyOn(display);
+        doReturn(Display.TYPE_VIRTUAL).when(display).getType();
+
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY)
+                .setDisplay(virtualDisplay)
+                .build();
+        virtualDisplay.getDisplayInfo().ownerUid = getTestSession().mUid;
+        assertThat(window.mSession.canCreateSystemApplicationOverlay(window)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_DISPLAY_CAN_CREATE_SYSTEM_APPLICATION_OVERLAY)
+    public void testSessionCanCreateSystemApplicationOverlay_virtualDisplay_differentUid() {
+        final DisplayContent virtualDisplay = createNewDisplay();
+        Display display = virtualDisplay.getDisplay();
+        spyOn(display);
+        doReturn(Display.TYPE_VIRTUAL).when(display).getType();
+
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY)
+                .setDisplay(virtualDisplay)
+                .build();
+        virtualDisplay.getDisplayInfo().ownerUid = getTestSession().mUid + 1;
+        assertThat(window.mSession.canCreateSystemApplicationOverlay(window)).isFalse();
     }
 }
