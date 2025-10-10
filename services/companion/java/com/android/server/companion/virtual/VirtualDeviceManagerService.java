@@ -1012,6 +1012,13 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override
+        public boolean isComputerControlNotification(int notificationId,
+                @Nullable String notificationTag, @NonNull String packageName) {
+            return mComputerControlSessionProcessor.isComputerControlNotification(
+                    notificationId, notificationTag, packageName);
+        }
+
+        @Override
         public long getDimDurationMillisForDeviceId(int deviceId) {
             VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
             return virtualDevice == null ? -1 : virtualDevice.getDimDurationMillis();

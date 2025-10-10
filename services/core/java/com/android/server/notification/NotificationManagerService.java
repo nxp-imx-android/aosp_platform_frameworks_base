@@ -397,6 +397,7 @@ import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.bitmapoffload.BitmapOffloadInternal;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.notification.GroupHelper.NotificationAttributes;
@@ -690,6 +691,7 @@ public class NotificationManagerService extends SystemService {
     @Nullable StatusBarManagerInternal mStatusBar;
     private DisplayManager mDisplayManager;
     private WindowManagerInternal mWindowManagerInternal;
+    private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
     private AlarmManager mAlarmManager;
     @VisibleForTesting
     ICompanionDeviceManager mCompanionManager;
@@ -3502,6 +3504,8 @@ public class NotificationManagerService extends SystemService {
         } else if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mDisplayManager = getContext().getSystemService(DisplayManager.class);
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
+            mVirtualDeviceManagerInternal =
+                    LocalServices.getService(VirtualDeviceManagerInternal.class);
             mZenModeHelper.onSystemReady();
             RoleObserver roleObserver = new RoleObserver(getContext(),
                     getContext().getSystemService(RoleManager.class),
@@ -9018,7 +9022,7 @@ public class NotificationManagerService extends SystemService {
 
         // Only notifications that can be non-dismissible can have the flag FLAG_NO_DISMISS
         if (((notification.flags & FLAG_ONGOING_EVENT) > 0)
-                && canBeNonDismissible(ai, notification)) {
+                && canBeNonDismissible(ai, notification, id, tag)) {
             notification.flags |= FLAG_NO_DISMISS;
         } else {
             notification.flags &= ~FLAG_NO_DISMISS;
@@ -9249,11 +9253,26 @@ public class NotificationManagerService extends SystemService {
      * Whether a notification can be non-dismissible.
      * A notification should be dismissible, unless it's exempted for some reason.
      */
-    private boolean canBeNonDismissible(ApplicationInfo ai, Notification notification) {
+    private boolean canBeNonDismissible(ApplicationInfo ai, Notification notification, int id,
+            String tag) {
         return notification.isMediaNotification() || isEnterpriseExempted(ai)
                 || notification.isStyle(Notification.CallStyle.class)
                 || isDefaultSearchSelectorPackage(ai.packageName)
-                || isDefaultAdservicesPackage(ai.packageName);
+                || isDefaultAdservicesPackage(ai.packageName)
+                || isComputerControlNotification(id, tag, ai.packageName);
+    }
+
+    private boolean isComputerControlNotification(int notificationId, String notificationTag,
+            String packageName) {
+        if (mVirtualDeviceManagerInternal == null) {
+            mVirtualDeviceManagerInternal =
+                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+        }
+        if (mVirtualDeviceManagerInternal != null) {
+            return mVirtualDeviceManagerInternal.isComputerControlNotification(notificationId,
+                    notificationTag, packageName);
+        }
+        return false;
     }
 
     private boolean isDefaultSearchSelectorPackage(String pkg) {

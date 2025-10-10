@@ -22,6 +22,7 @@ import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_USER_INITIATED;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
@@ -364,6 +365,29 @@ public class ComputerControlSessionProcessor {
             }
             return false;
         }
+    }
+
+    /**
+     * Returns if the provided notification id and tag are used for a computer control session by
+     * the given package.
+     */
+    public boolean isComputerControlNotification(int notificationId,
+            @Nullable String notificationTag, @NonNull String packageName) {
+        if (!Flags.computerControlNonDismissibleNotifications()) {
+            return false;
+        }
+        final ComputerControlSessionImpl.NotificationInfo notificationInfo =
+                new ComputerControlSessionImpl.NotificationInfo(notificationId, notificationTag);
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (Objects.equals(session.getOwnerPackageName(), packageName)
+                        && Objects.equals(session.getNotificationInfo(), notificationInfo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

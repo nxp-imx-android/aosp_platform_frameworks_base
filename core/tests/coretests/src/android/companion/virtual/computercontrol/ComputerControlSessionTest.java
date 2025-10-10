@@ -202,6 +202,14 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    public void attachNotificationInfo_attachesNotificationInfo() throws RemoteException {
+        final int notificationId = 5;
+        final String notificationTag = "hello";
+        mSession.attachNotificationInfo(notificationId, notificationTag);
+        verify(mMockSession).attachNotificationInfo(eq(notificationId), eq(notificationTag));
+    }
+
+    @Test
     public void clearLifecycleCallback_stopsLifecycleCallbacks() throws RemoteException {
         ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
                 ComputerControlSession.LifecycleCallback.class);

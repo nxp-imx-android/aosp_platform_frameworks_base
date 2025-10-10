@@ -22,6 +22,7 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Activity;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -506,6 +507,29 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     @NonNull
     public List<AccessibilityWindowInfo> getAccessibilityWindows() {
         return mAccessibilityProxy.getWindows();
+    }
+
+    /**
+     * Attaches notification information to the session, to make the notification non-dismissible.
+     *
+     * <p>This must be called before posting the notification.</p>
+     *
+     * <p>The caller must still call {@link Notification.Builder#setOngoing(boolean)}
+     * with {@code true}, to make the notification non-dismissible.</p>
+     *
+     * @param notificationId id of the notification, as per
+     * {@link android.app.NotificationManager#notify(String, int, Notification)}
+     * @param notificationTag tag of the notification, as per
+     * {@link android.app.NotificationManager#notify(String, int, Notification)}
+     *
+     * @throws IllegalStateException if a notification was already attached.
+     */
+    public void attachNotificationInfo(int notificationId, @Nullable String notificationTag) {
+        try {
+            mSession.attachNotificationInfo(notificationId, notificationTag);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     @Override

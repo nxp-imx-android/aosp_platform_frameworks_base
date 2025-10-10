@@ -62,6 +62,9 @@ interface IComputerControlSession {
     /** Sets a callback to be notified about computer control lifecycle changes. */
     void setLifecycleCallback(in IComputerControlLifecycleCallback listener);
 
+    /** Attaches a notification to the session, to make it non-dismissable. */
+    void attachNotificationInfo(int notificationId, in String notificationTag);
+
     /** Closes this session. */
     void close();
 }

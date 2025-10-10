@@ -631,6 +631,31 @@ public class ComputerControlSessionTest {
         assertThat(mirror).isNull();
     }
 
+    @Test
+    public void attachNotificationInfo_attachesNotificationInfo() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        final int notificationId = 5;
+        final String notificationTag = "hello";
+
+        mSession.attachNotificationInfo(notificationId, notificationTag);
+
+        ComputerControlSessionImpl.NotificationInfo info = mSession.getNotificationInfo();
+        assertThat(info).isEqualTo(
+                new ComputerControlSessionImpl.NotificationInfo(notificationId, notificationTag));
+    }
+
+    @Test
+    public void attachNotificationInfo_alreadyAttached_throwsException() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        final int notificationId = 5;
+        final String notificationTag = "hello";
+
+        mSession.attachNotificationInfo(notificationId, notificationTag);
+
+        assertThrows(IllegalStateException.class,
+                () -> mSession.attachNotificationInfo(3, "hello2"));
+    }
+
     private void createComputerControlSession(ComputerControlSessionParams params) {
         createComputerControlSession(params, /* globalSessionTimeoutDurationMs = */ 10000L);
     }

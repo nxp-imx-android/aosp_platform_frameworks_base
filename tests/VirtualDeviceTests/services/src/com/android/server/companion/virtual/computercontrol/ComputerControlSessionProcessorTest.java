@@ -55,6 +55,7 @@ import android.os.Binder;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -89,9 +90,9 @@ public class ComputerControlSessionProcessorTest {
     private static final String TARGET_PACKAGE = "com.android.foo";
     private static final int CALLING_USER_ID = UserHandle.USER_SYSTEM;
     private static final int VIRTUAL_DISPLAY_ID = 123;
-
+    private static final String OWNER_PACKAGE_NAME = "com.package";
     private static final AttributionSource ATTRIBUTION_SOURCE = new AttributionSource(
-            UserHandle.getUid(CALLING_USER_ID, 0), "com.package", "tag");
+            UserHandle.getUid(CALLING_USER_ID, 0), OWNER_PACKAGE_NAME, "tag");
     private static final ComputerControlSessionParams PARAMS =
             new ComputerControlSessionParams.Builder()
                     .setName(ComputerControlSessionTest.class.getSimpleName())
@@ -358,6 +359,56 @@ public class ComputerControlSessionProcessorTest {
 
         mSessionArgumentCaptor.getValue().close();
         assertFalse(mProcessor.isComputerControlDisplay(VIRTUAL_DISPLAY_ID));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_NON_DISMISSIBLE_NOTIFICATIONS)
+    public void isComputerControlNotification_notificationInfoAttached_returnsTrue()
+            throws Exception {
+        final int notificationId = 5;
+        final String notificationTag = "hello";
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback,
+                timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+
+        mSessionArgumentCaptor.getValue().attachNotificationInfo(notificationId, notificationTag);
+
+        assertTrue(mProcessor.isComputerControlNotification(notificationId, notificationTag,
+                OWNER_PACKAGE_NAME));
+        assertFalse(mProcessor.isComputerControlNotification(6, null, OWNER_PACKAGE_NAME));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_NON_DISMISSIBLE_NOTIFICATIONS)
+    public void isComputerControlNotification_notificationInfoNotAttached_returnsFalse()
+            throws Exception {
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback,
+                timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+
+        assertFalse(mProcessor.isComputerControlNotification(5, "hello", OWNER_PACKAGE_NAME));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_NON_DISMISSIBLE_NOTIFICATIONS)
+    public void isComputerControlNotification_notificationInfoAttached_returnsFalse()
+            throws Exception {
+        final int notificationId = 5;
+        final String notificationTag = "hello";
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback,
+                timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+
+        mSessionArgumentCaptor.getValue().attachNotificationInfo(notificationId, notificationTag);
+
+        assertFalse(mProcessor.isComputerControlNotification(notificationId, notificationTag,
+                OWNER_PACKAGE_NAME));
     }
 
     private ComputerControlSessionParams validParams() {

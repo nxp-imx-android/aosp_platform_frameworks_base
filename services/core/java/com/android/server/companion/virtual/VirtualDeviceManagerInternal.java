@@ -240,4 +240,11 @@ public abstract class VirtualDeviceManagerInternal {
     public abstract Intent createAutomatedAppLaunchWarningIntent(
             @NonNull String packageName, @UserIdInt int userId, @Nullable String callingPackageName,
             int displayId);
+
+    /**
+     * Returns if the provided notification id and tag are used for a computer control session by
+     * the given package.
+     */
+    public abstract boolean isComputerControlNotification(int notificationId,
+            @Nullable String notificationTag, @NonNull String packageName);
 }
