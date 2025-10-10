@@ -377,6 +377,14 @@ class ExpandableNotificationRowBuilder(
         )
     }
 
+    fun createCompactHUN(notification: Notification): ExpandableNotificationRow {
+        whenever(mHeadsUpStyleProvider.shouldApplyCompactStyle()).thenReturn(true)
+        val row = createRow(notification)
+        row.isHeadsUp = true
+        Mockito.reset(mHeadsUpStyleProvider)
+        return row
+    }
+
     fun createRow(notification: Notification): ExpandableNotificationRow {
         val channel =
             NotificationChannel(
