@@ -117,7 +117,7 @@ public class KeyguardIndicationControllerTest extends KeyguardIndicationControll
 
     @Test
     public void createController_setIndicationAreaAgain_destroysPreviousRotateTextViewController() {
-        // GIVEN a controller with a mocked rotate text view controlller
+        // GIVEN a controller with a mocked rotate text view controller
         final KeyguardIndicationRotateTextViewController mockedRotateTextViewController =
                 mock(KeyguardIndicationRotateTextViewController.class);
         createController();
@@ -386,7 +386,7 @@ public class KeyguardIndicationControllerTest extends KeyguardIndicationControll
         // GIVEN screen is off
         when(mScreenLifecycle.getScreenState()).thenReturn(SCREEN_OFF);
 
-        // WHEN fingeprint help message received
+        // WHEN fingerprint help message received
         mController.setVisible(true);
         mController.getKeyguardCallback().onBiometricHelp(BIOMETRIC_HELP_FINGERPRINT_NOT_RECOGNIZED,
                 message, BiometricSourceType.FINGERPRINT);

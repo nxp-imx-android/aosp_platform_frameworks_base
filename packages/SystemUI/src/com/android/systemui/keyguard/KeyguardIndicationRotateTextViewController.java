@@ -395,10 +395,12 @@ public class KeyguardIndicationRotateTextViewController extends
     public static final int INDICATION_TYPE_REVERSE_CHARGING = 10;
     public static final int INDICATION_TYPE_BIOMETRIC_MESSAGE = 11;
     public static final int INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP = 12;
-    public static final int INDICATION_IS_DISMISSIBLE = 13;
+    public static final int INDICATION_TYPE_IS_DISMISSIBLE = 13;
     public static final int INDICATION_TYPE_ADAPTIVE_AUTH = 14;
     public static final int INDICATION_TYPE_WATCH_DISCONNECTED = 15;
     public static final int INDICATION_TYPE_SECURE_LOCK_DEVICE = 16;
+    public static final int INDICATION_TYPE_CLICK_TO_UNLOCK_HINT = 17;
+    public static final int INDICATION_TYPE_KEY_TO_UNLOCK_HINT = 18;
 
     @IntDef({
             INDICATION_TYPE_NONE,
@@ -414,10 +416,12 @@ public class KeyguardIndicationRotateTextViewController extends
             INDICATION_TYPE_REVERSE_CHARGING,
             INDICATION_TYPE_BIOMETRIC_MESSAGE,
             INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
-            INDICATION_IS_DISMISSIBLE,
+            INDICATION_TYPE_IS_DISMISSIBLE,
             INDICATION_TYPE_ADAPTIVE_AUTH,
             INDICATION_TYPE_WATCH_DISCONNECTED,
-            INDICATION_TYPE_SECURE_LOCK_DEVICE
+            INDICATION_TYPE_SECURE_LOCK_DEVICE,
+            INDICATION_TYPE_CLICK_TO_UNLOCK_HINT,
+            INDICATION_TYPE_KEY_TO_UNLOCK_HINT,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface IndicationType {
@@ -454,12 +458,18 @@ public class KeyguardIndicationRotateTextViewController extends
                 return "biometric_message";
             case INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP:
                 return "biometric_message_followup";
+            case INDICATION_TYPE_IS_DISMISSIBLE:
+                return "is_dismissible";
             case INDICATION_TYPE_ADAPTIVE_AUTH:
                 return "adaptive_auth";
             case INDICATION_TYPE_WATCH_DISCONNECTED:
                 return "watch_disconnected";
             case INDICATION_TYPE_SECURE_LOCK_DEVICE:
                 return "secure_lock_device";
+            case INDICATION_TYPE_CLICK_TO_UNLOCK_HINT:
+                return "click_to_unlock_hint";
+            case INDICATION_TYPE_KEY_TO_UNLOCK_HINT:
+                return "key_to_unlock_hint";
             default:
                 return "unknown[" + type + "]";
         }

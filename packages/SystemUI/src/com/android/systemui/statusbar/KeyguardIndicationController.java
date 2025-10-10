@@ -33,13 +33,13 @@ import static com.android.keyguard.KeyguardUpdateMonitor.BIOMETRIC_HELP_FINGERPR
 import static com.android.systemui.DejankUtils.whitelistIpcs;
 import static com.android.systemui.Flags.showLockedByYourWatchKeyguardIndicator;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.IMPORTANT_MSG_MIN_DURATION;
-import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_IS_DISMISSIBLE;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_ADAPTIVE_AUTH;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_ALIGNMENT;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BATTERY;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_DISCLOSURE;
+import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_IS_DISMISSIBLE;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_LOGOUT;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_OWNER_INFO;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_PERSISTENT_UNLOCK_MESSAGE;
@@ -554,7 +554,7 @@ public class KeyguardIndicationController {
     private void updateForceIsDismissibleChanged() {
         if (mForceIsDismissible) {
             mRotateTextViewController.updateIndication(
-                    INDICATION_IS_DISMISSIBLE,
+                    INDICATION_TYPE_IS_DISMISSIBLE,
                     new KeyguardIndication.Builder()
                             .setMessage(mContext.getResources().getString(
                                     com.android.systemui.res.R.string.dismissible_keyguard_swipe)
@@ -563,7 +563,7 @@ public class KeyguardIndicationController {
                             .build(),
                     /* updateImmediately */ true);
         } else {
-            mRotateTextViewController.hideIndication(INDICATION_IS_DISMISSIBLE);
+            mRotateTextViewController.hideIndication(INDICATION_TYPE_IS_DISMISSIBLE);
         }
     }
 
