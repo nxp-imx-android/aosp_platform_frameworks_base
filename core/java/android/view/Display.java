@@ -2783,6 +2783,9 @@ public final class Display {
             if ((flags & FLAG_SIZE_OVERRIDE) != 0) {
                 msg.append(", FLAG_SIZE_OVERRIDE");
             }
+            if ((flags & FLAG_ANISOTROPY_CORRECTION) != 0) {
+                msg.append(", FLAG_ANISOTROPY_CORRECTION");
+            }
             return msg.toString();
         }
 

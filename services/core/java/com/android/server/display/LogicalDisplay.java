@@ -864,8 +864,10 @@ final class LogicalDisplay {
         if (mIsAnisotropicModesEnabled && displayDeviceInfo.type == Display.TYPE_EXTERNAL
                 && userMode != null
                 && (userMode.getFlags() & Display.Mode.FLAG_SIZE_OVERRIDE) != 0) {
-            displayLogicalWidth = displayLogicalWidth * physWidth / userMode.getPhysicalWidth();
-            displayLogicalHeight = displayLogicalHeight * physHeight / userMode.getPhysicalHeight();
+            int userWidth = rotated ? userMode.getPhysicalHeight() : userMode.getPhysicalWidth();
+            int userHeight = rotated ? userMode.getPhysicalWidth() : userMode.getPhysicalHeight();
+            displayLogicalWidth = displayLogicalWidth * physWidth / userWidth;
+            displayLogicalHeight = displayLogicalHeight * physHeight / userHeight;
         }
 
         // Determine whether the width or height is more constrained to be scaled.
