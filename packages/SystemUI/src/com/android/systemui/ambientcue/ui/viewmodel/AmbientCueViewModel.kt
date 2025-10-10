@@ -82,7 +82,7 @@ constructor(
             source = ambientCueInteractor.isRootViewAttached,
         )
 
-    private val isImeVisible: Boolean by
+    val isImeVisible: Boolean by
         hydrator.hydratedStateOf(
             traceName = "isImeVisible",
             initialValue = false,
