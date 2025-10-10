@@ -21,6 +21,7 @@ import static android.view.WindowInsets.Type.statusBars;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.Dialog;
 import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -59,8 +60,8 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.concurrent.Executor;
 
-/** Base dialog for media output UI */
-public class MediaOutputBaseDialog extends SystemUIDialog
+/** The Output Switcher dialog */
+public class MediaOutputDialog extends SystemUIDialog
         implements MediaSwitchingController.Callback, Window.Callback {
 
     private static final String TAG = "MediaOutputDialog";
@@ -106,7 +107,7 @@ public class MediaOutputBaseDialog extends SystemUIDialog
     private final DialogTransitionAnimator mDialogTransitionAnimator;
     private final UiEventLogger mUiEventLogger;
     @Nullable
-    private final MediaOutputDialog.OnDialogEventListener mOnDialogEventListener;
+    private final OnDialogEventListener mOnDialogEventListener;
 
     private class LayoutManagerWrapper extends LinearLayoutManager {
         LayoutManagerWrapper(Context context) {
@@ -121,7 +122,7 @@ public class MediaOutputBaseDialog extends SystemUIDialog
         }
     }
 
-    public MediaOutputBaseDialog(
+    public MediaOutputDialog(
             Context context,
             boolean aboveStatusbar,
             BroadcastSender broadcastSender,
@@ -129,7 +130,7 @@ public class MediaOutputBaseDialog extends SystemUIDialog
             DialogTransitionAnimator dialogTransitionAnimator,
             UiEventLogger uiEventLogger,
             boolean includePlaybackAndAppMetadata,
-            @Nullable MediaOutputDialog.OnDialogEventListener onDialogEventListener) {
+            @Nullable OnDialogEventListener onDialogEventListener) {
         super(context, R.style.Theme_SystemUI_Dialog_Media);
 
         // Save the context that is wrapped with our theme.
@@ -497,4 +498,12 @@ public class MediaOutputBaseDialog extends SystemUIDialog
         }
     }
 
+    /** Callback for configuration changes. */
+    public interface OnDialogEventListener {
+        /** Will be called inside onConfigurationChanged. */
+        void onConfigurationChanged(@NonNull Dialog dialog, @NonNull Configuration newConfig);
+
+        /** Will be called when the dialog is created. */
+        void onCreate(@NonNull Dialog dialog);
+    }
 }
