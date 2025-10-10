@@ -1665,6 +1665,8 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    @DisableFlags(
+            com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_FOR_CONNECTED_DISPLAYS)
     public void onConfigurationChanged_notifiesIndicatorToUpdateTheme() throws Exception {
         injectFakeMouseActionHoverMoveEvent();
 
