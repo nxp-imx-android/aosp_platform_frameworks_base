@@ -2233,7 +2233,6 @@
     <dimen name="tile_details_bottom_padding">14dp</dimen>
     <dimen name="tile_details_horizontal_padding">14dp</dimen>
     <dimen name="tile_details_vertical_padding">8dp</dimen>
-    <dimen name="tile_details_entry_start_margin">16dp</dimen>
     <dimen name="tile_details_title_row_button_size">48dp</dimen>
     <dimen name="tile_details_title_row_start">2dp</dimen>
     <dimen name="tile_details_title_row_end">8dp</dimen>
@@ -2242,6 +2241,7 @@
     <!-- Tile Details entry start -->
     <dimen name="tile_details_entry_gap">2dp</dimen>
     <dimen name="tile_details_entry_height">72dp</dimen>
+    <dimen name="tile_details_entry_horizontal_margin">16dp</dimen>
     <dimen name="tile_details_entry_icon_size">24dp</dimen>
     <dimen name="tile_details_entry_start_padding">20dp</dimen>
     <!-- tile_details_entry_subtitle_bottom_paddings used only when both the title and the subtitle exist -->
