@@ -4962,10 +4962,10 @@
     <string name="accessibility_shortcut_off">Don’t turn on</string>
 
     <!-- Text for a feature status that is enabled. [CHAR LIMIT=20] -->
-    <string name="accessibility_shortcut_menu_item_status_on">ON</string>
+    <string name="accessibility_shortcut_menu_item_status_on">On</string>
 
     <!-- Text for a feature status that is disabled. [CHAR LIMIT=20] -->
-    <string name="accessibility_shortcut_menu_item_status_off">OFF</string>
+    <string name="accessibility_shortcut_menu_item_status_off">Off</string>
 
     <!-- Title for a warning about security implications of enabling an accessibility
     service. [CHAR LIMIT=NONE] -->
