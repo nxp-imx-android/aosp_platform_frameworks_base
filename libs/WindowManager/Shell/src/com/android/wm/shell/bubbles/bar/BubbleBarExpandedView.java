@@ -389,11 +389,6 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     }
 
     @Override
-    public void onTaskRemovalStarted() {
-        // No-op
-    }
-
-    @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         if (!isValidToBubble(taskInfo)) {
             Toast.makeText(mContext, R.string.bubble_not_supported_text, Toast.LENGTH_SHORT).show();

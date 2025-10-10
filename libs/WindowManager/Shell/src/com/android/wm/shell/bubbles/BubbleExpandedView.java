@@ -141,8 +141,6 @@ public class BubbleExpandedView extends LinearLayout {
     private TaskView mTaskView;
     private BubbleOverflowContainerView mOverflowView;
 
-    private int mTaskId = INVALID_TASK_ID;
-
     private boolean mImeVisible;
     private boolean mNeedsNewHeight;
 
@@ -334,14 +332,6 @@ public class BubbleExpandedView extends LinearLayout {
                     new BubbleTaskViewListener.Callback() {
                         @Override
                         public void onTaskCreated() {
-                            // The taskId is saved to use for removeTask,
-                            // preventing appearance in recent tasks.
-                            BubbleTaskViewListener listener = mTaskViewListener != null
-                                    ? mTaskViewListener
-                                    : null;
-                            mTaskId = listener != null
-                                    ? listener.getTaskId()
-                                    : bubbleTaskView.getTaskId();
                             setContentVisibility(true);
                         }
 
@@ -353,11 +343,6 @@ public class BubbleExpandedView extends LinearLayout {
                         @Override
                         public void onBackPressed() {
                             mStackView.onBackPressed();
-                        }
-
-                        @Override
-                        public void onTaskRemovalStarted() {
-                            // nothing to do / handled in listener.
                         }
 
                         @Override
@@ -810,7 +795,7 @@ public class BubbleExpandedView extends LinearLayout {
     }
 
     int getTaskId() {
-        return mTaskId;
+        return mTaskViewListener != null ? mTaskViewListener.getTaskId() : INVALID_TASK_ID;
     }
 
     /**
@@ -1039,7 +1024,7 @@ public class BubbleExpandedView extends LinearLayout {
      */
     public void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         pw.print(prefix); pw.println("BubbleExpandedView:");
-        pw.print(prefix); pw.print("  taskId: "); pw.println(mTaskId);
+        pw.print(prefix); pw.print("  taskId: "); pw.println(getTaskId());
         pw.print(prefix); pw.print("  stackView: "); pw.println(mStackView);
         pw.print(prefix); pw.print("  contentVisibility: "); pw.println(mIsContentVisible);
         pw.print(prefix); pw.print("  isAnimating: "); pw.println(mIsAnimating);

@@ -67,9 +67,6 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         /** Called when back is pressed on the task root. */
         void onBackPressed();
 
-        /** Called when task removal has started. */
-        void onTaskRemovalStarted();
-
         /** Called when the task's info has changed. */
         void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo);
     }
@@ -264,7 +261,6 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             ((ViewGroup) mParentView).removeView(mTaskView);
             mTaskView = null;
         }
-        mCallback.onTaskRemovalStarted();
     }
 
     @Override
