@@ -365,8 +365,7 @@
     <string name="accessibility_location_active" msgid="2845747916764660369">"இருப்பிடக் கோரிக்கைகள் இயக்கப்பட்டன"</string>
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"’சென்சார்கள் ஆஃப்’ செயலில் உள்ளது"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"எல்லா அறிவிப்புகளையும் அழி."</string>
-    <!-- no translation found for accessibility_notification_bell (7149451526721220526) -->
-    <skip />
+    <string name="accessibility_notification_bell" msgid="7149451526721220526">"அறிவிப்புகள்"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{குழுவில் மேலும் # அறிவிப்பு உள்ளது.}other{குழுவில் மேலும் # அறிவிப்புகள் உள்ளன.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"நிலத்தோற்ற திசையமைப்பில் திரைப் பூட்டப்பட்டுள்ளது."</string>
