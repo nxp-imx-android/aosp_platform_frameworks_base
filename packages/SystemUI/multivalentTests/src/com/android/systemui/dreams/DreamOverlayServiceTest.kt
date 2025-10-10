@@ -602,6 +602,34 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     }
 
     @Test
+    fun testDestroy_preventsCrashFromPendingCallback() =
+        kosmos.runTest {
+            // Start the dream, which registers the KeyguardUpdateMonitorCallback.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+            val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
+            verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
+            val callback = callbackCaptor.firstValue
+
+            // Queue a callback task
+            callback.onShadeExpandedChanged(true)
+
+            // Immediately destroy the service,
+            mService.onDestroy()
+
+            // Run all queued tasks
+            mMainExecutor.runAllReady()
+
+            // The test passes if no IllegalStateException is thrown.
+        }
+
+    @Test
     fun testDoNotRemoveViewOnDestroyIfOverlayNotStarted() {
         // Service destroyed without ever starting dream.
         mService.onDestroy()
@@ -1638,7 +1666,12 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         val mLifecycles: MutableList<State> = ArrayList()
 
         override var currentState: State
-            get() = mLifecycles[mLifecycles.size - 1]
+            get() =
+                if (mLifecycles.isEmpty()) {
+                    State.INITIALIZED
+                } else {
+                    mLifecycles[mLifecycles.size - 1]
+                }
             set(state) {
                 mLifecycles.add(state)
             }

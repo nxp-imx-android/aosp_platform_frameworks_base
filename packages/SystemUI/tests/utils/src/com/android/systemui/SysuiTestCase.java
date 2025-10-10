@@ -98,6 +98,7 @@ public abstract class SysuiTestCase {
                     android.os.Flags.class,
                     android.security.Flags.class,
                     android.service.controls.flags.Flags.class,
+                    android.service.dreams.Flags.class,
                     android.service.quickaccesswallet.Flags.class,
                     com.android.internal.telephony.flags.Flags.class,
                     com.android.server.notification.Flags.class,
