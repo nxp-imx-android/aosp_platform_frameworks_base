@@ -712,6 +712,7 @@ public class KeyguardIndicationController {
                     INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP,
                     new KeyguardIndication.Builder()
                             .setMessage(mBiometricMessageFollowUp)
+                            .setForceAccessibilityLiveRegionAssertive()
                             .setMinVisibilityMillis(IMPORTANT_MSG_MIN_DURATION)
                             .setTextColor(getInitialTextColorState())
                             .build(),
@@ -1140,7 +1141,9 @@ public class KeyguardIndicationController {
                                 useMisalignmentColor
                                         ? mContext.getColor(R.color.misalignment_text_color)
                                         : Color.WHITE));
-                if (mBiometricMessage != null && newIndication == mBiometricMessage) {
+                if (mBiometricMessage != null && newIndication == mBiometricMessage
+                        || mBiometricMessageFollowUp != null
+                        && newIndication == mBiometricMessageFollowUp) {
                     builder.setForceAccessibilityLiveRegionAssertive();
                 }
 
