@@ -16,10 +16,8 @@
 
 package com.android.systemui.statusbar;
 
-import static android.app.Flags.notificationsRedesignAppIcons;
 import static android.app.Flags.notificationsRedesignTemplates;
 
-import android.app.Flags;
 import android.app.Notification;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -89,7 +87,7 @@ public class NotificationGroupingUtil {
             @Override
             public boolean compare(View parent, View child, Object parentData,
                     Object childData) {
-                if (Flags.notificationsRedesignAppIcons() && mRow.isShowingAppIcon()) {
+                if (mRow.isShowingAppIcon()) {
                     // Icon is always the same when we're showing the app icon.
                     return true;
                 }
@@ -101,7 +99,7 @@ public class NotificationGroupingUtil {
             @Override
             public boolean compare(View parent, View child, Object parentData,
                     Object childData) {
-                if (Flags.notificationsRedesignAppIcons() && mRow.isShowingAppIcon()) {
+                if (mRow.isShowingAppIcon()) {
                     return false;
                 }
                 return !hasSameIcon(parentData, childData)
@@ -111,7 +109,7 @@ public class NotificationGroupingUtil {
         final ResultApplicator greyApplicator = new ResultApplicator() {
             @Override
             public void apply(View parent, View view, boolean apply, boolean reset) {
-                if (Flags.notificationsRedesignAppIcons() && mRow.isShowingAppIcon()) {
+                if (mRow.isShowingAppIcon()) {
                     // Do nothing.
                     return;
                 }
@@ -128,14 +126,6 @@ public class NotificationGroupingUtil {
                 ICON_EXTRACTOR,
                 iconVisibilityComparator,
                 VISIBILITY_APPLICATOR));
-        if (!notificationsRedesignAppIcons()) {
-            // To grey out the icons when they are not the same, or they have the same color
-            mProcessors.add(new Processor(mRow,
-                    com.android.internal.R.id.status_bar_latest_event_content,
-                    ICON_EXTRACTOR,
-                    greyComparator,
-                    greyApplicator));
-        }
         // To show the large icon on the left side instead if all the small icons are the same
         mProcessors.add(new Processor(mRow,
                 com.android.internal.R.id.status_bar_latest_event_content,

@@ -330,7 +330,6 @@ constructor(
         imageModelProvider.getImageModel(smallIcon, SmallSquare)?.let { NotifIcon.SmallIcon(it) }
 
     private fun StatusBarNotification.skeletonAppIcon(packageContext: Context): NotifIcon.AppIcon? {
-        if (!android.app.Flags.notificationsRedesignAppIcons()) return null
         if (!notificationIconStyleProvider.shouldShowAppIcon(this, packageContext)) return null
         val userHandle = UserHandle.of(normalizedUserId)
         return NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, userHandle))

@@ -917,13 +917,10 @@ constructor(
             expanded.setLayoutInflaterFactoryRecursively(FLAG_CONTENT_VIEW_EXPANDED)
             headsUp.setLayoutInflaterFactoryRecursively(FLAG_CONTENT_VIEW_HEADS_UP)
             public.setLayoutInflaterFactoryRecursively(FLAG_CONTENT_VIEW_PUBLIC)
-
-            if (android.app.Flags.notificationsRedesignAppIcons()) {
-                normalGroupHeader.setLayoutInflaterFactoryRecursively(FLAG_GROUP_SUMMARY_HEADER)
-                minimizedGroupHeader.setLayoutInflaterFactoryRecursively(
-                    FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER
-                )
-            }
+            normalGroupHeader.setLayoutInflaterFactoryRecursively(FLAG_GROUP_SUMMARY_HEADER)
+            minimizedGroupHeader.setLayoutInflaterFactoryRecursively(
+                FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER
+            )
             return this
         }
 
