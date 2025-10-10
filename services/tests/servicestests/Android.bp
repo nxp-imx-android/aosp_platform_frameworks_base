@@ -275,6 +275,7 @@ java_library {
         "junit",
         "mockito-target-minus-junit4",
         "androidx.annotation_annotation",
+        "services.core",
     ],
     libs: [
         "android.test.runner.stubs.system",
@@ -287,6 +288,9 @@ java_library {
         "utils-mockito/**/*.kt",
         "utils/**/*.java",
         "utils/**/*.kt",
+    ],
+    static_libs: [
+        "services.core.ravenwood",
     ],
     libs: [
         "android.test.runner.stubs.system",
@@ -317,6 +321,7 @@ java_library {
         "junit",
         "mockito-target-extended-minus-junit4",
         "androidx.annotation_annotation",
+        "services.core",
     ],
     libs: [
         "android.test.runner.stubs.system",
