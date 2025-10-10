@@ -392,7 +392,7 @@ constructor(
     private fun isInteractionAllowedByFalsing(content: ContentKey): Boolean {
         val interactionTypeOrNull =
             when (content) {
-                Overlays.Bouncer -> Classifier.BOUNCER_UNLOCK
+                Overlays.Bouncer -> Classifier.BOUNCER_SWIPE
                 Scenes.Gone -> Classifier.UNLOCK
                 Scenes.Shade,
                 Overlays.NotificationsShade -> Classifier.NOTIFICATION_DRAG_DOWN
