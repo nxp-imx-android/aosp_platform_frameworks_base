@@ -89,13 +89,19 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Tidak dapat membuka kunci dengan sidik jari. Terlalu banyak upaya gagal."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Perangkat tepercaya tidak tersedia"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Terlalu banyak pemakaian PIN yang salah"</string>
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
+    <skip />
+    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
+    <skip />
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Terlalu banyak pemakaian pola yang salah"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Terlalu banyak pemakaian sandi yang salah"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (6337373088574808830) -->
+    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
     <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (4178881609951888747) -->
+    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
     <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7931086124151522515) -->
+    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
     <skip />
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Coba lagi setelah # detik.}other{Coba lagi setelah # detik.}}"</string>
     <!-- no translation found for kg_too_many_failed_attempts_countdown_seconds (5869847493314053274) -->
