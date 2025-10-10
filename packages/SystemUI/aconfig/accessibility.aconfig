@@ -35,6 +35,13 @@ flag {
 }
 
 flag {
+    name: "floating_menu_more_options"
+    namespace: "accessibility"
+    description: "Adds a 'More Options' button to the accessibility floating menu, which reveals additional actions like Edit, Move, and Remove all."
+    bug: "440413395"
+}
+
+flag {
     name: "floating_menu_radii_animation"
     namespace: "accessibility"
     description: "Animates the floating menu's transition between curved and jagged edges."
