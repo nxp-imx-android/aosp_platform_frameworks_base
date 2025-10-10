@@ -759,16 +759,18 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     + mParams.getName());
             final var changedState = mLifecycle.updateLifecycleState(
                     (config) -> config.mBlockedActivityVisible = true);
-            if (changedState instanceof LifecycleState.Blocked) {
-                Intent intent = new Intent()
-                        .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
-                        .putExtra(Intent.EXTRA_COMPONENT_NAME, componentName);
-                mContext.startActivityAsUser(
-                        intent.addFlags(
-                                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK),
-                        ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(),
-                        UserHandle.SYSTEM);
+            if (Flags.computerControlBlockedState()
+                    && !(changedState instanceof LifecycleState.Blocked)) {
+                return;
             }
+            Intent intent = new Intent()
+                    .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
+                    .putExtra(Intent.EXTRA_COMPONENT_NAME, componentName);
+            mContext.startActivityAsUser(
+                    intent.addFlags(
+                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK),
+                    ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle(),
+                    UserHandle.SYSTEM);
         }
 
         @Override
