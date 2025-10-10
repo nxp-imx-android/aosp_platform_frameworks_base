@@ -19,6 +19,13 @@ flag {
 }
 
 flag {
+    name: "aapm_feature_disable_insecure_wifi_autojoin"
+    namespace: "responsible_apis"
+    description: "Android Advanced Protection Mode Feature: Disable Insecure Wifi Autojoin"
+    bug: "424512082"
+}
+
+flag {
     name: "aapm_feature_disable_install_unknown_sources"
     namespace: "responsible_apis"
     description: "Android Advanced Protection Mode Feature: Disable Install Unknown Sources"
