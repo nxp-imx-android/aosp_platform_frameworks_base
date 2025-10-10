@@ -4700,8 +4700,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 userData.mImeBindingState.mFocusedWindowEditorInfo, info.mFocusedWindowName,
                 userData.mImeBindingState.mFocusedWindowSoftInputMode, reason,
                 userData.mInFullscreenMode, info.mRequestWindowName, info.mImeLayeringTargetName,
-                info.mImeInputTargetName, info.mImeControlTargetName, info.mImeSurfaceParentName,
-                userId));
+                info.mImeInputTargetName, info.mImeControlTargetName, info.mImeParentName, userId));
 
         if (statsToken != null) {
             mImeTrackerService.onImmsUpdate(statsToken, info.mRequestWindowName);
@@ -5724,7 +5723,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             synchronized (ImfLock.class) {
                 final int userId = resolveImeUserIdFromDisplayIdLocked(displayId);
                 final var userData = getUserData(userId);
-                // Hide the IME method menu only when the IME surface parent is changed by the
+                // Hide the IME method menu only when the IME parent is changed by the
                 // input target changed, in case seeing the dialog dismiss flickering during
                 // the next focused window starting the input connection.
                 final var visibilityStateComputer = userData.mVisibilityStateComputer;
