@@ -46,7 +46,7 @@ import static android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR;
 import static android.view.flags.Flags.FLAG_TOOLKIT_FRAME_RATE_BY_SIZE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_TOOLKIT_SET_FRAME_RATE_READ_ONLY;
 import static android.view.flags.Flags.FLAG_VIEW_VELOCITY_API;
-import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
+import static android.view.flags.Flags.toolkitDisableCategoryOnMrr;
 
 import static com.android.cts.input.inputeventmatchers.InputEventMatchersKt.withKeyCode;
 
@@ -739,11 +739,14 @@ public class ViewRootImplTest {
         });
         sInstrumentation.waitForIdleSync();
         mView.getViewTreeObserver().removeOnDrawListener(failIfDrawn);
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH;
 
         sInstrumentation.runOnMainSync(() -> {
             mView.setVisibility(View.VISIBLE);
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_HIGH,
+            runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -780,9 +783,13 @@ public class ViewRootImplTest {
 
         mViewRootImpl = mView.getViewRootImpl();
         waitForFrameRateCategoryToSettle(mView);
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_LOW;
+
         sInstrumentation.runOnMainSync(() -> {
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_LOW,
+            runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -817,9 +824,12 @@ public class ViewRootImplTest {
 
         mViewRootImpl = mView.getViewRootImpl();
         waitForFrameRateCategoryToSettle(mView);
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
         sInstrumentation.runOnMainSync(() -> {
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_NORMAL,
+            runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -862,10 +872,13 @@ public class ViewRootImplTest {
         sInstrumentation.runOnMainSync(
                 () -> mView.getViewTreeObserver().removeOnDrawListener(failIfDrawn));
 
+        int expectedHigh = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH;
         sInstrumentation.runOnMainSync(() -> {
             mView.setVisibility(View.VISIBLE);
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_HIGH,
+            runAfterDraw(() -> assertEquals(expectedHigh,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -877,11 +890,14 @@ public class ViewRootImplTest {
 
         waitForFrameRateCategoryToSettle(mView);
 
+        int expectedNormal = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
         sInstrumentation.runOnMainSync(() -> {
             mView.setVisibility(View.VISIBLE);
             mView.invalidate();
             int expected = FRAME_RATE_CATEGORY_NORMAL;
-            runAfterDraw(() -> assertEquals(expected,
+            runAfterDraw(() -> assertEquals(expectedNormal,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -915,7 +931,8 @@ public class ViewRootImplTest {
         waitForFrameRateCategoryToSettle(mView);
         sInstrumentation.runOnMainSync(() -> {
             mView.invalidate();
-            int expected = toolkitFrameRateBySizeReadOnly() ? FRAME_RATE_CATEGORY_LOW
+            int expected = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
                     : FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
@@ -952,9 +969,11 @@ public class ViewRootImplTest {
 
         mViewRootImpl = mView.getViewRootImpl();
         waitForFrameRateCategoryToSettle(mView);
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
         sInstrumentation.runOnMainSync(() -> {
             mView.invalidate();
-            int expected = FRAME_RATE_CATEGORY_NORMAL;
             runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
@@ -1104,24 +1123,33 @@ public class ViewRootImplTest {
 
         waitForFrameRateCategoryToSettle(mView);
 
+        int expectedLow = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_LOW;
         sInstrumentation.runOnMainSync(() -> {
             mView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_LOW);
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_LOW,
+            runAfterDraw(() -> assertEquals(expectedLow,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
+        int expectedNormal = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_NORMAL;
         sInstrumentation.runOnMainSync(() -> {
             mView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_NORMAL);
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_NORMAL,
+            runAfterDraw(() -> assertEquals(expectedNormal,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
+        int expectedHigh = hasArrSupport()
+                    ? FRAME_RATE_CATEGORY_DEFAULT
+                    : FRAME_RATE_CATEGORY_HIGH;
         sInstrumentation.runOnMainSync(() -> {
             mView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_HIGH);
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_HIGH,
+            runAfterDraw(() -> assertEquals(expectedHigh,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -1158,8 +1186,9 @@ public class ViewRootImplTest {
             mView.setFrameContentVelocity(100);
             mView.invalidate();
             runAfterDraw(() -> {
-                int expected = toolkitFrameRateBySizeReadOnly()
-                        ? FRAME_RATE_CATEGORY_LOW : FRAME_RATE_CATEGORY_NORMAL;
+                int expected = hasArrSupport()
+                        ? FRAME_RATE_CATEGORY_DEFAULT
+                        : FRAME_RATE_CATEGORY_NORMAL;
                 assertEquals(expected, mViewRootImpl.getLastPreferredFrameRateCategory());
                 assertTrue(mViewRootImpl.getLastPreferredFrameRate() >= 60f);
             });
@@ -1200,9 +1229,11 @@ public class ViewRootImplTest {
         });
         sInstrumentation.waitForIdleSync();
 
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_HIGH;
         sInstrumentation.runOnMainSync(() -> {
-            assertEquals(FRAME_RATE_CATEGORY_HIGH,
-                    viewRootImpl.getLastPreferredFrameRateCategory());
+            assertEquals(expected, viewRootImpl.getLastPreferredFrameRateCategory());
         });
     }
 
@@ -1298,6 +1329,10 @@ public class ViewRootImplTest {
 
         mViewRootImpl = mView.getViewRootImpl();
         waitForFrameRateCategoryToSettle(mView);
+        int expectedNormal = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
+
         sInstrumentation.runOnMainSync(() -> {
             assertEquals(FRAME_RATE_CATEGORY_DEFAULT,
                     mViewRootImpl.getPreferredFrameRateCategory());
@@ -1305,8 +1340,7 @@ public class ViewRootImplTest {
             mView.setRequestedFrameRate(frameRate);
             mView.invalidate();
             runAfterDraw(() -> {
-                int expected = FRAME_RATE_CATEGORY_NORMAL;
-                assertEquals(expected, mViewRootImpl.getLastPreferredFrameRateCategory());
+                assertEquals(expectedNormal, mViewRootImpl.getLastPreferredFrameRateCategory());
                 assertEquals(frameRate, mViewRootImpl.getLastPreferredFrameRate(), 0.1);
             });
         });
@@ -1321,10 +1355,13 @@ public class ViewRootImplTest {
             sInstrumentation.waitForIdleSync();
         }
 
+        int expectedLow = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_LOW;
         sInstrumentation.runOnMainSync(() -> {
             mView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_LOW);
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_LOW,
+            runAfterDraw(() -> assertEquals(expectedLow,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -1347,7 +1384,9 @@ public class ViewRootImplTest {
         mView = new View(sContext);
         WindowManager.LayoutParams wmlp = new WindowManager.LayoutParams(TYPE_APPLICATION_OVERLAY);
         wmlp.token = new Binder(); // Set a fake token to bypass 'is your activity running' check
-        int expected = FRAME_RATE_CATEGORY_NORMAL;
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
 
         sInstrumentation.runOnMainSync(() -> {
             WindowManager wm = sContext.getSystemService(WindowManager.class);
@@ -1384,7 +1423,9 @@ public class ViewRootImplTest {
         Thread.sleep(delay);
 
         // The expected category is normal for intermittent.
-        int intermittentExpected = FRAME_RATE_CATEGORY_NORMAL;
+        int intermittentExpected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
 
         sInstrumentation.runOnMainSync(() -> {
             mView.invalidate();
@@ -1558,10 +1599,13 @@ public class ViewRootImplTest {
         }
 
         Thread.sleep(delay);
+        int expected = hasArrSupport()
+                ? FRAME_RATE_CATEGORY_DEFAULT
+                : FRAME_RATE_CATEGORY_NORMAL;
         sInstrumentation.runOnMainSync(() -> {
             mView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_DEFAULT);
             mView.invalidate();
-            runAfterDraw(() -> assertEquals(FRAME_RATE_CATEGORY_NORMAL,
+            runAfterDraw(() -> assertEquals(expected,
                     mViewRootImpl.getLastPreferredFrameRateCategory()));
         });
         waitForAfterDraw();
@@ -2133,6 +2177,10 @@ public class ViewRootImplTest {
 
     private void setUpViewAttributes(boolean isLightTheme, boolean isForceDarkAllowed) {
         setUpViewAttributes(sContext, isLightTheme, isForceDarkAllowed);
+    }
+
+    private boolean hasArrSupport() {
+        return toolkitDisableCategoryOnMrr() && !mViewRootImpl.getHasArrSupport();
     }
 
     private void setUpViewAttributes(Context context, boolean isLightTheme,
