@@ -91,6 +91,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.composable.ShadeHeader.Values.ClockScale
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.phone.StatusBarLocation
+import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimate
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernShadeCarrierGroupMobileView
@@ -548,9 +549,10 @@ private fun BatteryInfo(
     modifier: Modifier = Modifier,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
+    val isQuickSettingsDarkTheme = isSystemInDarkTheme()
     BatteryWithEstimate(
         viewModelFactory = viewModel.batteryViewModelFactory,
-        isDarkProvider = { viewModel.isShadeAreaDark },
+        isDarkProvider = { IsAreaDark { isQuickSettingsDarkTheme } },
         showIcon = showIcon,
         showEstimate = useExpandedFormat,
         textColor = textColor,
