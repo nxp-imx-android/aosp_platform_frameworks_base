@@ -296,11 +296,6 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
                                         && response.isCredAlreadyTried());
                     }
 
-                    @Override
-                    public void onChecked(boolean matched, int timeoutMs) {
-                        handleChecked(matched, timeoutMs, false /* isDuplicate */);
-                    }
-
                     private void handleChecked(
                             boolean matched, int timeoutMs, boolean isDuplicate) {
                         mLatencyTracker.onActionEnd(ACTION_CHECK_CREDENTIAL_UNLOCKED);
