@@ -334,7 +334,7 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
                 }
                 mShadeController.animateExpandShade();
                 mNotificationStackScrollLayoutController.setWillExpand(true);
-                mHeadsUpManager.unpinAll(true /* userUnpinned */);
+                mHeadsUpManager.unpinAll(true /* userUnpinned */, "CentralSurfaces");
                 mMetricsLogger.count("panel_open", 1);
             } else if (!mQsController.getExpanded()
                     && !mShadeController.isExpandingOrCollapsing()) {

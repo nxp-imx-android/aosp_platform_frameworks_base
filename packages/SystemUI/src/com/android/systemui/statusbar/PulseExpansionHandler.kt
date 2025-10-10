@@ -91,7 +91,8 @@ constructor(
                         pulseExpandAbortListener?.run()
                     }
                 }
-                headsUpManager.unpinAll(/* userUnPinned= */ true)
+                headsUpManager.unpinAll(/* userUnPinned= */ true,
+                    "PulseExpansionHandler.isExpanding=false")
             }
         }
 

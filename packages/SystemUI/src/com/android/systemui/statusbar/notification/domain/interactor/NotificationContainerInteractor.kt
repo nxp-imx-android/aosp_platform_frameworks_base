@@ -41,7 +41,7 @@ constructor(
             .pairwise()
             .filter { (prev, current) -> prev < 1f && current == 1f }
             .collect {
-                headsUpNotificationInteractor.unpinAll(true)
+                headsUpNotificationInteractor.unpinAll(true, "NotifContainerInteractor.shadeExpansion")
             }
     }
 }
