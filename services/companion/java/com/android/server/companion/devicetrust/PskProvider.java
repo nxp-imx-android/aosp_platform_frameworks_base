@@ -41,4 +41,11 @@ public interface PskProvider {
      */
     @Nullable
     byte[] getKey(@UserIdInt int userId, int associationId);
+
+    /**
+     * Loads keys for user if necessary. CDM will call this for all registered providers after
+     * user unlock.
+     * @param userId user ID
+     */
+    default void load(@UserIdInt int userId) {}
 }
