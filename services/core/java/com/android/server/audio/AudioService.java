@@ -11593,9 +11593,6 @@ public class AudioService extends IAudioService.Stub
                     Objects.requireNonNullElse(streamAbs, AudioSystem.STREAM_MUSIC));
         }
 
-        mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(
-                rescaleIndex(vss.getIndex(a2dpDev) / 10, vss.getStreamType(),
-                        AudioSystem.STREAM_MUSIC));
         sendMsg(mAudioHandler, MSG_SET_DEVICE_VOLUME, SENDMSG_QUEUE,
                     AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP, 0, vss, 0);
     }
