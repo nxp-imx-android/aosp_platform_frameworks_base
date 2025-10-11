@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.android.systemui.mediaprojection.permission
+package com.android.systemui.screencapture.ui
 
-import android.app.Activity
 import android.app.ActivityOptions
 import android.app.ActivityTaskManager
 import android.content.Intent
@@ -27,10 +26,22 @@ import android.media.projection.ReviewGrantedConsentResult.RECORD_CONTENT_TASK
 import android.os.Bundle
 import android.os.UserHandle
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import com.android.compose.theme.PlatformTheme
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.MediaProjectionServiceHelper
+import com.android.systemui.screencapture.common.ScreenCaptureComponent
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
-import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.util.AsyncActivityLauncher
 import javax.inject.Inject
 
@@ -40,10 +51,10 @@ import javax.inject.Inject
 class ShareScreenActivity
 @Inject
 constructor(
-    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val builder: ScreenCaptureComponent.Builder,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
     private val asyncActivityLauncher: AsyncActivityLauncher,
-) : Activity() {
+) : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,14 +76,34 @@ constructor(
 
         mediaProjectionMetricsLogger.notifyPermissionRequestDisplayed(uid)
 
-        val params =
+        val parameters =
             ScreenCaptureUiParameters.ShareScreen(
                 onApprovedCallback = { taskId ->
                     onTaskSelected(taskId, reviewGrantedConsentRequired, hostUserHandle)
                 },
                 hostAppUserHandle = hostUserHandle,
             )
-        screenCaptureUiInteractor.show(params)
+        val component = builder.setScope(lifecycleScope).setParameters(parameters).build()
+
+        setContent {
+            PlatformTheme {
+                val scope = rememberCoroutineScope()
+                val uiComponent =
+                    remember(scope, parameters) {
+                        component
+                            .uiComponentBuilders()[ScreenCaptureType.SHARE_SCREEN]
+                            ?.setScope(scope)
+                            ?.setDisplay(display)
+                            ?.setWindow(window)
+                            ?.build()
+                            ?: error("No UI builder for ${ScreenCaptureType.SHARE_SCREEN}")
+                    }
+
+                Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
+                    uiComponent.screenCaptureContent.Content()
+                }
+            }
+        }
     }
 
     private fun onTaskSelected(

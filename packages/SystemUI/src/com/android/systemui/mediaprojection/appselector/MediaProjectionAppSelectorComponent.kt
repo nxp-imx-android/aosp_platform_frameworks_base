@@ -39,7 +39,6 @@ import com.android.systemui.mediaprojection.appselector.view.WindowMetricsProvid
 import com.android.systemui.mediaprojection.devicepolicy.MediaProjectionDevicePolicyModule
 import com.android.systemui.mediaprojection.devicepolicy.PersonalProfile
 import com.android.systemui.mediaprojection.permission.MediaProjectionPermissionActivity
-import com.android.systemui.mediaprojection.permission.ShareScreenActivity
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.policy.ConfigurationController
 import dagger.Binds
@@ -79,11 +78,6 @@ interface MediaProjectionActivitiesModule {
     @IntoMap
     @ClassKey(MediaProjectionPermissionActivity::class)
     fun bindsMediaProjectionPermissionActivity(impl: MediaProjectionPermissionActivity): Activity
-
-    @Binds
-    @IntoMap
-    @ClassKey(ShareScreenActivity::class)
-    abstract fun bindsShareScreenActivity(impl: ShareScreenActivity): Activity
 }
 
 /**

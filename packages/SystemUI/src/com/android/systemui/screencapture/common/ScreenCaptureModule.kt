@@ -20,6 +20,7 @@ import android.app.Activity
 import com.android.systemui.CoreStartable
 import com.android.systemui.screencapture.ScreenCaptureStartable
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
+import com.android.systemui.screencapture.ui.ShareScreenActivity
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
@@ -32,6 +33,11 @@ interface ScreenCaptureModule {
     @IntoMap
     @ClassKey(ScreenCaptureStartable::class)
     fun bindScreenCaptureUiStartable(impl: ScreenCaptureStartable): CoreStartable
+
+    @Binds
+    @IntoMap
+    @ClassKey(ShareScreenActivity::class)
+    fun bindsShareScreenActivity(impl: ShareScreenActivity): Activity
 
     @Binds
     @IntoMap
