@@ -135,6 +135,7 @@ fun AmbientCueContainer(
                 )
             }
             is PillStyleViewModel.Uninitialized -> {}
+            is PillStyleViewModel.NoPillStyle -> {}
         }
     }
 }
