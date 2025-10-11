@@ -1100,6 +1100,16 @@ flag {
 }
 
 flag {
+    name: "expand_qs_bypass_enabled"
+    namespace: "systemui"
+    description: "Allows QS to expand even if lock screen bypass is enabled"
+    bug: "444018109"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   namespace: "systemui"
   name: "enable_view_capture_tracing"
   description: "Enables view capture tracing in System UI."
