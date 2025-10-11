@@ -653,6 +653,13 @@ filegroup {
 }
 
 filegroup {
+    name: "framework-telecom-shared-srcs",
+    srcs: [
+        "core/java/android/util/IndentingPrintWriter.java",
+    ],
+}
+
+filegroup {
     name: "framework-networkstack-shared-srcs",
     srcs: [
         ":modules-utils-preconditions-srcs",
