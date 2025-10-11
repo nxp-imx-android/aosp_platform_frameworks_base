@@ -22,9 +22,9 @@ import android.view.WindowManager
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.util.ScreenshotHelper
 import com.android.internal.util.ScreenshotRequest
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screencapture.ScreenCaptureEvent
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screenshot.ImageCapture
 import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
@@ -32,7 +32,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
 
 /** Interactor responsible for employing ScreenshotHelper to take various types of screenshots. */
-@SysUISingleton
+@ScreenCaptureScope
 class ScreenshotInteractor
 @Inject
 constructor(
