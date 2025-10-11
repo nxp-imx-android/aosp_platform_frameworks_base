@@ -29,14 +29,11 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.UserManager;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 import com.android.server.BundleUtils;
-import com.android.server.utils.Slogf;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,8 +45,6 @@ import java.util.List;
  * @hide
  */
 public final class UserTypeDetails {
-
-    private static final String TAG = UserTypeDetails.class.getSimpleName();
 
     /** Name of the user type, such as {@link UserManager#USER_TYPE_PROFILE_MANAGED}. */
     private final @NonNull String mName;
@@ -173,15 +168,11 @@ public final class UserTypeDetails {
     private final @NonNull UserProperties mDefaultUserProperties;
 
     /**
-     * The config used to create the {@link UserActivitiesAllowlist} associated with the user type.
+     * The Resource ID of the that will be used create the {@link UserActivitiesAllowlist}
+     * associated with the user type (or {@link Resources#ID_NULL} when the type doesn't define such
+     * allowlist).
      */
-    private final @ArrayRes int mActivitiesAllowlistResId;
-
-    /**
-     * Lazy-loaded by {@link #getActivitiesAllowlist()}; would still be {@code null} if
-     * {@link #mActivitiesAllowlistResId} is 0.
-     */
-    private @Nullable UserActivitiesAllowlist mActivitiesAllowlist;
+    private final @ArrayRes int mActivitiesAllowlist;
 
     private UserTypeDetails(@NonNull String name, boolean enabled, int maxAllowed,
             @UserInfoFlag int baseType, @UserInfoFlag int defaultUserInfoPropertyFlags,
@@ -196,7 +187,7 @@ public final class UserTypeDetails {
             @Nullable List<DefaultCrossProfileIntentFilter> defaultCrossProfileIntentFilters,
             @StringRes int accessibilityString,
             @NonNull UserProperties defaultUserProperties,
-            @ArrayRes int  allowlistsResId) {
+            @ArrayRes int activitiesAllowlists) {
         this.mName = name;
         this.mEnabled = enabled;
         this.mMaxAllowed = maxAllowed;
@@ -218,7 +209,7 @@ public final class UserTypeDetails {
         this.mDarkThemeBadgeColors = darkThemeBadgeColors;
         this.mAccessibilityString = accessibilityString;
         this.mDefaultUserProperties = defaultUserProperties;
-        this.mActivitiesAllowlistResId = allowlistsResId;
+        this.mActivitiesAllowlist = activitiesAllowlists;
     }
 
     /**
@@ -398,23 +389,7 @@ public final class UserTypeDetails {
                 : Collections.emptyList();
     }
 
-    /** Gets the {@link UserActivitiesAllowlist allowlists} associated with the user type. */
-    @Nullable UserActivitiesAllowlist getActivitiesAllowlist() {
-        return getActivitiesAllowlist(Resources.getSystem());
-    }
-
-    @VisibleForTesting
-    @Nullable UserActivitiesAllowlist getActivitiesAllowlist(Resources resources) {
-        if (mActivitiesAllowlistResId == 0) {
-            return null;
-        }
-        if (mActivitiesAllowlist != null) {
-            return mActivitiesAllowlist;
-        }
-        String[] allowlistedActivities = resources.getStringArray(mActivitiesAllowlistResId);
-        Slogf.i(TAG, "Setting activities allowlist for HSU from %s",
-                Arrays.toString(allowlistedActivities));
-        mActivitiesAllowlist = new UserActivitiesAllowlist(allowlistedActivities);
+    @ArrayRes int getActivitiesAllowlist() {
         return mActivitiesAllowlist;
     }
 
@@ -455,10 +430,8 @@ public final class UserTypeDetails {
         pw.println(mDarkThemeBadgeColors != null ? mDarkThemeBadgeColors.length : "0(null)");
         pw.print(prefix); pw.print("mLabels.length: ");
         pw.println(mLabels != null ? mLabels.length : "0(null)");
-        UserActivitiesAllowlist activitiesAllowlist = getActivitiesAllowlist();
-        if (activitiesAllowlist != null) {
-            activitiesAllowlist.dump(pw, prefix, "Activities allowlist");
-        }
+        pw.print(prefix); pw.print("mActivitiesAllowlist: ");
+        pw.println(mActivitiesAllowlist);
     }
 
     /** Builder for a {@link UserTypeDetails}; see that class for documentation. */
@@ -489,7 +462,7 @@ public final class UserTypeDetails {
         // Default UserProperties cannot be null but for efficiency we don't initialize it now.
         // If it isn't set explicitly, {@link UserProperties.Builder#build()} will be used.
         private @Nullable UserProperties mDefaultUserProperties = null;
-        private @ArrayRes int mActivitiesAllowlistResId;
+        private @ArrayRes int mActivitiesAllowlist = Resources.ID_NULL;
 
         public Builder setName(String name) {
             mName = name;
@@ -607,10 +580,11 @@ public final class UserTypeDetails {
         /**
          * Sets the allowlist of activities associated with the user type.
          *
-         * <p>If the array is empty, allowlisting is disabled (and all activities are allowed).
+         * <p>If the resource is {@link Resources#ID_NULL}, allowlisting is disabled (and all
+         * activities are allowed).
          */
-        public Builder setActivitiesAllowlist(@ArrayRes int activitiesAllowlistResId) {
-            this.mActivitiesAllowlistResId = activitiesAllowlistResId;
+        public Builder setActivitiesAllowlist(@ArrayRes int activitiesAllowlist) {
+            this.mActivitiesAllowlist = activitiesAllowlist;
             return this;
         }
 
@@ -678,7 +652,7 @@ public final class UserTypeDetails {
                     mDefaultCrossProfileIntentFilters,
                     mAccessibilityString,
                     getDefaultUserProperties(),
-                    mActivitiesAllowlistResId);
+                    mActivitiesAllowlist);
         }
 
         private boolean hasBadge() {

@@ -3352,7 +3352,7 @@
     <integer name="config_hsumBootStrategy">0</integer>
 
     <!-- List of activities (flattened component names) allowed to be launched when the current user is the Headless System User -->
-    <string-array name="config_hsu_allowlist_activitivies" translatable="false">
+    <string-array name="config_hsu_allowlist_activities" translatable="false">
        <!-- default empty (meaning all activities will be allowed) -->
     </string-array>
 

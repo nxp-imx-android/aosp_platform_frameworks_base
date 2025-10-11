@@ -143,7 +143,7 @@ final class UserActivitiesAllowlist {
         dump(new IndentingPrintWriter(writer, /* singleIndent=*/ "  ", prefix), header);
     }
 
-    private void dump(IndentingPrintWriter writer, String header) {
+    void dump(IndentingPrintWriter writer, String header) {
         writer.printf("%s:\n", header);
         writer.increaseIndent();
 
