@@ -4188,53 +4188,38 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // be assigned to a shortcut.
             Slog.v(LOG_TAG, "A enabled service requesting a11y button " + componentName
                     + " should be assign to the button or shortcut.");
-            if (Flags.notifyQsTileChangedAfterUserInitialization()) {
-                boolean hasQsTile = !TextUtils.isEmpty(serviceInfo.getTileServiceName());
-                boolean isAccessibilityTool = serviceInfo.isAccessibilityTool();
-                if (hasQsTile && isAccessibilityTool) {
-                    newQsShortcutTargets.add(serviceName);
-                } else {
-                    buttonTargets.add(serviceName);
-                }
+            boolean hasQsTile = !TextUtils.isEmpty(serviceInfo.getTileServiceName());
+            boolean isAccessibilityTool = serviceInfo.isAccessibilityTool();
+            if (hasQsTile && isAccessibilityTool) {
+                newQsShortcutTargets.add(serviceName);
             } else {
                 buttonTargets.add(serviceName);
             }
         });
 
-        if (Flags.notifyQsTileChangedAfterUserInitialization()) {
-            boolean softwareShortcutChanged = userState.updateShortcutTargetsLocked(
-                    buttonTargets, SOFTWARE);
-            boolean qsShortcutChanged = userState.updateShortcutTargetsLocked(
-                    newQsShortcutTargets, QUICK_SETTINGS);
-            if (!softwareShortcutChanged && !qsShortcutChanged) {
-                return;
-            }
-
-            // Update setting key with new value.
-            if (softwareShortcutChanged) {
-                persistColonDelimitedSetToSettingLocked(
-                        Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS,
-                        userState.mUserId, buttonTargets, str -> str);
-            }
-            if (qsShortcutChanged) {
-                persistColonDelimitedSetToSettingLocked(Settings.Secure.ACCESSIBILITY_QS_TARGETS,
-                        userState.mUserId, newQsShortcutTargets, str -> str);
-
-                mMainHandler.sendMessage(obtainMessage(
-                        AccessibilityManagerService::updateA11yTileServicesInQuickSettingsPanel,
-                        this, newQsShortcutTargets, currentQsShortcutTargets, userState.mUserId));
-            }
-            scheduleNotifyClientsOfServicesStateChangeLocked(userState);
-        } else {
-            if (!userState.updateShortcutTargetsLocked(buttonTargets, SOFTWARE)) {
-                return;
-            }
-
-            // Update setting key with new value.
-            persistColonDelimitedSetToSettingLocked(Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS,
-                    userState.mUserId, buttonTargets, str -> str);
-            scheduleNotifyClientsOfServicesStateChangeLocked(userState);
+        boolean softwareShortcutChanged = userState.updateShortcutTargetsLocked(
+                buttonTargets, SOFTWARE);
+        boolean qsShortcutChanged = userState.updateShortcutTargetsLocked(
+                newQsShortcutTargets, QUICK_SETTINGS);
+        if (!softwareShortcutChanged && !qsShortcutChanged) {
+            return;
         }
+
+        // Update setting key with new value.
+        if (softwareShortcutChanged) {
+            persistColonDelimitedSetToSettingLocked(
+                    Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS,
+                    userState.mUserId, buttonTargets, str -> str);
+        }
+        if (qsShortcutChanged) {
+            persistColonDelimitedSetToSettingLocked(Settings.Secure.ACCESSIBILITY_QS_TARGETS,
+                    userState.mUserId, newQsShortcutTargets, str -> str);
+
+            mMainHandler.sendMessage(obtainMessage(
+                    AccessibilityManagerService::updateA11yTileServicesInQuickSettingsPanel,
+                    this, newQsShortcutTargets, currentQsShortcutTargets, userState.mUserId));
+        }
+        scheduleNotifyClientsOfServicesStateChangeLocked(userState);
     }
 
     /**
@@ -6822,8 +6807,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             IUserInitializationCompleteCallback callback) {
         synchronized (mLock) {
             mUserInitializationCompleteCallbacks.add(callback);
-            if (Flags.notifyQsTileChangedAfterUserInitialization()
-                    && isServiceInitializedLocked()) {
+            if (isServiceInitializedLocked()) {
                 // If the user has been initialized before the caller register the callback,
                 // send the userInitializationComplete directly.
                 try {
