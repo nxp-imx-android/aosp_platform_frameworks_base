@@ -693,8 +693,9 @@ public class PhoneWindowManagerTests {
         intent.putExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, BluetoothProfile.STATE_DISCONNECTED);
         intent.putExtra(BluetoothProfile.EXTRA_STATE, BluetoothProfile.STATE_CONNECTED);
         ArgumentCaptor<BroadcastReceiver> captor = ArgumentCaptor.forClass(BroadcastReceiver.class);
-        verify(mContext).registerReceiver(captor.capture(), argThat(intentFilter ->
-                                intentFilter.matchAction(ACTION_CONNECTION_STATE_CHANGED)));
+        verify(mContext).registerReceiverForAllUsers(captor.capture(), argThat(intentFilter ->
+                                intentFilter.matchAction(ACTION_CONNECTION_STATE_CHANGED)),
+                                eq(null), eq(null));
         captor.getValue().onReceive(mContext, intent);
         verify(mWindowWakeUpPolicy).wakeUpFromBluetooth();
     }

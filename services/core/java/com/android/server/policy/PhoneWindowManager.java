@@ -2439,7 +2439,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // register for Bluetooth HID profile broadcasts.
         filter = new IntentFilter(ACTION_CONNECTION_STATE_CHANGED);
-        mContext.registerReceiver(mBluetoothHidReceiver, filter);
+        mContext.registerReceiverForAllUsers(mBluetoothHidReceiver, filter, null, null);
 
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
 
