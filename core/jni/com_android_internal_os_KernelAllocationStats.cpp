@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <android-base/logging.h>
 #include <android-base/stringprintf.h>
+#include <dmabufinfo/dmabuf_per_buffer_stats.h>
 #include <dmabufinfo/dmabufinfo.h>
 #include <iterator>
 #include <jni.h>
@@ -44,9 +45,12 @@ struct PidDmaInfo {
 };
 
 static jobjectArray KernelAllocationStats_getDmabufAllocations(JNIEnv *env, jobject) {
+    android::dmabufinfo::DmabufPerBufferStats stats;
     std::vector<DmaBuffer> buffers;
 
-    if (!dmabufinfo::ReadProcfsDmaBufs(&buffers)) {
+    if (!GetDmabufPerBufferStats(stats)) return nullptr;
+
+    if (!dmabufinfo::ReadProcfsDmaBufs(buffers, stats)) {
         return nullptr;
     }
 
