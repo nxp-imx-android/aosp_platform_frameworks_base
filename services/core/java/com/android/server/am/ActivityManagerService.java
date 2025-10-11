@@ -3130,9 +3130,10 @@ public class ActivityManagerService extends IActivityManager.Stub
      *
      * @param packageName the name of the package to match uid against.
      * @param callingUid the uid of the caller.
+     * @param throwException throw exception if the uid does not match
      * @throws SecurityException if the calling uid doesn't match uid of the package.
      */
-    private void enforceCallingPackage(String packageName, int callingUid) {
+    private void enforceCallingPackage(String packageName, int callingUid, boolean throwException) {
         if (packageName == null) {
             throw new IllegalArgumentException("callingPackage cannot be null");
         }
@@ -3149,7 +3150,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         final int packageUid = getPackageManagerInternal().getPackageUid(packageName,
                 /*flags=*/ 0, userId);
         if (packageUid != callingUid) {
-            throw new SecurityException(packageName + " does not belong to uid " + callingUid);
+            final SecurityException e =
+                    new SecurityException(packageName + " does not belong to uid " + callingUid);
+            if (throwException) {
+                throw e;
+            } else {
+                Slog.wtf(TAG, e);
+            }
         }
     }
 
@@ -13748,13 +13755,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             throws TransactionTooLargeException {
         enforceNotIsolatedCaller("startService");
         enforceAllowedToStartOrBindServiceIfSdkSandbox(service);
-        if (com.android.server.am.Flags.serviceCheckCallingPkg()) {
-            enforceCallingPackage(callingPackage, Binder.getCallingUid());
-        } else {
-            if (callingPackage == null) {
-                throw new IllegalArgumentException("callingPackage cannot be null");
-            }
-        }
+        enforceCallingPackage(callingPackage, Binder.getCallingUid(),
+                com.android.server.am.Flags.serviceCheckCallingPkg());
         addCreatorToken(service, callingPackage);
         if (service != null) {
             // Refuse possible leaked file descriptors
@@ -13846,13 +13848,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Override
     public IBinder peekService(Intent service, String resolvedType, String callingPackage) {
         enforceNotIsolatedCaller("peekService");
-        if (com.android.server.am.Flags.serviceCheckCallingPkg()) {
-            enforceCallingPackage(callingPackage, Binder.getCallingUid());
-        } else {
-            if (callingPackage == null) {
-                throw new IllegalArgumentException("callingPackage cannot be null");
-            }
-        }
+        enforceCallingPackage(callingPackage, Binder.getCallingUid(),
+                com.android.server.am.Flags.serviceCheckCallingPkg());
         // Refuse possible leaked file descriptors
         if (service != null && service.hasFileDescriptors() == true) {
             throw new IllegalArgumentException("File descriptors passed in Intent");
@@ -13998,13 +13995,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             throws TransactionTooLargeException {
         enforceNotIsolatedCaller("bindService");
         enforceAllowedToStartOrBindServiceIfSdkSandbox(service);
-        if (com.android.server.am.Flags.serviceCheckCallingPkg()) {
-            enforceCallingPackage(callingPackage, Binder.getCallingUid());
-        } else {
-            if (callingPackage == null) {
-                throw new IllegalArgumentException("callingPackage cannot be null");
-            }
-        }
+        enforceCallingPackage(callingPackage, Binder.getCallingUid(),
+                com.android.server.am.Flags.serviceCheckCallingPkg());
 
         if (service != null) {
             // Refuse possible leaked file descriptors
@@ -14323,7 +14315,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     public void backupAgentCreated(
             String agentPackageName, IBinder agent, @CanBeCURRENT @UserIdInt int userId) {
         final int callingUid = Binder.getCallingUid();
-        enforceCallingPackage(agentPackageName, callingUid);
+        enforceCallingPackage(agentPackageName, callingUid, /* throwException= */ true);
 
         // Resolve the target user id and enforce permissions.
         userId = mUserController.handleIncomingUser(Binder.getCallingPid(), callingUid,
