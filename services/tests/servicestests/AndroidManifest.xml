@@ -245,6 +245,11 @@
         <activity android:name="com.android.server.accounts.AccountAuthenticatorDummyActivity"/>
         <activity android:name="com.android.server.adb.AdbDebuggingManagerTestActivity"/>
 
+        <activity android:name="com.android.server.om.OverlayConstraintsTests$TestActivity" />
+        <activity android:name="com.android.server.om.OverlayConstraintsTests$TestActivity2" />
+        <activity android:name="com.android.server.om.OverlayConstraintsTests$LaunchCounterActivity" />
+        <activity android:name="com.android.server.om.OverlayConstraintsTests$LaunchCounterActivity2" />
+
         <activity-alias android:name="a.ShortcutEnabled"
              android:targetActivity="com.android.server.pm.ShortcutTestActivity"
              android:enabled="true"

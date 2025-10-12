@@ -219,3 +219,13 @@ flag {
     description: "Merge per-package idmap verification and creation steps into a single binder transaction"
     bug: "422474410"
 }
+
+flag {
+    name: "overlay_constraint_aware_asset_path_changes"
+    namespace: "resource_manager"
+    description: "Consider resource overlay constraints during configuration change based on asset path changes"
+    bug: "4476607105"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
