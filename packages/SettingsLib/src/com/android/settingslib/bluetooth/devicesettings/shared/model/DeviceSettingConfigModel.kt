@@ -55,14 +55,14 @@ sealed interface DeviceSettingConfigNodeModel {
 
             /** A general built-in item in Settings. */
             data class CommonBuiltinItem(
-                @DeviceSettingId override val settingId: Int,
+                @param:DeviceSettingId override val settingId: Int,
                 override val highlighted: Boolean,
                 override val preferenceKey: String,
             ) : BuiltinItem
 
             /** A bluetooth profiles in Settings. */
             data class BluetoothProfilesItem(
-                @DeviceSettingId override val settingId: Int,
+                @param:DeviceSettingId override val settingId: Int,
                 override val highlighted: Boolean,
                 override val preferenceKey: String,
                 val invisibleProfiles: List<String>,
@@ -71,7 +71,7 @@ sealed interface DeviceSettingConfigNodeModel {
 
         /** A remote item provided by other apps. */
         data class AppProvidedItem(
-            @DeviceSettingId override val settingId: Int,
+            @param:DeviceSettingId override val settingId: Int,
             override val highlighted: Boolean,
         ) : Item
     }

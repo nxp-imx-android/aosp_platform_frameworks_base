@@ -35,7 +35,7 @@ import android.os.Parcelable
  * @property extras Extra bundle
  */
 data class DeviceSettingItem(
-    @DeviceSettingId val settingId: Int,
+    @param:DeviceSettingId val settingId: Int,
     val packageName: String? = null,
     val className: String? = null,
     val intentAction: String? = null,
