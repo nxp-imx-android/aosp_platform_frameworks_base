@@ -159,6 +159,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Sitisha"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Zima sauti"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Rejesha sauti"</string>
+    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Piga picha ya skrini na unase skrini nzima"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Rekodi skrini nzima"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Piga picha ya skrini ya sehemu uliyochagua"</string>
@@ -424,17 +426,17 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Inatuma"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Kifaa hakina jina"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Hakuna vifaa vilivyopatikana"</string>
+    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
+    <skip />
+    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
+    <skip />
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Hakuna Muunganisho wa Wi-Fi au ethaneti"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Ondoa"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Maikrofoni ya sasa"</string>
-    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
-    <skip />
+    <string name="quick_settings_audio_output_section_title" msgid="3448300919285193209">"Matokeo"</string>
+    <string name="quick_settings_audio_input_section_title" msgid="9203723659866975215">"Ingizo"</string>
+    <string name="quick_settings_audio_input_disclaimer_text" msgid="442891508001590727">"Sauti ya maikrofoni itarekebishwa kiotomatiki"</string>
+    <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"Madoido"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Ung\'avu"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Ugeuzaji rangi"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Usahihishaji wa rangi"</string>
@@ -1148,8 +1150,7 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Ukurasa wa <xliff:g id="ID_1">%1$d</xliff:g> kati ya <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ungependa kuwasha <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Aikoni ya "<annotation id="action_key_icon">"kitendo"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ni mikato ya kibodi inayopaswa kutumia <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Bonyeza tena aikoni ya Kitendo + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> ili uwashe <xliff:g id="ID_3">%3$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Ungependa kuwasha mikato ya kibodi ya <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Usiwashe"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Washa njia ya mkato"</string>
@@ -1715,6 +1716,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Telezesha kidole kutoka sehemu ya juu kushoto ili ufungue arifa"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Telezesha kidole kutoka sehemu ya juu kulia ili ufungue Mipangilio ya Haraka"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Nyuma"</string>
+    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
+    <skip />
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Uliotangulia"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Unaofuata"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"usogeze kwenye ukurasa unaofuata"</string>

@@ -59,7 +59,7 @@
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Побарана е промена на системскиот јазик од друг уред"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Промени го јазикот"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"Зачувај го тековниот јазик"</string>
-    <string name="share_wifi_button_text" msgid="1285273973812029240">"Сподели Wi‑Fi"</string>
+    <string name="share_wifi_button_text" msgid="1285273973812029240">"Споделете Wi‑Fi"</string>
     <string name="add_network_button_text" msgid="4046392140897987570">"Додај мрежа"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"Да се дозволи безжично отстранување грешки на мрежава?"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"Име на мрежата (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nWi‑Fi адреса (BSSID)\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
@@ -159,6 +159,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Паузирај"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Исклучи звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Вклучи звук"</string>
+    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Направете слика од целиот екран"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Снимај го целиот екран"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Направете слика од екранот на избрана област"</string>
@@ -424,17 +426,17 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Емитување"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Неименуван уред"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Нема достапни уреди"</string>
+    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
+    <skip />
+    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
+    <skip />
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Нема Wi‑Fi или Ethernet-врска"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Прекини ја врската"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Тековниот микрофон е"</string>
-    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
-    <skip />
+    <string name="quick_settings_audio_output_section_title" msgid="3448300919285193209">"Излезни податоци"</string>
+    <string name="quick_settings_audio_input_section_title" msgid="9203723659866975215">"Влезни податоци"</string>
+    <string name="quick_settings_audio_input_disclaimer_text" msgid="442891508001590727">"Јачината на звукот на микрофонот ќе се приспособи автоматски"</string>
+    <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"Ефекти"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Осветленост"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Инверзија на боите"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Корекција на боите"</string>
@@ -1148,8 +1150,7 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Страница <xliff:g id="ID_1">%1$d</xliff:g> од <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Да се вклучи <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Икона"</annotation>" за дејство + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Притиснете го копчето за дејство + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> повторно за да овозможите <xliff:g id="ID_3">%3$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Да се вклучи кратенката од тастатура за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не вклучувај"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Вклучи ја кратенката"</string>
@@ -1715,6 +1716,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Повлечете од горниот лев агол за да ги отворите известувањата"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Повлечете од горниот десен агол за да ги отворите „Брзите поставки“"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
+    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
+    <skip />
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Претходно"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Следно"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"да одите на следната страница"</string>

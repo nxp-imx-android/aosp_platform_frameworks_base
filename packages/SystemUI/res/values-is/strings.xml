@@ -159,6 +159,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Gera hlé"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Þagga"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Hætta að þagga"</string>
+    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Taka skjámynd af öllum skjánum"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Taka upp allan skjáinn"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Taka skjámynd af völdu svæði"</string>
@@ -424,17 +426,17 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Sendir út"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Ónefnt tæki"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Engin tæki til staðar"</string>
+    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
+    <skip />
+    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
+    <skip />
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Hvorki WiFi- né ethernet-tenging"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Aftengja"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Núverandi hljóðnemi er"</string>
-    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
-    <skip />
+    <string name="quick_settings_audio_output_section_title" msgid="3448300919285193209">"Frálag"</string>
+    <string name="quick_settings_audio_input_section_title" msgid="9203723659866975215">"Inntak"</string>
+    <string name="quick_settings_audio_input_disclaimer_text" msgid="442891508001590727">"Hljóðstyrkur hljóðnema verður stilltur sjálfkrafa"</string>
+    <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"Brellur"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Birtustig"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Umsnúningur lita"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Litaleiðrétting"</string>
@@ -1148,8 +1150,7 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Blaðsíða <xliff:g id="ID_1">%1$d</xliff:g> af <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Viltu kveikja á <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Aðgerð "<annotation id="action_key_icon">"tákn"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> er lyklaborðsflýtileiðin fyrir <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Ýttu á Aðgerð + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> aftur til að virkja <xliff:g id="ID_3">%3$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Virkja flýtilykil „<xliff:g id="ID_1">%1$s</xliff:g>“?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ekki kveikja"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Virkja flýtilykil"</string>
@@ -1715,6 +1716,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Strjúktu til hægri efst á skjánum til að opna tilkynningar"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Strjúktu til vinstri efst á skjánum til að opna flýtistillingar"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Til baka"</string>
+    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
+    <skip />
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Til baka"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Áfram"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"fletta á næstu síðu"</string>

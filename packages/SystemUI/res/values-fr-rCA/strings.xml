@@ -159,6 +159,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Mettre en pause"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Désactiver le son"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Réactiver le son"</string>
+    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Prendre une capture d\'écran de l\'écran entier"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Enregistrer l\'écran entier"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Prendre une capture d\'écran de la zone sélectionnée"</string>
@@ -424,17 +426,17 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Diffusion"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Appareil sans nom"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Aucun appareil à proximité"</string>
+    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
+    <skip />
+    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
+    <skip />
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Aucune connexion Wi-Fi ou Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Déconnecter"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Le micro actuel est"</string>
-    <!-- no translation found for quick_settings_audio_output_section_title (3448300919285193209) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_section_title (9203723659866975215) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_input_disclaimer_text (442891508001590727) -->
-    <skip />
-    <!-- no translation found for quick_settings_audio_effects_section_title (6770520531879816578) -->
-    <skip />
+    <string name="quick_settings_audio_output_section_title" msgid="3448300919285193209">"Sortie"</string>
+    <string name="quick_settings_audio_input_section_title" msgid="9203723659866975215">"Entrée"</string>
+    <string name="quick_settings_audio_input_disclaimer_text" msgid="442891508001590727">"Le volume du micro sera réglé automatiquement"</string>
+    <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"Effets"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Luminosité"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Inversion des couleurs"</string>
     <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Correction des couleurs"</string>
@@ -1148,8 +1150,7 @@
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"L\'icône d\'action "<annotation id="action_key_icon"></annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> est le raccourci-clavier à utiliser pour <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (1298171063228024716) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Appuyez à nouveau sur Action+<xliff:g id="ID_1">%1$s</xliff:g>+<xliff:g id="ID_2">%2$s</xliff:g> pour activer <xliff:g id="ID_3">%3$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activer le raccourci-clavier <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne pas activer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activer le raccourci"</string>
@@ -1715,6 +1716,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Balayer l\'écran du haut vers la gauche pour ouvrir les notifications"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Balayez l\'écran du haut vers la droite pour ouvrir Paramètres rapides"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Retour"</string>
+    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
+    <skip />
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Précédent"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Suivant"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"accéder à la page suivante"</string>

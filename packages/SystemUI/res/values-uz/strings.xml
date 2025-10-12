@@ -159,6 +159,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pauza"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Ovozsiz"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Ovozni yoqish"</string>
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Ekranni tasvirga olishni AT administratori taqiqlagan"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Butun ekran skrinshotini olish"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Butun ekranni yozib olish"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Tanlangan soha skrinshotini olish"</string>
@@ -377,7 +378,7 @@
     <string name="quick_settings_modes_label" msgid="879156359479504244">"Rejimlar"</string>
     <string name="quick_settings_bluetooth_label" msgid="7018763367142041481">"Bluetooth"</string>
     <string name="quick_settings_bluetooth_detail_empty_text" msgid="5760239584390514322">"Ulangan qurilmalar topilmadi"</string>
-    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Qurilma ulash yoki uzish uchun tegining"</string>
+    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Qurilmani ulash yoki uzish uchun tegining"</string>
     <string name="pair_new_bluetooth_devices" msgid="4601767620843349645">"Yangi qurilmani ulash"</string>
     <string name="see_all_bluetooth_devices" msgid="1761596816620200433">"Hammasi"</string>
     <string name="turn_on_bluetooth" msgid="5681370462180289071">"Bluetooth ishlatish"</string>
@@ -424,6 +425,10 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Translatsiya qilinmoqda"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Nomsiz qurilma"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Qurilmalar topilmadi"</string>
+    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
+    <skip />
+    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
+    <skip />
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Wi-Fi yoki Ethernet aloqasi mavjud emas"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Uzish"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Mikrofon hozir"</string>
@@ -1710,6 +1715,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Bildirishnomalarni ochish uchun yuqori chapdan suring"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Tezkor sozlamalarni ochish uchun yuqori oʻngdan suring"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Orqaga"</string>
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Qulayliklar"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Avvalgisi"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Keyingisi"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"keyingi sahifani ochish"</string>
