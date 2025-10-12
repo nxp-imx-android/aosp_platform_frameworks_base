@@ -1054,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"સાચું!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ફરી પ્રયાસ કરો"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ફરી પ્રયાસ કરો"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"તમામ સુવિધાઓ અને ડેટા માટે અનલૉક કરો"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"મહત્તમ ફેસ અનલૉક પ્રયાસો ઓળંગાયા"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"કોઈ સિમ કાર્ડ નથી"</string>
@@ -1796,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"બન્ને વૉલ્યૂમ કીને થોડી સેકન્ડ સુધી દબાવી રાખવાથી ઍક્સેસિબિલિટી સુવિધા એવી <xliff:g id="SERVICE">%1$s</xliff:g> ચાલુ થઈ જાય છે. આનાથી તમારા ડિવાઇસની કામ કરવાની રીત બદલાઈ શકે છે.\n\nતમે સેટિંગ &gt; ઍક્સેસિબિલિટીમાં જઈને આ શૉર્ટકટને બીજી સુવિધામાં બદલી શકો છો."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"ચાલુ કરો"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"ચાલુ કરશો નહીં"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"ચાલુ"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"બંધ"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"શું <xliff:g id="SERVICE">%1$s</xliff:g>ને તમારા ડિવાઇસના સંપૂર્ણ નિયંત્રણની મંજૂરી આપીએ?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"ઍક્સેસિબિલિટી સંબંધિત આવશ્યકતા માટે સહાય કરતી ઍપ માટે સંપૂર્ણ નિયંત્રણ યોગ્ય છે, પણ મોટા ભાગની ઍપ માટે યોગ્ય નથી."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"જોવા અને નિયંત્રણ માટેની સ્ક્રીન"</string>
@@ -1811,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"સુવિધાનો ઉપયોગ શરૂ કરવા તેના પર ટૅપ કરો:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"ઍક્સેસિબિલિટી બટન વડે તમે ઉપયોગમાં લેવા માગો છો તે સુવિધાઓ પસંદ કરો"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"વૉલ્યૂમ કી શૉર્ટકટ વડે તમે ઉપયોગમાં લેવા માગો છો તે સુવિધાઓ પસંદ કરો"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> બંધ કરવામાં આવ્યું છે"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"શૉર્ટકટમાં ફેરફાર કરો"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"થઈ ગયું"</string>

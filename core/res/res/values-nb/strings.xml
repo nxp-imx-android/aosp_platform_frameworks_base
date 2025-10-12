@@ -1054,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Riktig!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Prøv på nytt"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Prøv på nytt"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Lås opp for å få alle funksjoner og data"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Du har overskredet grensen for opplåsingsforsøk med Ansiktslås"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Ingen SIM-kort"</string>
@@ -1796,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Hvis du holder inne begge volumtastene i noen sekunder, slår du på <xliff:g id="SERVICE">%1$s</xliff:g>, en tilgjengelighetsfunksjon. Dette kan endre hvordan enheten din fungerer.\n\nDu kan endre denne snarveien til en annen funksjon i Innstillinger &gt; Tilgjengelighet."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Slå på"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Ikke slå på"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"PÅ"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"AV"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Vil du gi <xliff:g id="SERVICE">%1$s</xliff:g> full kontroll over enheten din?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Full kontroll er passende for apper som hjelper deg med tilgjengelighetsbehov, men ikke for de fleste apper."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Se og kontroller skjermen"</string>
@@ -1811,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Trykk på en funksjon for å begynne å bruke den:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Velg funksjonene du vil bruke med Tilgjengelighet-knappen"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Velg funksjonene du vil bruke med volumtastsnarveien"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> er slått av"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Endre snarveier"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Ferdig"</string>

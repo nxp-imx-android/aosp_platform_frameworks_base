@@ -1054,6 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"To‘g‘ri!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Qaytadan urining"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Qaytadan urining"</string>
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Ochish uchun bosing"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Qulfni ochish uchun istalgan tugmani bosing"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Barcha funksiya va ma’lumotlar uchun qulfdan chiqaring"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Yuz bilan ochishga urinish miqdoridan oshib ketdi"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM kartasiz"</string>
@@ -1796,8 +1798,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"<xliff:g id="SERVICE">%1$s</xliff:g> funksiyasini yoqish uchun ikkala tovush tugmalarini bir necha soniya bosib turing. Qurilmangiz ishlashida oʻzgarish yuz berishi mumkin.\n\nBu tezkor tugmalarni boshqa funksiyaga Sozlamalar ichidagi Qulayliklar orqali tayinlash mumkin."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Yoqilsin"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Yoqilmasin"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"YONIQ"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"YOQILMAGAN"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> xizmatiga qurilmangizni boshqarish uchun toʻliq ruxsat berilsinmi?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Toʻliq nazorat maxsus imkoniyatlar bilan ishlovchi ilovalar uchun mos, lekin barcha ilovalar uchun emas."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Ekranni ochish va boshqarish"</string>
@@ -1811,6 +1815,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Kerakli funksiyani tanlang"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Qulayliklar tugmasi bilan foydalanish uchun funksiyalarni tanlang"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Tovush tugmasi bilan ishga tushiriladigan funksiyalarni tanlang"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> faolsizlantirildi"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Tezkor tugmalarni tahrirlash"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>
@@ -2365,10 +2379,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI qulfini ochish uchun PIN kod"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"SIM karta tarmoq qismi aloqa operatorini qulfdan chiqarish uchun PIN kod"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"SIM kartaning tarmoqdagi qulfini ochish soʻralmoqda…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"SIM karta qulfini ochish soʻrovi yuborilmoqda.…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"SIM karta xizmat provayderi qulfini ochish soʻrovi yuborilmoqda…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Korporativ SIM kartalar qulfini ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
@@ -2394,18 +2406,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"PUK kod bilan qulfni ochish soʻralmoqda…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"SIM kartaning tarmoqdagi qulfini ochish soʻrovi yuborilmadi."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"SIM karta qulfini ochish soʻrovi yuborilmadi."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"SIM karta xizmat provayderi qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Korporativ SIM kartalar qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM karta qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM kartalaridagi network1 qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM kartalaridagi network2 qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM HRPD kartalari qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Korporativ RUIM kartalar qulfini ochish soʻrovi yuborilmadi."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM xizmat provayderi qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM kartalari qulfini ochish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK kod bilan qulf ochilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK kod bilan qulf ochilmadi."</string>
@@ -2425,15 +2434,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Aloqa operatori tarmoq qismini qulfdan chiqarish soʻrovi yuborilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM karta tarmoqdagi qulfidan chiqarildi"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"SIM karta tarmoq qismi qulfdan chiqarildi."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"SIM karta xizmat provayderi qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Korporativ SIM kartalar qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM karta qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM kartalaridagi network1 qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM kartalaridagi network2 qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM HRPD kartalari qulfi ochilmadi"</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM xizmat provayderi qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Korporativ RUIM kartasi qulfi ochildi."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM kartalari qulfi ochilmadi."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK kod bilan qulf ochildi."</string>

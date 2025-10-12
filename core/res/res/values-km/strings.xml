@@ -1054,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"ត្រឹមត្រូវ!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ព្យាយាម​ម្ដង​ទៀត"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ព្យាយាម​ម្ដង​ទៀត"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ដោះសោមុខងារ និងទិន្នន័យទាំងអស់"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"បាន​លើស​ការ​ព្យាយាម​ដោះ​សោ​តាម​ទម្រង់​មុខ"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"គ្មានស៊ីមទេ"</string>
@@ -1796,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"ការសង្កត់​គ្រាប់ចុច​កម្រិតសំឡេង​ទាំងពីរ​ឱ្យជាប់​រយៈពេល​ពីរបីវិនាទី​នឹងបើក <xliff:g id="SERVICE">%1$s</xliff:g> ដែលជា​មុខងារ​ភាពងាយប្រើ។ ការធ្វើ​បែបនេះ​អាចផ្លាស់ប្ដូរ​របៀបដែល​ឧបករណ៍​របស់អ្នក​ដំណើរការ។\n\nអ្នកអាច​ប្ដូរផ្លូវកាត់​នេះទៅ​មុខងារ​ផ្សេងទៀត​នៅក្នុង​ការកំណត់ &gt; ភាពងាយស្រួល។"</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"បើក"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"កុំបើក"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"បើក"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"បិទ"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"អនុញ្ញាតឱ្យ <xliff:g id="SERVICE">%1$s</xliff:g> មានសិទ្ធិគ្រប់គ្រងឧបករណ៍​របស់អ្នក​ទាំងស្រុងឬ?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"ការគ្រប់គ្រង​ទាំងស្រុងមានលក្ខណៈ​សមស្របសម្រាប់​កម្មវិធី ដែលជួយអ្នក​ទាក់ទងនឹងការប្រើមុខងារភាពងាយស្រួល ប៉ុន្តែមិនសមស្របសម្រាប់​កម្មវិធីភាគច្រើនទេ។"</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"មើល និង​គ្រប់គ្រងអេក្រង់"</string>
@@ -1811,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"ចុចមុខងារណាមួយ ដើម្បចាប់ផ្ដើមប្រើ៖"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"ជ្រើសរើស​មុខងារ ដើម្បីប្រើ​ជាមួយ​ប៊ូតុង​ភាពងាយស្រួល"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"ជ្រើសរើស​មុខងារ ដើម្បីប្រើ​ជាមួយផ្លូវកាត់គ្រាប់ចុច​កម្រិតសំឡេង"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"បានបិទ <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"កែ​ផ្លូវកាត់"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"រួចរាល់"</string>
@@ -2365,10 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"កូដ PIN ដោះសោ IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"កូដ PIN ដោះសោ​ក្រុមហ៊ុន​ផ្ដល់សេវា​សំណុំរង​នៃបណ្ដាញ"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"កំពុង​ស្នើសុំ​ដោះសោ​បណ្ដាញស៊ីម…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"កំពុង​ស្នើសុំ​ដោះសោ​សំណុំរង​នៃ​បណ្ដាញស៊ីម…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"កំពុង​ស្នើសុំ​ដោះសោ​ក្រុមហ៊ុន​ផ្ដល់សេវា​ស៊ីម…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"កំពុង​ស្នើសុំ​ដោះសោ​ក្រុមហ៊ុន​ស៊ីម…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"កំពុង​ស្នើសុំ​ដោះសោ PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"កំពុង​ស្នើសុំ​ដោះសោ PUK…"</string>
@@ -2394,18 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"កំពុង​ស្នើសុំ​ដោះសោ PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"កំពុង​ស្នើសុំ​ដោះសោ PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"សំណើសុំ​ដោះសោបណ្ដាញស៊ីម​មិនទទួលបាន​ជោគជ័យ​ទេ។"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"សំណើសុំ​ដោះសោ​សំណុំរង​នៃ​បណ្ដាញស៊ីម​មិនទទួលបាន​ជោគជ័យទេ។"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"សំណើសុំ​ដោះសោ​ក្រុមហ៊ុន​ផ្ដល់សេវាស៊ីម​មិនទទួលបាន​ជោគជ័យទេ។"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"សំណើសុំ​ដោះសោ​ក្រុមហ៊ុនស៊ីម​មិនទទួលបាន​ជោគជ័យ​ទេ។"</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"សំណើសុំ​ដោះសោ​ស៊ីម​មិនទទួលបាន​ជោគជ័យ​ទេ។"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"សំណើ​សុំដោះ​សោ RUIM បណ្ដាញ​ទី 1 មិនទទួលបាន​ជោគជ័យ​ទេ។"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"សំណើ​សុំដោះ​សោ RUIM បណ្ដាញ​ទី 2 មិន​ទទួលបាន​ជោគជ័យ​ទេ។"</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"សំណើសុំ​ដោះសោ RUIM Hrpd មិនបាន​ទទួល​ជោគជ័យទេ។"</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"សំណើ​សុំដោះសោ​ក្រុមហ៊ុន RUIM មិន​ទទួលបាន​ជោគជ័យ​ទេ។"</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"សំណើសុំ​ដោះសោ​ក្រុមហ៊ុន​ផ្ដល់សេវា RUIM មិនទទួលបាន​ជោគជ័យទេ។"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"សំណើ​សុំដោះ​សោ RUIM មិន​ទទួលបាន​ជោគជ័យ​ទេ។"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"ការដោះ​សោ PUK មិន​ទទួលបាន​ជោគជ័យទេ។"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"ការដោះ​សោ PUK មិន​ទទួលបាន​ជោគជ័យទេ។"</string>
@@ -2425,15 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"សំណើសុំ​ដោះសោ​ក្រុមហ៊ុន​ផ្ដល់សេវា​សំណុំរង​នៃបណ្ដាញ​មិនទទួលបាន​ជោគជ័យទេ។"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"ការ​ដោះសោ​បណ្ដាញ​ស៊ីម​ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"ការដោះសោ​សំណុំរង​នៃ​បណ្ដាញស៊ីម​ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"ការដោះសោ​ក្រុមហ៊ុនផ្ដល់សេវា​ស៊ីមទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"ការដោះសោ​ក្រុមហ៊ុន​ស៊ីម​ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"ការដោះសោ​ស៊ីម​ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"ការដោះ​សោ RUIM បណ្ដាញ​ទី 1 ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"ការដោះ​សោ RUIM បណ្ដាញ​ទី 2 ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"ការដោះសោ RUIM Hrpd ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"ការដោះសោ​ក្រុមហ៊ុន​ផ្ដល់សេវា RUIM ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"ការដោះសោ​ក្រុមហ៊ុន RUIM ទទួលបាន​ជោគជ័យ​ហើយ។"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"ការដោះ​សោ RUIM ទទួលបាន​ជោគជ័យហើយ។"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"ការដោះ​សោ PUK ទទួល​បានជោគជ័យ​ហើយ។"</string>

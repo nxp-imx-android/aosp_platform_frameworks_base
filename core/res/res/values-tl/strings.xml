@@ -1054,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Tama!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Subukang muli"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Subukang muli"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"I-unlock para sa lahat ng feature at data"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Nalagpasan na ang maximum na mga pagtatangka sa Pag-unlock Gamit ang Mukha"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Walang SIM"</string>
@@ -1796,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Mao-on ang feature ng accessibility na <xliff:g id="SERVICE">%1$s</xliff:g> kapag pinindot nang matagal ang parehong volume key nang ilang segundo. Posibleng mabago nito ang paggana ng iyong device.\n\nPuwede mong palitan ng ibang feature ang shortcut na ito sa Mga Setting &gt; Accessibility."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"I-on"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Huwag i-on"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"NAKA-ON"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"NAKA-OFF"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Bigyan ang <xliff:g id="SERVICE">%1$s</xliff:g> ng ganap na kontrol sa iyong device?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Naaangkop ang ganap na kontrol sa mga app na tumutulong sa mga pangangailangan mo sa accessibility, pero hindi sa karamihan ng mga app."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Tingnan at kontrolin ang screen"</string>
@@ -1811,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"I-tap ang isang feature para simulan itong gamitin:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Pumili ng mga feature na gagana sa pamamagitan ng button ng accessibility"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Pumili ng mga feature na gagana sa pamamagitan ng shortcut ng mga volume key"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Na-off ang <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"I-edit ang mga shortcut"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Tapos na"</string>
@@ -2365,10 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN para sa pag-unlock ng IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN para sa pag-unlock ng service provider ng subset ng Network"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Hinihiling na i-unlock ang network ng SIM…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Nire-request na i-unlock ang subset ng network ng SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Nire-request na i-unlock ang service provider ng SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Hinihiling ang pangkumpanyang pag-unlock ng SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Hinihiling na i-unlock ang PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Hinihiling na i-unlock ang PUK…"</string>
@@ -2394,18 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Hinihiling na i-unlock ang PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Hinihiling na i-unlock ang PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Hindi matagumpay ang kahilingan sa pag-unlock ng Network ng SIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Hindi matagumpay ang request sa pag-unlock ng Subset ng Network ng SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Hindi matagumpay ang request sa pag-unlock ng Service Provider ng SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Hindi matagumpay ang kahilingan sa Pangkumpanyang pag-unlock ng SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Hindi matagumpay ang kahilingan sa pag-unlock ng SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Hindi matagumpay ang kahilingan sa pag-unlock ng Network1 ng RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Hindi matagumpay ang kahilingan sa pag-unlock ng Network2 ng RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Hindi matagumpay ang kahilingan sa pag-unlock ng Hrpd."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Hindi matagumpay ang kahilingan sa pangkumpanyang pag-unlock ng RUIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Hindi matagumpay ang request sa pag-unlock ng Service Provider ng RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Hindi matagumpay ang kahilingan sa pag-unlock ng RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Hindi na-unlock ang PUK."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Hindi na-unlock ang PUK."</string>
@@ -2425,15 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Hindi matagumpay ang kahilingan sa pag-unlock ng service provider ng subset ng Network."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Na-unlock na ang Network ng SIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Na-unlock na ang Subset ng Network ng SIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Na-unlock na ang Service Provider ng SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Matagumpay ang Pangkumpanyang pag-unlock ng SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Na-unlock na ang SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Na-unlock na ang Network1 ng RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Na-unlock na ang Network2 ng RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Na-unlock na ang Hrpd."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Na-unlock na ang Service Provider ng RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Matagumpay ang Pangkumpanyang pag-unlock ng RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Na-unlock na ang RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Na-unlock na ang PUK."</string>
