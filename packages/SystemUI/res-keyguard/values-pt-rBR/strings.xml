@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Desbloq. c/ impr. digital falhou. Muitas tentativas."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"O agente de confiança não está disponível"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Muitas tentativas com o PIN incorreto"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Você já tentou esse PIN. Use outro."</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Você já tentou essa senha. Use outra."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Você já tentou esse padrão. Use outro."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Muitas tentativas com o padrão incorreto"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Muitas tentativas com a senha incorreta"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Muitas tentativas com o PIN incorreto\nSaiba mais em <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Muitas tentativas com o padrão incorreto\nSaiba mais em <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Muitas tentativas com a senha incorreta\nSaiba mais em <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Tente novamente em # segundo.}one{Tente novamente em # segundo.}many{Tente novamente em # segundos.}other{Tente novamente em # segundos.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{Tente de novo em # segundo}one{Tente de novo em # segundo}many{Tente de novo em # de segundos}other{Tente de novo em # segundos}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{Tente de novo em # minuto}one{Tente de novo em # minuto}many{Tente de novo em # de minutos}other{Tente de novo em # minutos}}"</string>
