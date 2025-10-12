@@ -198,6 +198,66 @@ class PreCaptureToolbarTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_RECORDING)
+    fun regionScreenShotButton_whenScreenCaptureTypeIsScreenshot_andHasCorrectContentDescription() =
+        kosmos.runTest {
+            composeTestRule.setContent {
+                PreCaptureToolbar(
+                    viewModel = viewModel,
+                    selectedCaptureType = ScreenCaptureType.SCREENSHOT,
+                    selectedCaptureRegion = ScreenCaptureRegion.PARTIAL,
+                    onCaptureTypeSelected = {},
+                    onCaptureRegionSelected = {},
+                    onCloseClick = {},
+                )
+            }
+
+            val buttonDescription =
+                context.getString(R.string.screen_capture_toolbar_region_button_screenshot_a11y)
+            composeTestRule.onNodeWithContentDescription(buttonDescription).assertExists()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_RECORDING, Flags.FLAG_LARGE_SCREEN_REGION_RECORDING)
+    fun regionRecordButton_whenScreenCaptureTypeIsRecord_andHasCorrectContentDescription() =
+        kosmos.runTest {
+            composeTestRule.setContent {
+                PreCaptureToolbar(
+                    viewModel = viewModel,
+                    selectedCaptureType = ScreenCaptureType.RECORDING,
+                    selectedCaptureRegion = ScreenCaptureRegion.PARTIAL,
+                    onCaptureTypeSelected = {},
+                    onCaptureRegionSelected = {},
+                    onCloseClick = {},
+                )
+            }
+
+            val buttonDescription =
+                context.getString(R.string.screen_capture_toolbar_region_button_record_a11y)
+            composeTestRule.onNodeWithContentDescription(buttonDescription).assertExists()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_RECORDING)
+    fun regionRecordButton_whenScreenCaptureTypeIsRecord_isNotDisplayed() =
+        kosmos.runTest {
+            composeTestRule.setContent {
+                PreCaptureToolbar(
+                    viewModel = viewModel,
+                    selectedCaptureType = ScreenCaptureType.RECORDING,
+                    selectedCaptureRegion = ScreenCaptureRegion.FULLSCREEN,
+                    onCaptureTypeSelected = {},
+                    onCaptureRegionSelected = {},
+                    onCloseClick = {},
+                )
+            }
+
+            val buttonDescription =
+                context.getString(R.string.screen_capture_toolbar_region_button_record_a11y)
+            composeTestRule.onNodeWithContentDescription(buttonDescription).assertIsNotDisplayed()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_RECORDING)
     fun captureTypeButtons_whenScreenshotButtonClicked_firesCallback() =
         kosmos.runTest {
             composeTestRule.setContent {
