@@ -231,4 +231,25 @@ public class RemoteTaskStoreTest {
         listener.verifyReportedTasks(
                 List.of(Collections.emptyList(), List.of(initialTask), List.of(updatedTask)));
     }
+
+    @Test
+    public void clear_removesAllTasksAndNotifiesListeners() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
+        int deviceId = 1;
+        String deviceName = "name";
+        taskStore.addDevice(deviceId, deviceName);
+
+        RemoteTaskInfo initialTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0], true);
+        RemoteTask initialTask = initialTaskInfo.toRemoteTask(deviceId, deviceName);
+        taskStore.setTasks(deviceId, Collections.singletonList(initialTaskInfo));
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(initialTask);
+        listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(initialTask)));
+
+        taskStore.clear();
+        assertThat(taskStore.getMostRecentTasks()).isEmpty();
+        listener.verifyReportedTasks(
+                List.of(Collections.emptyList(), List.of(initialTask), Collections.emptyList()));
+    }
 }
