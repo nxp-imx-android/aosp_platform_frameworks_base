@@ -135,7 +135,11 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
         }
 
         val enumName = intDefElement.qualifiedName.toString()
-        val enumDoc = processingEnv.elementUtils.getDocComment(intDefElement) ?: ""
+        val enumDoc =
+            processingEnv.elementUtils
+                .getDocComment(intDefElement)
+                ?.trimIndent()
+                ?: ""
 
         if (enumDoc.trim().isEmpty()) {
             printError(intDefElement, "Missing JavaDoc for IntDef used by $element")
@@ -198,13 +202,20 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) : Processor<EnumPolicy
         // In the class-level example above, these would be {ENUM_ENTRY_1,ENUM_ENTRY_2}.
         @Suppress("UNCHECKED_CAST") val values = annotationValue.value as List<AnnotationValue>
 
-        val documentations: List<String?> = identifiers.map { identifier ->
+        val documentations: List<String> = identifiers.map { identifier ->
             // TODO(b/442973945): Support identifiers outside of same class.
-            intDefElement.enclosingElement.enclosedElements.firstOrNull {
+            val doc = intDefElement.enclosingElement.enclosedElements.firstOrNull {
                 it.simpleName.toString() == identifier
             } ?.let {
                 processingEnv.elementUtils.getDocComment(it)
+                    ?.trimIndent()
+            } ?: ""
+
+            if (doc.trim().isEmpty()) {
+                printError(intDefElement.enclosingElement, "Missing JavaDoc for $identifier")
             }
+
+            doc
         }
 
         return identifiers.mapIndexed { i, identifier ->

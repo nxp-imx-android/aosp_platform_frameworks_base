@@ -1,7 +1,7 @@
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY"
   type: "java.lang.Boolean"
-  documentation: " Test policy 1\n"
+  documentation: "Test policy 1\nSecond line"
   type_specific_metadata {
     boolean_metadata {
     }
@@ -15,25 +15,25 @@ policy_metadata {
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY"
   type: "java.lang.Integer"
-  documentation: " Test policy 2\n"
+  documentation: "Test policy 2"
   type_specific_metadata {
     enum_metadata {
       default_value: 1
       int_def_name: "android.app.admin.PolicyIdentifier.SimpleEnumPolicyEnum"
-      documentation: " Enum for {@link SIMPLE_ENUM_POLICY}\n\n @hide\n"
+      documentation: "Enum for {@link SIMPLE_ENUM_POLICY}\n\n@hide"
       values {
         name: "ENUM_ENTRY_1"
-        documentation: " First entry\n"
+        documentation: "First entry"
       }
       values {
         name: "ENUM_ENTRY_2"
         int_value: 1
-        documentation: " Second entry\n"
+        documentation: "Second entry"
       }
       values {
         name: "ENUM_ENTRY_3"
         int_value: 2
-        documentation: " Third entry\n"
+        documentation: "Third entry"
       }
     }
   }
@@ -46,7 +46,7 @@ policy_metadata {
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY"
   type: "java.lang.Integer"
-  documentation: " Test policy 3\n"
+  documentation: "Test policy 3"
   type_specific_metadata {
     integer_metadata {
     }
@@ -57,7 +57,7 @@ policy_metadata {
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY"
   type: "java.lang.String"
-  documentation: " Test policy 4\n"
+  documentation: "Test policy 4"
   type_specific_metadata {
     string_metadata {
     }
@@ -68,7 +68,7 @@ policy_metadata {
 policy_metadata {
   name: "android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY"
   type: "java.util.List<java.lang.String>"
-  documentation: " Test policy 5\n"
+  documentation: "Test policy 5"
   type_specific_metadata {
     list_of_string_metadata {
       element_metadata {

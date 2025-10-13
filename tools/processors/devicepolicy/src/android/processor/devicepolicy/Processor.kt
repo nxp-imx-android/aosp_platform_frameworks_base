@@ -240,7 +240,11 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
 
         val name = "$enclosingType.$element"
         val type = policyType(element).toString()
-        val documentation = processingEnv.elementUtils.getDocComment(element) ?: ""
+        val documentation =
+            processingEnv.elementUtils
+                .getDocComment(element)
+                ?.trimIndent()
+                ?: ""
         val allowedScopes = convertScopes(element, definition.allowedScopes.toList())
         val affectedResource = convertResourceType(element, definition.affectedResource) ?: return null
 
