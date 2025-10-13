@@ -72,17 +72,6 @@ flag {
 }
 
 flag {
-    name: "disable_desktop_launch_params_outside_desktop_bug_fix"
-    namespace: "lse_desktop_experience"
-    description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for non /n"
-                 "desktop launches."
-    bug: "396108436"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "disable_non_resizable_app_snap_resizing"
     namespace: "lse_desktop_experience"
     description: "Stops non-resizable app desktop windows from being snap resized"
