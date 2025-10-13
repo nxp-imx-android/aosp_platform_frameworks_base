@@ -25,7 +25,6 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
-import com.android.systemui.Flags.FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
@@ -1391,7 +1390,6 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
         }
 
     @Test
-    @EnableFlags(FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX)
     @BrokenWithSceneContainer(430694649)
     fun alpha_isZero_duringLockscreenToDreamTransition() =
         kosmos.runTest {

@@ -24,7 +24,6 @@ import android.view.WindowInsets.Type.defaultVisible
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.flow.flowName
-import com.android.systemui.Flags
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -628,10 +627,7 @@ constructor(
                         ),
                     ) { shadeExpansion, qsExpansion, inLockscreenToDreamTransition ->
                         if (shadeExpansion > 0f || qsExpansion > 0f) {
-                            if (
-                                Flags.lockscreenShadeToDreamTransitionFix() &&
-                                    inLockscreenToDreamTransition
-                            ) {
+                            if (inLockscreenToDreamTransition) {
                                 // Don't show lock screen when transitioning to dream with the shade
                                 // open. The shade is collapsed by ACTION_CLOSE_SYSTEM_DIALOGS that
                                 // the system server sends when starting the dream. Since the shade
