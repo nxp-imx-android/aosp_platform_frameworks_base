@@ -30,6 +30,11 @@ fun PreferenceScreenMetadata.getPreferenceScreenTitle(context: Context): CharSeq
         else -> getScreenTitle(context) ?: (this as? PreferenceTitleProvider)?.getTitle(context)
     }
 
+
+/** Returns the preference purpose */
+fun PreferenceMetadata.getPreferencePurpose(context: Context) : CharSequence? =
+    context.getString(purpose)
+
 /** Returns the preference title. */
 fun PreferenceMetadata.getPreferenceTitle(context: Context): CharSequence? =
     when {
