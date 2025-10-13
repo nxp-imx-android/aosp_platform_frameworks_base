@@ -31,7 +31,9 @@ import android.view.WindowManager
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.windowdecor.HandleMenuController
 import com.android.wm.shell.windowdecor.ManageWindowsMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenuController
@@ -44,6 +46,9 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.extension.identityHashCode
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * Creates, updates, and removes the caption and its related menus based on [RunningTaskInfo]
@@ -54,6 +59,8 @@ import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 abstract class CaptionController<T>(
     protected var taskInfo: RunningTaskInfo,
     private val windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
+    protected val taskOrganizer: ShellTaskOrganizer,
+    @field:ShellMainThread protected val mainScope: CoroutineScope,
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
         SurfaceControl.Builder()
     },
@@ -73,6 +80,7 @@ abstract class CaptionController<T>(
     var isRecentsTransitionRunning = false
     var hasGlobalFocus = false
     var isDragging = false
+    var setExcludeLayerJob: Job? = null
 
     /** Controller for maximize menu or null if caption does not implement a maximize menu. */
     open val maximizeMenuController: MaximizeMenuController? = null
@@ -289,6 +297,12 @@ abstract class CaptionController<T>(
             .setPosition(captionSurface, captionX.toFloat(), /* y= */ 0f)
             .setLayer(captionSurface, CAPTION_LAYER_Z_ORDER)
             .show(captionSurface)
+        val layers = arrayOf<SurfaceControl?>(captionSurface)
+        clearExcludeLayerJob()
+        setExcludeLayerJob =
+            mainScope.launch {
+                taskOrganizer.setExcludeLayersFromTaskSnapshot(taskInfo.token, layers)
+            }
     }
 
     /** Adds caption inset source to a WCT */
@@ -392,10 +406,17 @@ abstract class CaptionController<T>(
             windowDecorationViewHolder = null
 
             val viewHost = captionViewHost ?: return false
+            clearExcludeLayerJob()
             windowDecorViewHostSupplier.release(viewHost, t)
             captionViewHost = null
+            mainScope.launch { taskOrganizer.clearExcludeLayersFromTaskSnapshot(taskInfo.token) }
             return true
         }
+
+    private fun clearExcludeLayerJob() {
+        setExcludeLayerJob?.cancel()
+        setExcludeLayerJob = null
+    }
 
     private fun getOrCreateViewHost(context: Context, display: Display): WindowDecorViewHost =
         traceSection(

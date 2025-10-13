@@ -943,11 +943,11 @@ constructor(
                         checkNotNull(decorationContainerSurface) {
                             "Expected non-null decoration container surface"
                         },
+                    taskOrganizer = taskOrganizer,
                     mainHandler = handler,
                     mainExecutor = mainExecutor,
                     mainDispatcher = mainDispatcher,
                     mainScope = mainScope,
-                    bgExecutor = bgExecutor,
                     syncQueue = syncQueue,
                     rootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
                     windowManagerWrapper = windowManagerWrapper,
@@ -1008,6 +1008,8 @@ constructor(
                     onTouchListener = onTouchListener,
                     onGenericMotionEventListener = onGenericMotionListener,
                     windowDecorationActions,
+                    taskOrganizer,
+                    mainScope,
                 )
             }
 

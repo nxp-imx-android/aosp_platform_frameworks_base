@@ -29,7 +29,9 @@ import android.view.View
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.wm.shell.R
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2
 import com.android.wm.shell.windowdecor.WindowDecorationActions
@@ -37,6 +39,7 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.viewholder.AppPinnedViewHolder
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Controller for the Pinned Caption, used for exclusive floating windows, interactive PiP, or
@@ -51,7 +54,15 @@ class AppPinnedController(
     private val onTouchListener: View.OnTouchListener,
     private val onGenericMotionEventListener: View.OnGenericMotionListener,
     private val windowDecorationActions: WindowDecorationActions,
-) : CaptionController<WindowDecorLinearLayout>(taskInfo, windowDecorViewHostSupplier) {
+    taskOrganizer: ShellTaskOrganizer,
+    @ShellMainThread mainScope: CoroutineScope,
+) :
+    CaptionController<WindowDecorLinearLayout>(
+        taskInfo,
+        windowDecorViewHostSupplier,
+        taskOrganizer,
+        mainScope,
+    ) {
 
     companion object {
         private const val TAG = "AppPinnedController"

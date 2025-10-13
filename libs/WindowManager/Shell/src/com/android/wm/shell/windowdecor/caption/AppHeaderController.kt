@@ -40,6 +40,7 @@ import com.android.app.tracing.traceSection
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.apptoweb.AppToWebRepository
 import com.android.wm.shell.apptoweb.OpenByDefaultDialog
 import com.android.wm.shell.apptoweb.OpenByDefaultDialog.DialogLifecycleListener
@@ -56,7 +57,6 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.isTaskMaximized
-import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -108,11 +108,11 @@ class AppHeaderController(
     private val transitions: Transitions,
     private val taskSurface: SurfaceControl,
     private val decorationSurface: SurfaceControl,
+    taskOrganizer: ShellTaskOrganizer,
     @ShellMainThread private val mainHandler: Handler,
     @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
-    @ShellMainThread private val mainScope: CoroutineScope,
-    @ShellBackgroundThread private val bgExecutor: ShellExecutor,
+    @ShellMainThread mainScope: CoroutineScope,
     private val syncQueue: SyncTransactionQueue,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val windowManagerWrapper: WindowManagerWrapper,
@@ -143,6 +143,8 @@ class AppHeaderController(
     CaptionController<WindowDecorLinearLayout>(
         taskInfo,
         windowDecorViewHostSupplier,
+        taskOrganizer,
+        mainScope,
         surfaceControlBuilderSupplier,
         surfaceControlViewHostFactory,
     ),
