@@ -213,8 +213,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testHomeActivitiesForcedToFullscreenWithoutTask() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -235,7 +234,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testHomeActivitiesForcedToFullscreen() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -252,8 +250,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testSystemUIActivitiesForcedToFullscreenWithoutTask() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -276,7 +273,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testSystemUIActivitiesForcedToFullscreen() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -295,8 +291,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testTransparentActivitiesWithPlatformSignatureForcedToFullscreenWithoutTask() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -317,7 +312,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testTransparentActivitiesWithPlatformSignatureForcedToFullscreen() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -334,8 +328,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testTransparentActivitiesWithPermissionForcedToFullscreenWithoutTask()
             throws PackageManager.NameNotFoundException {
         setupDesktopModeLaunchParamsModifier();
@@ -356,7 +349,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testTransparentActivitiesWithPermissionForcedToFullscreen()
             throws PackageManager.NameNotFoundException {
         setupDesktopModeLaunchParamsModifier();

@@ -120,8 +120,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue() && task == null
                 && (isRequestingFreeformWindowMode(null, options, currentParams)
                 || inDesktopMode)) {
-            if (DesktopExperienceFlags.HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()
-                    && activity != null) {
+            if (activity != null) {
                 if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
                         activity.mActivityComponent, activity.isNoDisplay(),
                         !activity.occludesParent(), /* numActivities */ 1, activity.mUserId,
@@ -181,8 +180,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         final ActivityRecord targetActivity = activity != null ? activity
                 : task.getTopMostActivity();
 
-        if (DesktopExperienceFlags.HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()
-                && targetActivity != null) {
+        if (targetActivity != null) {
             final boolean isActivityStackTransparent = !task.forAllActivities(r ->
                     (r.occludesParent())) && !targetActivity.occludesParent();
             final AtomicInteger numActivities = new AtomicInteger(1);
