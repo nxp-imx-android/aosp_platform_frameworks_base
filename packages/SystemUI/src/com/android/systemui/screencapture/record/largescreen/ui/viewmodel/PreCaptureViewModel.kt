@@ -174,9 +174,12 @@ constructor(
                 // TODO(b/437971334): Get options from the UI.
                 ScreenRecordingParameters(
                     captureTarget = null, // Fullscreen.
-                    audioSource = ScreenRecordingAudioSource.INTERNAL,
+                    audioSource =
+                        toolbarViewModel.recordParametersViewModel.audioSource
+                            ?: ScreenRecordingAudioSource.NONE,
                     displayId = displayId,
-                    shouldShowTaps = false,
+                    shouldShowTaps =
+                        toolbarViewModel.recordParametersViewModel.shouldShowTaps ?: false,
                 )
             )
         }

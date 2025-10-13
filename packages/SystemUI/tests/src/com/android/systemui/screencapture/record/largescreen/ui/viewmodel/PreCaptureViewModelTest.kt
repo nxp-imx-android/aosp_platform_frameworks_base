@@ -389,7 +389,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             val capturedParams = paramsCaptor.lastValue
             with(capturedParams) {
                 assertThat(captureTarget).isNull()
-                assertThat(audioSource).isEqualTo(ScreenRecordingAudioSource.INTERNAL)
+                assertThat(audioSource).isEqualTo(ScreenRecordingAudioSource.NONE)
                 assertThat(this.displayId).isEqualTo(displayId)
                 assertThat(shouldShowTaps).isFalse()
             }

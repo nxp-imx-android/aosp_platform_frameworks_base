@@ -29,6 +29,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.screencapture.ScreenCaptureEvent
+import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -143,5 +144,42 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(viewModel.customSaveLocationUriString).isEmpty()
+        }
+
+    @Test
+    fun recordParametersViewModel_updatesAudioSourceState() =
+        kosmos.runTest {
+            assertThat(viewModel.recordParametersViewModel.audioSource)
+                .isEqualTo(ScreenRecordingAudioSource.NONE)
+
+            viewModel.recordParametersViewModel.shouldRecordMicrophone = true
+
+            assertThat(viewModel.recordParametersViewModel.audioSource)
+                .isEqualTo(ScreenRecordingAudioSource.MIC)
+
+            viewModel.recordParametersViewModel.shouldRecordDevice = true
+
+            assertThat(viewModel.recordParametersViewModel.audioSource)
+                .isEqualTo(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
+
+            viewModel.recordParametersViewModel.shouldRecordMicrophone = false
+
+            assertThat(viewModel.recordParametersViewModel.audioSource)
+                .isEqualTo(ScreenRecordingAudioSource.INTERNAL)
+
+            viewModel.recordParametersViewModel.shouldRecordDevice = false
+
+            assertThat(viewModel.recordParametersViewModel.audioSource)
+                .isEqualTo(ScreenRecordingAudioSource.NONE)
+        }
+
+    @Test
+    fun recordParametersViewModel_updatesShowTapsState() =
+        kosmos.runTest {
+            assertThat(viewModel.recordParametersViewModel.shouldShowTaps).isFalse()
+
+            viewModel.recordParametersViewModel.setShouldShowTaps(true)
+
+            assertThat(viewModel.recordParametersViewModel.shouldShowTaps).isTrue()
         }
 }
