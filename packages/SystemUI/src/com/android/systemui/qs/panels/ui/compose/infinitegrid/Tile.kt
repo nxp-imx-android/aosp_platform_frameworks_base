@@ -81,6 +81,7 @@ import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.mechanics.compose.modifier.verticalFadeContentReveal
 import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
+import com.android.mechanics.effects.VerticalTactileSurfaceRevealEffect
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
@@ -196,7 +197,7 @@ fun ContentScope.Tile(
             }
 
         // TODO(b/361789146): Draw the shapes instead of clipping
-        val tileShape by TileDefaults.animateTileShapeAsState(uiState.visualState)
+        val tileShape by TileDefaults.animateTileShapeAsState(uiState)
         val animatedColor by animateColorAsState(colors.background, label = "QSTileBackgroundColor")
         val isDualTarget = uiState.handlesToggleClick
         val interactionSource =
@@ -207,8 +208,23 @@ fun ContentScope.Tile(
         if (enableRevealEffect) {
             val marginBottom =
                 with(LocalDensity.current) { QuickSettingsShade.Dimensions.Padding.toPx() }
+
+            val animatedCornerRadius by animateDpAsState(TileDefaults.tileRadius(uiState))
+
+            val inactiveCornerRadius = InactiveCornerRadius
             surfaceRevealModifier =
-                Modifier.verticalTactileSurfaceReveal(deltaY = marginBottom, label = tile.traceName)
+                Modifier.verticalTactileSurfaceReveal(
+                    deltaY = marginBottom,
+                    effectSpec =
+                        remember(inactiveCornerRadius) {
+                            VerticalTactileSurfaceRevealEffect(
+                                maxCornerSize = { animatedCornerRadius },
+                                phase1MarginX = inactiveCornerRadius,
+                            )
+                        },
+                    label = tile.traceName,
+                )
+
             contentRevealModifier =
                 Modifier.verticalFadeContentReveal(deltaY = marginBottom, label = tile.traceName)
         } else {
@@ -312,7 +328,7 @@ fun ContentScope.Tile(
                             },
                     )
                 } else {
-                    val iconShape by TileDefaults.animateIconShapeAsState(uiState.visualState)
+                    val iconShape by TileDefaults.animateIconShapeAsState(uiState)
                     val secondaryClick: (() -> Unit)? =
                         {
                                 hapticsViewModel?.setTileInteractionState(
@@ -400,7 +416,7 @@ fun LargeStaticTile(
 
     Box(
         modifier
-            .clip(TileDefaults.animateTileShapeAsState(state = uiState.visualState).value)
+            .clip(TileDefaults.animateTileShapeAsState(uiState).value)
             .background(colors.background)
             .height(TileHeight)
             .largeTilePadding()
@@ -564,39 +580,39 @@ private object TileDefaults {
     }
 
     @Composable
-    fun animateIconShapeAsState(state: Int): State<RoundedCornerShape> {
-        return animateShapeAsState(
-            state = state,
-            activeCornerRadius = ActiveIconCornerRadius,
-            label = "QSTileCornerRadius",
-        )
+    fun iconRadius(uiState: TileUiState): Dp {
+        return when (uiState.visualState) {
+            STATE_ACTIVE -> ActiveIconCornerRadius
+            STATE_INACTIVE -> InactiveCornerRadius
+            else -> InactiveCornerRadius
+        }
     }
 
     @Composable
-    fun animateTileShapeAsState(state: Int): State<RoundedCornerShape> {
+    fun tileRadius(uiState: TileUiState): Dp {
+        return when (uiState.visualState) {
+            STATE_ACTIVE -> ActiveTileCornerRadius
+            STATE_INACTIVE -> InactiveCornerRadius
+            else -> InactiveCornerRadius
+        }
+    }
+
+    @Composable
+    fun animateIconShapeAsState(uiState: TileUiState): State<RoundedCornerShape> {
         return animateShapeAsState(
-            state = state,
-            activeCornerRadius = ActiveTileCornerRadius,
+            targetValue = iconRadius(uiState),
             label = "QSTileIconCornerRadius",
         )
     }
 
     @Composable
-    fun animateShapeAsState(
-        state: Int,
-        activeCornerRadius: Dp,
-        label: String,
-    ): State<RoundedCornerShape> {
-        val animatedCornerRadius by
-            animateDpAsState(
-                targetValue =
-                    if (state == STATE_ACTIVE) {
-                        activeCornerRadius
-                    } else {
-                        InactiveCornerRadius
-                    },
-                label = label,
-            )
+    fun animateTileShapeAsState(uiState: TileUiState): State<RoundedCornerShape> {
+        return animateShapeAsState(targetValue = tileRadius(uiState), label = "QSTileCornerRadius")
+    }
+
+    @Composable
+    fun animateShapeAsState(targetValue: Dp, label: String): State<RoundedCornerShape> {
+        val animatedCornerRadius by animateDpAsState(targetValue = targetValue, label = label)
 
         return remember {
             val corner =
