@@ -26,10 +26,9 @@ import com.android.compose.animation.scene.UserActionResult.HideOverlay
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay.HideCurrentOverlays
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
-import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -47,17 +46,18 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@EnableFlags(FLAG_SCENE_CONTAINER, FLAG_DUAL_SHADE)
+@EnableSceneContainer
+@EnableFlags(FLAG_DUAL_SHADE)
 class NotificationsShadeOverlayActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val Kosmos.underTest by Kosmos.Fixture { notificationsShadeOverlayActionsViewModel }
-    private val actions by kosmos.testScope.collectLastValue(kosmos.underTest.actions)
+    private val underTest by lazy { kosmos.notificationsShadeOverlayActionsViewModel }
+    private val actions by kosmos.testScope.collectLastValue(underTest.actions)
 
     @Before
     fun setUp() {
-        with(kosmos) { underTest.activateIn(testScope) }
+        underTest.activateIn(kosmos.testScope)
     }
 
     @Test
@@ -76,12 +76,14 @@ class NotificationsShadeOverlayActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun downFromEndHalf_wideScreen_doesNothing() =
+    fun downFromEndHalf_wideScreen_switchesToQuickSettingsShade() =
         kosmos.runTest {
             enableDualShade(wideLayout = true)
 
             val action = actions?.get(Swipe.Down(fromSource = SceneContainerArea.EndHalf))
-            assertThat(action).isNull()
+            assertThat((action as ShowOverlay).overlay).isEqualTo(Overlays.QuickSettingsShade)
+            assertThat((action.hideCurrentOverlays as HideCurrentOverlays.Some).overlays)
+                .containsExactly(Overlays.NotificationsShade)
         }
 
     @Test

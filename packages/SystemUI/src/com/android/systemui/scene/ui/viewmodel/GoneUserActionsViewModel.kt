@@ -33,11 +33,17 @@ constructor(private val shadeModeInteractor: ShadeModeInteractor) : UserActionsV
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
         shadeModeInteractor.shadeMode.collect { shadeMode ->
             setActions(
-                when (shadeMode) {
-                    ShadeMode.Single -> singleShadeActions(requireTwoPointersForTopEdgeForQs = true)
-                    ShadeMode.Split -> splitShadeActions()
-                    ShadeMode.Dual -> dualShadeActions()
-                }.associate { it }
+                buildList {
+                        addAll(
+                            when (shadeMode) {
+                                ShadeMode.Single ->
+                                    singleShadeActions(requireTwoPointersForTopEdgeForQs = true)
+                                ShadeMode.Split -> splitShadeActions()
+                                ShadeMode.Dual -> dualShadeActions()
+                            }
+                        )
+                    }
+                    .associate { it }
             )
         }
     }
