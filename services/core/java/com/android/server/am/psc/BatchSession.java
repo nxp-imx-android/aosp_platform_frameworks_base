@@ -43,22 +43,25 @@ public abstract class BatchSession implements AutoCloseable {
         Arrays.setAll(BATCH_SESSION_TAGS,
                 i -> "BatchSession:" + oomAdjReasonToStringSuffix(i));
     }
-    private int mNestedStartCount = 0;
+    private static final int NOT_STARTED = -1;
+
+    private int mNestedSessionDepth = NOT_STARTED;
     protected @OomAdjReason int mUpdateReason;
 
     /** Start a session with a given reason. Nested start reasons will be ignored. */
     public void start(@OomAdjReason int reason) {
         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, BATCH_SESSION_TAGS[reason]);
-        if (mNestedStartCount == 0) {
+        if (mNestedSessionDepth == NOT_STARTED) {
             // This is the outermost batch session, use the reason provided here.
             mUpdateReason = reason;
         }
-        mNestedStartCount++;
+        mNestedSessionDepth++;
+        onNestedStart();
     }
 
     /** Session is currently active. ProcessStateController updates should skipped. */
     public boolean isActive() {
-        return mNestedStartCount > 0;
+        return mNestedSessionDepth != NOT_STARTED;
     }
 
     @Override
@@ -68,15 +71,25 @@ public abstract class BatchSession implements AutoCloseable {
             return;
         }
 
-        mNestedStartCount--;
+        mNestedSessionDepth--;
 
         if (!isActive()) {
             // This is the end of the outermost session, run the end of session behavior.
-            onClose();
+            onLastClose();
         }
         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }
 
+    /** Current depth of nested batch sessions */
+    protected final int depth() {
+        return mNestedSessionDepth;
+    }
+
+    /**
+     * What behavior to perform on any nested start of an active session (including the first one).
+     */
+    protected void onNestedStart() {}
+
     /** What behavior to perform on the last close of an active session. */
-    protected abstract void onClose();
+    protected abstract void onLastClose();
 }
