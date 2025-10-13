@@ -4380,6 +4380,11 @@ class DesktopTasksController(
             wct.setBounds(task.token, bounds)
         }
 
+        // Reorder with including parents to make target display focused
+        if (sourceDisplayId != targetDisplayId) {
+            wct.reorder(task.token, /* onTop= */ true, /* includeParents= */ true)
+        }
+
         if (bringTaskToFront) {
             // The task that is being focused might have been minimized before - in which case this
             // is an unminimize action.
@@ -5046,6 +5051,10 @@ class DesktopTasksController(
             // Until multiple desktops is enabled, we still want to reorder the task to top so that
             // if the task is not on top we can still switch to it using Alt+Tab.
             wct.reorder(taskInfo.token, /* onTop= */ true)
+        }
+        // Reorder with including parents to make destination display focused
+        if (sourceDisplayId != destinationDisplayId) {
+            wct.reorder(taskInfo.token, /* onTop= */ true, /* includeParents= */ true)
         }
         val userId = taskInfo.userId
         val repository = userRepositories.getProfile(userId)

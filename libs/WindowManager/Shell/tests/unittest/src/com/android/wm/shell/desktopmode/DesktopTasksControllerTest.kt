@@ -12489,6 +12489,56 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun handleRequest_freeformTaskMove_toDisplayWithDesks_reordersIncludingParents() {
+        val stableBounds =
+            Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        val targetDeskId = 2
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = targetDeskId)
+        taskRepository.setDeskInactive(targetDeskId)
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        desktopState.enterDesktopByDefaultOnFreeformDisplay = true
+        rootTaskDisplayAreaOrganizer.setDesktopFirst(SECOND_DISPLAY)
+
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, bounds = DEFAULT_LANDSCAPE_BOUNDS)
+        val requestedBounds = Rect(DEFAULT_LANDSCAPE_BOUNDS).apply { inset(10, 20, 30, 40) }
+
+        val wct =
+            controller.handleRequest(
+                Binder(),
+                createTaskMoveTransition(task, SECOND_DISPLAY, requestedBounds),
+            )
+
+        assertNotNull(wct, "should handle request")
+        wct.assertHop(ReorderPredicate(token = task.token, toTop = true, includingParents = true))
+    }
+
+    @Test
+    fun handleRequest_freeformTaskMove_toDisplayWithoutDesks_reordersIncludingParents() {
+        val stableBounds = Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY, bounds = DEFAULT_LANDSCAPE_BOUNDS)
+        val requestedBounds = Rect(DEFAULT_LANDSCAPE_BOUNDS).apply { inset(10, 20, 30, 40) }
+
+        val wct =
+            controller.handleRequest(
+                Binder(),
+                createTaskMoveTransition(task, SECOND_DISPLAY, requestedBounds),
+            )
+        assertNotNull(wct, "should handle request")
+
+        wct.assertHop(ReorderPredicate(token = task.token, toTop = true, includingParents = true))
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH,
