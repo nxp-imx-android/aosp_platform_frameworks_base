@@ -16,16 +16,20 @@
 
 package com.android.systemui.keyevent
 
+import android.app.contextualsearch.ContextualSearchManager
 import android.content.res.Resources
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.util.Slog
+import com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints
 import com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut
 import com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut
 import com.android.systemui.CoreStartable
+import com.android.systemui.LauncherProxyService
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
@@ -51,6 +55,7 @@ constructor(
     private val commandQueue: CommandQueue,
     private val shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy,
     private val screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcutInteractor,
+    private val launcherProxyService: LauncherProxyService,
 ) : CoreStartable {
     override fun start() {
         registerKeyGestureEventHandlers()
@@ -70,6 +75,9 @@ constructor(
         if (enablePartialScreenshotKeyboardShortcut()) {
             supportedGestures.add(KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)
         }
+        if (enableContextualSearchDesktopEntrypoints()) {
+            supportedGestures.add(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH)
+        }
         if (supportedGestures.isEmpty()) {
             return
         }
@@ -85,6 +93,12 @@ constructor(
                 KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL -> {
                     shadeDisplayPolicy.onQSPanelKeyboardShortcut()
                     commandQueue.toggleQuickSettingsPanel()
+                }
+                KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH -> {
+                    launcherProxyService.proxy?.invokeContextualSearch(
+                        ContextualSearchManager.ENTRYPOINT_KEYBOARD_SHORTCUT,
+                        /* config= */ null
+                    )
                 }
                 else ->
                     Slog.w(TAG, "Unsupported key gesture event handler: ${event.keyGestureType}")

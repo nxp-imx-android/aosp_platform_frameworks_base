@@ -220,6 +220,15 @@ public final class ContextualSearchManager {
     public static final int ENTRYPOINT_LONG_PRESS_META = 10;
 
     /**
+     * Entrypoint to be used by keyboard shortcuts.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS)
+    public static final int ENTRYPOINT_KEYBOARD_SHORTCUT = 11;
+
+    /**
      * The {@link Entrypoint} annotation is used to standardize the entrypoints supported by
      * {@link #startContextualSearch(int entrypoint)} method.
      *
@@ -232,7 +241,8 @@ public final class ContextualSearchManager {
             ENTRYPOINT_OVERVIEW_ACTION,
             ENTRYPOINT_OVERVIEW_MENU,
             ENTRYPOINT_SYSTEM_ACTION,
-            ENTRYPOINT_LONG_PRESS_META
+            ENTRYPOINT_LONG_PRESS_META,
+            ENTRYPOINT_KEYBOARD_SHORTCUT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Entrypoint {}
@@ -244,7 +254,8 @@ public final class ContextualSearchManager {
             ENTRYPOINT_OVERVIEW_ACTION,
             ENTRYPOINT_OVERVIEW_MENU,
             ENTRYPOINT_SYSTEM_ACTION,
-            ENTRYPOINT_LONG_PRESS_META
+            ENTRYPOINT_LONG_PRESS_META,
+            ENTRYPOINT_KEYBOARD_SHORTCUT
     ));
 
     private static final String TAG = ContextualSearchManager.class.getSimpleName();

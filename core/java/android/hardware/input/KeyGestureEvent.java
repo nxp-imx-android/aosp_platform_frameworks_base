@@ -137,6 +137,7 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN = 82;
     public static final int KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT = 83;
     public static final int KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY = 84;
+    public static final int KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH = 85;
 
     public static final int FLAG_CANCELLED = 1 << 0;
     public static final int FLAG_LONG_PRESS = 1 << 1;
@@ -236,6 +237,7 @@ public final class KeyGestureEvent {
             KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN,
             KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
             KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY,
+            KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface KeyGestureType {
@@ -848,6 +850,8 @@ public final class KeyGestureEvent {
                 return "KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT";
             case KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY:
                 return "KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY";
+            case KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH:
+                return "KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH";
             default:
                 return Integer.toHexString(value);
         }
