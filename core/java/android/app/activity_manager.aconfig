@@ -95,14 +95,6 @@ flag {
     description: "Holdback study for jank_perceptible_narrow"
     bug: "304837972"
 }
-
-flag {
-     name: "enable_process_observer_broadcast_on_process_started"
-     namespace: "system_performance"
-     description: "Enable ProcessObserver's onProcessStarted callbacks."
-     bug: "323959187"
-}
-
 flag {
      namespace: "system_performance"
      name: "early_render_thread_priority_boost"

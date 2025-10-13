@@ -5075,10 +5075,6 @@ public final class ProcessList extends ProcessListInternal
     }
 
     void dispatchProcessStarted(ProcessRecord app, int pid) {
-        if (!android.app.Flags.enableProcessObserverBroadcastOnProcessStarted()) {
-            Slog.i(TAG, "ProcessObserver broadcast disabled");
-            return;
-        }
         synchronized (mProcessObservers) {
             int i = mProcessObservers.beginBroadcast();
             while (i > 0) {
