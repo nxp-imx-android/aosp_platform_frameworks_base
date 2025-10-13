@@ -1990,16 +1990,6 @@ flag {
 }
 
 flag {
-    name: "skip_compat_ui_education_in_desktop_mode"
-    namespace: "lse_desktop_experience"
-    description: "Ignore Compat UI educations when in Desktop Mode."
-    bug: "357062954"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "skip_deactivation_of_desk_with_nothing_in_front"
     namespace: "lse_desktop_experience"
     description: "Keep the desk active on TO_BACK transitions without nothing else in front"

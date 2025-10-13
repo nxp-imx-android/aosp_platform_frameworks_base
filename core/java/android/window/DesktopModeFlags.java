@@ -67,8 +67,6 @@ public enum DesktopModeFlags {
             Flags::enableDesktopOpeningDeeplinkMinimizeAnimationBugfix, true),
     ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX(
             Flags::enableDesktopRecentsTransitionsCornersBugfix, true),
-    ENABLE_DESKTOP_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE_BUGFIX(
-            Flags::skipCompatUiEducationInDesktopMode, true),
     ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS(Flags::enableDesktopSystemDialogsTransitions, true),
     ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopTabTearingMinimizeAnimationBugfix, true),

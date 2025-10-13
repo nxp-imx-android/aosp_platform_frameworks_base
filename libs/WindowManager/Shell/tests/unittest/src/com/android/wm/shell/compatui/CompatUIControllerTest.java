@@ -44,7 +44,6 @@ import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.testing.AndroidTestingRunner;
 import android.view.InsetsSource;
 import android.view.InsetsState;
-import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.FrameLayout;
 
@@ -53,7 +52,6 @@ import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.animation.ActivityTransitionAnimator;
-import com.android.systemui.animation.LaunchableView;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -743,8 +741,7 @@ public class CompatUIControllerTest extends ShellTestCase {
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @EnableFlags({Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE,
-            Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
+    @EnableFlags({Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
     public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagEnabled() {
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
 
@@ -761,8 +758,7 @@ public class CompatUIControllerTest extends ShellTestCase {
 
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @EnableFlags({Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE,
-            Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
+    @EnableFlags({Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX})
     public void testUpdateActiveTaskInfo_alwaysRemoveLetterboxEdu() {
         TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
 
@@ -786,24 +782,6 @@ public class CompatUIControllerTest extends ShellTestCase {
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
         mController.removeLetterboxEdu(TASK_ID_2);
         verify(mMockLetterboxEduLayout).release();
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @DisableFlags(Flags.FLAG_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE)
-    @EnableFlags(Flags.FLAG_ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX)
-    public void testUpdateActiveTaskInfo_removeAllComponentWhenInDesktopModeFlagDisabled() {
-        TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
-
-        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
-
-        verify(mController, never()).removeLayouts(taskInfo.taskId);
-
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
-
-        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
-
-        verify(mController, never()).removeLayouts(taskInfo.taskId);
     }
 
     @Test
