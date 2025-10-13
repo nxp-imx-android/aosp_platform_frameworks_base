@@ -107,16 +107,17 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
 
     @BinderThread
     @Override
-    public void launchInBubble(IBinder token, PendingIntent pendingIntent, boolean collapsed) {
+    public void createPendingIntentBubble(IBinder token, PendingIntent pendingIntent,
+            boolean collapsed) {
         if (DEBUG) {
-            Slog.d(TAG, "Handling launch in bubble request");
+            Slog.d(TAG, "Handling create pending intent bubble request");
         }
         Objects.requireNonNull(token);
         Objects.requireNonNull(pendingIntent.getIntent().getComponent());
         mMainExecutor.execute(
                 () -> {
                     if (getBubbleWithToken(token) != null) {
-                        Slog.e(TAG, "Skip launching bubble - found one with the same token.");
+                        Slog.e(TAG, "Skip creating bubble - found one with the same token.");
                         return;
                     }
 
@@ -126,12 +127,12 @@ public class BubbleMultitaskingDelegate extends IMultitaskingDelegate.Stub {
                     if (collapsed) {
                         mController.inflateAndAdd(b, false, false);
                         if (DEBUG) {
-                            Slog.d(TAG, "Launched in a collapsed bubble");
+                            Slog.d(TAG, "Created a collapsed bubble");
                         }
                     } else {
                         mController.expandStackAndSelectAppBubble(b);
                         if (DEBUG) {
-                            Slog.d(TAG, "Launched in an expanded bubble");
+                            Slog.d(TAG, "Created an expanded bubble");
                         }
                     }
                 });

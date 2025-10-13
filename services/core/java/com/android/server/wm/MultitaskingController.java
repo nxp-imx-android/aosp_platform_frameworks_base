@@ -178,11 +178,11 @@ class MultitaskingController extends IMultitaskingController.Stub {
 
         @RequiresPermission(REQUEST_SYSTEM_MULTITASKING_CONTROLS)
         @Override
-        public void launchInBubble(@NonNull IBinder token, @NonNull PendingIntent pendingIntent,
-                boolean collapsed) {
+        public void createPendingIntentBubble(@NonNull IBinder token,
+                @NonNull PendingIntent pendingIntent, boolean collapsed) {
             if (DEBUG) {
-                Slog.d(TAG, "launchInBubble token: " + token + " pendingIntent: " + pendingIntent
-                        + " collapsed: " + collapsed);
+                Slog.d(TAG, "createPendingIntentBubble token: " + token + " pendingIntent: "
+                        + pendingIntent + " collapsed: " + collapsed);
             }
             enforceMultitaskingControlPermission("launchInBubble()");
             Objects.requireNonNull(token);
@@ -197,10 +197,10 @@ class MultitaskingController extends IMultitaskingController.Stub {
             final long origId = Binder.clearCallingIdentity();
             try {
                 // TODO: sanitize the incoming intent?
-                mShellDelegate.launchInBubble(token, pendingIntent, collapsed);
+                mShellDelegate.createPendingIntentBubble(token, pendingIntent, collapsed);
                 mBubbleTokens.add(token);
             } catch (RemoteException e) {
-                Slog.e(TAG, "Exception launching in bubble", e);
+                Slog.e(TAG, "Exception creating bubble", e);
             } finally {
                 Binder.restoreCallingIdentity(origId);
             }

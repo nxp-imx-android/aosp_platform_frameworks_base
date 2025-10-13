@@ -30,7 +30,7 @@ interface IMultitaskingDelegate {
     oneway void createBubble(in IBinder token, in Intent intent, boolean collapsed);
 
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.REQUEST_SYSTEM_MULTITASKING_CONTROLS)")
-    oneway void launchInBubble(in IBinder token, in PendingIntent pendingIntent, boolean collapsed);
+    oneway void createPendingIntentBubble(in IBinder token, in PendingIntent pendingIntent, boolean collapsed);
 
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.REQUEST_SYSTEM_MULTITASKING_CONTROLS)")
     oneway void updateBubbleState(in IBinder token, boolean collapsed);
