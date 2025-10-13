@@ -171,19 +171,29 @@ class NestedElementTransformationTest {
         ) {
             before { onElement(elementVariant2A.key).assertElementVariant(elementVariant2A) }
             atAllFrames(4) {
+                // The scaling is done a the graphics layer level, so it does not impact the
+                // measured size but it impacts the coordinates (see http://shortn/_coqoiLi3aH).
+                val expectedWidth = interpolate(elementVariant2A.width, elementVariant2A.width * 2f)
+                val expectedHeight =
+                    interpolate(elementVariant2A.height, elementVariant2A.height * 0.5f)
+                val expectedScale = interpolate(Scale(1f, 1f), Scale(4f, 0.25f))
+
+                val scaledWidth = expectedWidth * expectedScale.scaleX
+                val scaledHeight = expectedHeight * expectedScale.scaleY
+                val deltaWidth = scaledWidth - expectedWidth
+                val deltaHeight = scaledHeight - expectedHeight
+
                 onElement(elementVariant2A.key)
                     .assertPositionInRootIsEqualTo(
-                        interpolate(elementVariant2A.x, elementVariant2A.x + 100.dp),
-                        interpolate(elementVariant2A.y, elementVariant2A.y + 50.dp),
+                        interpolate(elementVariant2A.x, elementVariant2A.x + 100.dp) -
+                            deltaWidth / 2f,
+                        interpolate(elementVariant2A.y, elementVariant2A.y + 50.dp) -
+                            deltaHeight / 2f,
                     )
-                    .assertSizeIsEqualTo(
-                        interpolate(elementVariant2A.width, elementVariant2A.width * 2f),
-                        interpolate(elementVariant2A.height, elementVariant2A.height * 0.5f),
-                    )
+                    .assertSizeIsEqualTo(expectedWidth, expectedHeight)
                 val semanticNode = onElement(elementVariant2A.key).fetchSemanticsNode()
                 assertThat(semanticNode.lastAlphaForTesting).isEqualTo(interpolate(1f, 0f))
-                assertThat(semanticNode.lastScaleForTesting)
-                    .isEqualTo(interpolate(Scale(1f, 1f), Scale(4f, 0.25f)))
+                assertThat(semanticNode.lastScaleForTesting).isEqualTo(expectedScale)
             }
             after { onElement(elementVariant2A.key).isNotDisplayed() }
         }

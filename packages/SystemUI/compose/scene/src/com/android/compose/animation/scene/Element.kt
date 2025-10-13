@@ -28,8 +28,8 @@ import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.ApproachLayoutModifierNode
 import androidx.compose.ui.layout.ApproachMeasureScope
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -506,11 +506,19 @@ internal class ElementNode(
 
             val offset = (interruptedOffset - currentOffset).round()
             if (
-                isElementOpaque(content, element, transition) &&
+                isElementOpaqueWithDefaultScale(content, element, transition) &&
                     interruptedAlpha(layoutImpl, element, transition, stateInContent, alpha = 1f) ==
-                        1f
+                        1f &&
+                    interruptedScale(
+                        layoutImpl,
+                        element,
+                        transition,
+                        stateInContent,
+                        scale = Scale.Default,
+                    ) == Scale.Default
             ) {
                 stateInContent.lastAlpha = 1f
+                stateInContent.lastScale = Scale.Default
 
                 // TODO(b/291071158): Call placeWithLayer() if offset != IntOffset.Zero and size is
                 // not animated once b/305195729 is fixed. Test that drawing is not invalidated in
@@ -539,6 +547,19 @@ internal class ElementNode(
                     val transition = elementState as? TransitionState.Transition
                     alpha = elementAlpha(layoutImpl, element, transition, stateInContent)
                     compositingStrategy = CompositingStrategy.ModulateAlpha
+
+                    val scale = getScale(layoutImpl, element, transition, stateInContent)
+                    scaleX = scale.scaleX
+                    scaleY = scale.scaleY
+                    transformOrigin =
+                        if (scale.pivot == Offset.Unspecified) {
+                            TransformOrigin.Center
+                        } else {
+                            TransformOrigin(
+                                pivotFractionX = scale.pivot.x,
+                                pivotFractionY = scale.pivot.y,
+                            )
+                        }
                 }
             }
         }
@@ -636,22 +657,7 @@ internal class ElementNode(
 
     override fun ContentDrawScope.draw() {
         element.wasDrawnInAnyContent = true
-
-        val transition =
-            elementState(layoutImpl, element, currentTransitionStates)
-                as? TransitionState.Transition
-        val drawScale = getDrawScale(layoutImpl, element, transition, stateInContent, center)
-        if (drawScale == Scale.Default) {
-            drawContent()
-        } else {
-            scale(
-                drawScale.scaleX,
-                drawScale.scaleY,
-                if (drawScale.pivot.isUnspecified) center else drawScale.pivot,
-            ) {
-                this@draw.drawContent()
-            }
-        }
+        drawContent()
     }
 
     companion object {
@@ -1100,10 +1106,10 @@ private fun transitionDoesNotInvolveAncestorContent(
  * Whether the element is opaque or not.
  *
  * Important: The logic here should closely match the logic in [elementAlpha]. Note that we don't
- * reuse [elementAlpha] and simply check if alpha == 1f because [isElementOpaque] is checked during
- * placement and we don't want to read the transition progress in that phase.
+ * reuse [elementAlpha] and simply check if alpha == 1f because [isElementOpaqueWithDefaultScale] is
+ * checked during placement and we don't want to read the transition progress in that phase.
  */
-private fun isElementOpaque(
+private fun isElementOpaqueWithDefaultScale(
     content: Content,
     element: Element,
     transition: TransitionState.Transition?,
@@ -1126,16 +1132,24 @@ private fun isElementOpaque(
         return true
     }
 
-    return transition.transformationSpec.transformations(element.key, content.key)?.alpha == null
+    val transformations = transition.transformationSpec.transformations(element.key, content.key)
+    val previewTransformations =
+        transition.previewTransformationSpec?.transformations(element.key, content.key)
+    return (transformations == null || !transformations.hasAlphaOrScaleTransformation()) &&
+        (previewTransformations == null || !previewTransformations.hasAlphaOrScaleTransformation())
+}
+
+private fun ElementTransformations.hasAlphaOrScaleTransformation(): Boolean {
+    return alpha != null || scale != null
 }
 
 /**
  * Whether the element is opaque or not.
  *
- * Important: The logic here should closely match the logic in [isElementOpaque]. Note that we don't
- * reuse [elementAlpha] in [isElementOpaque] and simply check if alpha == 1f because
- * [isElementOpaque] is checked during placement and we don't want to read the transition progress
- * in that phase.
+ * Important: The logic here should closely match the logic in [isElementOpaqueWithDefaultScale].
+ * Note that we don't reuse [elementAlpha] in [isElementOpaqueWithDefaultScale] and simply check if
+ * alpha == 1f because [isElementOpaqueWithDefaultScale] is checked during placement and we don't
+ * want to read the transition progress in that phase.
  */
 internal fun elementAlpha(
     layoutImpl: SceneTransitionLayoutImpl,
@@ -1261,12 +1275,11 @@ private fun measure(
 
 private fun Placeable.size(): IntSize = IntSize(width, height)
 
-internal fun getDrawScale(
+internal fun getScale(
     layoutImpl: SceneTransitionLayoutImpl,
     element: Element,
     transition: TransitionState.Transition?,
     stateInContent: Element.State,
-    center: Offset,
 ): Scale {
     val scale =
         computeValue(
@@ -1275,69 +1288,71 @@ internal fun getDrawScale(
             element,
             transition,
             contentValue = { Scale.Default },
-            transformation = { it?.drawScale },
+            transformation = { it?.scale },
             currentValue = { Scale.Default },
             isSpecified = { true },
             ::lerp,
         )
 
-    fun Offset.specifiedOrCenter(): Offset {
-        check(isSpecified || center.isSpecified) {
-            "Calling currentScale() on an element transformed with a drawScale that has a pivot " +
-                "is not supported yet."
-        }
-        return this.takeIf { isSpecified } ?: center
-    }
-
-    val interruptedScale =
-        computeInterruptedValue(
-            layoutImpl,
-            transition,
-            value = scale,
-            unspecifiedValue = Scale.Unspecified,
-            zeroValue = Scale.Zero,
-            getValueBeforeInterruption = { stateInContent.scaleBeforeInterruption },
-            setValueBeforeInterruption = { stateInContent.scaleBeforeInterruption = it },
-            getInterruptionDelta = { stateInContent.scaleInterruptionDelta },
-            setInterruptionDelta = { delta ->
-                setPlacementInterruptionDelta(
-                    element = element,
-                    stateInContent = stateInContent,
-                    transition = transition,
-                    delta = delta,
-                    setter = { stateInContent, delta ->
-                        stateInContent.scaleInterruptionDelta = delta
-                    },
-                )
-            },
-            diff = { a, b ->
-                Scale(
-                    scaleX = a.scaleX - b.scaleX,
-                    scaleY = a.scaleY - b.scaleY,
-                    pivot =
-                        if (a.pivot.isUnspecified && b.pivot.isUnspecified) {
-                            Offset.Unspecified
-                        } else {
-                            a.pivot.specifiedOrCenter() - b.pivot.specifiedOrCenter()
-                        },
-                )
-            },
-            add = { a, b, bProgress ->
-                Scale(
-                    scaleX = a.scaleX + b.scaleX * bProgress,
-                    scaleY = a.scaleY + b.scaleY * bProgress,
-                    pivot =
-                        if (a.pivot.isUnspecified && b.pivot.isUnspecified) {
-                            Offset.Unspecified
-                        } else {
-                            a.pivot.specifiedOrCenter() + b.pivot.specifiedOrCenter() * bProgress
-                        },
-                )
-            },
-        )
-
+    val interruptedScale = interruptedScale(layoutImpl, element, transition, stateInContent, scale)
     stateInContent.lastScale = interruptedScale
     return interruptedScale
+}
+
+private fun interruptedScale(
+    layoutImpl: SceneTransitionLayoutImpl,
+    element: Element,
+    transition: TransitionState.Transition?,
+    stateInContent: Element.State,
+    scale: Scale,
+): Scale {
+    return computeInterruptedValue(
+        layoutImpl,
+        transition,
+        value = scale,
+        unspecifiedValue = Scale.Unspecified,
+        zeroValue = Scale.Zero,
+        getValueBeforeInterruption = { stateInContent.scaleBeforeInterruption },
+        setValueBeforeInterruption = { stateInContent.scaleBeforeInterruption = it },
+        getInterruptionDelta = { stateInContent.scaleInterruptionDelta },
+        setInterruptionDelta = { delta ->
+            setPlacementInterruptionDelta(
+                element = element,
+                stateInContent = stateInContent,
+                transition = transition,
+                delta = delta,
+                setter = { stateInContent, delta -> stateInContent.scaleInterruptionDelta = delta },
+            )
+        },
+        diff = { a, b ->
+            Scale(
+                scaleX = a.scaleX - b.scaleX,
+                scaleY = a.scaleY - b.scaleY,
+                pivot =
+                    if (a.pivot.isUnspecified && b.pivot.isUnspecified) {
+                        Offset.Unspecified
+                    } else {
+                        a.pivot.specifiedOrCenter() - b.pivot.specifiedOrCenter()
+                    },
+            )
+        },
+        add = { a, b, bProgress ->
+            Scale(
+                scaleX = a.scaleX + b.scaleX * bProgress,
+                scaleY = a.scaleY + b.scaleY * bProgress,
+                pivot =
+                    if (a.pivot.isUnspecified && b.pivot.isUnspecified) {
+                        Offset.Unspecified
+                    } else {
+                        a.pivot.specifiedOrCenter() + b.pivot.specifiedOrCenter() * bProgress
+                    },
+            )
+        },
+    )
+}
+
+private fun Offset.specifiedOrCenter(): Offset {
+    return this.takeIf { isSpecified } ?: Offset(0.5f, 0.5f)
 }
 
 /**

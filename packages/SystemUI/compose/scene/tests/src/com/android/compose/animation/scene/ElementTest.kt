@@ -39,6 +39,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -73,6 +74,7 @@ import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
 import com.android.compose.animation.scene.subjects.assertThat
+import com.android.compose.animation.scene.testing.lastAlphaForTesting
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.test.assertSizeIsEqualTo
@@ -2311,5 +2313,48 @@ class ElementTest {
         rule.waitForIdle()
 
         assertThat(compositions).isEqualTo(1)
+    }
+
+    @Test
+    fun previewAlphaTransformation() {
+        val state = rule.runOnUiThread { HoistedSceneTransitionLayoutState(SceneA) }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayoutForTesting(
+                    state,
+                    transitions =
+                        remember {
+                            transitions {
+                                from(SceneA, to = SceneB, preview = { fade(TestElements.Foo) }) {
+                                    spec = tween(4 * 16, easing = LinearEasing)
+                                }
+                            }
+                        },
+                ) {
+                    scene(SceneA) { Box(Modifier.fillMaxSize()) }
+                    scene(SceneB) { Box(Modifier.element(TestElements.Foo).fillMaxSize()) }
+                }
+            }
+
+        rule.onNode(isElement(TestElements.Foo)).assertDoesNotExist()
+
+        var progress by mutableFloatStateOf(0f)
+        scope.launch {
+            state.uiBoundState!!.startTransition(
+                transition(SceneA, SceneB, progress = { progress }, isUserInputOngoing = true)
+            )
+        }
+        assertThat(
+                rule.onNode(isElement(TestElements.Foo)).fetchSemanticsNode().lastAlphaForTesting
+            )
+            .isWithin(0.001f)
+            .of(0f)
+
+        progress = 0.4f
+        assertThat(
+                rule.onNode(isElement(TestElements.Foo)).fetchSemanticsNode().lastAlphaForTesting
+            )
+            .isWithin(0.001f)
+            .of(0.4f)
     }
 }

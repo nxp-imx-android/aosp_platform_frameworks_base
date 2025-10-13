@@ -361,6 +361,6 @@ internal class ElementTransformations(
     val shared: TransformationWithRange<SharedElementTransformation>?,
     val offset: TransformationWithRange<PropertyTransformation<Offset>>?,
     val size: TransformationWithRange<PropertyTransformation<IntSize>>?,
-    val drawScale: TransformationWithRange<PropertyTransformation<Scale>>?,
+    val scale: TransformationWithRange<PropertyTransformation<Scale>>?,
     val alpha: TransformationWithRange<PropertyTransformation<Float>>?,
 )
