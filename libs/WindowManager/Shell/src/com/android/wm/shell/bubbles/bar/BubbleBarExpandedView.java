@@ -322,6 +322,10 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         return mCaptionView.getHandleView();
     }
 
+    public BubbleBarCaptionView getCaptionView() {
+        return mCaptionView;
+    }
+
     /** Updates the view based on the current theme. */
     public void applyThemeAttrs() {
         mCaptionHeight = getResources().getDimensionPixelSize(

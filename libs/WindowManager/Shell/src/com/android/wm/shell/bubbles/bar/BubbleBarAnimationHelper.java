@@ -303,6 +303,7 @@ public class BubbleBarAnimationHelper {
         final float endTx = toBbev.getTranslationX();
         final float startTx = getSwitchAnimationInitialTx(endTx);
         toBbev.getHandleView().setAlpha(0f);
+        toBbev.getCaptionView().setAlpha(0f);
 
         AnimatorSet switchAnim = new AnimatorSet();
         switchAnim.playTogether(
@@ -335,6 +336,7 @@ public class BubbleBarAnimationHelper {
                 switchAnim.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
+                        toBbev.getCaptionView().setAlpha(1f);
                         ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
                                 "BBAnimationHelper.animateSwitch(): finished");
                         endRunnable.run();
