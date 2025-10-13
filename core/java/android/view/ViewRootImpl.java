@@ -813,8 +813,8 @@ public final class ViewRootImpl implements ViewParent,
     /**
      * The combined transactions passed in from {@link #applyTransactionOnDraw}
      */
-    private Transaction mPendingTransaction = new Transaction();
-
+    @NonNull
+    private final Transaction mPendingTransaction;
 
     boolean mIsDrawing;
     int mLastSystemUiVisibility;
@@ -865,8 +865,10 @@ public final class ViewRootImpl implements ViewParent,
      * surfaces can ensure they do not draw into the surface inset region set by the parent window.
      */
     private SurfaceControl mBoundsLayer;
-    private final Transaction mTransaction = new Transaction();
-    private final Transaction mFrameRateTransaction = new Transaction();
+    @NonNull
+    private final Transaction mTransaction;
+    @NonNull
+    private final Transaction mFrameRateTransaction;
 
     @UnsupportedAppUsage
     boolean mAdded;
@@ -1332,6 +1334,11 @@ public final class ViewRootImpl implements ViewParent,
                 InputSettings.isStylusPointerIconEnabled(mContext);
 
         initializeProtoLogInProcess();
+
+        // Transaction constructor might use ProtoLog, so initialize after it is setup.
+        mPendingTransaction = new Transaction();
+        mTransaction = new Transaction();
+        mFrameRateTransaction = new Transaction();
 
         mInputCompatHandler = InputEventCompatHandler.buildChain(context, mHandler);
 
