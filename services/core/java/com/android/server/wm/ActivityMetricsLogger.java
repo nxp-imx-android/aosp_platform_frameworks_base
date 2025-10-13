@@ -1560,6 +1560,12 @@ class ActivityMetricsLogger {
             return;
         }
 
+        if (info.type != TYPE_TRANSITION_COLD_LAUNCH) {
+            // We don't know the baseline for process' MemoryStat, so the current values only
+            // make sense if it's a cold launch.
+            return;
+        }
+
         final int pid = info.processRecord.getPid();
         final int uid = info.applicationInfo.uid;
         final MemoryStat memoryStat = readMemoryStatFromFilesystem(uid, pid);
