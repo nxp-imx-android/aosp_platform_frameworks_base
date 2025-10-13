@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.pm.PackageManagerInternal;
 import android.graphics.Region;
 import android.hardware.input.InputManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -67,7 +68,7 @@ final class HandwritingModeController {
     // TODO(b/210039666): make this device touch sampling rate dependent.
     // Use getHandwritingBufferSize() and not this value directly.
     private static final int LONG_EVENT_BUFFER_SIZE = EVENT_BUFFER_SIZE * 20;
-    private static final long HANDWRITING_DELEGATION_IDLE_TIMEOUT_MS = 3000;
+    private static final long HANDWRITING_DELEGATION_IDLE_TIMEOUT_MS = 3000 * Build.HW_TIMEOUT_MULTIPLIER;
     private static final long AFTER_STYLUS_UP_ALLOW_PERIOD_MS = 200L;
 
     private final Context mContext;
