@@ -348,9 +348,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_REPARENT_WINDOW_TOKEN_API),
     REPOSITORY_BASED_PERSISTENCE(Flags::repositoryBasedPersistence, false,
             Flags.FLAG_REPOSITORY_BASED_PERSISTENCE),
-    RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS(
-            Flags::respectFullscreenActivityOptionInDesktopLaunchParams, true,
-            Flags.FLAG_RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS),
     SHOW_BIOMETRIC_PROMPT_SECONDARY_DISPLAY_MESSAGE(
             Flags::showBiometricPromptSecondaryDisplayMessage, true,
             Flags.FLAG_SHOW_BIOMETRIC_PROMPT_SECONDARY_DISPLAY_MESSAGE),
