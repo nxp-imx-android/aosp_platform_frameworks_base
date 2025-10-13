@@ -556,6 +556,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_chronometer_fixes"
+    namespace: "systemui"
+    description: "Fixes ticking behavior for the chronometer used in status bar chips"
+    bug: "450909625"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "new_volume_panel"
     namespace: "systemui"
     description: "Switches to the new volume panel (without Slices)."

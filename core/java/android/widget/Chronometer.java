@@ -383,7 +383,10 @@ public class Chronometer extends TextView {
         updateBaseTimeIfSystemClockChanged();
         mNow = now;
 
+        // LINT.IfChange
+        // Use 499 to ensure countdown chronometers round down. (e.g. 999ms shows 00:00).
         long seconds = Math.round((mCountDown ? mBase - now - 499 : now - mBase) / 1000f);
+        // LINT.ThenChange(/packages/SystemUI/src/com/android/systemui/statusbar/chips/ui/viewmodel/ChronometerState.kt)
         boolean negative = false;
         if (seconds < 0) {
             seconds = -seconds;
@@ -507,6 +510,7 @@ public class Chronometer extends TextView {
                         ? MINUTE_IN_MILLIS
                         : SECOND_IN_MILLIS;
 
+        // LINT.IfChange
         long delayMillis;
         if (mCountDown) {
             delayMillis = (mBase - nowMillis) % periodInMillis;
@@ -520,6 +524,7 @@ public class Chronometer extends TextView {
         // Aim for 3 milliseconds into the next second so we don't update exactly on the second
         delayMillis += 3;
         postDelayed(mTickRunnable, delayMillis);
+        // LINT.ThenChange(/packages/SystemUI/src/com/android/systemui/statusbar/chips/ui/viewmodel/ChronometerState.kt)
     }
 
     void dispatchChronometerTick() {
