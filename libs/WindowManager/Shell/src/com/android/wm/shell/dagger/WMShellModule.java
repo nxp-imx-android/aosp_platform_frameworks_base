@@ -21,7 +21,6 @@ import static android.window.DesktopExperienceFlags.ENABLE_MULTI_DISPLAY_HOME_FO
 import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
-import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT;
 
 import static com.android.systemui.Flags.enableViewCaptureTracing;
@@ -1460,7 +1459,6 @@ public abstract class WMShellModule {
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopState desktopState) {
         if (!desktopState.canEnterDesktopMode()
-                || !ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
                 || !ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS.isTrue()) {
             return Optional.empty();
         }
