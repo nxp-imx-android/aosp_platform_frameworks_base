@@ -18,7 +18,6 @@ package com.android.server;
 
 import static android.os.Flags.batteryChargingInfoApi;
 import static android.os.Flags.batteryManufacturerDiagnosticsApi;
-import static android.os.Flags.batteryServiceSupportCurrentAdbCommand;
 import static android.os.Flags.stateOfHealthPublic;
 
 import static com.android.internal.logging.nano.MetricsProto.MetricsEvent;
@@ -1364,9 +1363,7 @@ public final class BatteryService extends SystemService {
         pw.println("  help");
         pw.println("    Print this help text.");
         String getSetOptions = "ac|usb|wireless|dock|status|level|temp|present|counter|invalid";
-        if (batteryServiceSupportCurrentAdbCommand()) {
-            getSetOptions += "|current_now|current_average";
-        }
+        getSetOptions += "|current_now|current_average";
         pw.println("  get [-f] [" + getSetOptions + "]");
         pw.println("    Gets the value of a battery state.");
         pw.println("    -f: force to get the latest property value.");
@@ -1451,14 +1448,10 @@ public final class BatteryService extends SystemService {
                         pw.println(mHealthInfo.batteryChargeCounterUah);
                         break;
                     case "current_now":
-                        if (batteryServiceSupportCurrentAdbCommand()) {
-                            pw.println(mHealthInfo.batteryCurrentMicroamps);
-                        }
+                        pw.println(mHealthInfo.batteryCurrentMicroamps);
                         break;
                     case "current_average":
-                        if (batteryServiceSupportCurrentAdbCommand()) {
-                            pw.println(mHealthInfo.batteryCurrentAverageMicroamps);
-                        }
+                        pw.println(mHealthInfo.batteryCurrentAverageMicroamps);
                         break;
                     case "temp":
                         pw.println(mHealthInfo.batteryTemperatureTenthsCelsius);
@@ -1518,15 +1511,11 @@ public final class BatteryService extends SystemService {
                             mHealthInfo.batteryChargeCounterUah = Integer.parseInt(value);
                             break;
                         case "current_now":
-                            if (batteryServiceSupportCurrentAdbCommand()) {
-                                mHealthInfo.batteryCurrentMicroamps = Integer.parseInt(value);
-                            }
+                            mHealthInfo.batteryCurrentMicroamps = Integer.parseInt(value);
                             break;
                         case "current_average":
-                            if (batteryServiceSupportCurrentAdbCommand()) {
-                                mHealthInfo.batteryCurrentAverageMicroamps =
-                                        Integer.parseInt(value);
-                            }
+                            mHealthInfo.batteryCurrentAverageMicroamps = Integer.parseInt(value);
+                            break;
                         case "temp":
                             mHealthInfo.batteryTemperatureTenthsCelsius = Integer.parseInt(value);
                             break;
