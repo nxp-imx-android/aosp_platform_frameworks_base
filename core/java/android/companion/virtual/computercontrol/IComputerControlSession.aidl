@@ -18,6 +18,7 @@ package android.companion.virtual.computercontrol;
 
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
+import android.view.Surface;
 import android.view.SurfaceControl;
 
 /**
@@ -26,6 +27,12 @@ import android.view.SurfaceControl;
  * @hide
  */
 interface IComputerControlSession {
+
+    /**
+     * Initializes the computer control session by setting the callback to be notified about
+     * computer control lifecycle changes, and configuring the Surface for the session.
+     */
+    void initialize(in IComputerControlLifecycleCallback listener, in Surface surface);
 
     /** Launches an application on the trusted virtual display. */
     void launchApplication(in String packageName, in String className);
@@ -58,9 +65,6 @@ interface IComputerControlSession {
 
     /** Performs computer control action on the computer control display. */
     void performAction(int actionCode);
-
-    /** Sets a callback to be notified about computer control lifecycle changes. */
-    void setLifecycleCallback(in IComputerControlLifecycleCallback listener);
 
     /** Attaches a notification to the session, to make it non-dismissable. */
     void attachNotificationInfo(int notificationId, in String notificationTag);

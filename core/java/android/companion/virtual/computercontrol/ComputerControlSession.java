@@ -30,7 +30,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManagerGlobal;
-import android.hardware.display.IVirtualDisplayCallback;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Binder;
@@ -191,28 +190,23 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     private final ComputerControlAccessibilityProxy mAccessibilityProxy;
 
     /** @hide */
-    public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
+    public ComputerControlSession(int displayId,
             @NonNull IComputerControlSession session,
             @NonNull AccessibilityManager accessibilityManager,
             @NonNull Runnable onClosedRunnable) {
-        this(displayId, displayToken, session, accessibilityManager, onClosedRunnable,
+        this(displayId, session, accessibilityManager, onClosedRunnable,
                 DisplayManagerGlobal.getInstance());
     }
 
     /** @hide */
     @VisibleForTesting
-    public ComputerControlSession(int displayId, @NonNull IVirtualDisplayCallback displayToken,
+    public ComputerControlSession(int displayId,
             @NonNull IComputerControlSession session,
             @NonNull AccessibilityManager accessibilityManager,
             @NonNull Runnable onClosedRunnable,
             @NonNull DisplayManagerGlobal displayManagerGlobal) {
         mSession = Objects.requireNonNull(session);
         mOnClosedRunnable = onClosedRunnable;
-        try {
-            mSession.setLifecycleCallback(this);
-        } catch (RemoteException e) {
-            e.rethrowFromSystemServer();
-        }
 
         final Display display = displayManagerGlobal.getRealDisplay(displayId);
         Objects.requireNonNull(display);
@@ -223,7 +217,11 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         mImageReader = ImageReader.newInstance(displayInfo.logicalWidth,
                 displayInfo.logicalHeight,
                 PixelFormat.RGBA_8888, /* maxImages= */ 2);
-        displayManagerGlobal.setVirtualDisplaySurface(displayToken, mImageReader.getSurface());
+        try {
+            mSession.initialize(/* lifecycleCallback=*/ this, mImageReader.getSurface());
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
 
         mAccessibilityProxy = new ComputerControlAccessibilityProxy(displayId);
         accessibilityManager.registerDisplayProxy(mAccessibilityProxy);
@@ -682,9 +680,8 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         }
 
         @Override
-        public void onSessionCreated(int displayId, IVirtualDisplayCallback displayToken,
-                IComputerControlSession session) {
-            mSession = new ComputerControlSession(displayId, displayToken, session,
+        public void onSessionCreated(int displayId, IComputerControlSession session) {
+            mSession = new ComputerControlSession(displayId, session,
                     mContext.getSystemService(AccessibilityManager.class), this::onSessionClosed);
             Binder.withCleanCallingIdentity(() ->
                     mExecutor.execute(() -> mCallback.onSessionCreated(mSession)));

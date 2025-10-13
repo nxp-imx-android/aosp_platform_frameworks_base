@@ -53,7 +53,6 @@ import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.ResolveInfo;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
-import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplay;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.VirtualDpad;
@@ -73,6 +72,7 @@ import android.util.Slog;
 import android.view.DisplayInfo;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
@@ -157,6 +157,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private final Consumer<ComputerControlSessionImpl> mOnClosedListener;
     private final VirtualDevice mVirtualDevice;
+    // The VirtualDisplay is owned by the system and its token must not be leaked to the client.
     private final VirtualDisplay mVirtualDisplay;
     private final int mVirtualDisplayId;
     private final int mVirtualDeviceId;
@@ -217,6 +218,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
+    private Surface mClientSurface;
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
@@ -296,7 +298,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
             applyActivityPolicy();
 
-            // Create the display with a clean identity so it can be trusted.
+            // Create the display with a clean identity so it can be trusted. The virtual display's
+            // token must not be leaked to the client.
             mVirtualDisplay = Binder.withCleanCallingIdentity(() -> {
                 VirtualDisplay virtualDisplay = mVirtualDevice.createVirtualDisplay(
                         virtualDisplayConfig, null, null);
@@ -376,10 +379,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mVirtualDeviceId;
     }
 
-    IVirtualDisplayCallback getVirtualDisplayToken() {
-        return mVirtualDisplay.getToken();
-    }
-
     String getName() {
         return mParams.getName();
     }
@@ -392,6 +391,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         synchronized (mNotificationLock) {
             return mNotificationInfo;
         }
+    }
+
+    @Override
+    public void initialize(IComputerControlLifecycleCallback callback, Surface clientSurface) {
+        if (mClientSurface != null) {
+            throw new IllegalStateException("Client surface is already initialized");
+        }
+        mClientSurface = clientSurface;
+        mVirtualDisplay.setSurface(mClientSurface);
+        mLifecycle.setRemoteCallback(callback);
     }
 
     @Override
@@ -551,11 +560,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
             performKeyStep(keysToSend, 0);
         }
-    }
-
-    @Override
-    public void setLifecycleCallback(IComputerControlLifecycleCallback callback) {
-        mLifecycle.setRemoteCallback(callback);
     }
 
     @Override
