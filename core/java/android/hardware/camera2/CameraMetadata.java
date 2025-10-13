@@ -3464,15 +3464,11 @@ public abstract class CameraMetadata<TKey> {
     /**
      * <p>The camera device's auto-exposure routine is active and
      * prioritizes the application-selected exposure time
-     * ({@link CaptureRequest#SENSOR_EXPOSURE_TIME android.sensor.exposureTime}). The exposure time may be clamped
-     * to the maximum duration allowed by the requested target frame rate in
-     * {@link CaptureRequest#CONTROL_AE_TARGET_FPS_RANGE android.control.aeTargetFpsRange} to ensure the frame rate does not
-     * fall below the requested minimum.</p>
+     * ({@link CaptureRequest#SENSOR_EXPOSURE_TIME android.sensor.exposureTime}).</p>
      * <p>The application has control over {@link CaptureRequest#SENSOR_EXPOSURE_TIME android.sensor.exposureTime} while
      * the application's values for {@link CaptureRequest#SENSOR_SENSITIVITY android.sensor.sensitivity} and
      * {@link CaptureRequest#SENSOR_FRAME_DURATION android.sensor.frameDuration} are ignored.</p>
      *
-     * @see CaptureRequest#CONTROL_AE_TARGET_FPS_RANGE
      * @see CaptureRequest#SENSOR_EXPOSURE_TIME
      * @see CaptureRequest#SENSOR_FRAME_DURATION
      * @see CaptureRequest#SENSOR_SENSITIVITY
