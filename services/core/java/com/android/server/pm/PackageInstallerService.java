@@ -2181,6 +2181,11 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         final int size = sessions.size();
         for (int i = 0; i < size; i++) {
             final PackageInstallerSession session = sessions.valueAt(i);
+            if (session.isStagedAndInTerminalState()) {
+                // No need to count sessions that are staged and in terminal state because they
+                // can't be abandoned and they will be cleared in the next reboot.
+                continue;
+            }
             if (session.getInstallerUid() == installerUid) {
                 count++;
             }
