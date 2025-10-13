@@ -1294,16 +1294,6 @@ flag {
 }
 
 flag {
-  name: "enable_opaque_background_for_transparent_windows"
-  namespace: "lse_desktop_experience"
-  description: "Whether an opaque background should be forcefully set for windows with only transparent background."
-  bug: "397219542"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "enable_overflow_button_for_taskbar_pinned_items"
     namespace: "lse_desktop_experience"
     description: "Add an overflow button to accommodate pinned items that can't be fit into the taskbar."
