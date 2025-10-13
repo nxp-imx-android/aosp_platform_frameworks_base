@@ -5198,7 +5198,6 @@ public class UserManager {
      */
     @Deprecated
     @TestApi
-    @UnsupportedAppUsage
     @RequiresPermission(anyOf = {
             android.Manifest.permission.MANAGE_USERS,
             android.Manifest.permission.CREATE_USERS
