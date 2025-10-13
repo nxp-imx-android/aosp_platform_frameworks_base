@@ -1956,16 +1956,6 @@ flag {
 }
 
 flag {
-    name: "respect_orientation_change_for_unresizeable"
-    namespace: "lse_desktop_experience"
-    description: "Whether to resize task to respect requested orientation change of unresizeable activity"
-    bug: "353338503"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "restrict_freeform_hidden_system_bars_to_filling_tasks"
     namespace: "lse_desktop_experience"
     description: "Only allow filling freeform tasks to hide the system bars"

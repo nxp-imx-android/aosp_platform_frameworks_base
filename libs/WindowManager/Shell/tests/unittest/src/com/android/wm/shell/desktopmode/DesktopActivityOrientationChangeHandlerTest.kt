@@ -33,7 +33,6 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.ExtendedMockito.never
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
-import com.android.window.flags.Flags.FLAG_RESPECT_ORIENTATION_CHANGE_FOR_UNRESIZEABLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
@@ -88,7 +87,7 @@ import org.mockito.quality.Strictness
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
 @ExperimentalCoroutinesApi
-@EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE, FLAG_RESPECT_ORIENTATION_CHANGE_FOR_UNRESIZEABLE)
+@EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
     private val testExecutor: ShellExecutor = mock()
     private val shellTaskOrganizer: ShellTaskOrganizer = mock()
