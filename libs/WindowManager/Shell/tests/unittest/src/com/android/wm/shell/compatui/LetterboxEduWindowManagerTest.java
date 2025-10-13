@@ -42,7 +42,6 @@ import android.app.ActivityManager;
 import android.app.TaskInfo;
 import android.graphics.Insets;
 import android.graphics.Rect;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.testing.AndroidTestingRunner;
 import android.util.Pair;
@@ -57,7 +56,6 @@ import android.view.accessibility.AccessibilityEvent;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -420,7 +418,6 @@ public class LetterboxEduWindowManagerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_COMPAT_UI_VISIBILITY_STATUS)
     public void testCompatUIStatus_dialogIsShown() {
         // We display the dialog
         LetterboxEduWindowManager windowManager = createWindowManager(/* eligible= */ true,

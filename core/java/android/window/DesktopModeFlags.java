@@ -59,7 +59,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX(Flags::enableDesktopAppLaunchTransitionsBugfix,
             true),
     ENABLE_DESKTOP_CLOSE_SHORTCUT_BUGFIX(Flags::enableDesktopCloseShortcutBugfix, false),
-    ENABLE_DESKTOP_COMPAT_UI_VISIBILITY_STATUS(Flags::enableCompatUiVisibilityStatus, true),
     ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX(Flags::enableDesktopImmersiveDragBugfix, true),
     ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX(
             Flags::enableDesktopIndicatorInSeparateThreadBugfix, true),
