@@ -124,13 +124,13 @@ protected constructor(
     override fun onBind(intent: Intent): IBinder = binder
 
     private fun RecordingContext.startRecording() {
+        if (Flags.restoreShowTapsSetting()) {
+            preferenceUtil.updateShowTaps(shouldShowTaps)
+        } else {
+            setShouldShowTouches(shouldShowTaps)
+        }
         try {
             Log.d(tag, "Starting screen recording user=$userId $this")
-            if (Flags.restoreShowTapsSetting()) {
-                preferenceUtil.updateShowTaps(shouldShowTaps)
-            } else {
-                setShouldShowTouches(shouldShowTaps)
-            }
             recorder.start()
             notificationInteractor.notifyRecording(
                 notificationId = notificationId,
@@ -138,7 +138,7 @@ protected constructor(
             )
         } catch (e: Exception) {
             if (Flags.restoreShowTapsSetting()) {
-                preferenceUtil.restoreShowTapsSetting()
+                preferenceUtil.maybeRestoreShowTapsSetting()
             } else {
                 setShouldShowTouches(originalShouldShowTouches)
             }
@@ -176,7 +176,7 @@ protected constructor(
             Log.d(tag, "Stopping screen recording reason=$reason")
             recordingContext = null
             if (Flags.restoreShowTapsSetting()) {
-                preferenceUtil.restoreShowTapsSetting()
+                preferenceUtil.maybeRestoreShowTapsSetting()
             } else {
                 setShouldShowTouches(originalShouldShowTouches)
             }

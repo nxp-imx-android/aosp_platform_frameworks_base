@@ -508,7 +508,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
         UserHandle currentUser = new UserHandle(userId);
         Log.d(getTag(), "notifying for user " + userId);
         if (Flags.restoreShowTapsSetting()) {
-            mPreferenceUtil.restoreShowTapsSetting();
+            mPreferenceUtil.maybeRestoreShowTapsSetting();
         } else {
             setTapsVisible(mOriginalShowTaps);
         }
