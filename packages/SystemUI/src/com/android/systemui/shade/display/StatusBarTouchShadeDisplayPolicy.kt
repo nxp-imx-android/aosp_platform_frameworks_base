@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,14 @@
 
 package com.android.systemui.shade.display
 
-import android.content.res.Resources
 import android.util.Log
 import android.view.Display
-import android.view.View
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
-import com.android.systemui.display.data.repository.FocusedDisplayRepository
-import com.android.systemui.res.R
-import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.domain.interactor.NotificationShadeElement
-import com.android.systemui.shade.domain.interactor.QSShadeElement
 import com.android.systemui.shade.domain.interactor.ShadeExpandedStateInteractor.ShadeElement
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
-import dagger.Lazy
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -44,22 +36,13 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-/**
- * Moves the shade on the last display that received a status bar touch.
- *
- * If the display is removed, falls back to the default one. When [shadeOnDefaultDisplayWhenLocked]
- * is true, the shade falls back to the default display when the keyguard is visible.
- */
+/** Manages the state for the shade's target display and expansion intent. */
 @SysUISingleton
 class StatusBarTouchShadeDisplayPolicy
 @Inject
 constructor(
-    @ShadeDisplayAware private val resources: Resources,
     displayRepository: DisplayRepository,
-    private val focusedDisplayRepository: FocusedDisplayRepository,
     @Background private val backgroundScope: CoroutineScope,
-    private val qsShadeElement: Lazy<QSShadeElement>,
-    private val notificationElement: Lazy<NotificationShadeElement>,
 ) : ShadeDisplayPolicy, ShadeExpansionIntent {
     override val name: String = "status_bar_latest_touch"
 
@@ -73,39 +56,18 @@ constructor(
 
     private var removalListener: Job? = null
 
-    private val shadeInvocationSplitRatio: Float =
-        resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
-
-    /** Called when the status bar on the given display is touched/clicked. */
-    fun setExpansionIntentFromStatusBarEvent(eventX: Float, displayId: Int, statusBarWidth: Int) {
-        val element = classifyStatusBarEvent(eventX, statusBarWidth)
-        setExpansionIntentForElement(element, displayId)
-    }
-
     /**
-     * Called when we need to move the notification shade to a specific display. For e.g. when
-     * launcher homescreen on the given display is touched/clicked.
+     * Sets the expansion intent for the notification shade.
+     *
+     * It updates the target display for the shade, if necessary, and registers which element should
+     * be made visible upon expansion.
      */
-    fun setExpansionIntentForNotificationElement(displayId: Int) {
-        setExpansionIntentForElement(notificationElement.get(), displayId)
-    }
-
-    private fun setExpansionIntentForElement(
-        element: ShadeElement,
-        displayId: Int = focusedDisplayRepository.focusedDisplayId.value,
-    ) {
+    fun setExpansionIntentForElement(element: ShadeElement, displayId: Int) {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
 
         updateShadeDisplayIfNeeded(displayId)
         updateExpansionIntent(element)
     }
-
-    /** Called when notification panel keyboard shortcut is pressed. */
-    fun onNotificationPanelKeyboardShortcut() =
-        setExpansionIntentForElement(notificationElement.get())
-
-    /** Called when quick settings panel keyboard shortcut is pressed. */
-    fun onQSPanelKeyboardShortcut() = setExpansionIntentForElement(qsShadeElement.get())
 
     override fun consumeExpansionIntent(): ShadeElement? {
         return latestIntent.getAndSet(null)
@@ -132,22 +94,6 @@ constructor(
             // is not selected anymore, as the job doesn't do anything until someone subscribes to
             // displayId.
             removalListener = monitorDisplayRemovals()
-        }
-    }
-
-    private fun classifyStatusBarEvent(eventX: Float, statusBarWidth: Int): ShadeElement {
-        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-        val xPercentage = eventX / statusBarWidth
-
-        // Normalize the percentage to be from the "start" edge of the status bar.
-        // For LTR, this is the left edge (xPercentage).
-        // For RTL, this is the right edge (1 - xPercentage).
-        val percentageFromStart = if (isRtl) 1 - xPercentage else xPercentage
-
-        return if (percentageFromStart < shadeInvocationSplitRatio) {
-            notificationElement.get()
-        } else {
-            qsShadeElement.get()
         }
     }
 

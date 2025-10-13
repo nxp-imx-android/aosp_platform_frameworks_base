@@ -35,7 +35,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboardShortcutInteractor
-import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.statusbar.CommandQueue
 import com.android.window.flags.Flags.enableKeyGestureHandlerForSysui
 import java.util.concurrent.Executor
@@ -53,7 +53,7 @@ constructor(
     @Main private val resources: Resources,
     private val inputManager: InputManager,
     private val commandQueue: CommandQueue,
-    private val shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy,
+    private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
     private val screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcutInteractor,
     private val launcherProxyService: LauncherProxyService,
 ) : CoreStartable {
@@ -87,17 +87,17 @@ constructor(
                     screenCaptureKeyboardShortcutInteractor.attemptPartialRegionScreenshot()
                 }
                 KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL -> {
-                    shadeDisplayPolicy.onNotificationPanelKeyboardShortcut()
+                    shadeExpansionTargetDisplayInteractor.onNotificationPanelKeyboardShortcut()
                     commandQueue.toggleNotificationsPanel()
                 }
                 KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL -> {
-                    shadeDisplayPolicy.onQSPanelKeyboardShortcut()
+                    shadeExpansionTargetDisplayInteractor.onQSPanelKeyboardShortcut()
                     commandQueue.toggleQuickSettingsPanel()
                 }
                 KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH -> {
                     launcherProxyService.proxy?.invokeContextualSearch(
                         ContextualSearchManager.ENTRYPOINT_KEYBOARD_SHORTCUT,
-                        /* config= */ null
+                        /* config= */ null,
                     )
                 }
                 else ->
