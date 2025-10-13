@@ -594,6 +594,16 @@ flag {
 }
 
 flag {
+    name: "activity_starter_display_aware"
+    namespace: "systemui"
+    description: "Fix non display aware calls in ActivityStarter"
+    bug: "432402434"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "restore_show_taps_setting"
     namespace: "systemui"
     description: "Restore show taps setting even if screen recording session is interrupted"

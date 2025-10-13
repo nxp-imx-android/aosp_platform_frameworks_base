@@ -25,6 +25,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeStatusBarWindowController : StatusBarWindowController {
 
+    var wrappedAnimationControllers = setOf<ActivityTransitionAnimator.Controller>()
+        private set
+
     var isAttached = false
         private set
 
@@ -56,7 +59,10 @@ class FakeStatusBarWindowController : StatusBarWindowController {
     override fun wrapAnimationControllerIfInStatusBar(
         rootView: View,
         animationController: ActivityTransitionAnimator.Controller,
-    ): Optional<ActivityTransitionAnimator.Controller> = Optional.empty()
+    ): Optional<ActivityTransitionAnimator.Controller> {
+        wrappedAnimationControllers += animationController
+        return Optional.of(animationController)
+    }
 
     override fun setForceStatusBarVisible(forceStatusBarVisible: Boolean, source: String) {}
 
