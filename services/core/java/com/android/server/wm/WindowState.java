@@ -5876,7 +5876,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             skipLayout = true;
         } else if (syncActive) {
             // Currently in a Sync.
-            if (mWmService.mAlwaysSeqId ? syncSeqId >= mSyncSeqId : !syncStillPending) {
+            if (mWmService.mAlwaysSeqId ? (syncSeqId >= mSyncSeqId && syncSeqId >= mBufferSeqId)
+                    : !syncStillPending) {
                 layoutNeeded = onSyncFinishedDrawing();
             }
             if (postDrawTransaction != null
