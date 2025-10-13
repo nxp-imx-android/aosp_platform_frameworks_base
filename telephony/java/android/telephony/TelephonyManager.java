@@ -79,7 +79,6 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.SystemProperties;
 import android.os.WorkSource;
-import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.carrier.CarrierIdentifier;
 import android.service.carrier.CarrierService;
@@ -98,6 +97,7 @@ import android.telephony.Annotation.NetworkType;
 import android.telephony.Annotation.RadioPowerState;
 import android.telephony.Annotation.SimActivationState;
 import android.telephony.Annotation.ThermalMitigationResult;
+import android.telephony.Annotation.TtyMode;
 import android.telephony.Annotation.UiccAppType;
 import android.telephony.Annotation.UiccAppTypeExt;
 import android.telephony.CallForwardingInfo.CallForwardingReason;
@@ -12521,14 +12521,6 @@ public class TelephonyManager {
      * @hide
      */
     public static final int CARD_POWER_UP_PASS_THROUGH = 2;
-
-    /**
-     * @hide
-     */
-    @IntDef(prefix = { "TTY_MODE_" },
-            value = {TTY_MODE_OFF, TTY_MODE_FULL, TTY_MODE_HCO, TTY_MODE_VCO})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface TtyMode {}
 
     /**
      * TTY (teletypewriter) mode is off.

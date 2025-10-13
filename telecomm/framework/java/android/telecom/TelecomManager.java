@@ -49,6 +49,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.telephony.Annotation.CallState;
+import android.telephony.Annotation.TtyMode;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -62,9 +63,9 @@ import com.android.server.telecom.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -2320,11 +2321,8 @@ public class TelecomManager {
     /**
      * Returns the current TTY mode of the device. For TTY to be on the user must enable it in
      * settings and have a wired headset plugged in.
-     * Valid modes are:
-     * - {@link TelephonyManager#TTY_MODE_OFF}
-     * - {@link TelephonyManager#TTY_MODE_FULL}
-     * - {@link TelephonyManager#TTY_MODE_HCO}
-     * - {@link TelephonyManager#TTY_MODE_VCO}
+     *
+     * @return the current TTY mode of the device.
      *
      * @deprecated Use {@link TelephonyManager#getCurrentTtyMode()} instead
      * @hide
@@ -2333,7 +2331,7 @@ public class TelecomManager {
     @Deprecated
     @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
     @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
-    public @TelephonyManager.TtyMode int getCurrentTtyMode() {
+    public @TtyMode int getCurrentTtyMode() {
         if (Flags.moveGetTtyModeToTelephonyManager()) {
             TelephonyManager tm = mContext.getSystemService(TelephonyManager.class);
             if (tm != null) {
