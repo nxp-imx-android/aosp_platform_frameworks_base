@@ -19,6 +19,7 @@ package com.android.systemui.shade.ui.composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -66,10 +67,19 @@ sealed interface ChipHighlightModel {
 
     data object Weak : ChipHighlightModel {
         override val backgroundColor: Color
-            @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+            @Composable
+            get() {
+                val alpha =
+                    if (isSystemInDarkTheme()) {
+                        0.1f
+                    } else {
+                        0.4f
+                    }
+                return Color.White.copy(alpha = alpha)
+            }
 
         override val foregroundColor: Color
-            @Composable get() = MaterialTheme.colorScheme.onSurface
+            @Composable get() = if (isSystemInDarkTheme()) Color.White else Color.Black
 
         override val hoverBackgroundColor: Color
             @Composable get() = foregroundColor.copy(alpha = Alpha.DEFAULT_HOVER)
@@ -83,7 +93,7 @@ sealed interface ChipHighlightModel {
             @Composable get() = MaterialTheme.colorScheme.secondary
 
         override val foregroundColor: Color
-            @Composable get() = MaterialTheme.colorScheme.onSecondary
+            @Composable get() = if (isSystemInDarkTheme()) Color.Black else Color.White
 
         override val hoverBackgroundColor: Color
             @Composable get() = foregroundColor.copy(alpha = Alpha.DEFAULT_HOVER)

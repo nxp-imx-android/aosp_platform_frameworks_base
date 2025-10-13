@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.composable
 
 import android.view.ContextThemeWrapper
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -60,6 +61,7 @@ import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPop
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
+import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
@@ -100,8 +102,8 @@ fun DesktopStatusBar(
         modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 12.dp),
     ) {
         WithAdaptiveTint(
+            highlightModel = ChipHighlightModel.Transparent,
             isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
-            isHighlighted = false,
         ) { tint ->
             Row(
                 horizontalArrangement =
@@ -180,7 +182,7 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
         }
 
     WithAdaptiveTint(
-        isHighlighted = viewModel.isNotificationsChipHighlighted,
+        highlightModel = chipHighlightModel,
         isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
     ) { tint ->
         val (hoverColor, rippleColor) =
@@ -241,7 +243,7 @@ private fun QuickSettingsChip(
         }
 
     WithAdaptiveTint(
-        isHighlighted = viewModel.isQuickSettingsChipHighlighted,
+        highlightModel = chipHighlightModel,
         isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
     ) { tint ->
         val (hoverColor, rippleColor) =
@@ -307,12 +309,20 @@ private fun QuickSettingsChip(
                 with(LocalDensity.current) {
                     BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
                 }
+
+            val isDarkTheme = isSystemInDarkTheme()
+            val batteryDarkProvider: IsAreaDark =
+                when (chipHighlightModel) {
+                    ChipHighlightModel.Strong -> IsAreaDark { !isDarkTheme }
+                    ChipHighlightModel.Transparent -> viewModel.areaDark
+                    ChipHighlightModel.Weak -> viewModel.areaDark
+                }
             UnifiedBattery(
                 viewModel =
                     rememberViewModel("DesktopStatusBar.BatteryViewModel") {
                         viewModel.unifiedBatteryViewModel.create()
                     },
-                isDarkProvider = { viewModel.areaDark },
+                isDarkProvider = { batteryDarkProvider },
                 modifier = Modifier.height(batteryHeight),
             )
         }
