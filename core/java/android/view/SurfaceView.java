@@ -332,6 +332,9 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
 
     private String mTag = TAG;
 
+    @Nullable
+    private String mOverrideName;
+
     private static class SurfaceControlViewHostParent extends ISurfaceControlViewHostParent.Stub {
 
         /**
@@ -1375,7 +1378,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                 if (creating) {
                     updateOpaqueFlag();
                     final String name = Integer.toHexString(System.identityHashCode(this))
-                            + " SurfaceView[" + viewRoot.getTitle().toString() + "]";
+                            + " " + getName();
                     createBlastSurfaceControls(viewRoot, name, surfaceUpdateTransaction);
                 } else if (mSurfaceControl == null) {
                     return;
@@ -1493,9 +1496,21 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
      * @hide
      */
     public String getName() {
-        ViewRootImpl viewRoot = getViewRootImpl();
-        String viewRootName = viewRoot == null ? "detached" : viewRoot.getTitle().toString();
-        return "SurfaceView[" + viewRootName + "]";
+        final String name;
+        if (mOverrideName != null) {
+            name = mOverrideName;
+        } else {
+            final ViewRootImpl viewRoot = getViewRootImpl();
+            name = viewRoot == null ? "detached" : viewRoot.getTitle().toString();
+        }
+        return "SurfaceView[" + name + "]";
+    }
+
+    /**
+     * @hide
+     */
+    public void setOverrideName(@Nullable String name) {
+        mOverrideName = name;
     }
 
     /**

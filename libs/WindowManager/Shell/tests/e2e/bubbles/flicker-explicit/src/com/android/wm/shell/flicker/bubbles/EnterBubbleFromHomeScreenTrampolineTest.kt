@@ -22,7 +22,9 @@ import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
+import com.android.wm.shell.flicker.bubbles.testcase.ColdLaunchTaskTrampolineTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.TaskTrampolineBecomesExpandedTestCases
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.BubbleLaunchSource.FROM_HOME_SCREEN
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
@@ -47,15 +49,19 @@ import org.junit.runners.MethodSorters
  * ```
  *
  * Verified tests:
- * - [BubbleFlickerTrampolineTestBase]
  * - [EnterBubbleTestCases]
+ * - [ColdLaunchTaskTrampolineTestCases]
+ * - [TaskTrampolineBecomesExpandedTestCases]
  */
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+@RequiresFlagsEnabled(
+    Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 class EnterBubbleFromHomeScreenTrampolineTest : BubbleFlickerTrampolineTestBase(),
-    EnterBubbleTestCases {
+    EnterBubbleTestCases, ColdLaunchTaskTrampolineTestCases,
+    TaskTrampolineBecomesExpandedTestCases {
 
     companion object {
         private val recordTraceWithTransitionRule =

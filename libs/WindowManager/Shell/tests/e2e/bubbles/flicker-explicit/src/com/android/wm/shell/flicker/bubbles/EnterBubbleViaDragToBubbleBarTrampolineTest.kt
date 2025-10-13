@@ -22,6 +22,7 @@ import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
+import com.android.wm.shell.flicker.bubbles.testcase.ColdLaunchTaskTrampolineTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleViaDragToBubbleBarTestCases
 import com.android.wm.shell.flicker.bubbles.utils.AssumptionRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaDragToBubbleBar
@@ -57,16 +58,20 @@ import org.junit.runners.Parameterized.Parameters
  * ```
  *
  * Verified tests:
- * - [BubbleFlickerTrampolineTestBase]
+ * - [ColdLaunchTaskTrampolineTestCases]
  * - [EnterBubbleViaDragToBubbleBarTestCases]
  */
-@RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE, Flags.FLAG_ENABLE_BUBBLE_BAR)
+@RequiresFlagsEnabled(
+    Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    Flags.FLAG_ENABLE_BUBBLE_BAR,
+    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
 class EnterBubbleViaDragToBubbleBarTrampolineTest(navBar: NavBar) :
-    BubbleFlickerTrampolineTestBase(), EnterBubbleViaDragToBubbleBarTestCases {
+    BubbleFlickerTrampolineTestBase(), EnterBubbleViaDragToBubbleBarTestCases,
+    ColdLaunchTaskTrampolineTestCases {
 
     companion object {
         private val recordTraceWithTransitionRule =
