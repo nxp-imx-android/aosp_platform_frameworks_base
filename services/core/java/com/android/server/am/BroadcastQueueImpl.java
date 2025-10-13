@@ -994,7 +994,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
             return true;
         }
 
-        final String skipReason = shouldSkipReceiver(queue, r, index);
+        final Intent receiverIntent = r.getReceiverIntent(receiver);
+        final String skipReason = shouldSkipReceiver(queue, r, index, receiverIntent);
         if (skipReason != null) {
             mRunningColdStart = null;
             finishReceiverActiveLocked(queue, BroadcastRecord.DELIVERY_SKIPPED, skipReason);
@@ -1030,9 +1031,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
             return true;
         }
         queue.setProcessStartInitiatedTimestampMillis(SystemClock.uptimeMillis());
-        // TODO: b/335420031 - cache receiver intent to avoid multiple calls to getReceiverIntent.
         mService.mProcessList.getAppStartInfoTracker().handleProcessBroadcastStart(
-                startTimeNs, queue.app, r.getReceiverIntent(receiver), r.alarm /* isAlarm */);
+                startTimeNs, queue.app, receiverIntent, r.alarm /* isAlarm */);
         return false;
     }
 
@@ -1065,9 +1065,12 @@ class BroadcastQueueImpl extends BroadcastQueue {
                 r.dispatchClockTime = System.currentTimeMillis();
             }
 
-            final String skipReason = shouldSkipReceiver(queue, r, index);
+            final Object receiver = r.receivers.get(index);
+            final Intent receiverIntent = r.getReceiverIntent(receiver);
+            final String skipReason = shouldSkipReceiver(queue, r, index, receiverIntent);
             if (skipReason == null) {
-                final boolean isBlockingDispatch = dispatchReceivers(queue, r, index);
+                final boolean isBlockingDispatch = dispatchReceivers(queue, r, index,
+                        receiverIntent);
                 if (isBlockingDispatch) {
                     traceEnd(cookie);
                     return false;
@@ -1093,7 +1096,10 @@ class BroadcastQueueImpl extends BroadcastQueue {
      */
     @GuardedBy("mService")
     private String shouldSkipReceiver(@NonNull BroadcastProcessQueue queue,
-            @NonNull BroadcastRecord r, int index) {
+            @NonNull BroadcastRecord r, int index, @Nullable Intent receiverIntent) {
+        if (receiverIntent == null) {
+            return "getReceiverIntent";
+        }
         final int oldDeliveryState = getDeliveryState(r, index);
         final ProcessRecord app = queue.app;
         final Object receiver = r.receivers.get(index);
@@ -1110,10 +1116,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
         final String skipReason = mSkipPolicy.shouldSkipMessage(r, receiver);
         if (skipReason != null) {
             return skipReason;
-        }
-        final Intent receiverIntent = r.getReceiverIntent(receiver);
-        if (receiverIntent == null) {
-            return "getReceiverIntent";
         }
 
         // Ignore registered receivers from a previous PID
@@ -1135,7 +1137,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     @CheckResult
     private boolean dispatchReceivers(@NonNull BroadcastProcessQueue queue,
-            @NonNull BroadcastRecord r, int index) throws BroadcastRetryException {
+            @NonNull BroadcastRecord r, int index, @NonNull Intent receiverIntent)
+            throws BroadcastRetryException {
         final ProcessRecord app = queue.app;
         final Object receiver = r.receivers.get(index);
 
@@ -1186,7 +1189,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
         setDeliveryState(queue, app, r, index, receiver, BroadcastRecord.DELIVERY_SCHEDULED,
                 "scheduleReceiverWarmLocked");
 
-        final Intent receiverIntent = r.getReceiverIntent(receiver);
         final IApplicationThread thread = app.getOnewayThread();
         if (thread != null) {
             try {
