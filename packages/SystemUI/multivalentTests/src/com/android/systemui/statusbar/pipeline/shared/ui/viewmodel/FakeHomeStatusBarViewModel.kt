@@ -70,6 +70,8 @@ class FakeHomeStatusBarViewModel(
 
     override fun onNotificationIconChipClicked() {}
 
+    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {}
+
     override val ongoingActivityChipsLegacy =
         MutableStateFlow(MultipleOngoingActivityChipsModelLegacy())
 

@@ -27,6 +27,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.TYPE_EXTERNAL
 import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -35,6 +36,7 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.display
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.fake
 import com.android.systemui.flags.DisableSceneContainer
@@ -67,6 +69,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shade.data.repository.statusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
@@ -1774,6 +1777,21 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 getPopulatedActiveNotificationsStore()
 
             assertThat(underTest.hasStatusBarNotifications).isTrue()
+        }
+
+    @Test
+    fun onShadeExpansionIntent_setsTargetDisplay() =
+        kosmos.runTest {
+            displayRepository.addDisplays(display(id = EXTERNAL_DISPLAY, type = TYPE_EXTERNAL))
+
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val displayId by collectLastValue(statusBarTouchShadeDisplayPolicy.displayId)
+
+            val eventX = 123f
+            val statusBarWidth = 1080
+
+            underTest.onShadeExpansionIntent(eventX, statusBarWidth)
+            assertThat(displayId).isEqualTo(EXTERNAL_DISPLAY)
         }
 
     private fun activeNotificationsStore(notifications: List<ActiveNotificationModel>) =

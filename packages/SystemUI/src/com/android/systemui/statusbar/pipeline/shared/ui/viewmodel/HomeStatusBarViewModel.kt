@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.annotation.ColorInt
+import android.content.res.Resources
 import android.graphics.Rect
 import android.graphics.RectF
 import android.view.Display
@@ -43,10 +44,12 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.plugins.DarkIconDispatcher
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
@@ -171,6 +174,9 @@ interface HomeStatusBarViewModel : Activatable {
     /** Notifies that the notification icons container was clicked. */
     fun onNotificationIconChipClicked()
 
+    /** Notifies that there is an intent to start expansion of a shade */
+    fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int)
+
     /** Whether the QS Chip should be highlighted. */
     val isQuickSettingsChipHighlighted: Boolean
 
@@ -254,13 +260,14 @@ interface HomeStatusBarViewModel : Activatable {
 class HomeStatusBarViewModelImpl
 @AssistedInject
 constructor(
-    @DisplayId thisDisplayId: Int,
+    @field:DisplayId @DisplayId private val thisDisplayId: Int,
     override val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory,
     override val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory,
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory,
     override val appHandlesViewModelFactory: AppHandlesViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
+    @DisplayAware private val resources: Resources,
     @DisplayAware homeStatusBarInteractor: HomeStatusBarInteractor,
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
     lightsOutInteractor: LightsOutInteractor,
@@ -274,6 +281,7 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     occlusionInteractor: KeyguardOcclusionInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
@@ -549,6 +557,9 @@ constructor(
             )
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
+    private val shadeInvocationSplitRatio: Float =
+        resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
+
     override val shouldShowOperatorNameView: Flow<Boolean> =
         combine(
                 shouldHomeStatusBarBeVisible,
@@ -620,6 +631,17 @@ constructor(
         }
         shadeInteractor.toggleNotificationsShade(
             loggingReason = "HomeStatusBarViewModel.onNotificationIconChipClicked"
+        )
+    }
+
+    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        shadeExpansionTargetDisplayInteractor.setExpansionIntentFromStatusBarEvent(
+            eventX = eventX,
+            displayId = thisDisplayId,
+            statusBarWidth = statusBarWidth,
+            shadeInvocationSplitRatio = shadeInvocationSplitRatio,
+            isRtl = isRtl,
         )
     }
 

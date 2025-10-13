@@ -403,6 +403,15 @@ flag {
     description: "Have the status bar *always* use region sampling to calculate icon contrast"
     bug: "365120736"
 }
+
+flag {
+    name: "status_bar_event_forwarding_modernization"
+    namespace: "systemui"
+    description: "Forward touch/click events directly from compose instead of relying on the "
+        " PhoneStatusBarView. "
+    bug: "450582765"
+}
+
 flag {
     name: "icon_refresh_2025"
     namespace: "systemui"

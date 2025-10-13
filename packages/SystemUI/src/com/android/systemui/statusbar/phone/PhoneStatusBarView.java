@@ -278,7 +278,9 @@ public class PhoneStatusBarView extends FrameLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        return mTouchEventHandler.onInterceptTouchEvent(event);
+        return mTouchEventHandler != null
+                ? mTouchEventHandler.onInterceptTouchEvent(event)
+                : super.onInterceptTouchEvent(event);
     }
 
     public void updateResources() {
