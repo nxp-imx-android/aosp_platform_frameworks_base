@@ -640,17 +640,6 @@ static jlong android_os_Debug_getFreeZramKb(JNIEnv* env, jobject clazz) {
     return zramFreeKb;
 }
 
-static jlong android_os_Debug_getIonHeapsSizeKb(JNIEnv* env, jobject clazz) {
-    jlong heapsSizeKb = -1;
-    uint64_t size;
-
-    if (meminfo::ReadIonHeapsSizeKb(&size)) {
-        heapsSizeKb = size;
-    }
-
-    return heapsSizeKb;
-}
-
 static jlong android_os_Debug_getDmabufTotalExportedKb(JNIEnv* env, jobject clazz) {
     if (dmabufinfo::DmabufPerBufferStats stats; dmabufinfo::GetDmabufPerBufferStats(stats)) {
         return stats.total_size();
@@ -667,17 +656,6 @@ static jlong android_os_Debug_getDmabufHeapTotalExportedKb(JNIEnv* env, jobject 
         dmabufHeapTotalSizeKb = size;
     }
     return dmabufHeapTotalSizeKb;
-}
-
-static jlong android_os_Debug_getIonPoolsSizeKb(JNIEnv* env, jobject clazz) {
-    jlong poolsSizeKb = -1;
-    uint64_t size;
-
-    if (meminfo::ReadIonPoolsSizeKb(&size)) {
-        poolsSizeKb = size;
-    }
-
-    return poolsSizeKb;
 }
 
 static jlong android_os_Debug_getDmabufHeapPoolsSizeKb(JNIEnv* env, jobject clazz) {
@@ -844,12 +822,10 @@ static const JNINativeMethod gMethods[] = {
         {"getUnreachableMemory", "(IZ)Ljava/lang/String;",
          (void*)android_os_Debug_getUnreachableMemory},
         {"getZramFreeKb", "()J", (void*)android_os_Debug_getFreeZramKb},
-        {"getIonHeapsSizeKb", "()J", (void*)android_os_Debug_getIonHeapsSizeKb},
         {"getDmabufTotalExportedKb", "()J", (void*)android_os_Debug_getDmabufTotalExportedKb},
         {"getGpuPrivateMemoryKb", "()J", (void*)android_os_Debug_getGpuPrivateMemoryKb},
         {"getDmabufHeapTotalExportedKb", "()J",
          (void*)android_os_Debug_getDmabufHeapTotalExportedKb},
-        {"getIonPoolsSizeKb", "()J", (void*)android_os_Debug_getIonPoolsSizeKb},
         {"getDmabufMappedSizeKb", "()J", (void*)android_os_Debug_getDmabufMappedSizeKb},
         {"getDmabufHeapPoolsSizeKb", "()J", (void*)android_os_Debug_getDmabufHeapPoolsSizeKb},
         {"getGpuTotalUsageKb", "()J", (void*)android_os_Debug_getGpuTotalUsageKb},
