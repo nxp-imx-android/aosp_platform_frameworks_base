@@ -18,6 +18,7 @@ package com.android.server.display.config
 
 import android.util.Spline
 import android.util.Xml
+import android.view.SurfaceControl.WorkDuration
 import com.android.server.display.config.HighBrightnessModeData.HDR_PERCENT_OF_SCREEN_REQUIRED_DEFAULT
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -40,10 +41,10 @@ fun createRefreshRateData(
     defaultPeakRefreshRate: Int = 60,
     defaultRefreshRateInHbmHdr: Int = 60,
     defaultRefreshRateInHbmSunlight: Int = 60,
-    defaultWorkDurations: WorkDurationsData? = null,
+    defaultWorkDurations: WorkDuration? = null,
     lowPowerSupportedModes: List<SupportedModeData> = emptyList(),
     lowLightBlockingZoneSupportedModes: List<SupportedModeData> = emptyList(),
-    lowPowerWorkDurations: WorkDurationsData? = null
+    lowPowerWorkDurations: WorkDuration? = null
 ): RefreshRateData {
     return RefreshRateData(
         defaultRefreshRate, defaultPeakRefreshRate,
