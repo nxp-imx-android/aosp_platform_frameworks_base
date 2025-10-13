@@ -1630,19 +1630,19 @@ public final class GnssMeasurement implements Parcelable {
      *
      * <ul>
      * <li>Receiver inter-constellation bias (with respect to the constellation in
-     * {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * <li>Receiver inter-frequency bias (with respect to the carrier frequency in
-     * {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * <li>Receiver inter-code bias (with respect to the code type in
-     * {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * <li>Master clock bias (e.g., GPS-GAL Time Offset (GGTO), GPS-UTC Time Offset (TauGps),
      * BDS-GLO Time Offset (BGTO))(with respect to the constellation in
-     * {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * <li>Group delay (e.g., Total Group Delay (TGD))</li>
      * <li>Satellite inter-frequency bias (GLO only) (with respect to the carrier frequency in
-     * {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * <li>Satellite inter-code bias (e.g., Differential Code Bias (DCB)) (with respect to the code
-     * type in {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * type in {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * </ul>
      *
      * <p>If a component of the above is already compensated in the provided
@@ -1743,12 +1743,12 @@ public final class GnssMeasurement implements Parcelable {
      * <ul>
      * <li>Master clock bias (e.g., GPS-GAL Time Offset (GGTO), GPS-UTC Time Offset (TauGps),
      * BDS-GLO Time Offset (BGTO))(with respect to the constellation in
-     * {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * <li>Group delay (e.g., Total Group Delay (TGD))</li>
      * <li>Satellite inter-frequency bias (GLO only) (with respect to the carrier frequency in
-     * {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * <li>Satellite inter-code bias (e.g., Differential Code Bias (DCB)) (with respect to the code
-     * type in {@link GnssClock#getReferenceConstellationTypeForIsb())</li>
+     * type in {@link GnssClock#getReferenceConstellationTypeForIsb()}</li>
      * </ul>
      *
      * <p>The sign of the value is defined by the following equation:
