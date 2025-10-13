@@ -12812,7 +12812,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         synchronized (getLockObject()) {
             ActiveAdmin admin = getProfileOwnerOrDeviceOwnerLocked(caller.getUserId());
-            admin.permittedAccessiblityServices = packageList;
+            admin.mPermittedAccessibilityServices = packageList;
             saveSettingsLocked(UserHandle.getCallingUserId());
         }
         final String[] packageArray =
@@ -12837,7 +12837,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         synchronized (getLockObject()) {
             ActiveAdmin admin = getProfileOwnerOrDeviceOwnerLocked(caller.getUserId());
-            return admin.permittedAccessiblityServices;
+            return admin.mPermittedAccessibilityServices;
         }
     }
 
@@ -12863,7 +12863,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 final int N = policy.mAdminList.size();
                 for (int j = 0; j < N; j++) {
                     ActiveAdmin admin = policy.mAdminList.get(j);
-                    List<String> fromAdmin = admin.permittedAccessiblityServices;
+                    List<String> fromAdmin = admin.mPermittedAccessibilityServices;
                     if (fromAdmin != null) {
                         if (result == null) {
                             result = new ArrayList<>(fromAdmin);
@@ -12923,11 +12923,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             if (admin == null) {
                 return false;
             }
-            if (admin.permittedAccessiblityServices == null) {
+            if (admin.mPermittedAccessibilityServices == null) {
                 return true;
             }
             return checkPackagesInPermittedListOrSystem(Collections.singletonList(packageName),
-                    admin.permittedAccessiblityServices, userHandle);
+                    admin.mPermittedAccessibilityServices, userHandle);
         }
     }
 
