@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Құлып саусақ ізімен ашылмайды. Тым көп әрекет жасалды."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Сенімді агент функциясы істемейді."</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"PIN коды тым көп рет қате енгізілді."</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Бұл PIN кодын енгізіп көрдіңіз. Басқасын көріңіз."</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Бұл құпия сөзді енгізіп көрдіңіз. Басқасын көріңіз."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Бұл өрнекті енгізіп көрдіңіз. Басқасын көріңіз."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Өрнек тым көп рет қате енгізілді."</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Құпия сөз тым көп рет қате енгізілді."</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"PIN коды тым көп рет қате енгізілді.\nТолық ақпарат: <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Өрнек тым көп рет қате енгізілді.\nТолық ақпарат: <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Құпия сөз тым көп рет қате енгізілді.\nТолық ақпарат: <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# секундтан соң қайталап көріңіз.}other{# секундтан соң қайталап көріңіз.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{# секундтан кейін қайталап көріңіз.}other{# секундтан кейін қайталап көріңіз.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{# минуттан кейін қайталап көріңіз.}other{# минуттан кейін қайталап көріңіз.}}"</string>
