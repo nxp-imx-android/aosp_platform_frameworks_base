@@ -360,6 +360,10 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
         )
     }
 
+    fun logRemoveEntryWhenReorderingAllowed(entry: NotificationEntry) {
+        buffer.log(TAG, VERBOSE, { str1 = entry.logKey }, { "remove entry after reorder allowed: $str1" })
+    }
+
     fun logRemoveEntryAfterExpand(entry: NotificationEntry) {
         buffer.log(TAG, VERBOSE, { str1 = entry.logKey }, { "remove entry after expand: $str1" })
     }
