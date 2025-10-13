@@ -83,7 +83,7 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
     private ConcurrentHashMap<Pair<AudioAttributes, Boolean>, ArrayList<AudioDeviceAttributes>>
             mDevicesForAttrCache;
     @GuardedBy("sDeviceCacheLock")
-    private long mDevicesForAttributesCacheClearTimeMs = System.currentTimeMillis();
+    private long mDevicesForAttributesCacheClearTimeRealtimeMs = SystemClock.elapsedRealtime();
     private static final Object sAudioProductStrategiesLock = new Object();
     @GuardedBy("sAudioProductStrategiesLock")
     private static List<AudioProductStrategy> sAudioProductStrategies;
@@ -295,7 +295,7 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
         }
         synchronized (sDeviceCacheLock) {
             if (mDevicesForAttrCache != null) {
-                mDevicesForAttributesCacheClearTimeMs = System.currentTimeMillis();
+                mDevicesForAttributesCacheClearTimeRealtimeMs = SystemClock.elapsedRealtime();
                 // Save latest cache to determine routing updates
                 mLastDevicesForAttr.putAll(mDevicesForAttrCache);
 
@@ -870,8 +870,11 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
                 .withLocale(Locale.US)
                 .withZone(ZoneId.systemDefault());
         synchronized (sDeviceCacheLock) {
+            final long now = System.currentTimeMillis();
+            final long lastClearMillis = now - (SystemClock.elapsedRealtime()
+                    - mDevicesForAttributesCacheClearTimeRealtimeMs);
             pw.println(" last cache clear time: " + formatter.format(
-                    Instant.ofEpochMilli(mDevicesForAttributesCacheClearTimeMs)));
+                    Instant.ofEpochMilli(lastClearMillis)));
             pw.println(" mDevicesForAttrCache:");
             if (mDevicesForAttrCache != null) {
                 for (Map.Entry<Pair<AudioAttributes, Boolean>, ArrayList<AudioDeviceAttributes>>
