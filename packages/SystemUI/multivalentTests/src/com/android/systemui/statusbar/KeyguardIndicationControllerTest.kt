@@ -23,6 +23,7 @@ import android.hardware.biometrics.BiometricFingerprintConstants
 import android.hardware.biometrics.BiometricSourceType
 import android.os.BatteryManager
 import android.os.RemoteException
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.view.View
@@ -42,6 +43,7 @@ import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
 import java.text.NumberFormat
+import kotlin.test.assertFalse
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -1960,6 +1962,60 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
                 message,
             )
         }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ADD_NEW_UNLOCK_HINT_ON_KEYGUARD)
+    fun newUnlockHintDisabledHidesBothUnlockHints() {
+        assertFalse(Flags.addNewUnlockHintOnKeyguard())
+        whenever(mBouncerInteractor.isImproveLargeScreenInteractionEnabled).thenReturn(true)
+
+        createController()
+        mController.setVisible(true)
+
+        verifyHideIndication(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_CLICK_TO_UNLOCK_HINT
+        )
+        verifyHideIndication(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_KEY_TO_UNLOCK_HINT
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ADD_NEW_UNLOCK_HINT_ON_KEYGUARD)
+    fun improveLargeScreenInteractionDisabledHidesBothUnlockHints() {
+        assertTrue(Flags.addNewUnlockHintOnKeyguard())
+        whenever(mBouncerInteractor.isImproveLargeScreenInteractionEnabled).thenReturn(false)
+
+        createController()
+        mController.setVisible(true)
+
+        verifyHideIndication(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_CLICK_TO_UNLOCK_HINT
+        )
+        verifyHideIndication(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_KEY_TO_UNLOCK_HINT
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ADD_NEW_UNLOCK_HINT_ON_KEYGUARD)
+    fun newUnlockHintAndImproveLargeScreenInteractionEnabledShowsBothUnlockHints() {
+        assertTrue(Flags.addNewUnlockHintOnKeyguard())
+        whenever(mBouncerInteractor.isImproveLargeScreenInteractionEnabled).thenReturn(true)
+
+        createController()
+
+        mController.setVisible(true)
+
+        verifyIndicationMessage(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_CLICK_TO_UNLOCK_HINT,
+            mContext.getString(com.android.internal.R.string.lockscreen_click_to_unlock_hint),
+        )
+        verifyIndicationMessage(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_KEY_TO_UNLOCK_HINT,
+            mContext.getString(com.android.internal.R.string.lockscreen_key_to_unlock_hint),
+        )
+    }
 
     private fun screenIsTurningOn() {
         whenever(mScreenLifecycle.screenState).thenReturn(ScreenLifecycle.SCREEN_TURNING_ON)
