@@ -62,6 +62,20 @@ interface PreferenceMetadata {
     /** Preference key. */
     val key: String
 
+    /**
+     * The purpose of the preference. This string should be understandable in English without
+     * additional context beyond the rest of the preference definition. It should not just repeat
+     * the name of the preference. For example, if the preference name is "enable airplane mode"
+     * the purpose may be "Controls airplane mode. When enabled this will turn off all wireless
+     * communications on the device.".
+     *
+     * When this preference is parameterised, the purpose must be understandable regardless of
+     * parameters. For example, if this is a preference for enabling picture-in-picture, the purpose
+     * may be "Controls whether a specific app is allowed to enter picture-in-picture mode". We can
+     * assume clients will look at the parameters to understand how to specify the app.
+     */
+    @get:StringRes val purpose: Int
+
     /** Preference key when attached to preference hierarchy. */
     val bindingKey: String
         get() = key
@@ -180,4 +194,4 @@ interface PreferenceGroup : PreferenceMetadata {
 
 /** Metadata of preference category. */
 @AnyThread
-open class PreferenceCategory(override val key: String, override val title: Int) : PreferenceGroup
+open class PreferenceCategory(override val key: String, override val purpose: Int, override val title: Int) : PreferenceGroup

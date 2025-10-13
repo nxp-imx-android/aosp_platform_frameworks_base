@@ -62,30 +62,6 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     val screenTitle: Int
         get() = title
 
-    /**
-     * String resource id to briefly describe the screen.
-     *
-     * Could be used for accessibility, search, etc.
-     */
-    val description: Int
-        @StringRes get() = 0
-
-
-    /**
-     * The purpose of the preference screen. This string should be understandable in English without
-     * additional context beyond the rest of the preference screen definition. It should not just
-     * repeat the name of the preference. For example, if the preference screen name is "App info"
-     * the purpose may be "Provides a centralized dashboard for individual application's settings,
-     * resources, and behavior. Its capabilities include controlling the app's installation status,
-     * modifying its Permissions and Notifications, and reviewing usage metrics like
-     * Storage & cache and Screen time.".
-     *
-     * When this preference screen is parameterised, the purpose must be understandable regardless
-     * of parameters. We can assume clients will look at the parameters to understand how to specify
-     * the screen.
-     */
-    val purpose: Int
-
     /** Returns if the flag (e.g. for rollout) is enabled on current screen. */
     fun isFlagEnabled(context: Context): Boolean = true
 
