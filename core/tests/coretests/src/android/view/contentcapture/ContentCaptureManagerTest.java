@@ -19,10 +19,18 @@ import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_START
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.testng.Assert.assertThrows;
 
+import android.annotation.SuppressLint;
 import android.content.ContentCaptureOptions;
 import android.content.Context;
+import android.os.DeadObjectException;
+import android.os.DeadSystemRuntimeException;
 import android.view.WindowManager;
 
 import com.android.internal.util.RingBuffer;
@@ -33,6 +41,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Unit test for {@link ContentCaptureManager}.
@@ -41,9 +51,14 @@ import java.util.Collections;
  * {@code atest FrameworksCoreTests:android.view.contentcapture.ContentCaptureManagerTest}
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressLint("VisibleForTests") // Suppress "method should only be accessed from tests"
 public class ContentCaptureManagerTest {
 
     private static final int BUFFER_SIZE = 100;
+
+    private static final String PACKAGE1 = "com.test.package.1";
+
+    private static final String PACKAGE2 = "com.test.package.2";
 
     private static final ContentCaptureOptions EMPTY_OPTIONS = new ContentCaptureOptions(null);
 
@@ -192,6 +207,52 @@ public class ContentCaptureManagerTest {
         manager.updateWindowAttributes(resetParam);
 
         assertThat(manager.isContentCaptureEnabled()).isFalse();
+    }
+
+    @Test
+    @SuppressLint("MissingPermission") // Unit test
+    public void testSetContentProtectionAllowlist_invalidParametersThrowsException() {
+        ContentCaptureManager manager =
+                new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
+
+        assertThrows(NullPointerException.class, () -> manager.setContentProtectionAllowlist(null));
+    }
+
+    @Test
+    @SuppressLint("MissingPermission") // Unit test
+    public void testSetContentProtectionAllowlist_systemServerThrowsException() throws Exception {
+        doThrow(new DeadObjectException())
+                .when(mMockContentCaptureManager).setContentProtectionAllowlist(List.of(PACKAGE1));
+        ContentCaptureManager manager =
+                new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
+
+        assertThrows(DeadSystemRuntimeException.class,
+                () -> manager.setContentProtectionAllowlist(Set.of(PACKAGE1)));
+    }
+
+    @Test
+    @SuppressLint("MissingPermission") // Unit test
+    public void testSetContentProtectionAllowlist_empty() throws Exception {
+        ContentCaptureManager manager =
+                new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
+
+        manager.setContentProtectionAllowlist(Set.of());
+
+        verify(mMockContentCaptureManager).setContentProtectionAllowlist(List.of());
+        verifyNoMoreInteractions(mMockContentCaptureManager);
+    }
+
+    @Test
+    @SuppressLint("MissingPermission") // Unit test
+    public void testSetContentProtectionAllowlist_notEmpty() throws Exception {
+        ContentCaptureManager manager =
+                new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
+
+        manager.setContentProtectionAllowlist(Set.of(PACKAGE1, PACKAGE2));
+
+        verify(mMockContentCaptureManager).setContentProtectionAllowlist(
+                (List<String>) argThat(containsInAnyOrder(PACKAGE1, PACKAGE2)));
+        verifyNoMoreInteractions(mMockContentCaptureManager);
     }
 
     private ContentCaptureOptions createOptions(

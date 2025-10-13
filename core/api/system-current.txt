@@ -403,6 +403,7 @@ package android {
     field @FlaggedApi("android.security.fsverity_api") public static final String SETUP_FSVERITY = "android.permission.SETUP_FSVERITY";
     field public static final String SET_ACTIVITY_WATCHER = "android.permission.SET_ACTIVITY_WATCHER";
     field public static final String SET_CLIP_SOURCE = "android.permission.SET_CLIP_SOURCE";
+    field @FlaggedApi("android.view.contentprotection.flags.set_content_protection_allowlist_enabled") public static final String SET_CONTENT_PROTECTION_ALLOWLIST = "android.permission.SET_CONTENT_PROTECTION_ALLOWLIST";
     field public static final String SET_DEFAULT_ACCOUNT_FOR_CONTACTS = "android.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS";
     field @FlaggedApi("android.content.pm.verification_service") public static final String SET_DEVELOPER_VERIFICATION_USER_RESPONSE = "android.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE";
     field public static final String SET_HARMFUL_APP_WARNINGS = "android.permission.SET_HARMFUL_APP_WARNINGS";
@@ -19304,6 +19305,7 @@ package android.view.contentcapture {
 
   public final class ContentCaptureManager {
     method public boolean isContentCaptureFeatureEnabled();
+    method @FlaggedApi("android.view.contentprotection.flags.set_content_protection_allowlist_enabled") @RequiresPermission(android.Manifest.permission.SET_CONTENT_PROTECTION_ALLOWLIST) public void setContentProtectionAllowlist(@NonNull java.util.Set<java.lang.String>);
     field public static final int NO_SESSION_ID = 0; // 0x0
   }
 

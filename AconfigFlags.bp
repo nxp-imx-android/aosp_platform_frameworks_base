@@ -1276,6 +1276,18 @@ aconfig_declarations {
 }
 
 java_aconfig_library {
+    name: "android.view.contentprotection.flags-aconfig-java-export",
+    aconfig_declarations: "android.view.contentprotection.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
+    min_sdk_version: "30",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
+    ],
+}
+
+java_aconfig_library {
     name: "android.view.contentprotection.flags-aconfig-java",
     aconfig_declarations: "android.view.contentprotection.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],

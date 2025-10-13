@@ -31,3 +31,11 @@ flag {
     description: "If true, the content protection Settings Activity will be exported for launching externally."
     bug: "385310141"
 }
+
+flag {
+    name: "set_content_protection_allowlist_enabled"
+    is_exported: true
+    namespace: "content_protection"
+    description: "If true, the API to set content protection allowlist will be enabled."
+    bug: "410924560"
+}
