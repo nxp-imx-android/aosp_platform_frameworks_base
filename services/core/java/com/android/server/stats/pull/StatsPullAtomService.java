@@ -137,6 +137,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CoolingDevice;
+import android.os.Debug;
 import android.os.Environment;
 import android.os.IStoraged;
 import android.os.IThermalEventListener;
@@ -659,6 +660,8 @@ public class StatsPullAtomService extends SystemService {
                         return pullProcessMemorySnapshot(atomTag, data);
                     case FrameworkStatsLog.PROCESS_DMABUF_MEMORY:
                         return pullProcessDmabufMemory(atomTag, data);
+                    case FrameworkStatsLog.DMABUF_STATS:
+                        return pullDmabufStats(atomTag, data);
                     case FrameworkStatsLog.SYSTEM_MEMORY:
                         return pullSystemMemory(atomTag, data);
                     case FrameworkStatsLog.VMSTAT:
@@ -996,6 +999,7 @@ public class StatsPullAtomService extends SystemService {
         registerProcessMemorySnapshot();
         registerSystemMemory();
         registerProcessDmabufMemory();
+        registerDmabufStats();
         registerVmStat();
         registerTemperature();
         registerCoolingDevice();
@@ -2717,6 +2721,28 @@ public class StatsPullAtomService extends SystemService {
                     procBuf.surfaceFlingerCount
             ));
         }
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    private void registerDmabufStats() {
+        int tagId = FrameworkStatsLog.DMABUF_STATS;
+        mStatsManager.setPullAtomCallback(
+                tagId,
+                null, // use default PullAtomMetadata values
+                DIRECT_EXECUTOR,
+                mStatsCallbackImpl
+        );
+    }
+
+    int pullDmabufStats(int atomTag, List<StatsEvent> pulledData) {
+        int dmaBufTotalExportedKb = (int) Debug.getDmabufTotalExportedKb();
+        int dmaBufUserspaceKb = (int) Debug.getDmabufUserspaceKb();
+        pulledData.add(
+                FrameworkStatsLog.buildStatsEvent(
+                        atomTag,
+                        dmaBufTotalExportedKb,
+                        dmaBufUserspaceKb,
+                        dmaBufTotalExportedKb - dmaBufUserspaceKb));
         return StatsManager.PULL_SUCCESS;
     }
 
