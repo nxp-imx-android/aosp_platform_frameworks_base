@@ -62,10 +62,15 @@ public final class BackgroundBlurDrawable extends Drawable {
     // Confined to UiThread. The values are copied into a BlurRegion, which lives on
     // RenderThread to avoid interference with UiThread updates.
     private int mBlurRadius;
-    private float mCornerRadiusTL;
-    private float mCornerRadiusTR;
-    private float mCornerRadiusBL;
-    private float mCornerRadiusBR;
+    private float mCornerRadiusTLX;
+
+    private float mCornerRadiusTLY;
+    private float mCornerRadiusTRX;
+    private float mCornerRadiusTRY;
+    private float mCornerRadiusBLX;
+    private float mCornerRadiusBLY;
+    private float mCornerRadiusBRX;
+    private float mCornerRadiusBRY;
     private float mAlpha = 1;
 
     // Do not update from UiThread. This holds the latest position for this drawable. It is used
@@ -165,14 +170,40 @@ public final class BackgroundBlurDrawable extends Drawable {
      */
     public void setCornerRadius(float cornerRadiusTL, float cornerRadiusTR, float cornerRadiusBL,
             float cornerRadiusBR) {
-        if (mCornerRadiusTL != cornerRadiusTL
-                || mCornerRadiusTR != cornerRadiusTR
-                || mCornerRadiusBL != cornerRadiusBL
-                || mCornerRadiusBR != cornerRadiusBR) {
-            mCornerRadiusTL = cornerRadiusTL;
-            mCornerRadiusTR = cornerRadiusTR;
-            mCornerRadiusBL = cornerRadiusBL;
-            mCornerRadiusBR = cornerRadiusBR;
+        setCornerRadius(cornerRadiusTL, cornerRadiusTL, cornerRadiusTR, cornerRadiusTR,
+                cornerRadiusBL, cornerRadiusBL, cornerRadiusBR, cornerRadiusBR);
+    }
+
+    /**
+     * Sets the corner radius in degrees.
+     * @param cornerRadiusTLX top left radius X.
+     * @param cornerRadiusTLY top left radius Y.
+     * @param cornerRadiusTRX top right radius X.
+     * @param cornerRadiusTRY top right radius Y.
+     * @param cornerRadiusBLX bottom left radius X.
+     * @param cornerRadiusBLY bottom left radius Y.
+     * @param cornerRadiusBRX bottom right radius X.
+     * @param cornerRadiusBRY bottom right radius Y.
+     */
+    public void setCornerRadius(float cornerRadiusTLX, float cornerRadiusTLY,
+            float cornerRadiusTRX, float cornerRadiusTRY, float cornerRadiusBLX,
+            float cornerRadiusBLY, float cornerRadiusBRX, float cornerRadiusBRY) {
+        if (mCornerRadiusTLX != cornerRadiusTLX
+                || mCornerRadiusTLY != cornerRadiusTLY
+                || mCornerRadiusTRX != cornerRadiusTRX
+                || mCornerRadiusTRY != cornerRadiusTRY
+                || mCornerRadiusBLX != cornerRadiusBLX
+                || mCornerRadiusBLY != cornerRadiusBLY
+                || mCornerRadiusBRX != cornerRadiusBRX
+                || mCornerRadiusBRY != cornerRadiusBRY) {
+            mCornerRadiusTLX = cornerRadiusTLX;
+            mCornerRadiusTLY = cornerRadiusTLY;
+            mCornerRadiusTRX = cornerRadiusTRX;
+            mCornerRadiusTRY = cornerRadiusTRY;
+            mCornerRadiusBLX = cornerRadiusBLX;
+            mCornerRadiusBLY = cornerRadiusBLY;
+            mCornerRadiusBRX = cornerRadiusBRX;
+            mCornerRadiusBRY = cornerRadiusBRY;
             updatePath();
             invalidateSelf();
             mAggregator.onBlurDrawableUpdated(this);
@@ -187,10 +218,14 @@ public final class BackgroundBlurDrawable extends Drawable {
     }
 
     private void updatePath() {
-        mTmpRadii[0] = mTmpRadii[1] = mCornerRadiusTL;
-        mTmpRadii[2] = mTmpRadii[3] = mCornerRadiusTR;
-        mTmpRadii[4] = mTmpRadii[5] = mCornerRadiusBL;
-        mTmpRadii[6] = mTmpRadii[7] = mCornerRadiusBR;
+        mTmpRadii[0] = mCornerRadiusTLX;
+        mTmpRadii[1] = mCornerRadiusTLY;
+        mTmpRadii[2] = mCornerRadiusTRX;
+        mTmpRadii[3] = mCornerRadiusTRY;
+        mTmpRadii[4] = mCornerRadiusBLX;
+        mTmpRadii[5] = mCornerRadiusBLY;
+        mTmpRadii[6] = mCornerRadiusBRX;
+        mTmpRadii[7] = mCornerRadiusBRY;
         mRectPath.reset();
         if (getAlpha() == 0 || !isVisible()) {
             return;
@@ -214,10 +249,14 @@ public final class BackgroundBlurDrawable extends Drawable {
     public String toString() {
         return "BackgroundBlurDrawable{"
             + "blurRadius=" + mBlurRadius
-            + ", corners={" + mCornerRadiusTL
-            + "," + mCornerRadiusTR
-            + "," + mCornerRadiusBL
-            + "," + mCornerRadiusBR
+            + ", corners={" + mCornerRadiusTLX
+            + "," + mCornerRadiusTLY
+            + "," + mCornerRadiusTRX
+            + "," + mCornerRadiusTRY
+            + "," + mCornerRadiusBLX
+            + "," + mCornerRadiusBLY
+            + "," + mCornerRadiusBRX
+            + "," + mCornerRadiusBRY
             + "}, alpha=" + mAlpha
             + ", visible=" + mVisible
             + "}";
@@ -431,20 +470,28 @@ public final class BackgroundBlurDrawable extends Drawable {
      */
     public static final class BlurRegion {
         public final int blurRadius;
-        public final float cornerRadiusTL;
-        public final float cornerRadiusTR;
-        public final float cornerRadiusBL;
-        public final float cornerRadiusBR;
+        public final float cornerRadiusTLX;
+        public final float cornerRadiusTRX;
+        public final float cornerRadiusTRY;
+        public final float cornerRadiusTLY;
+        public final float cornerRadiusBLX;
+        public final float cornerRadiusBLY;
+        public final float cornerRadiusBRX;
+        public final float cornerRadiusBRY;
         public final float alpha;
         public final Rect rect;
 
         BlurRegion(BackgroundBlurDrawable drawable) {
             alpha = drawable.mAlpha;
             blurRadius = drawable.mBlurRadius;
-            cornerRadiusTL = drawable.mCornerRadiusTL;
-            cornerRadiusTR = drawable.mCornerRadiusTR;
-            cornerRadiusBL = drawable.mCornerRadiusBL;
-            cornerRadiusBR = drawable.mCornerRadiusBR;
+            cornerRadiusTLX = drawable.mCornerRadiusTLX;
+            cornerRadiusTLY = drawable.mCornerRadiusTLY;
+            cornerRadiusTRX = drawable.mCornerRadiusTRX;
+            cornerRadiusTRY = drawable.mCornerRadiusTRY;
+            cornerRadiusBLX = drawable.mCornerRadiusBLX;
+            cornerRadiusBLY = drawable.mCornerRadiusBLY;
+            cornerRadiusBRX = drawable.mCornerRadiusBRX;
+            cornerRadiusBRY = drawable.mCornerRadiusBRY;
             rect = drawable.mRect;
         }
 
@@ -452,17 +499,21 @@ public final class BackgroundBlurDrawable extends Drawable {
          * Serializes this class into a float array that's more JNI friendly.
          */
         float[] toFloatArray() {
-            final float[] floatArray = new float[10];
+            final float[] floatArray = new float[14];
             floatArray[0] = blurRadius;
             floatArray[1] = alpha;
             floatArray[2] = rect.left;
             floatArray[3] = rect.top;
             floatArray[4] = rect.right;
             floatArray[5] = rect.bottom;
-            floatArray[6] = cornerRadiusTL;
-            floatArray[7] = cornerRadiusTR;
-            floatArray[8] = cornerRadiusBL;
-            floatArray[9] = cornerRadiusBR;
+            floatArray[6] = cornerRadiusTLX;
+            floatArray[7] = cornerRadiusTLY;
+            floatArray[8] = cornerRadiusTRX;
+            floatArray[9] = cornerRadiusTRY;
+            floatArray[10] = cornerRadiusBLX;
+            floatArray[11] = cornerRadiusBLY;
+            floatArray[12] = cornerRadiusBRX;
+            floatArray[13] = cornerRadiusBRY;
             return floatArray;
         }
 
@@ -470,10 +521,14 @@ public final class BackgroundBlurDrawable extends Drawable {
         public String toString() {
             return "BlurRegion{"
                     + "blurRadius=" + blurRadius
-                    + ", corners={" + cornerRadiusTL
-                    + "," + cornerRadiusTR
-                    + "," + cornerRadiusBL
-                    + "," + cornerRadiusBR
+                    + ", corners={" + cornerRadiusTLX
+                    + "," + cornerRadiusTLY
+                    + "," + cornerRadiusTRX
+                    + "," + cornerRadiusTRY
+                    + "," + cornerRadiusBLX
+                    + "," + cornerRadiusBLY
+                    + "," + cornerRadiusBRX
+                    + "," + cornerRadiusBRY
                     + "}, alpha=" + alpha
                     + ", rect=" + rect
                     + "}";

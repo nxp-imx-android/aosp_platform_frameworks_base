@@ -896,26 +896,34 @@ static void nativeSetBlurRegions(JNIEnv* env, jclass clazz, jlong transactionObj
 
     std::vector<BlurRegion> blurRegionVector;
     const int size = regionsLength;
-    float region[10];
+    float region[14];
     for (int i = 0; i < size; i++) {
         jfloatArray regionArray = (jfloatArray)env->GetObjectArrayElement(regions, i);
-        env->GetFloatArrayRegion(regionArray, 0, 10, region);
+        env->GetFloatArrayRegion(regionArray, 0, 14, region);
         float blurRadius = region[0];
         float alpha = region[1];
         float left = region[2];
         float top = region[3];
         float right = region[4];
         float bottom = region[5];
-        float cornerRadiusTL = region[6];
-        float cornerRadiusTR = region[7];
-        float cornerRadiusBL = region[8];
-        float cornerRadiusBR = region[9];
+        float cornerRadiusTLX = region[6];
+        float cornerRadiusTLY = region[7];
+        float cornerRadiusTRX = region[8];
+        float cornerRadiusTRY = region[9];
+        float cornerRadiusBLX = region[10];
+        float cornerRadiusBLY = region[11];
+        float cornerRadiusBRX = region[12];
+        float cornerRadiusBRY = region[13];
 
         blurRegionVector.push_back(BlurRegion{.blurRadius = static_cast<uint32_t>(blurRadius),
-                                              .cornerRadiusTL = cornerRadiusTL,
-                                              .cornerRadiusTR = cornerRadiusTR,
-                                              .cornerRadiusBL = cornerRadiusBL,
-                                              .cornerRadiusBR = cornerRadiusBR,
+                                              .cornerRadiusTLX = cornerRadiusTLX,
+                                              .cornerRadiusTLY = cornerRadiusTLY,
+                                              .cornerRadiusTRX = cornerRadiusTRX,
+                                              .cornerRadiusTRY = cornerRadiusTRY,
+                                              .cornerRadiusBLX = cornerRadiusBLX,
+                                              .cornerRadiusBLY = cornerRadiusBLY,
+                                              .cornerRadiusBRX = cornerRadiusBRX,
+                                              .cornerRadiusBRY = cornerRadiusBRY,
                                               .alpha = alpha,
                                               .left = static_cast<int>(left),
                                               .top = static_cast<int>(top),
