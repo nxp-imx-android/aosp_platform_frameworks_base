@@ -26,6 +26,7 @@ import android.companion.virtual.computercontrol.LifecycleState.Closed;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tracks the lifecycle state transitions for a ComputerControlSession. It is used to notify
@@ -46,12 +47,15 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
     private static final LifecycleState INITIAL_STATE = null;
 
     private final List<ComputerControlSession.LifecycleCallback> mCallbacks = new ArrayList<>();
+    private final AtomicBoolean mIsNotifyingCallbacks = new AtomicBoolean(false);
 
     private LifecycleState mState = INITIAL_STATE;
 
     /**
      * Adds a lifecycle callback that should be notified for state changes. When a new callback is
      * added, it is assumed to be in an "active" state.
+     *
+     * <p>This tracker's state must NOT be updated from inside one of the callbacks.
      */
     public void addCallback(@NonNull ComputerControlSession.LifecycleCallback callback) {
         if (mCallbacks.contains(callback)) {
@@ -74,9 +78,16 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
     }
 
     private void notifyAllCallbacks() {
+        if (!mIsNotifyingCallbacks.compareAndSet(false, true)) {
+            throw new IllegalStateException(
+                    "Concurrent state modifications: "
+                            + "The state must not be updated from inside a callback!");
+        }
+
         for (ComputerControlSession.LifecycleCallback callback : new ArrayList<>(mCallbacks)) {
             notifyCallback(callback);
         }
+        mIsNotifyingCallbacks.set(false);
     }
 
     private void notifyCallback(ComputerControlSession.LifecycleCallback callback) {

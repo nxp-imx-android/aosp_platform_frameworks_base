@@ -187,6 +187,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
 
     // Handle state transitions for the session lifecycle.
+    // NOTE: Do not make lifecycle transitions from these callbacks.
     private final ComputerControlSession.LifecycleCallback mStateTransitions =
             new ComputerControlSession.LifecycleCallback() {
                 @Override
