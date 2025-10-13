@@ -17,6 +17,7 @@
 package android.graphics.fonts;
 
 import android.Manifest;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -57,7 +58,8 @@ public class FontManager {
                     RESULT_ERROR_VERIFICATION_FAILURE, RESULT_ERROR_VERSION_MISMATCH,
                     RESULT_ERROR_INVALID_FONT_FILE, RESULT_ERROR_INVALID_FONT_NAME,
                     RESULT_ERROR_DOWNGRADING, RESULT_ERROR_FAILED_UPDATE_CONFIG,
-                    RESULT_ERROR_FONT_UPDATER_DISABLED, RESULT_ERROR_FONT_NOT_FOUND })
+                    RESULT_ERROR_FONT_UPDATER_DISABLED, RESULT_ERROR_FONT_NOT_FOUND,
+                    RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ResultCode {}
 
@@ -134,6 +136,13 @@ public class FontManager {
      * found.
      */
     public static final int RESULT_ERROR_FONT_NOT_FOUND = -9;
+
+    /**
+     * Indicates a failure due to invalid font family name to insert before.
+     *
+     */
+    @FlaggedApi(com.android.text.flags.Flags.FLAG_INSERT_FONT_FAMILY)
+    public static final int RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE = -10;
 
     /**
      * Indicates a failure of opening font file.
@@ -301,6 +310,34 @@ public class FontManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * Insert new system font families in front of an existing font family.
+     *
+     * <p>This method will insert new font families in front of an existing font family. The
+     * inserted font family definitions will be used when creating
+     * {@link android.graphics.Typeface} objects with using
+     * {@link android.graphics.Typeface#create(String, int)} specifying the family name,
+     * or through XML resources.
+     *
+     * @param request A {@link FontFamilyUpdateRequest} to execute.
+     * @param fontFamilyNameToInsertBefore The name of an existing font family to insert before. If
+     *        the font family name cannot be found, the insert will fail with
+     *        {@link #RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE}
+     * @param baseVersion A base config version to be updated. You can get the latest config version
+     *                    by {@link FontConfig#getConfigVersion()} via {@link #getFontConfig()}. If
+     *                    the system has a newer config version, the update will fail with
+     *                    {@link #RESULT_ERROR_VERSION_MISMATCH}.
+     * @return A result code.
+     */
+    @FlaggedApi(com.android.text.flags.Flags.FLAG_INSERT_FONT_FAMILY)
+    public @ResultCode int insertFontFamilyBefore(
+            @NonNull FontFamilyUpdateRequest request,
+            @NonNull String fontFamilyNameToInsertBefore,
+            @IntRange(from = 0) int baseVersion) {
+        // TODO: implement this method.
+        return RESULT_ERROR_FAILED_TO_WRITE_FONT_FILE;
     }
 
     /**
