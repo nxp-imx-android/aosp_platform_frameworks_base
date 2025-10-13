@@ -48,6 +48,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -303,15 +304,20 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 assertThat(downDestination?.transitionKey).isNull()
             }
 
-            val downFromBelowEdge =
-                userActions?.get(Swipe.Down(pointerCount = if (downWithTwoPointers) 2 else 1))
+            val downFromEndHalfDestination =
+                userActions?.get(
+                    Swipe.Down(
+                        fromSource = SceneContainerArea.EndHalf,
+                        pointerCount = if (downWithTwoPointers) 2 else 1,
+                    )
+                )
             when {
-                !isShadeTouchable -> assertThat(downFromBelowEdge).isNull()
-                downWithTwoPointers -> assertThat(downFromBelowEdge).isNull()
+                !isShadeTouchable -> assertThat(downFromEndHalfDestination).isNull()
+                downWithTwoPointers -> assertThat(downFromEndHalfDestination).isNull()
                 else -> {
-                    assertThat(downFromBelowEdge)
-                        .isEqualTo(ShowOverlay(Overlays.NotificationsShade))
-                    assertThat(downFromBelowEdge?.transitionKey).isNull()
+                    assertThat(downFromEndHalfDestination)
+                        .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+                    assertThat(downFromEndHalfDestination?.transitionKey).isNull()
                 }
             }
 
