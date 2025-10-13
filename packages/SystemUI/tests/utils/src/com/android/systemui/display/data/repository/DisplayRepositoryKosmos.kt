@@ -41,9 +41,7 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
-import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
-import com.android.systemui.statusbar.gesture.statusBarLongPressGestureDetector
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
@@ -101,9 +99,6 @@ fun Kosmos.createFakeDisplaySubcomponent(
     statusBarConfigurationController: () -> StatusBarConfigurationController = {
         this.statusBarConfigurationController
     },
-    statusBarLongPressGestureDetector: () -> StatusBarLongPressGestureDetector = {
-        this.statusBarLongPressGestureDetector
-    },
 ): ReferenceSysUIDisplaySubcomponent {
     return object : ReferenceSysUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -159,9 +154,6 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val sysuiDarkIconDispatcher: SysuiDarkIconDispatcher
             get() = sysUiDarkIconDispatcher()
-
-        override val statusBarLongPressGestureDetector: StatusBarLongPressGestureDetector
-            get() = statusBarLongPressGestureDetector()
 
         override val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
             get() =

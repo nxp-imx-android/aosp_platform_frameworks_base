@@ -14,28 +14,26 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.gesture
+package com.android.systemui.shade
 
 import android.content.Context
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
-import com.android.systemui.shade.ShadeController
-import com.android.systemui.shade.ShadeViewController
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
-import dagger.Lazy
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 
 /** Accepts touch events, detects long press, and calls ShadeViewController#onStatusBarLongPress. */
+@SysUISingleton
 class StatusBarLongPressGestureDetector
-@AssistedInject
+@Inject
 constructor(
-    @Assisted context: Context,
+    // TODO b/383125226 - Make this class per-display
+    @Main context: Context,
     val shadeViewController: ShadeViewController,
-    // Lazy to break a Dagger dependency cycle
-    val shadeControllerLazy: Lazy<ShadeController>,
+    val shadeController: ShadeController,
     val deviceProvisionedController: DeviceProvisionedController,
 ) {
     val gestureDetector =
@@ -44,7 +42,7 @@ constructor(
             object : SimpleOnGestureListener() {
                 override fun onLongPress(event: MotionEvent) {
                     if (
-                        shadeControllerLazy.get().isShadeEnabled() &&
+                        shadeController.isShadeEnabled() &&
                             deviceProvisionedController.isDeviceProvisioned()
                     ) {
                         shadeViewController.onStatusBarLongPress(event)
@@ -56,10 +54,5 @@ constructor(
     /** Accepts touch events to detect long presses. */
     fun handleTouch(ev: MotionEvent) {
         gestureDetector.onTouchEvent(ev)
-    }
-
-    @AssistedFactory
-    interface Factory {
-        fun create(context: Context): StatusBarLongPressGestureDetector
     }
 }

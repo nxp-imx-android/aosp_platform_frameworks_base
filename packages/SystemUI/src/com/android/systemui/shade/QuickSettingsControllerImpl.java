@@ -79,7 +79,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.shade.data.repository.ShadeRepository;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
-import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
@@ -116,6 +115,7 @@ import kotlin.Unit;
 import java.io.PrintWriter;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /** Handles QuickSettings touch handling, expansion and animation state. */
 @SysUISingleton
@@ -141,7 +141,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     private final NotificationShadeDepthController mDepthController;
     private final ShadeHeaderController mShadeHeaderController;
     private final ShadeTouchableRegionManager mShadeTouchableRegionManager;
-    private final ShadeStatusBarComponentsInteractor mShadeStatusBarComponentsInteractor;
+    private final Provider<StatusBarLongPressGestureDetector> mStatusBarLongPressGestureDetector;
     private final KeyguardStateController mKeyguardStateController;
     private final KeyguardBypassController mKeyguardBypassController;
     private final NotificationRemoteInputManager mRemoteInputManager;
@@ -326,7 +326,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             NotificationShadeDepthController notificationShadeDepthController,
             ShadeHeaderController shadeHeaderController,
             ShadeTouchableRegionManager shadeTouchableRegionManager,
-            ShadeStatusBarComponentsInteractor shadeStatusBarComponentsInteractor,
+            Provider<StatusBarLongPressGestureDetector> statusBarLongPressGestureDetector,
             KeyguardStateController keyguardStateController,
             KeyguardBypassController keyguardBypassController,
             ScrimController scrimController,
@@ -376,7 +376,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         mDepthController = notificationShadeDepthController;
         mShadeHeaderController = shadeHeaderController;
         mShadeTouchableRegionManager = shadeTouchableRegionManager;
-        mShadeStatusBarComponentsInteractor = shadeStatusBarComponentsInteractor;
+        mStatusBarLongPressGestureDetector = statusBarLongPressGestureDetector;
         mKeyguardStateController = keyguardStateController;
         mKeyguardBypassController = keyguardBypassController;
         mScrimController = scrimController;
@@ -1637,10 +1637,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         }
         boolean isInStatusBar = event.getY(event.getActionIndex()) < mStatusBarMinHeight;
         if (ShadeExpandsOnStatusBarLongPress.isEnabled() && isInStatusBar) {
-            mShadeStatusBarComponentsInteractor
-                    .getLongPressGestureDetector()
-                    .getValue()
-                    .handleTouch(event);
+            mStatusBarLongPressGestureDetector.get().handleTouch(event);
         }
         final int action = event.getActionMasked();
         boolean collapsedQs = !getExpanded() && !mSplitShadeEnabled;
