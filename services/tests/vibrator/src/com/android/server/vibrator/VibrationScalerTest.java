@@ -204,8 +204,7 @@ public class VibrationScalerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_SCALE_DEVICE_CONFIG_ENABLED)
-    public void testGetScaleFactor_withConfig_returnsConfigForCurrentSetting() {
+    public void testGetScaleFactor_withDeviceConfig_returnsConfigForCurrentSetting() {
         // Default scale gain will be ignored.
         mConfigBuilder.setDefaultVibrationScaleLevelGain(1.4f);
         mConfigBuilder.setVibrationScaleFactors(new float[] { 0.1f, 0.2f, 0.3f });
@@ -237,7 +236,6 @@ public class VibrationScalerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_SCALE_DEVICE_CONFIG_ENABLED)
     public void testGetScaleFactor_withConfigForExternalVibration_returnsConfigForCurrentSetting() {
         // Default scale gain will be ignored.
         mConfigBuilder.setDefaultVibrationScaleLevelGain(1.4f);
@@ -446,7 +444,6 @@ public class VibrationScalerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VIBRATION_SCALE_DEVICE_CONFIG_ENABLED)
     public void scale_withDeviceConfig_usesConfigScales() {
         // Default scale gain will be ignored.
         mConfigBuilder.setDefaultVibrationScaleLevelGain(1.4f);

@@ -185,8 +185,7 @@ final class ExternalVibrationSession extends Vibration
     // TODO(b/345186129): remove this once we finish migrating to scale factor and clean up flags.
     private static boolean hasScaleConfig(VibrationScaler scaler) {
         // Only send scale factor if device config has it, to be used as linear scale.
-        return Flags.vibrationScaleDeviceConfigEnabled()
-                && scaler.getVibrationConfig().hasExternalVibrationScaleFactors();
+        return scaler.getVibrationConfig().hasExternalVibrationScaleFactors();
     }
 
     @Override
