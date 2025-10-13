@@ -217,6 +217,12 @@ public final class PhoneAccount implements Parcelable {
             "android.telecom.extra.ADD_SELF_MANAGED_CALLS_TO_INCALLSERVICE";
 
     /**
+     * Default value indicating that the low battery alert feature is disabled.
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_LOW_BATTERY_ALERT)
+    public static final int LOW_BATTERY_ALERT_DISABLED = -1;
+
+    /**
      * {@link PhoneAccount} extras key (see {@link #getExtras()}) which determines the battery level
      * threshold at which a low battery alert should be played.
      * If this extra is not set, low battery alerting will not be enabled for calls on this
