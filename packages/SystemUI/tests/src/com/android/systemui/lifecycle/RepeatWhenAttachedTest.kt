@@ -38,6 +38,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -89,29 +90,32 @@ class RepeatWhenAttachedTest : SysuiTestCase() {
         Dispatchers.resetMain()
     }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun repeatWhenAttached_enforcesMainThread() =
         testScope.runTest {
             Assert.setTestThread(null)
 
-            repeatWhenAttached()
+            assertThrows(IllegalStateException::class.java) { repeatWhenAttached() }
         }
 
-    @Test(expected = IllegalStateException::class)
-    fun repeatWhenAttachedToWindow_enforcesMainThread() =
-        testScope.runTest {
-            Assert.setTestThread(null)
+    @Test
+    fun repeatWhenAttachedToWindow_enforcesMainThread() {
+        assertThrows(IllegalStateException::class.java) {
+            testScope.runTest {
+                Assert.setTestThread(null)
 
-            view.repeatWhenAttachedToWindow {}
+                view.repeatWhenAttachedToWindow {}
+            }
         }
+    }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun repeatWhenAttached_disposeEnforcesMainThread() =
         testScope.runTest {
             val disposableHandle = repeatWhenAttached()
             Assert.setTestThread(null)
 
-            disposableHandle.dispose()
+            assertThrows(IllegalStateException::class.java) { disposableHandle.dispose() }
         }
 
     @Test
