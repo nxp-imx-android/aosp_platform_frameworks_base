@@ -1467,11 +1467,11 @@ public final class VirtualDeviceManager {
                 @NonNull UserHandle user) {}
 
         /**
-         * Called when there is no longer any window with a secure surface shown on the device.
+         * Called when a secure window is no longer shown on the virtual display.
          *
-         * <p>This is only called once there are no more secure windows shown on the device. If
-         * there are multiple secure windows shown on the device, this callback will be called only
-         * once all of them are hidden.</p>
+         * <p>This could mean that either an activity (previously with secure content) doesn't show
+         * secure content anymore, or a different activity with insecure content is launched on the
+         * display.</p>
          *
          * @param displayId The display ID on which the window was shown before.
          *

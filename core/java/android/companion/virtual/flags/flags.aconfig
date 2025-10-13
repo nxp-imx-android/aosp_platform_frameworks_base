@@ -356,3 +356,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "gwpc_secure_window_state_tracking"
+    namespace: "virtual_devices"
+    description: "Track secure states across activity launches in GenericWindowPolicyController"
+    bug: "449765707"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

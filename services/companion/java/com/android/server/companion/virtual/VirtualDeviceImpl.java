@@ -297,13 +297,12 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         }
 
         @Override
-        public void onSecureWindowShown(int displayId, @NonNull ActivityInfo activityInfo) {
+        public void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
+                int uid) {
             if (Flags.activityControlApi()) {
                 try {
-                    mActivityListener.onSecureWindowShown(
-                            displayId,
-                            activityInfo.getComponentName(),
-                            UserHandle.getUserHandleForUid(activityInfo.applicationInfo.uid));
+                    mActivityListener.onSecureWindowShown(displayId, componentName,
+                            UserHandle.getUserHandleForUid(uid));
                 } catch (RemoteException e) {
                     Slog.w(TAG, "Unable to call mActivityListener for display: " + displayId, e);
                 }
@@ -320,7 +319,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             Display display = displayManager.getDisplay(displayId);
             if (display != null) {
                 if ((display.getFlags() & Display.FLAG_SECURE) == 0) {
-                    showToastWhereUidIsRunning(activityInfo.applicationInfo.uid,
+                    showToastWhereUidIsRunning(uid,
                             com.android.internal.R.string.vdm_secure_window,
                             Toast.LENGTH_LONG, mContext.getMainLooper());
 
