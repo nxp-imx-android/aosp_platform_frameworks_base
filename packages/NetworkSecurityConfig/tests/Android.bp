@@ -7,25 +7,21 @@ package {
     default_applicable_licenses: ["frameworks_base_license"],
 }
 
-// TODO(b/397646538): Add NetworkSecurityConfigTests in Conscrypt and
-// switch between them using the RELEASE_CONSCRYPT_NSC flag.
+// TODO(b/397646538): Remove this test once the Mainline migration is successful.
 android_test {
     name: "NetworkSecurityConfigTests",
+    test_suites: ["general-tests"],
+
+    srcs: select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: [],
+        default: ["src/**/*.java"],
+    }),
     certificate: "platform",
+    platform_apis: true,
+
     libs: [
         "android.test.base.stubs.system",
-        "art.module.intra.core.api.stubs",
-        "conscrypt.module.platform.api.stubs",
-    ] + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
-        true: [
-            "android.security.flags-aconfig-java",
-            "framework-conscrypt-nsc.impl",
-            "networksecurity-aconfig-flags-lib",
-        ],
-        default: [
-            "framework-minus-apex-headers",
-        ],
-    }),
+    ],
     static_libs: [
         "androidx.test.ext.junit",
         "androidx.test.runner",
@@ -33,9 +29,4 @@ android_test {
         "junit",
         "platform-compat-test-rules",
     ],
-    // Include all test java files.
-    srcs: ["src/**/*.java"],
-    platform_apis: true,
-    sdk_version: "test_current",
-    test_suites: ["general-tests"],
 }
