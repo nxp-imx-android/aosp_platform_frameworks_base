@@ -418,7 +418,8 @@ class LaunchParamsUtil {
             if (controllerFromLaunchingRecord != null) {
                 final TaskDisplayArea taskDisplayAreaForLaunchingRecord =
                         controllerFromLaunchingRecord.getTopActivityDisplayArea();
-                if (taskDisplayAreaForLaunchingRecord != null) {
+                if (canPlaceEntityOnDisplay(taskDisplayAreaForLaunchingRecord, activityRecord,
+                        request, supervisor)) {
                     logger.accept("display-area-for-launching-record="
                             + taskDisplayAreaForLaunchingRecord);
                     return taskDisplayAreaForLaunchingRecord;
@@ -431,7 +432,8 @@ class LaunchParamsUtil {
             if (controllerFromProcess != null) {
                 final TaskDisplayArea displayAreaForRecord =
                         controllerFromProcess.getTopActivityDisplayArea();
-                if (displayAreaForRecord != null) {
+                if (canPlaceEntityOnDisplay(displayAreaForRecord, activityRecord,
+                        request, supervisor)) {
                     logger.accept("display-area-for-record=" + displayAreaForRecord);
                     return displayAreaForRecord;
                 }
@@ -445,7 +447,8 @@ class LaunchParamsUtil {
             if (controllerFromRequest != null) {
                 final TaskDisplayArea displayAreaFromSourceProcess =
                         controllerFromRequest.getTopActivityDisplayArea();
-                if (displayAreaFromSourceProcess != null) {
+                if (canPlaceEntityOnDisplay(displayAreaFromSourceProcess, activityRecord,
+                        request, supervisor)) {
                     logger.accept("display-area-source-process=" + displayAreaFromSourceProcess);
                     return displayAreaFromSourceProcess;
                 }
@@ -457,7 +460,8 @@ class LaunchParamsUtil {
             final DisplayContent focusedDisplay =
                     supervisor.mRootWindowContainer.getTopFocusedDisplayContent();
             final TaskDisplayArea defaultTaskDisplayArea;
-            if (focusedDisplay.mDisplay.canHostTasks()) {
+            if (canPlaceEntityOnDisplay(focusedDisplay.getDefaultTaskDisplayArea(), activityRecord,
+                    request, supervisor)) {
                 defaultTaskDisplayArea = focusedDisplay.getDefaultTaskDisplayArea();
             } else {
                 defaultTaskDisplayArea =
@@ -471,5 +475,27 @@ class LaunchParamsUtil {
             logger.accept("display-area-from-default-fallback=" + defaultTaskDisplayArea);
             return defaultTaskDisplayArea;
         }
+    }
+
+    /**
+     * Returns {@code true} if the given activity can be placed on the TaskDisplayArea.
+     */
+    private static boolean canPlaceEntityOnDisplay(@Nullable TaskDisplayArea tda,
+            @Nullable ActivityRecord activity, @Nullable ActivityStarter.Request request,
+            @NonNull ActivityTaskSupervisor supervisor) {
+        if (tda == null) {
+            return false;
+        }
+
+        final int displayId = tda.getDisplayId();
+        if (activity != null) {
+            return activity.canBeLaunchedOnDisplay(displayId);
+        }
+
+        if (request != null && request.activityInfo != null) {
+            return supervisor.canPlaceEntityOnDisplay(displayId, request.callingPid,
+                    request.callingUid, request.activityInfo);
+        }
+        return false;
     }
 }
