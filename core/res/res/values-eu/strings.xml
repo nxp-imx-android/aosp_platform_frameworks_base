@@ -1054,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Eredua zuzena da!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Saiatu berriro"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Saiatu berriro"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desblokeatu eginbide eta datu guztiak erabiltzeko"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Gainditu da aurpegi bidez desblokeatzeko saiakera-muga"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Ez dago SIMik"</string>
@@ -1796,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Eduki sakatuta bolumen-botoiak segundo batzuez <xliff:g id="SERVICE">%1$s</xliff:g> izeneko erabilerraztasun-eginbidea aktibatzeko. Honen bidez, baliteke zure mugikorraren funtzionamendua aldatzea.\n\nLasterbide hau beste eginbide batengatik aldatzeko, joan Ezarpenak &gt; Erabilerraztasuna atalera."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Aktibatu"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Ez aktibatu"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"AKTIBATUTA"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"DESAKTIBATUTA"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Gailua guztiz kontrolatzeko baimena eman nahi diozu <xliff:g id="SERVICE">%1$s</xliff:g> zerbitzuari?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Erabilerraztasun-beharrak asetzen dituzten aplikazioetan da egokia kontrol osoa, baina ez aplikazio gehienetan."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Ikusi eta kontrolatu pantaila"</string>
@@ -1811,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Eginbide bat erabiltzen hasteko, saka ezazu:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Aukeratu zein eginbide erabili nahi duzun Erabilerraztasuna botoiarekin"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Aukeratu zein eginbide erabili nahi duzun bolumen-botoien lasterbidearekin"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Desaktibatu da <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Editatu lasterbideak"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Eginda"</string>

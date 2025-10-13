@@ -1054,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"सही!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"फिर से कोशिश करें"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"फिर से कोशिश करें"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"सभी सुविधाओं और डेटा के लिए अनलॉक करें"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"मालिक का चेहरा पहचानकर अनलॉक करने की तय सीमा खत्म हो गई"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"कोई सिम नहीं है"</string>
@@ -1796,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"आवाज़ कम और ज़्यादा करने वाले दोनों बटन को कुछ सेकंड तक दबाकर रखने से <xliff:g id="SERVICE">%1$s</xliff:g> चालू हो जाती है, जो एक सुलभता सुविधा है. ऐसा करने से आपके डिवाइस के काम करने के तरीके में बदलाव हो सकता है.\n\nआप सेटिंग और सुलभता में जाकर इस शॉर्टकट को किसी दूसरी सुविधा के लिए बदल सकते हैं."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"चालू करें"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"चालू न करें"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"चालू है"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"बंद है"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> को अपना डिवाइस पूरी तरह कंट्रोल करने की अनुमति देनी है?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"पूरी तरह कंट्रोल करने की अनुमति उन ऐप्लिकेशन के लिए ठीक है जो सुलभता से जुड़ी ज़रूरतों के लिए बने हैं, लेकिन ज़्यादातर ऐप्लिकेशन के लिए यह ठीक नहीं है."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"स्क्रीन को देखें और कंट्रोल करें"</string>
@@ -1811,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"किसी सुविधा का इस्तेमाल करने के लिए, उस पर टैप करें:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"सुलभता बटन पर टैप करके, इस्तेमाल करने के लिए सुविधाएं चुनें"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"वे सुविधाएं चुनें जिन्हें आवाज़ बटनों के शॉर्टकट के ज़रिए इस्तेमाल करना है"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> को बंद कर दिया गया है"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"शॉर्टकट में बदलाव करें"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"हो गया"</string>

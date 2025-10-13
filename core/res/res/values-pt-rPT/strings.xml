@@ -1055,6 +1055,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Correcto!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Tentar novamente"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Tentar novamente"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloqueio de todas as funcionalidades e dados"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Excedido o n.º máximo de tentativas de Desbloqueio facial"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Sem SIM"</string>
@@ -1797,8 +1801,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Manter premidas ambas as teclas de volume durante alguns segundos ativa o serviço <xliff:g id="SERVICE">%1$s</xliff:g>, uma funcionalidade de acessibilidade. Esta pode alterar a forma como o seu dispositivo funciona.\n\nPode alterar este atalho para outra funcionalidade em Definições &gt; Acessibilidade."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Ativar"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Não ativar"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"ATIVADO"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"DESATIVADO"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Permitir que o serviço <xliff:g id="SERVICE">%1$s</xliff:g> tenha controlo total sobre o seu dispositivo?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"O controlo total é adequado para apps que ajudam nas necessidades de acessibilidade, mas não para a maioria das apps."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Ver e controlar o ecrã"</string>
@@ -1812,6 +1818,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Toque numa funcionalidade para começar a utilizá-la:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Escolha funcionalidades para utilizar com o botão Acessibilidade"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Escolha funcionalidades para usar com o atalho de teclas de volume"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"O serviço <xliff:g id="SERVICE_NAME">%s</xliff:g> foi desativado."</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Editar atalhos"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Concluído"</string>
@@ -2491,7 +2507,7 @@
     <string name="connected_display_unavailable_notification_content" msgid="3845903313751217516">"Use um cabo diferente e tente novamente"</string>
     <string name="connected_display_thermally_unavailable_notification_content" msgid="9205758199439955949">"O dispositivo está demasiado quente e não consegue espelhar para o ecrã até arrefecer"</string>
     <string name="concurrent_display_notification_name" msgid="1526911253558311131">"Dual Screen"</string>
-    <string name="concurrent_display_notification_active_title" msgid="4892473462327943673">"Funcionalidade Dual Screen ativada"</string>
+    <string name="concurrent_display_notification_active_title" msgid="4892473462327943673">"Dual Screen ativado"</string>
     <string name="concurrent_display_notification_active_content" msgid="5889355473710601270">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> está a usar ambos os ecrãs para mostrar conteúdo"</string>
     <string name="concurrent_display_notification_thermal_title" msgid="5921609404644739229">"O dispositivo está a ficar demasiado quente"</string>
     <string name="concurrent_display_notification_thermal_content" msgid="2075484836527609319">"A funcionalidade Dual Screen está indisponível porque o seu telemóvel está a ficar demasiado quente"</string>

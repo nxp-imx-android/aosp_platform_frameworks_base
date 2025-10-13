@@ -1055,6 +1055,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Ispravno!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Pokušajte ponovno"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Pokušajte ponovno"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Otključajte za sve značajke i podatke"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Premašen je maksimalni broj pokušaja otključavanja licem"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Nema SIM-a"</string>
@@ -1797,8 +1801,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Ako na nekoliko sekundi pritisnete obje tipke za glasnoću, uključuje se značajka pristupačnosti <xliff:g id="SERVICE">%1$s</xliff:g>. Time se može promijeniti način na koji vaš uređaj radi.\n\nZnačajku na koju se taj prečac odnosi možete promijeniti u odjeljku Postavke &gt; Pristupačnost."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Uključi"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Nemoj uključiti"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"UKLJUČENO"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"ISKLJUČENO"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Želite li usluzi <xliff:g id="SERVICE">%1$s</xliff:g> dopustiti potpunu kontrolu nad uređajem?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Potpuna kontrola prikladna je za aplikacije koje vam pomažu s potrebama pristupačnosti, ali ne i za većinu aplikacija."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Pregled zaslona i upravljanje njime"</string>
@@ -1812,6 +1818,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Dodirnite značajku da biste je počeli koristiti:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Odabir značajki za upotrebu pomoću gumba za Pristupačnost"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Odabir značajki za upotrebu pomoću prečaca tipki za glasnoću"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Usluga <xliff:g id="SERVICE_NAME">%s</xliff:g> je isključena"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Uredite prečace"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Gotovo"</string>
@@ -2366,10 +2382,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN za otključavanje IMPI-ja"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN za otključavanje davatelja usluge podskupa mreže"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Upućivanje zahtjeva za otključavanje SIM mreže…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Upućivanje zahtjeva za otključavanje podskupa SIM mreže…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Upućivanje zahtjeva za otključavanje davatelja usluga SIM-a…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Upućivanje zahtjeva za otključavanje poslovnog SIM-a…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Upućivanje zahtjeva za otključavanje PUK-om…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Upućivanje zahtjeva za otključavanje PUK-om…"</string>
@@ -2395,18 +2409,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Upućivanje zahtjeva za otključavanje PUK-om…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Upućivanje zahtjeva za otključavanje PUK-om…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Neuspješan zahtjev za otključavanje SIM mreže."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Zahtjev za otključavanje podskupa SIM mreže nije uspio."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Zahtjev za otključavanje davatelja usluga SIM-a nije uspio."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Neuspješan zahtjev za otključavanje poslovnog PIN-a."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Neuspješan zahtjev za otključavanje SIM-a."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Neuspješan zahtjev za otključavanje RUIM mreže 1."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Neuspješan zahtjev za otključavanje RUIM mreže 2."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Neuspješan zahtjev za otključavanje RUIM Hrpd-a."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Neuspješan zahtjev za otključavanje poslovnog RUIM-a."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Zahtjev za otključavanje davatelja usluga RUIM-a nije uspio."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Neuspješan zahtjev za otključavanje RUIM-a."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Neuspješno otključavanje PUK-om."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Neuspješno otključavanje PUK-om."</string>
@@ -2426,15 +2437,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Neuspješan zahtjev za otključavanje davatelja usluga podskupa mreže."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM mreža je otključana."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Poskup SIM mreže je otključan."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Davatelj usluga SIM-a je otključan."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Poslovni SIM je otključan."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM je otključan."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM mreža 1 je otključana."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM mreža 2 je otključana."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM Hrpd je otključan."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Davatelj usluga RUIM-a je otključan."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Poslovni RUIM je otključan."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM je otključan."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Uspješno otključavanje PUK-om."</string>

@@ -1054,6 +1054,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"শুদ্ধ!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"আকৌ চেষ্টা কৰক"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"আকৌ চেষ্টা কৰক"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"আটাইবোৰ সুবিধা আৰু ডেটাৰ বাবে আনলক কৰক"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"গৰাকীৰ ফেচ আনলক কৰা সৰ্বাধিক সীমা অতিক্ৰম কৰা হ’ল"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"কোনো ছিম নাই"</string>
@@ -1796,8 +1800,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"দুয়োটা ভলিউম কী কিছুসময়ৰ বাবে ধৰি থাকিলে এটা সাধ্য- সুবিধা <xliff:g id="SERVICE">%1$s</xliff:g> অন কৰে। এইটোৱে আপোনাৰ ডিভাইচটোৱে কাম কৰাৰ ধৰণ সলনি কৰিব পাৰে।\n\nআপুনি ছেটিং &gt; সাধ্য-সুবিধাসমূহত এই শ্বৰ্টকাটটো অন্য এটা সুবিধালৈ সলনি কৰিব পাৰে।"</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"অন কৰক"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"অন নকৰিব"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"অন কৰা আছে"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"অফ কৰা আছে"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g>ক আপোনাৰ ডিভাইচটোৰ সম্পূর্ণ নিয়ন্ত্ৰণ দিবনে?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"আপোনাক সাধ্য সুবিধাৰ প্ৰয়োজনসমূহৰ জৰিয়তে সহায় কৰা এপ্‌সমূহৰ বাবে সম্পূর্ণ নিয়ন্ত্ৰণৰ সুবিধাটো সঠিক যদিও অধিকাংশ এপৰ বাবে এয়া সঠিক নহয়।"</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"চাওক আৰু স্ক্ৰীন নিয়ন্ত্ৰণ কৰক"</string>
@@ -1811,6 +1817,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"কোনো এটা সুবিধা ব্যৱহাৰ কৰিবলৈ সেইটোত টিপক:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"সাধ্য-সুবিধা বুটামটোৰ জৰিয়তে ব্যৱহাৰ কৰিবলৈ সুবিধাসমূহ বাছনি কৰক"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"ভলিউম কীৰ শ্বৰ্টকাটটোৰ জৰিয়তে ব্যৱহাৰ কৰিবলৈ সুবিধাসমূহ বাছনি কৰক"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> বন্ধ কৰা হৈছে"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"শ্বৰ্টকাটসমূহ সম্পাদনা কৰক"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"কৰা হ’ল"</string>
@@ -2365,10 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI আনলক কৰা পিন"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"নেটৱৰ্ক ছাবছেট সেৱা প্ৰদানকাৰীক আনলক কৰা পিন"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"ছিম নেটৱৰ্ক আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"ছিম নেটৱৰ্কৰ ছাবছেট আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"ছিমৰ সেৱা প্ৰদানকাৰীক আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"ছিম কৰ্পৰে\'ট আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"PUK আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"PUK আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
@@ -2394,18 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"PUK আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"PUK আনলক কৰিবলৈ অনুৰোধ কৰি থকা হৈছে…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"ছিম নেটৱৰ্ক আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"ছিম নেটৱৰ্কৰ ছাবছেট আনলক কৰাৰ অনুৰোধ বিফল হৈছে।"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"ছিমৰ সেৱা প্ৰদানকাৰীক আনলক কৰাৰ অনুৰোধ বিফল হৈছে।"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"ছিম কৰ্পৰে\'ট আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"ছিম আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM Network1 আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM Network2 আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM Hrpd আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"RUIM কৰ্পৰে\'ট আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM সেৱা প্ৰদানকাৰীক আনলক কৰাৰ অনুৰোধ বিফল হৈছে।"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM আনলক কৰাৰ অনুৰোধটো বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK আনলক কৰাটো বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK আনলক কৰাটো বিফল হ\'ল।"</string>
@@ -2425,15 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"নেটৱৰ্ক ছাবছেট সেৱা প্ৰদানকাৰীক আনলক কৰাৰ অনুৰোধ বিফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"ছিম নেটৱৰ্ক আনলক কৰাটো সফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"ছিম নেটৱৰ্কৰ ছাবছেট আনলক কৰাটো সফল হ\'ল।"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"ছিমৰ সেৱা প্ৰদানকাৰীক আনলক কৰাটো সফল হ’ল ।"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"SIM কৰ্পৰে\'ট আনলক কৰাটো সফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"ছিম আনলক কৰাটো সফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM Network1 আনলক কৰাটো সফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM Network2 আনলক কৰাটো সফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM Hrpd আনলক কৰাটো সফল হ\'ল।"</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM সেৱা প্ৰদানকাৰীক আনলক কৰাটো সফল হৈছে।"</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"RUIM কৰ্পৰে\'ট আনলক কৰাটো সফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM আনলক কৰাটো সফল হ\'ল।"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK আনলক কৰাটো সফল হ\'ল।"</string>

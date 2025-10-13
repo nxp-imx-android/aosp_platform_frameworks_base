@@ -1056,6 +1056,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Správne!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Skúsiť znova"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Skúsiť znova"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Všetky funkcie a dáta získate po odomknutí"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Prekročili ste maximálny povolený počet pokusov o odomknutie tvárou"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Žiadna SIM karta"</string>
@@ -1798,8 +1802,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Pridržaním oboch klávesov hlasitosti na niekoľko sekúnd zapnete funkciu dostupnosti <xliff:g id="SERVICE">%1$s</xliff:g>. Môže sa tým zmeniť spôsob fungovania vášho zariadenia.\n\nTúto skratku môžete zmeniť na inú funkciu v časti Nastavenia &gt; Dostupnosť."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Zapnúť"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Nezapínať"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"ZAP."</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"VYP."</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Chcete povoliť službe <xliff:g id="SERVICE">%1$s</xliff:g> úplnú kontrolu nad zariadením?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Úplná kontrola je vhodná pre aplikácie, ktoré vám pomáhajú s dostupnosťou, ale nie pre väčšinu aplikácií."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Zobrazenie a ovládanie obrazovky"</string>
@@ -1813,6 +1819,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Klepnutím na funkciu ju začnite používať:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Výber funkcií, ktoré chcete používať tlačidlom dostupnosti"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Vyberte funkcie, ktoré chcete používať so skratkou tlačidiel hlasitosti"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Služba <xliff:g id="SERVICE_NAME">%s</xliff:g> bola vypnutá"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Upraviť skratky"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Hotovo"</string>

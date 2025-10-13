@@ -1055,6 +1055,10 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Correcte!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Torna-ho a provar"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Torna-ho a provar"</string>
+    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
+    <skip />
+    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
+    <skip />
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloqueja per accedir a les funcions i dades"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"S\'ha superat el nombre màxim d\'intents de Desbloqueig facial"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"No hi ha cap SIM"</string>
@@ -1797,8 +1801,10 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Si mantens premudes les dues tecles de volum durant uns segons, la funció d\'accessibilitat <xliff:g id="SERVICE">%1$s</xliff:g> s\'activarà. Això podria canviar el funcionament del teu dispositiu.\n\nPots canviar la funció d\'aquesta drecera a Configuració &gt; Accessibilitat."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Activa"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"No activis"</string>
-    <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"ACTIVAT"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"DESACTIVAT"</string>
+    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
+    <skip />
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Vols permetre que <xliff:g id="SERVICE">%1$s</xliff:g> controli el teu dispositiu per complet?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"El control total és adequat per a les aplicacions que t\'ajuden amb l\'accessibilitat, però no per a la majoria de les aplicacions."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Veure i controlar la pantalla"</string>
@@ -1812,6 +1818,16 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Toca una funció per començar a utilitzar-la:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Tria les funcions que vols utilitzar amb el botó d\'accessibilitat"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Tria les funcions que vols utilitzar amb la drecera de les tecles de volum"</string>
+    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
+    <skip />
+    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
+    <skip />
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> s\'ha desactivat"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Edita les dreceres"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Fet"</string>
@@ -2366,10 +2382,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN de desbloqueig de l\'IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN de desbloqueig del proveïdor de serveis del subconjunt de la xarxa"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"S\'està sol·licitant el desbloqueig de la xarxa SIM…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"S\'està sol·licitant el desbloqueig del subconjunt de la xarxa SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"S\'està sol·licitant el desbloqueig del proveïdor de serveis de la SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"S\'està sol·licitant el desbloqueig de la SIM corporativa…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"S\'està sol·licitant el desbloqueig amb el PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"S\'està sol·licitant el desbloqueig amb el PUK…"</string>
@@ -2395,18 +2409,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"S\'està sol·licitant el desbloqueig amb el PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"S\'està sol·licitant el desbloqueig amb el PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"No s\'ha pogut sol·licitar el desbloqueig de la xarxa SIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"No s\'ha pogut sol·licitar el desbloqueig del subconjunt de la xarxa SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"No s\'ha pogut sol·licitar el desbloqueig del proveïdor de serveis de la SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"No s\'ha pogut desbloquejar la SIM corporativa."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"No s\'ha pogut sol·licitar el desbloqueig de la SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"No s\'ha pogut sol·licitar el desbloqueig de RUIM xarxa tipus 1."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"No s\'ha pogut sol·licitar el desbloqueig de RUIM xarxa tipus 2."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"No s\'ha pogut sol·licitar el desbloqueig d\'HRPD."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"No s\'ha pogut sol·licitar el desbloqueig de RUIM corporatiu."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"No s\'ha pogut sol·licitar el desbloqueig del proveïdor de serveis de RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"No s\'ha pogut sol·licitar el desbloqueig de RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"No s\'ha pogut desbloquejar correctament amb el PUK."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"No s\'ha pogut desbloquejar correctament amb el PUK."</string>
@@ -2426,15 +2437,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"No s\'ha pogut sol·licitar el desbloqueig del proveïdor de serveis del subconjunt de la xarxa."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"La xarxa SIM s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"El subconjunt de la xarxa SIM s\'ha desbloquejat correctament."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"El proveïdor de serveis de la SIM s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"La SIM corporativa s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"La SIM s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"El RUIM xarxa tipus 1 s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"El RUIM xarxa tipus 2 s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"L\'HRPD s\'ha desbloquejat correctament."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"El proveïdor de serveis de RUIM s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"El RUIM corporatiu s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"El RUIM s\'ha desbloquejat correctament."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"S\'ha desbloquejat correctament amb el PUK."</string>
