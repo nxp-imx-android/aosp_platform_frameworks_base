@@ -1413,9 +1413,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         int freeformTasks = 0;
         boolean anyTaskOnExternalDisplay = false;
         int relaunchReason;
-        final boolean logCrashDesktopInfo =
-                com.android.window.flags.Flags.enableCrashLoggingForDesktop()
-                        && canEnterDesktopMode(mAtm.mContext);
+        final boolean logCrashDesktopInfo = canEnterDesktopMode(mAtm.mContext);
 
         synchronized (mAtm.mGlobalLock) {
             relaunchReason = computeRelaunchReasonInner();
