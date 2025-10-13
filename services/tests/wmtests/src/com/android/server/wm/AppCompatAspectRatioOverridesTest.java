@@ -387,7 +387,6 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
     public void testSystemFullscreenOverride_isDefaultDisplay_true() {
         runTestScenario((robot) -> {
@@ -404,7 +403,6 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
     public void testSystemFullscreenOverride_notDefaultDisplay_false() {
         runTestScenario((robot) -> {
@@ -421,7 +419,6 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
     public void testSystemFullscreenOverride_movedOutOfDefaultDisplay_true() {
         runTestScenario((robot) -> {
@@ -441,7 +438,6 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
     public void testSystemFullscreenOverride_activityRestartedInDefaultDisplay_true() {
         runTestScenario((robot) -> {
