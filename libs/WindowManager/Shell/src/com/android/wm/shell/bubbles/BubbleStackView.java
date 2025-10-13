@@ -2466,30 +2466,44 @@ public class BubbleStackView extends FrameLayout
         updateBubbleOrderInternal(bubbles, updatePointerPosition);
     }
 
+    /**
+     * Note: {@code bubbles} is the reference to the current bubbles, which can be changed before
+     * any animation is ended.
+     */
     private void updateBubbleOrderInternal(List<Bubble> bubbles, boolean updatePointerPosition) {
-        // This is an event of reorder, so only update Bubbles that are still attached to the stack.
-        // For case like jumpcut Bubble switching, we may have removed the Bubble icon, and the
-        // reorder should not add it back.
-        final List<Bubble> bubblesInStack;
+        final Runnable reorder;
         if (com.android.window.flags.Flags.fixBubbleTrampolineAnimation()) {
-            bubblesInStack = bubbles.stream()
-                    .filter(b -> getBubbleIndex(b) >= 0)
-                    .toList();
+            // This is an event of reorder, so only update Bubbles that are still attached to the
+            // stack.
+            // For case like jumpcut Bubble switching, we may have removed the Bubble icon, and the
+            // reorder should not add it back.
+            reorder = () -> {
+                int reorderIndex = 0;
+                for (int i = 0; i < bubbles.size(); i++) {
+                    Bubble bubble = bubbles.get(i);
+                    if (getBubbleIndex(bubble) >= 0) {
+                        mBubbleContainer.reorderView(bubble.getIconView(), reorderIndex);
+                        reorderIndex++;
+                    }
+                }
+            };
         } else {
-            bubblesInStack = bubbles;
-        }
-        final Runnable reorder = () -> {
-            for (int i = 0; i < bubblesInStack.size(); i++) {
-                Bubble bubble = bubblesInStack.get(i);
-                mBubbleContainer.reorderView(bubble.getIconView(), i);
-            }
+            reorder = () -> {
+                for (int i = 0; i < bubbles.size(); i++) {
+                    Bubble bubble = bubbles.get(i);
+                    mBubbleContainer.reorderView(bubble.getIconView(), i);
+                }
+            };
         };
         if (mIsExpanded || isExpansionAnimating()) {
             reorder.run();
             updateBadges(false /* setBadgeForCollapsedStack */);
             updateBubbleShadows(true /* isExpanded */);
         } else {
-            final List<View> bubbleViews = bubblesInStack.stream()
+            final List<View> bubbleViews = bubbles.stream()
+                    .filter(b ->
+                            !com.android.window.flags.Flags.fixBubbleTrampolineAnimation()
+                                    || getBubbleIndex(b) >= 0)
                     .map(Bubble::getIconView)
                     .collect(Collectors.toList());
             mStackAnimationController.animateReorder(bubbleViews, reorder);
