@@ -847,7 +847,8 @@ constructor(
                 val headsUp =
                     if (reInflateFlags and FLAG_CONTENT_VIEW_HEADS_UP != 0) {
                         logger.logAsyncTaskProgress(row.loggingKey, "creating heads up remote view")
-                        val isHeadsUpCompact = headsUpStyleProvider.shouldApplyCompactStyle()
+                        val isHeadsUpCompact =
+                            headsUpStyleProvider.shouldApplyCompactStyle(systemUiContext.displayId)
                         if (isHeadsUpCompact) {
                             builder.createCompactHeadsUpContentView()
                         } else {

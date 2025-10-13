@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row
 
+import com.android.systemui.Flags
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.notification.shared.HeadlinePrototypes
 import javax.inject.Inject
@@ -25,7 +26,7 @@ import javax.inject.Inject
  * other factors.
  */
 interface HeadsUpStyleProvider {
-    fun shouldApplyCompactStyle(): Boolean
+    fun shouldApplyCompactStyle(displayId: Int): Boolean
 }
 
 class HeadsUpStyleProviderImpl
@@ -33,10 +34,18 @@ class HeadsUpStyleProviderImpl
 constructor(private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore) :
     HeadsUpStyleProvider {
 
-    override fun shouldApplyCompactStyle(): Boolean {
-        return isInImmersiveMode() || HeadlinePrototypes.alwaysShowMinimalHun()
+    override fun shouldApplyCompactStyle(displayId: Int): Boolean {
+        return isInImmersiveMode(displayId) || HeadlinePrototypes.alwaysShowMinimalHun()
     }
 
-    private fun isInImmersiveMode() =
-        statusBarModeRepositoryStore.defaultDisplay.isInFullscreenMode.value
+    private fun isInImmersiveMode(displayId: Int): Boolean {
+        val statusBarModePerDisplayRepository =
+            if (Flags.headsUpStyleProviderDisplayAware()) {
+                statusBarModeRepositoryStore.forDisplay(displayId)
+                    ?: statusBarModeRepositoryStore.defaultDisplay
+            } else {
+                statusBarModeRepositoryStore.defaultDisplay
+            }
+        return statusBarModePerDisplayRepository.isInFullscreenMode.value
+    }
 }
