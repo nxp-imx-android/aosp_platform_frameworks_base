@@ -118,7 +118,6 @@ import com.android.server.utils.quota.Categorizer;
 import com.android.server.utils.quota.Category;
 import com.android.server.utils.quota.CountQuotaTracker;
 import com.android.server.vr.VrManagerInternal;
-import com.android.window.flags.Flags;
 
 /**
  * Server side implementation for the client activity to interact with system.
@@ -881,31 +880,6 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     @Override
     public void setRequestedOrientation(IBinder token, int requestedOrientation) {
-        if (Flags.enableTransitionOnActivitySetRequestedOrientation()) {
-            setRequestedOrientationWithTransition(token, requestedOrientation);
-        } else {
-            setRequestedOrientationLegacy(token, requestedOrientation);
-        }
-    }
-
-    // TODO(b/375339716): Clean up and remove legacy code.
-    private void setRequestedOrientationLegacy(IBinder token, int requestedOrientation) {
-        final long origId = Binder.clearCallingIdentity();
-        try {
-            synchronized (mGlobalLock) {
-                final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
-                if (r != null) {
-                    EventLogTags.writeWmSetRequestedOrientation(requestedOrientation,
-                            r.shortComponentName);
-                    r.setRequestedOrientation(requestedOrientation);
-                }
-            }
-        } finally {
-            Binder.restoreCallingIdentity(origId);
-        }
-    }
-
-    private void setRequestedOrientationWithTransition(IBinder token, int requestedOrientation) {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
