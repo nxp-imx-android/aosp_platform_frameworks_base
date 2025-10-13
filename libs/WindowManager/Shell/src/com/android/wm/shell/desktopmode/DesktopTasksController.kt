@@ -77,7 +77,6 @@ import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY
-import android.window.DesktopModeFlags.ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS
 import android.window.RemoteTransition
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_ICON
 import android.window.TaskSnapshotManager
@@ -2944,11 +2943,7 @@ class DesktopTasksController(
             if (taskBoundsBeforeMaximize != null) {
                 destinationBounds.set(taskBoundsBeforeMaximize)
             } else {
-                if (ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS.isTrue) {
-                    destinationBounds.set(calculateInitialBounds(displayLayout, taskInfo))
-                } else {
-                    destinationBounds.set(calculateDefaultDesktopTaskBounds(displayLayout))
-                }
+                destinationBounds.set(calculateInitialBounds(displayLayout, taskInfo))
             }
         } else {
             // Save current bounds so that task can be restored back to original bounds if necessary
@@ -4957,23 +4952,18 @@ class DesktopTasksController(
         deskId: Int,
     ): Rect {
         val repository = userRepositories.getProfile(taskInfo.userId)
-        val bounds =
-            if (ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS.isTrue) {
-                // If caption insets should be excluded from app bounds, ensure caption insets
-                // are excluded from the ideal initial bounds when scaling non-resizeable apps.
-                // Caption insets stay fixed and don't scale with bounds.
-                val displayId = repository.getDisplayForDesk(deskId)
-                val displayContext = displayController.getDisplayContext(displayId) ?: context
-                val captionInsets =
-                    if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
-                        getDesktopViewAppHeaderHeightPx(displayContext)
-                    } else {
-                        0
-                    }
-                calculateInitialBounds(displayLayout, taskInfo, captionInsets = captionInsets)
+        // If caption insets should be excluded from app bounds, ensure caption insets
+        // are excluded from the ideal initial bounds when scaling non-resizeable apps.
+        // Caption insets stay fixed and don't scale with bounds.
+        val displayId = repository.getDisplayForDesk(deskId)
+        val displayContext = displayController.getDisplayContext(displayId) ?: context
+        val captionInsets =
+            if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
+                getDesktopViewAppHeaderHeightPx(displayContext)
             } else {
-                calculateDefaultDesktopTaskBounds(displayLayout)
+                0
             }
+        val bounds = calculateInitialBounds(displayLayout, taskInfo, captionInsets = captionInsets)
         var hasLayoutGravityApplied = false
         if (!repository.isActiveTask(taskInfo.taskId)) {
             // Only apply layout gravity to new tasks in desk.

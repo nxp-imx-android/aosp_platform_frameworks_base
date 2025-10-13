@@ -670,7 +670,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     @EnableFlags(
         Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP,
         Flags.FLAG_ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE,
-        Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
     )
     fun exitImmersiveIfApplicable_preImmersiveBoundsNotSaved_changesBoundsToInitialBounds() {
         val task = createFreeformTask()
