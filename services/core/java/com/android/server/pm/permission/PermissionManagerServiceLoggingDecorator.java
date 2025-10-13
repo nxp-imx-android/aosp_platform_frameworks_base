@@ -268,9 +268,11 @@ public class PermissionManagerServiceLoggingDecorator implements PermissionManag
     }
 
     @Override
-    public void resetRuntimePermissions(@NonNull AndroidPackage pkg, int userId) {
-        Log.i(LOG_TAG, "resetRuntimePermissions(pkg = " + pkg + ", userId = " + userId + ")");
-        mService.resetRuntimePermissions(pkg, userId);
+    public void resetRuntimePermissions(@NonNull AndroidPackage pkg, int userId,
+        boolean restorePregrants) {
+        Log.i(LOG_TAG, "resetRuntimePermissions(pkg = " + pkg + ", userId = " + userId
+                + "restorePregrants = " + restorePregrants + ")");
+        mService.resetRuntimePermissions(pkg, userId, restorePregrants);
     }
 
     @Override
