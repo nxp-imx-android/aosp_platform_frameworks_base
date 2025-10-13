@@ -2,13 +2,6 @@ package: "android.server"
 container: "system"
 
 flag {
-     name: "remove_text_service"
-     namespace: "wear_frameworks"
-     description: "Remove TextServiceManagerService on Wear"
-     bug: "323720705"
-}
-
-flag {
      name: "remove_wearable_sensing_service_from_wear"
      namespace: "wear_frameworks"
      description: "Remove WearableSensingManagerService on Wear"
