@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.stateIn
 /** Stores data for the media input component. */
 interface MediaInputComponentRepository {
     /** Flow that stores the current active input device. */
-    fun currentInputDevice(): StateFlow<MediaDevice?>
+    val currentInputDevice: StateFlow<MediaDevice?>
 }
 
 @SysUISingleton
@@ -48,7 +48,7 @@ constructor(
 ) : MediaInputComponentRepository {
     private val inputRouteManager = InputRouteManager(context, audioManager, infoMediaManager)
 
-    override fun currentInputDevice(): StateFlow<MediaDevice?> =
+    override val currentInputDevice: StateFlow<MediaDevice?> =
         conflatedCallbackFlow {
                 val inputDeviceCallback =
                     InputRouteManager.InputDeviceCallback { devices ->

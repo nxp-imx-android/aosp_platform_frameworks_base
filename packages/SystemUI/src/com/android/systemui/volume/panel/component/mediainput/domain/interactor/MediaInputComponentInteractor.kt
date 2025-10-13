@@ -31,6 +31,6 @@ class MediaInputComponentInteractor @Inject constructor(repository: MediaInputCo
         if (!QsDetailedView.isEnabled) {
             flowOf(null)
         } else {
-            repository.currentInputDevice()
+            repository.currentInputDevice
         }
 }

@@ -24,9 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class FakeMediaInputComponentRepository : MediaInputComponentRepository {
     private val _currentInputDevice: MutableStateFlow<MediaDevice?> = MutableStateFlow(null)
 
-    override fun currentInputDevice(): StateFlow<MediaDevice?> {
-        return _currentInputDevice.asStateFlow()
-    }
+    override val currentInputDevice: StateFlow<MediaDevice?> = _currentInputDevice.asStateFlow()
 
     fun setCurrentInputDevice(device: MediaDevice?) {
         _currentInputDevice.value = device
