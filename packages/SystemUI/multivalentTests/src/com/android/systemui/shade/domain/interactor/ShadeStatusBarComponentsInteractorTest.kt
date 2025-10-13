@@ -37,8 +37,6 @@ import com.android.systemui.statusbar.disableflags.data.repository.FakeDisableFl
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.createDisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
-import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
-import com.android.systemui.statusbar.gesture.statusBarLongPressGestureDetector
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.testKosmos
@@ -60,8 +58,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
     private val singleDisplayDisableFlags = DisableFlagsModel(3)
     private val defaultOngoingActivityChipsViewModel = mock<OngoingActivityChipsViewModel>()
     private val secondaryOngoingActivityChipsViewModel = mock<OngoingActivityChipsViewModel>()
-    private val defaultLongPressGestureDetector = mock<StatusBarLongPressGestureDetector>()
-    private val secondaryLongPressGestureDetector = mock<StatusBarLongPressGestureDetector>()
 
     private val Kosmos.underTest by Kosmos.Fixture { shadeStatusBarComponentsInteractor }
 
@@ -80,7 +76,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
                         kosmos.createDisableFlagsInteractor(defaultDisableFlagsRepository)
                     },
                     ongoingActivityChipsViewModel = { defaultOngoingActivityChipsViewModel },
-                    statusBarLongPressGestureDetector = { defaultLongPressGestureDetector },
                 ),
             )
             add(
@@ -90,7 +85,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
                         kosmos.createDisableFlagsInteractor(secondaryDisableFlagsRepository)
                     },
                     ongoingActivityChipsViewModel = { secondaryOngoingActivityChipsViewModel },
-                    statusBarLongPressGestureDetector = { secondaryLongPressGestureDetector },
                 ),
             )
         }
@@ -256,36 +250,6 @@ class ShadeStatusBarComponentsInteractorTest : SysuiTestCase() {
 
             fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
             assertThat(disableFlags).isEqualTo(singleDisplayDisableFlags)
-        }
-
-    @Test
-    @EnableFlags(
-        ShadeWindowGoesAround.FLAG_NAME,
-        Flags.FLAG_STATUS_BAR_LONG_PRESS_GESTURE_DETECTOR_PER_DISPLAY,
-    )
-    fun longPressGestureDetector_perDisplayFlagEnabled_updatesAfterDisplayChange() =
-        kosmos.runTest {
-            val longPressGestureDetector by collectLastValue(underTest.longPressGestureDetector)
-
-            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
-            assertThat(longPressGestureDetector).isEqualTo(defaultLongPressGestureDetector)
-
-            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
-            assertThat(longPressGestureDetector).isEqualTo(secondaryLongPressGestureDetector)
-        }
-
-    @Test
-    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    @DisableFlags(Flags.FLAG_STATUS_BAR_LONG_PRESS_GESTURE_DETECTOR_PER_DISPLAY)
-    fun longPressGestureDetector_perDisplayFlagDisabled_alwaysUsesDirectlyInjectedInstance() =
-        kosmos.runTest {
-            val longPressGestureDetector by collectLastValue(underTest.longPressGestureDetector)
-
-            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
-            assertThat(longPressGestureDetector).isEqualTo(statusBarLongPressGestureDetector)
-
-            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
-            assertThat(longPressGestureDetector).isEqualTo(statusBarLongPressGestureDetector)
         }
 
     /** Helper to create a mock HomeStatusBarComponent */

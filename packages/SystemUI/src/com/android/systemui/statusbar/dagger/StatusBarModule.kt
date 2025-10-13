@@ -22,7 +22,6 @@ import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepositoryImpl
@@ -32,7 +31,6 @@ import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppCh
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.data.StatusBarDataLayerModule
 import com.android.systemui.statusbar.data.repository.LightBarControllerStore
-import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModel
 import com.android.systemui.statusbar.phone.AutoHideController
@@ -125,16 +123,6 @@ interface StatusBarModule {
         @SysUISingleton
         fun lightBarController(store: LightBarControllerStore): LightBarController {
             return store.defaultDisplay
-        }
-
-        @Provides
-        @Default
-        @SysUISingleton
-        fun defaultLongPressGestureDetector(
-            @Main context: Context,
-            factory: StatusBarLongPressGestureDetector.Factory,
-        ): StatusBarLongPressGestureDetector {
-            return factory.create(context)
         }
 
         @Provides
