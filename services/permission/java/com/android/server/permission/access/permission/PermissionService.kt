@@ -145,9 +145,7 @@ class PermissionService(private val service: AccessCheckingService) :
     @Volatile
     private var bpfMapPermissionNames = ArrayMap<PermissionBpfMap, List<String>>()
 
-    /**
-     * Cache of PermissionControllerManager instances, keyed by user ID.
-     */
+    /** Cache of PermissionControllerManager instances, keyed by user ID. */
     private val permissionControllerManagers = SparseArray<PermissionControllerManager>()
 
     /**
@@ -176,7 +174,8 @@ class PermissionService(private val service: AccessCheckingService) :
         // Disable the package info and package permission caches locally but leave the
         // checkPermission cache active.
         PackageManagerService.invalidatePackageInfoCache(
-                PackageMetrics.INVALIDATION_REASON_PERMISSION_SERVICE_INIT)
+            PackageMetrics.INVALIDATION_REASON_PERMISSION_SERVICE_INIT
+        )
         PermissionManager.disablePackageNamePermissionCache()
 
         handlerThread =
@@ -1957,9 +1956,15 @@ class PermissionService(private val service: AccessCheckingService) :
         }
     }
 
-    override fun resetRuntimePermissions(androidPackage: AndroidPackage, userId: Int) {
+    override fun resetRuntimePermissions(
+        androidPackage: AndroidPackage,
+        userId: Int,
+        restorePregrants: Boolean,
+    ) {
         service.mutateState {
-            with(policy) { resetRuntimePermissions(androidPackage.packageName, userId) }
+            with(policy) {
+                resetRuntimePermissions(androidPackage.packageName, userId, restorePregrants)
+            }
             with(devicePolicy) { resetRuntimePermissions(androidPackage.packageName, userId) }
         }
     }
@@ -1971,7 +1976,7 @@ class PermissionService(private val service: AccessCheckingService) :
                     if (packageState.isApex) {
                         return@forEach
                     }
-                    with(policy) { resetRuntimePermissions(packageState.packageName, userId) }
+                    with(policy) { resetRuntimePermissions(packageState.packageName, userId, true) }
                     with(devicePolicy) { resetRuntimePermissions(packageState.packageName, userId) }
                 }
             }
@@ -2051,11 +2056,12 @@ class PermissionService(private val service: AccessCheckingService) :
     override fun backupRuntimePermissions(userId: Int): ByteArray? {
         Preconditions.checkArgumentNonnegative(userId, "userId cannot be null")
         val backup = CompletableFuture<ByteArray>()
-        getPermissionControllerManager(userId)?.getRuntimePermissionBackup(
-            UserHandle.of(userId),
-            PermissionThread.getExecutor(),
-            backup::complete,
-        ) ?: return null
+        getPermissionControllerManager(userId)
+            ?.getRuntimePermissionBackup(
+                UserHandle.of(userId),
+                PermissionThread.getExecutor(),
+                backup::complete,
+            ) ?: return null
 
         return try {
             backup.get(BACKUP_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
@@ -2079,10 +2085,8 @@ class PermissionService(private val service: AccessCheckingService) :
         synchronized(isDelayedPermissionBackupFinished) {
             isDelayedPermissionBackupFinished -= userId
         }
-        getPermissionControllerManager(userId)?.stageAndApplyRuntimePermissionsBackup(
-            backup,
-            UserHandle.of(userId),
-        )
+        getPermissionControllerManager(userId)
+            ?.stageAndApplyRuntimePermissionsBackup(backup, UserHandle.of(userId))
     }
 
     override fun restoreDelayedRuntimePermissions(packageName: String, userId: Int) {
@@ -2110,15 +2114,20 @@ class PermissionService(private val service: AccessCheckingService) :
 
     private fun getPermissionControllerManager(userId: Int): PermissionControllerManager? =
         synchronized(permissionControllerManagers) {
-            permissionControllerManagers[userId] ?: try {
-                val userContext = context.createContextAsUser(UserHandle.of(userId), 0)
-                PermissionControllerManager(userContext, PermissionThread.getHandler()).also {
-                    permissionControllerManagers[userId] = it
+            permissionControllerManagers[userId]
+                ?: try {
+                    val userContext = context.createContextAsUser(UserHandle.of(userId), 0)
+                    PermissionControllerManager(userContext, PermissionThread.getHandler()).also {
+                        permissionControllerManagers[userId] = it
+                    }
+                } catch (e: IllegalStateException) {
+                    Slog.w(
+                        LOG_TAG,
+                        "Failed to create PermissionControllerManager for user $userId",
+                        e,
+                    )
+                    null
                 }
-            } catch (e: IllegalStateException) {
-                Slog.w(LOG_TAG, "Failed to create PermissionControllerManager for user $userId", e)
-                null
-            }
         }
 
     override fun dump(fd: FileDescriptor, pw: PrintWriter, args: Array<out String>?) {
@@ -2546,7 +2555,7 @@ class PermissionService(private val service: AccessCheckingService) :
         require(permissionNames.isNotEmpty()) { "permissionNames cannot be empty" }
         require(permissionNames.size <= MAX_ALLOWED_BPF_PERMISSIONS) {
             "Too many permissions, max of $MAX_ALLOWED_BPF_PERMISSIONS allowed, provided " +
-                    "${permissionNames.size}"
+                "${permissionNames.size}"
         }
         require(bpfMap !in bpfMapPermissionNames) { "BPF map already registered" }
         require(
@@ -2555,7 +2564,7 @@ class PermissionService(private val service: AccessCheckingService) :
             }
         ) {
             "Permission ${permissionNames.first { it !in ALLOWED_BPF_PERMISSIONS }} is not " +
-                    "allowed for BPF map registration"
+                "allowed for BPF map registration"
         }
 
         synchronized(bpfMapPermissionNamesLock) {
@@ -2791,7 +2800,8 @@ class PermissionService(private val service: AccessCheckingService) :
         override fun onStateMutated() {
             if (isPermissionFlagsChanged) {
                 PackageManagerService.invalidatePackageInfoCache(
-                        PackageMetrics.INVALIDATION_REASON_PERMISSION_FLAG_CHANGED)
+                    PackageMetrics.INVALIDATION_REASON_PERMISSION_FLAG_CHANGED
+                )
                 isPermissionFlagsChanged = false
             }
 
@@ -3004,7 +3014,6 @@ class PermissionService(private val service: AccessCheckingService) :
                 this += Manifest.permission.ACCESS_LOCAL_NETWORK
                 this += Manifest.permission.UPDATE_DEVICE_STATS
             }
-
 
         private const val MAX_ALLOWED_BPF_PERMISSIONS = Int.SIZE_BITS
     }
