@@ -26,7 +26,6 @@ import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkMode
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel.Companion.MIN_VALID_LEVEL
 import com.android.wifitrackerlib.WifiEntry.WIFI_LEVEL_UNREACHABLE
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -41,29 +40,34 @@ class WifiNetworkModelTest : SysuiTestCase() {
         }
     }
 
+    @Test
     fun active_levelTooLow_returnsInactive() {
         val result = WifiNetworkModel.Active.of(level = MIN_VALID_LEVEL - 1)
         assertThat(result).isInstanceOf(WifiNetworkModel.Inactive::class.java)
     }
 
+    @Test
     fun active_levelTooHigh_returnsInactive() {
         val result = WifiNetworkModel.Active.of(level = MAX_VALID_LEVEL + 1)
 
         assertThat(result).isInstanceOf(WifiNetworkModel.Inactive::class.java)
     }
 
+    @Test
     fun active_levelUnreachable_returnsInactive() {
         val result = WifiNetworkModel.Active.of(level = WIFI_LEVEL_UNREACHABLE)
 
         assertThat(result).isInstanceOf(WifiNetworkModel.Inactive::class.java)
     }
 
+    @Test
     fun carrierMerged_invalidSubId_returnsInvalid() {
         val result = WifiNetworkModel.CarrierMerged.of(INVALID_SUBSCRIPTION_ID, level = 1)
 
         assertThat(result).isInstanceOf(WifiNetworkModel.Invalid::class.java)
     }
 
+    @Test
     fun carrierMerged_levelUnreachable_returnsInvalid() {
         val result =
             WifiNetworkModel.CarrierMerged.of(subscriptionId = 1, level = WIFI_LEVEL_UNREACHABLE)
@@ -71,14 +75,9 @@ class WifiNetworkModelTest : SysuiTestCase() {
         assertThat(result).isInstanceOf(WifiNetworkModel.Invalid::class.java)
     }
 
-
     @Test
     fun active_hasValidSsid_nullSsid_false() {
-        val network =
-            WifiNetworkModel.Active.of(
-                level = MAX_VALID_LEVEL,
-                ssid = null,
-            )
+        val network = WifiNetworkModel.Active.of(level = MAX_VALID_LEVEL, ssid = null)
 
         assertThat((network as WifiNetworkModel.Active).hasValidSsid()).isFalse()
     }
