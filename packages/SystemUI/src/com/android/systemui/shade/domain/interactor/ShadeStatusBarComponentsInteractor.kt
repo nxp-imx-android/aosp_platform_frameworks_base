@@ -29,6 +29,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsVie
 import com.android.systemui.statusbar.data.repository.HomeStatusBarComponentsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
+import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import dagger.Lazy
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -57,6 +59,7 @@ constructor(
     homeStatusBarComponentsRepository: HomeStatusBarComponentsRepository,
     perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     @Default defaultDisableFlagsInteractorLazy: Lazy<DisableFlagsInteractor>,
+    @Default defaultLongPressGestureDetectorLazy: Lazy<StatusBarLongPressGestureDetector>,
 ) {
 
     private val shadeDisplayId: StateFlow<Int> =
@@ -96,6 +99,10 @@ constructor(
             }
             .filterNotNull()
 
+    /**
+     * Provides the [DisableFlagsModel] for the display the shade is currently on. Returns null if
+     * no controller is found for the current display.
+     */
     val disableFlags: StateFlow<DisableFlagsModel> =
         if (Flags.disableFlagsPerDisplay()) {
             shadeDisplayId
@@ -118,6 +125,31 @@ constructor(
                 )
         } else {
             defaultDisableFlagsInteractorLazy.get().disableFlags
+        }
+
+    /**
+     * Provides the [StatusBarLongPressGestureDetector] for the display the shade is currently on.
+     * Returns null if no controller is found for the current display.
+     */
+    val longPressGestureDetector: StateFlow<StatusBarLongPressGestureDetector> =
+        if (Flags.statusBarLongPressGestureDetectorPerDisplay()) {
+            shadeDisplayId
+                .map { displayId ->
+                    perDisplaySubcomponentRepository
+                        .getOrDefault(displayId)
+                        .statusBarLongPressGestureDetector
+                }
+                .traceEach("$TAG#longPressGestureDetector", logcat = true)
+                .stateIn(
+                    bgScope,
+                    SharingStarted.Eagerly,
+                    initialValue =
+                        perDisplaySubcomponentRepository
+                            .getOrDefault(shadeDisplayId.value)
+                            .statusBarLongPressGestureDetector,
+                )
+        } else {
+            MutableStateFlow(defaultLongPressGestureDetectorLazy.get()).asStateFlow()
         }
 
     private companion object {

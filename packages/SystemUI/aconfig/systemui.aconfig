@@ -1167,6 +1167,16 @@ flag {
 }
 
 flag {
+   namespace: "systemui"
+   name: "status_bar_long_press_gesture_detector_per_display"
+   description: "Makes StatusBarLongPressGestureDetector per-display"
+   bug: "383125226"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
   name: "sounddose_customization"
   namespace: "systemui"
   description: "Enables custom actions for sounddose notifications"
