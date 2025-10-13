@@ -618,7 +618,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     // transition. This means that an activity transition got erroneously combined
                     // with another ongoing transition. This then means that the animation root may
                     // not tightly fit the activities, so we have to put them in a separate crop.
-                    final int layer = Transitions.calculateAnimLayer(change, i,
+                    final int layer = TransitionUtil.calculateAnimLayer(change, i,
                             info.getChanges().size(), info.getType());
                     final SurfaceControl leash = new SurfaceControl.Builder()
                             .setName("Transition ActivityWrap: "
