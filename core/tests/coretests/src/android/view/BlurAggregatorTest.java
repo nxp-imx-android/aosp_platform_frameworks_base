@@ -108,6 +108,19 @@ public class BlurAggregatorTest {
         assertFalse(mAggregator.hasUpdates());
     }
 
+
+    @Test
+    public void testAlphaDrawableHasCorrectValue() {
+        mDrawable.setAlpha(20);
+        assertEquals(mDrawable.getAlpha(), 20);
+
+        mDrawable.setAlpha(0);
+        assertEquals(mDrawable.getAlpha(), 0);
+
+        mDrawable.setAlpha(255);
+        assertEquals(mDrawable.getAlpha(), 255);
+    }
+
     @Test
     public void testCornerRadiusUpdatePropagatesToRenderThreadIfNeeded() {
         mDrawable.setCornerRadius(1f, 2f, 3f, 4f);
