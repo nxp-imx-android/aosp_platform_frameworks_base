@@ -159,6 +159,8 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Паузирај"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Искључи звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Укључи звук"</string>
+    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Направи снимак целог екрана"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Сними цео екран"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Направи снимак екрана изабране области"</string>
@@ -424,6 +426,10 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Пребацивање"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Неименовани уређај"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Није доступан ниједан уређај"</string>
+    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
+    <skip />
+    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
+    <skip />
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Нема WiFi нити етернет везе"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Прекини везу"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Тренутни микрофон је"</string>
@@ -1710,6 +1716,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Превуците од горњег левог угла да бисте отворили обавештења"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Превуците од горњег десног угла да бисте отворили Брза подешавања"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
+    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
+    <skip />
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Претходно"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Следеће"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"идите на следећу страницу"</string>
