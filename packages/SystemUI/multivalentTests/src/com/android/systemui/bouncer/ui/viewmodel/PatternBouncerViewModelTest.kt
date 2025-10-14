@@ -344,6 +344,23 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun readyToTryAuthenticate() =
+        kosmos.runTest {
+            val readyToTryAuthenticate by collectLastValue(underTest.readyToTryAuthenticate)
+            lockDeviceAndOpenPatternBouncer()
+            assertThat(readyToTryAuthenticate).isFalse()
+
+            underTest.onDragStart()
+            dragToCoordinate(Point(0, 0))
+            assertThat(readyToTryAuthenticate).isFalse()
+            dragToCoordinate(Point(1, 1))
+            assertThat(readyToTryAuthenticate).isTrue()
+
+            underTest.onDragEnd()
+            assertThat(readyToTryAuthenticate).isFalse()
+        }
+
+    @Test
     @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     fun performDotFeedback_deliversDragToken() =
         kosmos.runTest {

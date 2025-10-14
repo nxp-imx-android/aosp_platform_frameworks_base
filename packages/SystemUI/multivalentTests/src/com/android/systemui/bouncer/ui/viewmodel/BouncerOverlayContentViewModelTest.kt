@@ -17,8 +17,13 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.testableContext
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
@@ -32,7 +37,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.Flags
+import com.android.systemui.flags.Flags.FULL_SCREEN_USER_SWITCHER
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.DismissAction
@@ -43,6 +48,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.runOnMainThreadAndWaitForIdleSync
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
@@ -184,7 +190,7 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
     fun isOneHandedModeSupported() =
         testScope.runTest {
             val isOneHandedModeSupported by collectLastValue(underTest.isOneHandedModeSupported)
-            kosmos.fakeFeatureFlagsClassic.set(Flags.FULL_SCREEN_USER_SWITCHER, true)
+            kosmos.fakeFeatureFlagsClassic.set(FULL_SCREEN_USER_SWITCHER, true)
             kosmos.testableContext.orCreateTestableResources.addOverride(
                 R.bool.config_enableBouncerUserSwitcher,
                 true,
@@ -194,7 +200,7 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
             assertThat(isOneHandedModeSupported).isTrue()
 
-            kosmos.fakeFeatureFlagsClassic.set(Flags.FULL_SCREEN_USER_SWITCHER, false)
+            kosmos.fakeFeatureFlagsClassic.set(FULL_SCREEN_USER_SWITCHER, false)
             kosmos.testableContext.orCreateTestableResources.addOverride(
                 R.bool.can_use_one_handed_bouncer,
                 true,
@@ -223,6 +229,95 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
             assertThat(isFoldSplitRequired).isTrue()
+        }
+
+    @Test
+    @DisableFlags(FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun dontShowSignInButton_whenFlagDisabled() =
+        testScope.runTest {
+            kosmos.testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_improveLargeScreenInteractionOnLockscreen,
+                true,
+            )
+
+            val showSignInButton by collectLastValue(underTest.showSignInButton)
+
+            assertThat(showSignInButton).isFalse()
+
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            assertThat(showSignInButton).isFalse()
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
+            assertThat(showSignInButton).isFalse()
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
+            assertThat(showSignInButton).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun showSignInButton_whenEnabledInConfig() =
+        testScope.runTest {
+            kosmos.testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_improveLargeScreenInteractionOnLockscreen,
+                true,
+            )
+
+            val showSignInButton by collectLastValue(underTest.showSignInButton)
+
+            assertThat(showSignInButton).isFalse()
+
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            assertThat(showSignInButton).isFalse()
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
+            assertThat(showSignInButton).isTrue()
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
+            assertThat(showSignInButton).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun dontShowSignInButton_whenDisabledInConfig() =
+        testScope.runTest {
+            kosmos.testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_improveLargeScreenInteractionOnLockscreen,
+                false,
+            )
+
+            val showSignInButton by collectLastValue(underTest.showSignInButton)
+
+            assertThat(showSignInButton).isFalse()
+
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            assertThat(showSignInButton).isFalse()
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
+            assertThat(showSignInButton).isFalse()
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
+            assertThat(showSignInButton).isFalse()
+        }
+
+    @Test
+    fun isSignInButtonEnabled_PasswordBouncer() =
+        kosmos.runTest {
+            val isSignInButtonEnabled by collectLastValue(underTest.isSignInButtonEnabled)
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
+            runCurrent()
+
+            val authMethodViewModel: AuthMethodBouncerViewModel? =
+                collectLastValue(underTest.authMethodViewModel).invoke()
+            val passwordBouncerViewModel = authMethodViewModel as PasswordBouncerViewModel
+
+            assertThat(isSignInButtonEnabled).isFalse()
+
+            runOnMainThreadAndWaitForIdleSync {
+                passwordBouncerViewModel.textFieldState.setTextAndPlaceCursorAtEnd("ab")
+            }
+            kosmos.runCurrent()
+            assertThat(isSignInButtonEnabled).isTrue()
+
+            runOnMainThreadAndWaitForIdleSync {
+                passwordBouncerViewModel.textFieldState.clearText()
+            }
+            kosmos.runCurrent()
+            assertThat(isSignInButtonEnabled).isFalse()
         }
 
     @Test

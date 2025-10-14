@@ -65,6 +65,24 @@ sealed class AuthMethodBouncerViewModel(
      */
     @get:StringRes abstract val lockoutMessageId: Int
 
+    protected abstract val _readyToTryAuthenticate: MutableStateFlow<Boolean>
+
+    /**
+     * Whether the authentication method is ready to be invoked.
+     *
+     * For example, a password bouncer is ready when the password input field is not empty. If the
+     * bouncer requests a sign-in button
+     */
+    val readyToTryAuthenticate: StateFlow<Boolean>
+        get() = _readyToTryAuthenticate.asStateFlow()
+
+    /**
+     * If true, the Bouncer Overlay should show a "sign-in button" in its bottom bar. The button
+     * enablement will then be controlled by [readyToAuthenticate]. A button click will lead to a
+     * [tryAuthenticate] call.
+     */
+    open val showSignInButton: Boolean = false
+
     private val authenticationRequests = Channel<AuthenticationRequest>(Channel.BUFFERED)
 
     override suspend fun onActivated(): Nothing {
@@ -144,7 +162,7 @@ sealed class AuthMethodBouncerViewModel(
      *
      * @see BouncerInteractor.authenticate
      */
-    protected fun tryAuthenticate(input: List<Any> = getInput(), useAutoConfirm: Boolean = false) {
+    fun tryAuthenticate(input: List<Any> = getInput(), useAutoConfirm: Boolean = false) {
         authenticationRequests.trySend(AuthenticationRequest(input, useAutoConfirm))
     }
 

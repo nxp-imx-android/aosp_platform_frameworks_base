@@ -153,6 +153,13 @@ constructor(
     val showBackButton =
         Flags.backButtonOnBouncerFix() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
 
+    private val _showSignInButton = MutableStateFlow(showSignInButton(authMethodViewModel.value))
+    val showSignInButton: StateFlow<Boolean> = _showSignInButton.asStateFlow()
+
+    private val _isSignInButtonEnabled =
+        MutableStateFlow(authMethodViewModel.value?.readyToTryAuthenticate?.value ?: false)
+    val isSignInButtonEnabled: StateFlow<Boolean> = _isSignInButtonEnabled.asStateFlow()
+
     /** Whether to show the accessibility button on the bouncer. */
     val showAccessibilityButton =
         Flags.bouncerAccessibilityButtonForDesktop() &&
@@ -296,9 +303,21 @@ constructor(
             }
 
             launch {
+                authMethodViewModel.collect {
+                    _showSignInButton.value = showSignInButton(it)
+                    _isFoldSplitRequired.value = isFoldSplitRequired(it)
+                }
+            }
+
+            launch {
                 authMethodViewModel
-                    .map { authMethod -> isFoldSplitRequired(authMethod) }
-                    .collect { _isFoldSplitRequired.value = it }
+                    .filter { it != null }
+                    .map { it!! }
+                    .collectLatest { authVM ->
+                        authVM.readyToTryAuthenticate.collect { isReady ->
+                            _isSignInButtonEnabled.value = isReady
+                        }
+                    }
             }
 
             launch {
@@ -313,6 +332,10 @@ constructor(
 
     private fun isFoldSplitRequired(authMethod: AuthMethodBouncerViewModel?): Boolean {
         return authMethod !is PasswordBouncerViewModel
+    }
+
+    private fun showSignInButton(authMethod: AuthMethodBouncerViewModel?): Boolean {
+        return authMethod?.showSignInButton ?: false
     }
 
     private fun getChildViewModel(
@@ -509,6 +532,10 @@ constructor(
 
     fun navigateBack() {
         sceneInteractor.hideOverlay(Overlays.Bouncer, "back button clicked")
+    }
+
+    fun onSignIn() {
+        authMethodViewModel.value?.tryAuthenticate()
     }
 
     fun showAccessibilityDialog() {
