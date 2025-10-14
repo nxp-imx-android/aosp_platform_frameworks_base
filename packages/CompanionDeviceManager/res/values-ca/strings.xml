@@ -74,7 +74,7 @@
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Duplica la pantalla"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Reprodueix apps en continu"</string>
     <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Definir alarmes i recordatoris"</string>
-    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Omet la config. de No molestis"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Ometre la configuració de No molestis"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Fer i gestionar trucades telefòniques"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Llegir i escriure el registre de trucades del telèfon"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Enviar i llegir missatges SMS"</string>
@@ -85,7 +85,7 @@
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Llegir totes les notificacions, inclosa informació com ara els contactes, els missatges i les fotos"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Llegir totes les notificacions, inclosa informació com ara els contactes, els missatges i les fotos.&lt;br/&gt;• Enviar-te notificacions.&lt;br/&gt;&lt;br/&gt;A Configuració &gt; Notificacions, pots gestionar en qualsevol moment els permisos de l\'aplicació per llegir i enviar notificacions."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
-    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Rep notificacions"</string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Rebre notificacions"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Reprodueix en continu les dades del micròfon, de la càmera i d\'altres sensors de &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; al <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Grava, emet o comparteix la pantalla del teu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> a &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> podrà accedir a qualsevol cosa que sigui visible o que es reprodueixi al teu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, inclosos àudio, fotos, informació de pagament, contrasenyes i missatges."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Reprodueix en continu les aplicacions del teu dispositiu (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) a &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> podrà accedir a qualsevol cosa que sigui visible o que es reprodueixi al teu dispositiu <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, inclosos àudio, fotos, informació de pagament, contrasenyes i missatges, fins i tot quan el dispositiu (<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>) està bloquejat."</string>

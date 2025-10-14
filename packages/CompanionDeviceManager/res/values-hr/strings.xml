@@ -74,7 +74,7 @@
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Zrcaljenje zaslona"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streamanje aplikacija"</string>
     <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Postavljanje alarma i podsjetnika"</string>
-    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Zaobiđi postavke značajke Ne uznemiravaj"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Zaobilaženje značajke Ne uznemiravaj"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Uspostavljanje telefonskih poziva i upravljanje njima"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Čitanje i pisanje zapisnika poziva telefona"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Slanje i pregledavanje SMS poruka"</string>

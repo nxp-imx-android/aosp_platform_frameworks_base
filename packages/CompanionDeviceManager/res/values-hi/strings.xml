@@ -48,7 +48,7 @@
     <string name="title_virtual_device" msgid="6556338763070329395">"क्या &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; को आपके <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> और &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; पर ऑडियो और सिस्टम की सुविधाएं स्ट्रीम करने की अनुमति देनी है?"</string>
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> को ये अनुमतियां मिल जाएंगी:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"डिवाइस"</string>
-    <string name="summary_generic" msgid="1761976003668044801">"यह ऐप्लिकेशन, आपके फ़ोन और चुने हुए डिवाइस के बीच जानकारी सिंक करेगा. जैसे, कॉल करने वाले व्यक्ति का नाम"</string>
+    <string name="summary_generic" msgid="1761976003668044801">"यह ऐप्लिकेशन, आपके फ़ोन और चुने हुए डिवाइस के बीच जानकारी सिंक कर पाएगा. जैसे, कॉल करने वाले व्यक्ति का नाम"</string>
     <string name="consent_yes" msgid="8344487259618762872">"अनुमति दें"</string>
     <string name="consent_no" msgid="2640796915611404382">"अनुमति न दें"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"रद्द करें"</string>
@@ -74,18 +74,18 @@
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"अपनी स्क्रीन शेयर करें"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"ऐप्लिकेशन स्ट्रीम करें"</string>
     <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"अलार्म और रिमाइंडर सेट करना"</string>
-    <string name="permission_bypass_dnd" msgid="1241123166903040347">"\'परेशान न करें\' मोड की सेटिंग बायपास करना"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"\'परेशान न करें\' मोड बायपास करना"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"फ़ोन कॉल करने और उन्हें मैनेज करने की अनुमति दें"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"कॉल लॉग की जानकारी देखने और उसमें बदलाव करने की अनुमति दें"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"एसएमएस (मैसेज) भेजने और देखने की अनुमति दें"</string>
     <string name="permission_contacts_summary" msgid="2840800622763086808">"अपने संपर्कों को ऐक्सेस करने की अनुमति दें"</string>
     <string name="permission_calendar_summary" msgid="8430353935747336165">"अपने कैलेंडर को ऐक्सेस करने की अनुमति दें"</string>
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ऑडियो रिकॉर्ड करने की अनुमति दें"</string>
-    <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"आस-पास मौजूद डिवाइसों को खोजने, उनसे कनेक्ट करने, और उनकी जगह की जानकारी का पता लगाने की अनुमति दें"</string>
+    <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"आस-पास मौजूद डिवाइसों को खोजने, उनसे कनेक्ट करने, और उनकी जगह की जानकारी का पता लगाने की अनुमति"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"सभी सूचनाएं देखने की अनुमति दें. जैसे, संपर्क, मैसेज, और फ़ोटो की जानकारी"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• सभी सूचनाएं देखने की अनुमति दें. जैसे, संपर्क, मैसेज, और फ़ोटो की जानकारी&lt;br/&gt;• सूचनाएं भेजने की अनुमति दें&lt;br/&gt;&lt;br/&gt;आपस पास सेटिंग &gt; सूचनाएं में जाकर इस ऐप्लिकेशन के लिए, सूचनाएं देखने और भेजने की अनुमति में कभी भी बदलाव करने का विकल्प होता है."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
-    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"इससे ऐप्लिकेशन को सूचनाएं भेजने की अनुमति मिलती है"</string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"आपको सूचनाएं भेजने की अनुमति"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; से <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> पर माइक्रोफ़ोन, कैमरा, और अन्य सेंसर डेटा स्ट्रीम करें."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"अपने <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> की स्क्रीन को &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; पर रिकॉर्ड, कास्ट या शेयर करें.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> के पास आपके <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> पर दिखने या चलने वाले हर मीडिया का ऐक्सेस होगा. जैसे, ऑडियो, फ़ोटो, क्रेडिट/डेबिट कार्ड की जानकारी, पासवर्ड, और मैसेज."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> पर मौजूद ऐप्लिकेशन को &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; पर स्ट्रीम करें.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> के पास आपके <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> पर दिखने या चलने वाले हर मीडिया का ऐक्सेस होगा. जैसे, ऑडियो, फ़ोटो, क्रेडिट/डेबिट कार्ड की जानकारी, पासवर्ड, और मैसेज. यह ऐक्सेस तब भी रहेगा, जब आपका <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> लॉक हो."</string>
