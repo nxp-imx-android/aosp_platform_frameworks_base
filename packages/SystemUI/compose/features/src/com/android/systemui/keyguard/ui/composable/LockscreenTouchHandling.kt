@@ -50,7 +50,7 @@ fun LockscreenTouchHandling(
     Box(
         modifier =
             modifier
-                .pointerInput(viewModel.isLongPressHandlingEnabled) {
+                .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = { viewModel.onClick(it.x, it.y) },
                         onDoubleTap = { viewModel.onDoubleClick() },
