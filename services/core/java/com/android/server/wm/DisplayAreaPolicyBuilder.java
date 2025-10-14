@@ -480,7 +480,7 @@ class DisplayAreaPolicyBuilder {
         @NonNull
         private final ArrayList<TaskDisplayArea> mTaskDisplayAreas = new ArrayList<>();
         @Nullable
-        private DisplayArea.Tokens mImeContainer;
+        private ImeContainer mImeContainer;
 
         HierarchyBuilder(@NonNull RootDisplayArea root) {
             mRoot = requireNonNull(root);
@@ -506,7 +506,7 @@ class DisplayAreaPolicyBuilder {
 
         /** Sets IME container as a child of this hierarchy root. */
         @NonNull
-        HierarchyBuilder setImeContainer(@Nullable DisplayArea.Tokens imeContainer) {
+        HierarchyBuilder setImeContainer(@Nullable ImeContainer imeContainer) {
             mImeContainer = imeContainer;
             return this;
         }

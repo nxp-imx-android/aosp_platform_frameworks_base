@@ -381,7 +381,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @Test
     public void testUpdateImeParent_forceUpdateRelativeLayer() {
-        final DisplayArea.Tokens imeContainer = mDisplayContent.getImeContainer();
+        final ImeContainer imeContainer = mDisplayContent.getImeContainer();
         final ActivityRecord activity = createActivityRecord(mDisplayContent);
 
         final var startingWin = newWindowBuilder("startingWin", TYPE_APPLICATION_STARTING)
@@ -447,7 +447,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @Test
     public void testUpdateImeParent_skipForOrganizedImeContainer() {
-        final DisplayArea.Tokens imeContainer = mDisplayContent.getImeContainer();
+        final ImeContainer imeContainer = mDisplayContent.getImeContainer();
         final ActivityRecord activity = createActivityRecord(mDisplayContent);
 
         final var startingWin = newWindowBuilder("startingWin", TYPE_APPLICATION_STARTING)
@@ -474,7 +474,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @Test
     public void testImeContainerIsReparentedUnderParentWhenOrganized() {
-        final DisplayArea.Tokens imeContainer = mDisplayContent.getImeContainer();
+        final ImeContainer imeContainer = mDisplayContent.getImeContainer();
         final ActivityRecord activity = createActivityRecord(mDisplayContent);
 
         final var startingWin = newWindowBuilder("startingWin", TYPE_APPLICATION_STARTING)

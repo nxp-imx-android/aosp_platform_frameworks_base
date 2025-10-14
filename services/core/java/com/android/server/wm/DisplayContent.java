@@ -116,7 +116,6 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
 import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
-import static android.window.DisplayAreaOrganizer.FEATURE_IME;
 import static android.window.DisplayAreaOrganizer.FEATURE_ROOT;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BOOT;
@@ -368,23 +367,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     int mMinSizeOfResizeableTaskDp = -1;
 
-    // Contains all IME window containers. Note that the z-ordering of the IME windows will depend
-    // on the IME layering target. We mainly have this container grouping so we can keep track of
-    // all the IME window containers together and move them in-sync if/when needed. We use a
-    // subclass of WindowContainer which is omitted from screen magnification, as the IME is never
-    // magnified.
-    // TODO(display-area): is "no magnification" in the comment still true?
-    private final ImeContainer mImeWindowsContainer = new ImeContainer(mWmService);
-
     @VisibleForTesting
     final DisplayAreaPolicy mDisplayAreaPolicy;
 
     private WindowState mTmpWindow;
-    /**
-     * Whether the IME layering target should be updated to the new value
-     * from {@link #computeImeLayeringTarget}.
-     */
-    private boolean mUpdateImeLayeringTarget;
     private boolean mTmpInitial;
     private int mMaxUiWidth = 0;
 
@@ -716,8 +702,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private @Nullable Pair<IBinder, WindowContainerListener> mImeInputTargetTokenListenerPair;
 
     /**
-     * The {@link WindowContainer} whose surface is used to reparent the
-     * {@link #mImeWindowsContainer}'s surface.
+     * Container for IME windows, used to keep track of all IME windows and move them in-sync
+     * if/when needed.
+     */
+    @NonNull
+    private final ImeContainer mImeContainer = new ImeContainer(mWmService);
+
+    /**
+     * The {@link WindowContainer} whose surface is used to reparent the {@link #mImeContainer}'s
+     * surface.
      *
      * <p>Note that only the <b>surface</b> is reparented, the parent <b>window</b> remains
      * unchanged (as placed by the {@link DisplayAreaPolicy}). This allows visually attaching the
@@ -727,11 +720,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      *
      * <p>This could be the {@link #mImeLayeringTarget}'s Activity if
      * {@link #shouldImeAttachedToApp} returns {@code true}, or the parent window of the
-     * {@link #mImeWindowsContainer} otherwise (for split screen mode, multi window mode, bubbles,
-     * EmbeddedWindow, etc).
+     * {@link #mImeContainer} otherwise (for split screen mode, multi window mode, bubbles,
+      EmbeddedWindow, etc).
      *
-     * <p>This will be {@code null} while the {@link #mImeWindowsContainer} {@link #isOrganized},
-     * in which case the organizer should handle the surface placement, or transiently while
+     * <p>This will be {@code null} while the {@link #mImeContainer} {@link #isOrganized}, in which
+     * case the organizer should handle the surface placement, or transiently while
      * {@link #canComputeImeParent} returns {@code false}, in which case it won't be updated until
      * the next value is computed.
      *
@@ -1022,7 +1015,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /** Predicate to check if the window can be the IME layering target */
     @NonNull
     private final Predicate<WindowState> mComputeImeLayeringTargetPredicate = w -> {
-        if (DEBUG_INPUT_METHOD && mUpdateImeLayeringTarget) {
+        if (DEBUG_INPUT_METHOD) {
             Slog.i(TAG_WM, "Checking window @" + w + " fl=0x"
                     + Integer.toHexString(w.mAttrs.flags));
         }
@@ -1248,7 +1241,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // Set up the policy and build the display area hierarchy.
         // Build the hierarchy only after creating the surface, so it is reparented correctly
         mDisplayAreaPolicy = mWmService.getDisplayAreaPolicyProvider().instantiate(
-                mWmService, this /* content */, this /* root */, mImeWindowsContainer);
+                mWmService, this /* content */, this /* root */, mImeContainer);
         final Transaction pendingTransaction = getPendingTransaction();
         configureSurfaces(pendingTransaction);
         pendingTransaction.apply();
@@ -2960,14 +2953,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * See {@code WindowState#applyImeWindowsIfNeeded} for the details that we won't traverse the
-     * IME window in some cases.
-     */
-    boolean forAllImeWindows(ToBooleanFunction<WindowState> callback, boolean traverseTopToBottom) {
-        return mImeWindowsContainer.forAllWindowForce(callback, traverseTopToBottom);
-    }
-
-    /**
      * In the general case, the orientation is computed from the above app windows first. If none of
      * the above app windows specify orientation, the orientation is computed from the child window
      * container, e.g. {@link ActivityRecord#getOrientation(int)}.
@@ -4270,7 +4255,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // There isn't an IME so there shouldn't be a target...That was easy!
             target = null;
         } else {
-            mUpdateImeLayeringTarget = update;
             target = getWindow(mComputeImeLayeringTargetPredicate);
         }
 
@@ -4294,11 +4278,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /**
      * Checks whether the IME should be attached to the app, that is whether the surface of the
-     * {@link #mImeWindowsContainer} should be reparented to the surface of the
+     * {@link #mImeContainer} should be reparented to the surface of the
      * {@link #mImeLayeringTarget}'s Activity.
      */
     final boolean shouldImeAttachedToApp() {
-        if (mImeWindowsContainer.isOrganized()) {
+        if (mImeContainer.isOrganized()) {
             return false;
         }
 
@@ -4376,9 +4360,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return mImeControlTarget;
     }
 
+    /** Returns the container of IME windows. */
+    @NonNull
+    ImeContainer getImeContainer() {
+        return mImeContainer;
+    }
+
     /**
      * Returns the {@link WindowContainer} whose surface is used to reparent the
-     * {@link #mImeWindowsContainer}'s surface.
+     * {@link #mImeContainer}'s surface.
      */
     @Nullable
     WindowContainer<?> getImeParent() {
@@ -4405,7 +4395,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (mFixedRotationLaunchingApp != null) {
             mInputMethodWindow.mToken.linkFixedRotationTransform(mFixedRotationLaunchingApp);
             // Hide the window until the rotation is done to avoid intermediate artifacts if the
-            // parent surface of IME container is changed.
+            // parent surface of ImeContainer is changed.
             if (mAsyncRotationController != null) {
                 mAsyncRotationController.hideImeImmediately();
             }
@@ -4458,16 +4448,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     windowType, false /* visible */, true /* removed */, mDisplayId);
         }
 
-        // 1. Reparent the IME container window to the target root DA to get the correct bounds and
-        // config. Only happens when the target window is in a different root DA and ImeContainer
-        // is not organized (see FEATURE_IME and updateImeParent).
-        if (target != null && !mImeWindowsContainer.isOrganized()) {
+        // 1. Reparent the ImeContainer window to the new target's RootDisplayArea to get the
+        // correct bounds and config. Only happens when the new target is in a different
+        // RootDisplayArea and the ImeContainer is not organized (see FEATURE_IME and
+        // updateImeParent).
+        if (target != null && !mImeContainer.isOrganized()) {
             final RootDisplayArea targetRoot = target.getRootDisplayArea();
-            if (targetRoot != null && targetRoot != mImeWindowsContainer.getRootDisplayArea()
-                    // Try to reparent the IME container to the target root to get the bounds and
-                    // config that match the target window.
-                    && targetRoot.placeImeContainer(mImeWindowsContainer)) {
-                // Update the IME parent since the IME Container window has been reparented.
+            if (targetRoot != null && targetRoot != mImeContainer.getRootDisplayArea()
+                    // Try to reparent the ImeContainer window to the new target's RootDisplayArea
+                    // to get the bounds and config that match the new target window.
+                    && targetRoot.placeImeContainer(mImeContainer)) {
+                // Update the IME parent since the ImeContainer window has been reparented.
                 forceUpdateImeParent = true;
                 // Directly hide the IME window so it doesn't flash immediately after reparenting.
                 // InsetsController will make IME visible again before animating it.
@@ -4482,8 +4473,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mInsetsStateController.updateAboveInsetsState(
                 mInsetsStateController.getRawInsetsState().isSourceOrDefaultVisible(ID_IME, ime()));
         // 4. Update the IME control target to apply any inset change and animation.
-        // 5. Reparent the IME container surface to either the input target app, or the IME window
-        // parent.
+        // 5. Update the IME parent and the ImeContainer surface reparent if it changed.
         updateImeControlTarget(forceUpdateImeParent);
     }
 
@@ -4545,7 +4535,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     boolean refreshImeSecureFlag(Transaction t) {
         boolean canScreenshot = mImeInputTarget == null || mImeInputTarget.canScreenshotIme();
-        return mImeWindowsContainer.setCanScreenshot(t, canScreenshot);
+        return mImeContainer.setCanScreenshot(t, canScreenshot);
     }
 
     /**
@@ -4808,7 +4798,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             final boolean forceUpdateImeParent = mImeControlTarget == mRemoteInsetsControlTarget
                     && (mImeParent != null && mImeParent.getSurfaceControl() != null
                         && !mImeParent.getSurfaceControl().isSameSurface(
-                                mImeWindowsContainer.getParent().mSurfaceControl));
+                                mImeContainer.getParent().mSurfaceControl));
             updateImeControlTarget(forceUpdateImeParent);
 
             mInsetsStateController.getImeSourceProvider().onImeInputTargetChanged(target);
@@ -4842,9 +4832,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Updates the IME parent. If this value changes, the surface of the
-     * {@link #mImeWindowsContainer} is reparented to the surface of this newly computed IME parent.
-     * Also assigns the relative layer for the IME based on the IME Layering Target.
+     * Updates the IME parent. If this value changes, the surface of the {@link #mImeContainer} is
+     * reparented to the surface of this newly computed IME parent. Also assigns the relative layer
+     * for the IME based on the IME Layering Target.
      *
      * <p>Note that only the <b>surface</b> is reparented, the parent <b>window</b> remains
      * unchanged.
@@ -4852,7 +4842,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @see #mImeParent
      */
     final void updateImeParent() {
-        if (mImeWindowsContainer.isOrganized()) {
+        if (mImeContainer.isOrganized()) {
             if (DEBUG_INPUT_METHOD) {
                 Slog.i(TAG_WM, "ImeContainer is organized. Skip updateImeParent.");
             }
@@ -4871,7 +4861,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (newParentSurface != null && newParentSurface != parentSurface) {
             mImeParent = newParent;
             final var t = getSyncTransaction();
-            t.reparent(mImeWindowsContainer.mSurfaceControl, newParentSurface);
+            t.reparent(mImeContainer.mSurfaceControl, newParentSurface);
             if (DEBUG_IME_VISIBILITY) {
                 EventLog.writeEvent(IMF_UPDATE_IME_PARENT, newParentSurface.toString());
             }
@@ -4886,10 +4876,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // Even if the IME parent is not changed, the IME layering target belonging to
             // the parent may have changes. Then attempt to reassign if the IME control target is
             // possible to be the relative layer.
-            final SurfaceControl lastRelativeLayer = mImeWindowsContainer.getLastRelativeLayer();
+            final SurfaceControl lastRelativeLayer = mImeContainer.getLastRelativeLayer();
             if (lastRelativeLayer != mImeLayeringTarget.mSurfaceControl) {
                 assignRelativeLayerForIme(getSyncTransaction(), false /* forceUpdate */);
-                if (lastRelativeLayer != mImeWindowsContainer.getLastRelativeLayer()) {
+                if (lastRelativeLayer != mImeContainer.getLastRelativeLayer()) {
                     scheduleAnimation();
                 }
             }
@@ -4958,9 +4948,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (shouldImeAttachedToApp()) {
             return mImeLayeringTarget.mActivityRecord;
         }
-        // Otherwise, fallback to the parent window of the IME Container, as placed by the
+        // Otherwise, fallback to the parent window of the ImeContainer, as placed by the
         // DisplayAreaPolicy.
-        return mImeWindowsContainer.getParent();
+        return mImeContainer.getParent();
     }
 
     /**
@@ -4974,7 +4964,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private static boolean canComputeImeParent(@Nullable WindowState imeWindow,
             @Nullable WindowState imeLayeringTarget, @Nullable InputTarget imeInputTarget) {
         if (android.view.inputmethod.Flags.computeImeParentNullImeWindow() && imeWindow == null) {
-            // If we have no IME window, allow reparenting the surface of the IME Container to its
+            // If we have no IME window, allow reparenting the surface of the ImeContainer to its
             // parent window. Otherwise, it may remain parented to a destroyed surface.
             return true;
         }
@@ -5430,113 +5420,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
-    /**
-     * Container for IME windows.
-     *
-     * <p>This has some special behaviors:
-     * <ul>
-     *     <li>layers assignment is ignored except if setNeedsLayer() has been called before (and no
-     *     layer has been assigned since), to facilitate assigning the layer from the IME layering
-     *     target, or fall back if there is no target.
-     *     <li>the container doesn't always participate in window traversal, according to
-     *     {@link #skipImeWindowsDuringTraversal(DisplayContent)}
-     * </ul>
-     */
-    private static class ImeContainer extends DisplayArea.Tokens {
-        boolean mNeedsLayer = false;
-
-        ImeContainer(WindowManagerService wms) {
-            super(wms, Type.ABOVE_TASKS, "ImeContainer", FEATURE_IME);
-        }
-
-        public void setNeedsLayer() {
-            mNeedsLayer = true;
-        }
-
-        @Override
-        @ScreenOrientation
-        int getOrientation(@ScreenOrientation int candidate) {
-            // IME does not participate in orientation.
-            return shouldIgnoreOrientationRequest(candidate) ? SCREEN_ORIENTATION_UNSET : candidate;
-        }
-
-        @Override
-        void updateAboveInsetsState(InsetsState aboveInsetsState,
-                SparseArray<InsetsSource> localInsetsSourcesFromParent,
-                ArraySet<WindowState> insetsChangedWindows) {
-            if (skipImeWindowsDuringTraversal(mDisplayContent)) {
-                return;
-            }
-            super.updateAboveInsetsState(aboveInsetsState, localInsetsSourcesFromParent,
-                    insetsChangedWindows);
-        }
-
-        @Override
-        boolean forAllWindows(ToBooleanFunction<WindowState> callback,
-                boolean traverseTopToBottom) {
-            final DisplayContent dc = mDisplayContent;
-            if (skipImeWindowsDuringTraversal(dc)) {
-                return false;
-            }
-            return super.forAllWindows(callback, traverseTopToBottom);
-        }
-
-        private static boolean skipImeWindowsDuringTraversal(DisplayContent dc) {
-            // We skip IME windows so they're processed just above their target.
-            // Note that this method check should align with {@link
-            // WindowState#applyImeWindowsIfNeeded} in case of any state mismatch.
-            return dc.mImeLayeringTarget != null;
-        }
-
-        /** Like {@link #forAllWindows}, but ignores {@link #skipImeWindowsDuringTraversal} */
-        boolean forAllWindowForce(ToBooleanFunction<WindowState> callback,
-                boolean traverseTopToBottom) {
-            return super.forAllWindows(callback, traverseTopToBottom);
-        }
-
-        @Override
-        void assignLayer(Transaction t, int layer) {
-            if (!mNeedsLayer || mTransitionController.mBuildingFinishLayers) {
-                return;
-            }
-            super.assignLayer(t, layer);
-            mNeedsLayer = false;
-        }
-
-        @Override
-        void assignRelativeLayer(Transaction t, SurfaceControl relativeTo, int layer,
-                boolean forceUpdate) {
-            if (!mNeedsLayer || mTransitionController.mBuildingFinishLayers) {
-                return;
-            }
-            super.assignRelativeLayer(t, relativeTo, layer, forceUpdate);
-            mNeedsLayer = false;
-        }
-
-        @Override
-        void setOrganizer(IDisplayAreaOrganizer organizer, boolean skipDisplayAreaAppeared) {
-            super.setOrganizer(organizer, skipDisplayAreaAppeared);
-            mDisplayContent.updateImeParent();
-
-            // If the ImeContainer was previously unorganized then the framework might have
-            // reparented its surface control under an activity so we need to reparent it back
-            // under its parent.
-            if (organizer != null) {
-                final SurfaceControl imeParentSurfaceControl = getParentSurfaceControl();
-                if (mSurfaceControl != null && imeParentSurfaceControl != null) {
-                    ProtoLog.i(WM_DEBUG_IME, "ImeContainer just became organized. Reparenting "
-                            + "under parent. imeParentSurfaceControl=%s", imeParentSurfaceControl);
-                    getPendingTransaction().reparent(mSurfaceControl, imeParentSurfaceControl);
-                } else {
-                    ProtoLog.e(WM_DEBUG_IME, "ImeContainer just became organized but it doesn't "
-                            + "have a parent or the parent doesn't have a surface control."
-                            + " mSurfaceControl=%s imeParentSurfaceControl=%s",
-                            mSurfaceControl, imeParentSurfaceControl);
-                }
-            }
-        }
-    }
-
     @Override
     SurfaceControl.Builder makeChildSurface(WindowContainer child) {
         final SurfaceControl.Builder b = mWmService.makeSurfaceBuilder().setContainerLayer();
@@ -5648,14 +5531,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * Assigns the {@link #mImeWindowsContainer}'s surface to be relatively layered to either the
+     * Assigns the {@link #mImeContainer}'s surface to be relatively layered to either the
      * {@link #mImeLayeringTarget} or the {@link #mImeParent}, based on the current state.
      *
      * @param t           the transaction used for assigning the relative layer.
      * @param forceUpdate whether to update the relative layer even if it did not change.
      */
     private void assignRelativeLayerForIme(SurfaceControl.Transaction t, boolean forceUpdate) {
-        if (mImeWindowsContainer.isOrganized()) {
+        if (mImeContainer.isOrganized()) {
             if (DEBUG_INPUT_METHOD) {
                 Slog.i(TAG_WM, "ImeContainer is organized. Skip assignRelativeLayerForIme.");
             }
@@ -5671,7 +5554,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return;
         }
 
-        mImeWindowsContainer.setNeedsLayer();
+        mImeContainer.setNeedsLayer();
         final WindowState imeLayeringTarget = mImeLayeringTarget;
         // In the case where we have an IME layering target that is not in split-screen mode IME
         // assignment is easy. We just need the IME to go directly above the target. This way
@@ -5698,7 +5581,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             if (canImeTargetSetRelativeLayer) {
                 ProtoLog.i(WM_DEBUG_IME, "assignRelativeLayerForIme to IME layering target %s",
                         imeLayeringTarget);
-                mImeWindowsContainer.assignRelativeLayer(t, imeLayeringTarget.getSurfaceControl(),
+                mImeContainer.assignRelativeLayer(t, imeLayeringTarget.getSurfaceControl(),
                         // TODO: We need to use an extra level on the app surface to ensure
                         // this is always above SurfaceView but always below attached window.
                         1, forceUpdate);
@@ -5710,7 +5593,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // The IME parent may not be its window parent's surface (@see #computeImeParent), so
             // set relative layer here instead of letting the window parent to assign layer.
             ProtoLog.i(WM_DEBUG_IME, "assignRelativeLayerForIme to IME parent %s", parentSurface);
-            mImeWindowsContainer.assignRelativeLayer(t, parentSurface, 1, forceUpdate);
+            mImeContainer.assignRelativeLayer(t, parentSurface, 1, forceUpdate);
         }
     }
 
@@ -5725,7 +5608,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     void assignRelativeLayerForImeLayeringTargetChild(SurfaceControl.Transaction t,
             @NonNull WindowContainer child) {
-        child.assignRelativeLayer(t, mImeWindowsContainer.getSurfaceControl(), 1);
+        child.assignRelativeLayer(t, mImeContainer.getSurfaceControl(), 1);
     }
 
     @Override
@@ -5903,10 +5786,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     SurfaceControl getWindowingLayer() {
         return mDisplayAreaPolicy.getWindowingArea().mSurfaceControl;
-    }
-
-    DisplayArea.Tokens getImeContainer() {
-        return mImeWindowsContainer;
     }
 
     SurfaceControl getOverlayLayer() {
@@ -7317,11 +7196,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (windowType >= FIRST_APPLICATION_WINDOW && windowType <= LAST_APPLICATION_WINDOW) {
             return mDisplayAreaPolicy.getTaskDisplayArea(options);
         }
-        // Return IME container here because it could be in one of sub RootDisplayAreas depending on
+        // Return ImeContainer here because it could be in one of sub RootDisplayAreas depending on
         // the focused edit text. Also, the RootDisplayArea choosing strategy is implemented by
         // the server side, but not mSelectRootForWindowFunc customized by OEM.
         if (windowType == TYPE_INPUT_METHOD || windowType == TYPE_INPUT_METHOD_DIALOG) {
-            return getImeContainer();
+            return mImeContainer;
         }
         return mDisplayAreaPolicy.findAreaForWindowType(windowType, options,
                 ownerCanManageAppToken, roundedCornerOverlay);

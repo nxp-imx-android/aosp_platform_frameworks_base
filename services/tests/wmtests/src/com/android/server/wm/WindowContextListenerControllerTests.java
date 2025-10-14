@@ -272,7 +272,7 @@ public class WindowContextListenerControllerTests extends WindowTestsBase {
                 new DualDisplayAreaGroupPolicyTest.DualDisplayContent
                  .Builder(mAtm, 1000, 1000).build();
         dualDisplayContent.getDisplayInfo().state = STATE_ON;
-        final DisplayArea.Tokens imeContainer = dualDisplayContent.getImeContainer();
+        final ImeContainer imeContainer = dualDisplayContent.getImeContainer();
         // Put the ImeContainer to the first sub-RootDisplayArea
         dualDisplayContent.mFirstRoot.placeImeContainer(imeContainer);
 

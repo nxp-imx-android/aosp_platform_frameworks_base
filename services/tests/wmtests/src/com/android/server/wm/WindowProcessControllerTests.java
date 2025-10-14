@@ -109,14 +109,14 @@ public class WindowProcessControllerTests extends WindowTestsBase {
 
         // Register to ImeContainer on display 1 as a listener.
         final TestDisplayContent testDisplayContent1 = createTestDisplayContentInContainer();
-        final DisplayArea imeContainer1 = testDisplayContent1.getImeContainer();
+        final ImeContainer imeContainer1 = testDisplayContent1.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer1);
         assertTrue(imeContainer1.containsListener(mWpc));
         assertEquals(imeContainer1, mWpc.getDisplayArea());
 
         // Register to ImeContainer on display 2 as a listener.
         final TestDisplayContent testDisplayContent2 = createTestDisplayContentInContainer();
-        final DisplayArea imeContainer2 = testDisplayContent2.getImeContainer();
+        final ImeContainer imeContainer2 = testDisplayContent2.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer2);
         assertFalse(imeContainer1.containsListener(mWpc));
         assertTrue(imeContainer2.containsListener(mWpc));
@@ -149,7 +149,7 @@ public class WindowProcessControllerTests extends WindowTestsBase {
                 .setDensityDpi(300)
                 .setPosition(DisplayContent.POSITION_TOP)
                 .build();
-        final DisplayArea imeContainer = display.getImeContainer();
+        final ImeContainer imeContainer = display.getImeContainer();
 
         // Register to the ime container.
         mWpc.registerDisplayAreaConfigurationListener(imeContainer);
@@ -171,7 +171,7 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     @Test
     public void testDestroy_unregistersDisplayAreaListener() {
         final TestDisplayContent testDisplayContent1 = createTestDisplayContentInContainer();
-        final DisplayArea imeContainer1 = testDisplayContent1.getImeContainer();
+        final ImeContainer imeContainer1 = testDisplayContent1.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer1);
 
         mWpc.destroy();
@@ -213,7 +213,7 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         // Register to the ImeContainer on the new display as a listener.
         final DisplayContent display = new TestDisplayContent.Builder(mAtm, 2000, 1000)
                 .setDensityDpi(300).setPosition(DisplayContent.POSITION_TOP).build();
-        final DisplayArea imeContainer = display.getImeContainer();
+        final ImeContainer imeContainer = display.getImeContainer();
         mWpc.registerDisplayAreaConfigurationListener(imeContainer);
 
         assertEquals(imeContainer, mWpc.getDisplayArea());

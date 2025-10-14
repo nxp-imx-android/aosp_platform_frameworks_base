@@ -2638,7 +2638,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         t.reparent(navSurfaceControl, topWC.getSurfaceControl());
         t.show(navSurfaceControl);
 
-        final WindowContainer imeContainer = dc.getImeContainer();
+        final ImeContainer imeContainer = dc.getImeContainer();
         if (imeContainer.isVisible()) {
             t.setRelativeLayer(navSurfaceControl, imeContainer.getSurfaceControl(), 1);
         } else {
