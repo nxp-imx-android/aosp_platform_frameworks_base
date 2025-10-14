@@ -5244,12 +5244,12 @@ public class MediaPlayer extends PlayerBase
      * provided to the DRM engine plugin using provideKeyResponse. When the
      * response is for an offline key request, a key-set identifier is returned that
      * can be used to later restore the keys to a new session with the method
-     * {@ link # restoreKeys}.
+     * {@link #restoreKeys}.
      * When the response is for a streaming or release request, null is returned.
      *
      * @param keySetId When the response is for a release request, keySetId identifies
      * the saved key associated with the release request (i.e., the same keySetId
-     * passed to the earlier {@ link # getKeyRequest} call. It MUST be null when the
+     * passed to the earlier {@link #getKeyRequest} call. It MUST be null when the
      * response is for either streaming or offline key requests.
      *
      * @param response the byte array response from the server
