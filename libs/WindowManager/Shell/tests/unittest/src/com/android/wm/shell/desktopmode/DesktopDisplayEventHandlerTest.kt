@@ -317,10 +317,42 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             whenever(mockDesktopRepository.getNumberOfDesks(SECOND_DISPLAY)).thenReturn(0)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
 
-            handler.onDeskRemoved(SECOND_DISPLAY, deskId = 1)
+            handler.onDeskRemoved(
+                lastDisplayId = SECOND_DISPLAY,
+                deskId = 1,
+                userId = PRIMARY_USER_ID,
+                onlyDeskInDisplay = true,
+            )
             runCurrent()
 
             verify(mockDesktopTasksController)
+                .createDesk(
+                    eq(SECOND_DISPLAY),
+                    eq(PRIMARY_USER_ID),
+                    enforceDeskLimit = eq(false),
+                    activateDesk = any(),
+                    enterReason = any(),
+                    onResult = any(),
+                )
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testDeskRemoved_hasRemainingDesksInDisplay_desktopFirst_doesNotCreateDesk() =
+        testScope.runTest {
+            setUpDisplayDesktopSupport(SECOND_DISPLAY, desktopFirst = true)
+            whenever(mockDesktopRepository.getNumberOfDesks(SECOND_DISPLAY)).thenReturn(2)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
+
+            handler.onDeskRemoved(
+                lastDisplayId = SECOND_DISPLAY,
+                deskId = 1,
+                userId = PRIMARY_USER_ID,
+                onlyDeskInDisplay = false,
+            )
+            runCurrent()
+
+            verify(mockDesktopTasksController, never())
                 .createDesk(
                     eq(SECOND_DISPLAY),
                     eq(PRIMARY_USER_ID),
@@ -339,11 +371,15 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(0)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
 
-            handler.onDeskRemoved(DEFAULT_DISPLAY, deskId = 1)
+            handler.onDeskRemoved(
+                lastDisplayId = DEFAULT_DISPLAY,
+                deskId = 1,
+                userId = PRIMARY_USER_ID,
+                onlyDeskInDisplay = true,
+            )
             runCurrent()
 
-            verify(mockDesksOrganizer)
-                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
+            verify(mockDesksOrganizer).warmUpDefaultDesk(DEFAULT_DISPLAY, PRIMARY_USER_ID)
         }
 
     @Test
@@ -357,7 +393,12 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             whenever(mockDesktopRepository.getNumberOfDesks(SECOND_DISPLAY)).thenReturn(0)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
 
-            handler.onDeskRemoved(SECOND_DISPLAY, deskId = 1)
+            handler.onDeskRemoved(
+                lastDisplayId = SECOND_DISPLAY,
+                deskId = 1,
+                userId = PRIMARY_USER_ID,
+                onlyDeskInDisplay = true,
+            )
             runCurrent()
 
             verify(mockDesktopTasksController)
@@ -379,13 +420,17 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(1)
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
 
-            handler.onDeskRemoved(DEFAULT_DISPLAY, deskId = 1)
+            handler.onDeskRemoved(
+                lastDisplayId = DEFAULT_DISPLAY,
+                deskId = 1,
+                userId = PRIMARY_USER_ID,
+                onlyDeskInDisplay = true,
+            )
             runCurrent()
 
             verify(mockDesktopTasksController, never())
                 .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any(), any(), any())
-            verify(mockDesksOrganizer, never())
-                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
+            verify(mockDesksOrganizer, never()).warmUpDefaultDesk(DEFAULT_DISPLAY, PRIMARY_USER_ID)
         }
 
     @Test
