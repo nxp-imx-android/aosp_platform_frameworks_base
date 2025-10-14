@@ -738,7 +738,7 @@ public class SliderPreference extends Preference {
         }
 
         iconFrame.setOnClickListener((view) -> {
-            if (mSliderValue > 0) {
+            if (mSliderValue > mMin) {
                 setValue(mSliderValue - mSliderIncrement);
             }
         });
