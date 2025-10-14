@@ -28,7 +28,7 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtStart
-import com.android.wm.shell.scenarios.QuickSwitchBetweenDesktopAndFullscreen
+import com.android.wm.shell.scenarios.SwitchBetweenDesktopAndFullScreen
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,11 +43,11 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @Postsubmit
-class QuickSwitchBetweenDesktopAndFullscreenTest(flicker: FlickerTest) : DesktopModeBaseTest(
+class QuickSwitchBetweenDesktopAndFullscreenFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(
     flicker
 ) {
     inner class QuickSwitchBetweenDesktopAndFullscreenScenario :
-        QuickSwitchBetweenDesktopAndFullscreen(
+        SwitchBetweenDesktopAndFullScreen(
             rotation = flicker.scenario.startRotation
         )
 
@@ -58,14 +58,13 @@ class QuickSwitchBetweenDesktopAndFullscreenTest(flicker: FlickerTest) : Desktop
     private val mailApp = scenario.mailApp
     private val testApp = scenario.testApp
 
-
     override val transition: FlickerBuilder.() -> Unit
         get() = {
             setup {
                 scenario.setup()
             }
             transitions {
-                scenario.closeAllAppsInDesktop()
+                scenario.triggerViaQuickSwitch()
             }
             teardown {
                 scenario.teardown()

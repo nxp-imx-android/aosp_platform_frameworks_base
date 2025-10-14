@@ -322,7 +322,7 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-QuickSwitchBetweenDesktopAndFullscreenTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullscreenTest",
       "keywords": [
         "device",
         "desktop"
