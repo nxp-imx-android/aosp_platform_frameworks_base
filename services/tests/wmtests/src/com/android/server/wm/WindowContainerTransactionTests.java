@@ -21,6 +21,7 @@ import static android.app.TaskInfo.SELF_MOVABLE_DEFAULT;
 import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
 import static android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID;
 import static android.window.WindowContainerTransaction.HierarchyOp.REACHABILITY_EVENT_X;
@@ -576,6 +577,38 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         // Verifies the override bounds cannot be set if the ancestor disallowed.
         childTask.setBounds(overrideBounds);
         assertEquals(emptyBounds, childTask.getRequestedOverrideBounds());
+    }
+
+    @Test
+    public void testReparentTasks_clearWindowingMode() {
+        final Task parentTask1 = new TaskBuilder(mSupervisor)
+                .setCreatedByOrganizer(true)
+                .build();
+        final Task parentTask2 = new TaskBuilder(mSupervisor)
+                .setCreatedByOrganizer(true)
+                .build();
+        final Task childTask = new TaskBuilder(mSupervisor)
+                .setParentTask(parentTask1)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .build();
+
+        // Verifies the override windowing mode is NOT cleared.
+        applyTransaction(
+                new WindowContainerTransaction().reparentTasks(parentTask1.getTaskInfo().token,
+                        parentTask2.getTaskInfo().token, null /* windowingModes */,
+                        null /* activityTypes */, true /* onTop */, false /* reparentTopOnly */,
+                        false /* clearWindowingMode */));
+        assertEquals(parentTask2, childTask.getParent());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, childTask.getRequestedOverrideWindowingMode());
+
+        // Verifies the override windowing mode is cleared.
+        applyTransaction(
+                new WindowContainerTransaction().reparentTasks(parentTask2.getTaskInfo().token,
+                        parentTask1.getTaskInfo().token, null /* windowingModes */,
+                        null /* activityTypes */, true /* onTop */, false /* reparentTopOnly */,
+                        true /* clearWindowingMode */));
+        assertEquals(parentTask1, childTask.getParent());
+        assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
     }
 
     private Task createTask(int taskId) {

@@ -2381,6 +2381,13 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                         hop.getToTop() ? POSITION_TOP : POSITION_BOTTOM,
                         false /*moveParents*/, "processChildrenTaskReparentHierarchyOp");
             }
+            if (hop.getClearWindowingMode()) {
+                if (task.isRootTask()) {
+                    task.setRootTaskWindowingMode(WINDOWING_MODE_UNDEFINED);
+                } else {
+                    task.setWindowingMode(WINDOWING_MODE_UNDEFINED);
+                }
+            }
         }
 
         if (transition != null) transition.collect(newParent);
