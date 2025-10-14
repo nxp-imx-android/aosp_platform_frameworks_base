@@ -867,6 +867,20 @@ public class AccessibilityManagerServiceTest {
         verify(mMockMagnificationConnectionManager, never()).removeMagnificationButton(anyInt());
     }
 
+    @SmallTest
+    @Test
+    public void userStateChanged_fullscreenOnlyCapability_showMagnificationButton() {
+        final AccessibilityUserState userState = mA11yms.mUserStates.get(
+                mA11yms.getCurrentUserIdLocked());
+        userState.setMagnificationCapabilitiesLocked(ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+        userState.updateShortcutTargetsLocked(Set.of(MAGNIFICATION_CONTROLLER_NAME), SOFTWARE);
+
+        // Invokes client change to trigger onUserStateChanged.
+        mA11yms.onClientChangeLocked(/* serviceInfoChanged= */false);
+
+        verify(mMockMagnificationConnectionManager, never()).removeMagnificationButton(anyInt());
+    }
+
     @Test
     public void testUnbindIme_whenServiceUnbinds() {
         setupAccessibilityServiceConnection(AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR);
