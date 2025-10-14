@@ -41,7 +41,6 @@ import android.util.Size;
 import android.view.Display;
 import android.view.Gravity;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 
 import com.android.internal.policy.DesktopModeCompatUtils;
 
@@ -87,8 +86,7 @@ public final class DesktopModeBoundsCalculator {
                 && options.getFlexibleLaunchSize() && !hasFullscreenOverride;
         // If cascading is also enabled, the position of the options bounds must be respected
         // during the size update.
-        final boolean shouldRespectOptionPosition =
-                updateOptionBoundsSize && DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue();
+        final boolean shouldRespectOptionPosition = updateOptionBoundsSize;
         // Calculate caption height for target display if needed.
         final Display targetDisplay = displayContent.getDisplay();
         final Context displayContext = task.mWmService.mContext.createDisplayContext(targetDisplay);

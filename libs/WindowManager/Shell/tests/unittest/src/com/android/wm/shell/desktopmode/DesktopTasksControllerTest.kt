@@ -1586,7 +1586,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun handleRequest_newFreeformTaskLaunch_cascadeApplied() {
         val stableBounds =
             Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
@@ -1607,7 +1606,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS, Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_newFreeformTaskLaunch_newDesk_desksCascadeIndependently() {
         setUpLandscapeDisplay()
         val stableBounds =
@@ -1635,7 +1634,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun handleRequest_freeformTaskAlreadyExistsInDesktopMode_cascadeNotApplied() {
         setUpLandscapeDisplay()
         val stableBounds =
@@ -1653,7 +1651,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_activeButClosingTask_cascadeNotApplied() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1675,7 +1672,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_positionBottomRight() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1692,7 +1688,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_positionTopLeft() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1709,7 +1704,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_positionBottomLeft() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1726,7 +1720,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_positionTopRight() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1743,7 +1736,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_positionResetsToCenter() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1760,7 +1752,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_lastWindowSnapLeft_positionResetsToCenter() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1780,7 +1771,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_lastWindowSnapRight_positionResetsToCenter() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1806,7 +1796,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_lastWindowMaximised_positionResetsToCenter() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1824,7 +1813,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun addMoveToDeskTaskChanges_defaultToCenterIfFree() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -2257,7 +2245,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
     fun moveToDesk_existingDeskTasksInBackground_cascadeApplied() {
         val stableBounds =
             Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)

@@ -52,7 +52,6 @@ public enum DesktopModeFlags {
             true),
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS(
             Flags::enableCaptionCompatInsetForceConsumptionAlways, true),
-    ENABLE_CASCADING_WINDOWS(Flags::enableCascadingWindows, true),
     ENABLE_DESKTOP_APP_HANDLE_ANIMATION(Flags::enableDesktopAppHandleAnimation, true),
     ENABLE_DESKTOP_APP_LAUNCH_ALTTAB_TRANSITIONS_BUGFIX(
             Flags::enableDesktopAppLaunchAlttabTransitionsBugfix, true),
