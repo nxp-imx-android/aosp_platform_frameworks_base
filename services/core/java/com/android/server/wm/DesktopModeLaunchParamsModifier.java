@@ -120,8 +120,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue() && task == null
                 && (isRequestingFreeformWindowMode(null, options, currentParams)
                 || inDesktopMode)) {
-            if (DesktopExperienceFlags.HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()
-                    && activity != null) {
+            if (activity != null) {
                 if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
                         activity.mActivityComponent, activity.isNoDisplay(),
                         !activity.occludesParent(), /* numActivities */ 1, activity.mUserId,
@@ -161,9 +160,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
-        if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()
-                && !isEnteringDesktopMode(task, source, options, suggestedDisplayArea,
-                currentParams)) {
+        if (!isEnteringDesktopMode(task, source, options, suggestedDisplayArea, currentParams)) {
             appendLog("not entering desktop mode, skipping");
             return RESULT_SKIP;
         }
@@ -181,8 +178,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         final ActivityRecord targetActivity = activity != null ? activity
                 : task.getTopMostActivity();
 
-        if (DesktopExperienceFlags.HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()
-                && targetActivity != null) {
+        if (targetActivity != null) {
             final boolean isActivityStackTransparent = !task.forAllActivities(r ->
                     (r.occludesParent())) && !targetActivity.occludesParent();
             final AtomicInteger numActivities = new AtomicInteger(1);
@@ -234,8 +230,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             // container, as it should already inherit freeform by default if undefined.
             requestFullscreen |= task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN;
             isFullscreenInDeskTask = inDesktopFirstContainer && requestFullscreen;
-            if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()
-                    && isEnteringDesktopMode(sourceTask, source, options, suggestedDisplayArea,
+            if (isEnteringDesktopMode(
+                    sourceTask,
+                    source,
+                    options,
+                    suggestedDisplayArea,
                     currentParams)
                     && !isFullscreenInDeskTask) {
                 // If trampoline source is not freeform but we are entering or in desktop mode,
@@ -280,21 +279,16 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         }
 
         if ((options == null || options.getLaunchBounds() == null) && task.hasOverrideBounds()) {
-            if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()) {
-                final Rect overrideTaskBounds = task.getRequestedOverrideBounds();
-                if (DesktopExperienceFlags.IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY
-                        .isTrue() && areTaskBoundsValidForDisplay(overrideTaskBounds, display)) {
-                    // We are in desktop, return result done to prevent other modifiers from
-                    // modifying exiting task bounds or resolved windowing mode.
-                    if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
-                        outParams.mBounds.set(overrideTaskBounds);
-                    }
-                    appendLog("task-has-override-bounds=%s", overrideTaskBounds);
-                    return RESULT_DONE;
+            final Rect overrideTaskBounds = task.getRequestedOverrideBounds();
+            if (DesktopExperienceFlags.IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY
+                    .isTrue() && areTaskBoundsValidForDisplay(overrideTaskBounds, display)) {
+                // We are in desktop, return result done to prevent other modifiers from
+                // modifying exiting task bounds or resolved windowing mode.
+                if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
+                    outParams.mBounds.set(overrideTaskBounds);
                 }
-            } else {
-                appendLog("current task has bounds set, not overriding");
-                return RESULT_SKIP;
+                appendLog("task-has-override-bounds=%s", overrideTaskBounds);
+                return RESULT_DONE;
             }
         }
 
