@@ -19,6 +19,8 @@ package com.android.systemui.media.dialog;
 import static android.media.RouteListingPreference.ACTION_TRANSFER_MEDIA;
 import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
+import static android.media.RoutingSessionInfo.RELEASE_TYPE_CASTING;
+import static android.media.RoutingSessionInfo.RELEASE_TYPE_SHARING;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
 import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
@@ -58,6 +60,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.graphics.drawable.IconCompat;
 
@@ -311,11 +314,6 @@ public class MediaSwitchingController
 
     public void setRefreshing(boolean refreshing) {
         mIsRefreshing = refreshing;
-    }
-
-    @NonNull
-    public MediaSwitchingType getMediaSwitchingType() {
-        return mMediaSwitchingType;
     }
 
     protected void stop() {
@@ -858,7 +856,7 @@ public class MediaSwitchingController
 
     void releaseSession() {
         if (Flags.enableOutputSwitcherPersonalAudioSharing()
-                && getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING) {
+                && getSessionReleaseType() == RELEASE_TYPE_SHARING) {
             mMetricLogger.logInteractionStopSharing();
         } else {
             mMetricLogger.logInteractionStopCasting();
@@ -1017,6 +1015,39 @@ public class MediaSwitchingController
         }
 
         return null;
+    }
+
+    boolean hasStopButton() {
+        if (mMediaSwitchingType == MediaSwitchingType.INPUT) {
+            return false;
+        }
+
+        boolean inBroadcast = Flags.enableOutputSwitcherPersonalAudioSharing()
+                && getSessionReleaseType() == RELEASE_TYPE_SHARING;
+
+        return (isCurrentConnectedDeviceRemote() || inBroadcast);
+    }
+
+    @StringRes
+    Integer getStopButtonStringRes() {
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+            Integer stopButtonText = getTextForSessionReleaseType();
+            if (stopButtonText != null) {
+                return stopButtonText;
+            }
+        }
+        return R.string.media_output_dialog_button_stop_casting;
+    }
+
+
+    @Nullable
+    // TODO: b/448827170 - use value returned by this method for both text and visibility getters.
+    private @StringRes Integer getTextForSessionReleaseType() {
+        return switch (getSessionReleaseType()) {
+            case RELEASE_TYPE_CASTING -> R.string.media_output_dialog_button_stop_casting;
+            case RELEASE_TYPE_SHARING -> R.string.media_output_dialog_button_stop_sharing;
+            default -> null;
+        };
     }
 
     private void startActivity(Intent intent, ActivityTransitionAnimator.Controller controller) {

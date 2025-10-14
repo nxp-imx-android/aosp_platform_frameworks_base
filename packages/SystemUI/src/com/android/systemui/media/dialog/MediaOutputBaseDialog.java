@@ -20,6 +20,7 @@ import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -43,11 +44,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
-import androidx.constraintlayout.helper.widget.Flow;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.internal.logging.UiEvent;
+import com.android.internal.logging.UiEventLogger;
+import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
@@ -57,7 +60,7 @@ import com.google.android.material.button.MaterialButton;
 import java.util.concurrent.Executor;
 
 /** Base dialog for media output UI */
-public abstract class MediaOutputBaseDialog extends SystemUIDialog
+public class MediaOutputBaseDialog extends SystemUIDialog
         implements MediaSwitchingController.Callback, Window.Callback {
 
     private static final String TAG = "MediaOutputDialog";
@@ -91,14 +94,19 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private LinearLayout mMediaMetadataSectionLayout;
     private Button mDoneButton;
     private ViewGroup mDialogFooter;
-    private Flow mButtonsFlow;
     private Button mStopButton;
     private WallpaperColors mWallpaperColors;
     private boolean mDismissing;
 
+    @VisibleForTesting
     MediaOutputAdapter mAdapter;
 
     protected Executor mExecutor;
+
+    private final DialogTransitionAnimator mDialogTransitionAnimator;
+    private final UiEventLogger mUiEventLogger;
+    @Nullable
+    private final MediaOutputDialog.OnDialogEventListener mOnDialogEventListener;
 
     private class LayoutManagerWrapper extends LinearLayoutManager {
         LayoutManagerWrapper(Context context) {
@@ -115,9 +123,13 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
 
     public MediaOutputBaseDialog(
             Context context,
+            boolean aboveStatusbar,
             BroadcastSender broadcastSender,
             MediaSwitchingController mediaSwitchingController,
-            boolean includePlaybackAndAppMetadata) {
+            DialogTransitionAnimator dialogTransitionAnimator,
+            UiEventLogger uiEventLogger,
+            boolean includePlaybackAndAppMetadata,
+            @Nullable MediaOutputDialog.OnDialogEventListener onDialogEventListener) {
         super(context, R.style.Theme_SystemUI_Dialog_Media);
 
         // Save the context that is wrapped with our theme.
@@ -126,6 +138,13 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mMediaSwitchingController = mediaSwitchingController;
         mLayoutManager = new LayoutManagerWrapper(mContext);
         mIncludePlaybackAndAppMetadata = includePlaybackAndAppMetadata;
+        mDialogTransitionAnimator = dialogTransitionAnimator;
+        mUiEventLogger = uiEventLogger;
+        mAdapter = new MediaOutputAdapter(mMediaSwitchingController);
+        mOnDialogEventListener = onDialogEventListener;
+        if (!aboveStatusbar) {
+            getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+        }
     }
 
     @Override
@@ -153,7 +172,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mAudioSharingButton = mDialogView.requireViewById(R.id.audio_sharing);
         mDevicesRecyclerView = mDialogView.requireViewById(R.id.list_result);
         mDialogFooter = mDialogView.requireViewById(R.id.dialog_footer);
-        mButtonsFlow = mDialogView.requireViewById(R.id.flow_buttons);
         mMediaMetadataSectionLayout = mDialogView.requireViewById(R.id.media_metadata_section);
         mDeviceListLayout = mDialogView.requireViewById(R.id.device_list);
         mDoneButton = mDialogView.requireViewById(R.id.done);
@@ -196,6 +214,20 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
                 (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                     changeFooterColorForScroll();
                 });
+
+        mUiEventLogger.log(MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
+
+        if (mOnDialogEventListener != null) {
+            mOnDialogEventListener.onCreate(this);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        if (mOnDialogEventListener != null) {
+            mOnDialogEventListener.onConfigurationChanged(this, configuration);
+        }
     }
 
     @Override
@@ -231,14 +263,10 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         }
         mMediaSwitchingController.setRefreshing(true);
         // Update header icon
-        final int iconRes = getHeaderIconRes();
-        final IconCompat headerIcon = getHeaderIcon();
-        final IconCompat appSourceIcon = getAppSourceIcon();
+        final IconCompat headerIcon = mMediaSwitchingController.getHeaderIcon();
+        final IconCompat appSourceIcon = mMediaSwitchingController.getNotificationSmallIcon();
         boolean colorSetUpdated = false;
-        if (iconRes != 0) {
-            mHeaderIcon.setVisibility(View.VISIBLE);
-            mHeaderIcon.setImageResource(iconRes);
-        } else if (headerIcon != null) {
+        if (headerIcon != null) {
             Icon icon = headerIcon.toIcon(mContext);
             if (icon.getType() != Icon.TYPE_BITMAP && icon.getType() != Icon.TYPE_ADAPTIVE_BITMAP) {
                 // icon doesn't support getBitmap, use default value for color scheme
@@ -286,9 +314,9 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             mHeaderSubtitle.setVisibility(View.GONE);
         } else {
             // Update title and subtitle
-            mHeaderTitle.setText(getHeaderText());
+            mHeaderTitle.setText(mMediaSwitchingController.getHeaderTitle());
             mHeaderTitle.setTextColor(mMediaSwitchingController.getColorScheme().getOnSurface());
-            final CharSequence subTitle = getHeaderSubtitle();
+            final CharSequence subTitle = mMediaSwitchingController.getHeaderSubTitle();
             if (TextUtils.isEmpty(subTitle)) {
                 mHeaderSubtitle.setVisibility(View.GONE);
                 mHeaderTitle.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
@@ -305,9 +333,10 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
 
         // Show when remote media session is available or
         //      when the device supports BT LE audio + media is playing
-        mStopButton.setVisibility(getStopButtonVisibility());
+        mStopButton.setVisibility(
+                mMediaSwitchingController.hasStopButton() ? View.VISIBLE : View.GONE);
         mStopButton.setEnabled(true);
-        mStopButton.setText(getStopButtonText());
+        mStopButton.setText(mContext.getString(mMediaSwitchingController.getStopButtonStringRes()));
         mStopButton.setOnClickListener(v -> onStopButtonClick());
 
         if (!mAdapter.isDragging()) {
@@ -408,24 +437,10 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mQuickAccessShelf.setVisibility(showQuickAccessShelf ? View.VISIBLE : View.GONE);
     }
 
-    abstract IconCompat getAppSourceIcon();
-
-    abstract int getHeaderIconRes();
-
-    abstract IconCompat getHeaderIcon();
-
-    abstract CharSequence getHeaderText();
-
-    abstract CharSequence getHeaderSubtitle();
-
-    abstract int getStopButtonVisibility();
-
-    public CharSequence getStopButtonText() {
-        return mContext.getText(R.string.keyboard_key_media_stop);
-    }
-
-    public void onStopButtonClick() {
+    @VisibleForTesting
+    void onStopButtonClick() {
         mMediaSwitchingController.releaseSession();
+        mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
         dismiss();
     }
 
@@ -464,4 +479,22 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     View getDialogView() {
         return mDialogView;
     }
+
+    @VisibleForTesting
+    public enum MediaOutputEvent implements UiEventLogger.UiEventEnum {
+        @UiEvent(doc = "The MediaOutput dialog became visible on the screen.")
+        MEDIA_OUTPUT_DIALOG_SHOW(655);
+
+        private final int mId;
+
+        MediaOutputEvent(int id) {
+            mId = id;
+        }
+
+        @Override
+        public int getId() {
+            return mId;
+        }
+    }
+
 }
