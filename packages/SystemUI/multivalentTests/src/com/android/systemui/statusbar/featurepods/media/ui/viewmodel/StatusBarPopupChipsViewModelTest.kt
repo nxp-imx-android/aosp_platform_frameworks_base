@@ -84,6 +84,33 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
             assertThat(underTest.shownPopupChips.first().isPopupShown).isTrue()
         }
 
+    @Test
+    fun isPopupShown_chipHiddenThenReshown_popupHidden() =
+        kosmos.runTest {
+            val userMedia = MediaData(active = true, song = "test")
+            updateMedia(userMedia)
+
+            assertThat(underTest.shownPopupChips).hasSize(1)
+            var mediaChip = underTest.shownPopupChips.first()
+            assertThat(mediaChip.isPopupShown).isFalse()
+
+            mediaChip.showPopup.invoke()
+
+            assertThat(underTest.shownPopupChips.first().isPopupShown).isTrue()
+
+            // Update the media to hide the chip while the popup is still showing.
+            val noMedia = MediaData(active = false, song = "")
+            updateMedia(noMedia)
+
+            assertThat(underTest.shownPopupChips).hasSize(0)
+
+            updateMedia(userMedia)
+
+            assertThat(underTest.shownPopupChips).hasSize(1)
+            mediaChip = underTest.shownPopupChips.first()
+            assertThat(mediaChip.isPopupShown).isFalse()
+        }
+
     private fun Kosmos.updateMedia(mediaData: MediaData) {
         if (MediaControlsInComposeFlag.isEnabled) {
             mediaRepository.addCurrentUserMediaEntry(mediaData)

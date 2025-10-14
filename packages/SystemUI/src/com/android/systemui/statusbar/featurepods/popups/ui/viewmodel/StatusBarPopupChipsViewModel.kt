@@ -20,6 +20,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.statusbar.featurepods.assistant.StatusBarAssistantIcon
 import com.android.systemui.statusbar.featurepods.assistant.ui.viewmodel.AssistantIconViewModel
@@ -33,6 +34,8 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -90,6 +93,21 @@ constructor(
             launch { shareScreenPrivacyIndicator.activate() }
             if (StatusBarAssistantIcon.isEnabled) {
                 launch { assistantIcon.activate() }
+            }
+            // TODO(b/452975516): Clean up this logic after the bundle is split into popup chips and
+            // action chips.
+            launch {
+                snapshotFlow { incomingPopupChipBundle }
+                    .distinctUntilChanged()
+                    .collect { bundle ->
+                        if (
+                            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
+                                .filterIsInstance<PopupChipModel.Shown>()
+                                .none { it.chipId == currentShownPopupChipId }
+                        ) {
+                            currentShownPopupChipId = null
+                        }
+                    }
             }
         }
         awaitCancellation()
