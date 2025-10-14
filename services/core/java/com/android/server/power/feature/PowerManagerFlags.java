@@ -82,11 +82,6 @@ public class PowerManagerFlags {
             Flags::separateTimeoutsFlicker
     );
 
-    private final FlagState mWakeAdjacentDisplaysOnWakeupCall = new FlagState(
-            Flags.FLAG_WAKE_ADJACENT_DISPLAYS_ON_WAKEUP_CALL,
-            Flags::wakeAdjacentDisplaysOnWakeupCall
-    );
-
     private final FlagState mWaitForUserBootComplete =
             new FlagState(Flags.FLAG_WAIT_FOR_USER_BOOT_COMPLETE, Flags::waitForUserBootComplete);
 
@@ -168,13 +163,6 @@ public class PowerManagerFlags {
     }
 
     /**
-     * @return Whether the system should wakeup the adjacent displays too on a wakeup call
-     */
-    public boolean isWakeAdjacentDisplaysOnWakeupCallEnabled() {
-        return mWakeAdjacentDisplaysOnWakeupCall.isEnabled();
-    }
-
-    /**
      * @return Whether the BootSuspendBlocker is held until ACTION_BOOT_COMPLETED is broadcast.
      */
     public boolean isWaitForUserBootCompleteEnabled() {
@@ -197,7 +185,6 @@ public class PowerManagerFlags {
         pw.println(" " + mEnableAppWakelockDataSource);
         pw.println(" " + mPartialSleepWakelocks);
         pw.println(" " + mSeparateTimeoutsFlicker);
-        pw.println(" " + mWakeAdjacentDisplaysOnWakeupCall);
         pw.println(" " + mWaitForUserBootComplete);
     }
 

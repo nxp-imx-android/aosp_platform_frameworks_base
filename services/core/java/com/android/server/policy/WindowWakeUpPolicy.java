@@ -206,7 +206,6 @@ class WindowWakeUpPolicy {
         // When there is a request to wakeup a default display, we would want to wakeup the displays
         // in the default and the adjacent groups
         if (com.android.server.display.feature.flags.Flags.separateTimeouts()
-                && com.android.server.power.feature.flags.Flags.wakeAdjacentDisplaysOnWakeupCall()
                 && displayIdToWake == Display.DEFAULT_DISPLAY) {
             wakeUp(wakeTime, reason, details);
             return;

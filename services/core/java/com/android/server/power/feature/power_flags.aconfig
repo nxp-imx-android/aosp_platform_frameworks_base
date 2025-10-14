@@ -109,16 +109,6 @@ flag {
 }
 
 flag {
-    name: "wake_adjacent_displays_on_wakeup_call"
-    namespace: "lse_desktop_experience"
-    description: "Wakes up the displays from default and default adjacent group"
-    bug: "428848574"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "wear_frameworks"
     name: "interactive_doze_experience"
     description: "Enable active user interaction in doze power state."

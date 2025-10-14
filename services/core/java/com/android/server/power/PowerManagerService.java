@@ -6507,8 +6507,7 @@ public final class PowerManagerService extends SystemService
             try {
                 synchronized (mLock) {
                     IntArray groupIds = new IntArray();
-                    if (com.android.server.display.feature.flags.Flags.separateTimeouts()
-                            && mFeatureFlags.isWakeAdjacentDisplaysOnWakeupCallEnabled()) {
+                    if (com.android.server.display.feature.flags.Flags.separateTimeouts()) {
                         for (int idx = 0; idx < mPowerGroups.size(); idx++) {
                             PowerGroup powerGroup = mPowerGroups.valueAt(idx);
                             if (powerGroup.isDefaultOrAdjacentGroup()) {

@@ -270,9 +270,7 @@ public final class WindowWakeUpPolicyTests {
 
     @Test
     @EnableFlags({FLAG_PER_DISPLAY_WAKE_BY_TOUCH})
-    @DisableFlags({com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS,
-            com.android.server.power.feature.flags.Flags
-                    .FLAG_WAKE_ADJACENT_DISPLAYS_ON_WAKEUP_CALL})
+    @DisableFlags({com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS})
     public void testWakeUpFromKey_invalidDisplay_perDisplayWakeByTouchEnabled() {
         final int displayId = Display.INVALID_DISPLAY;
         mPolicy = new WindowWakeUpPolicy(mContextSpy, mClock);
@@ -292,9 +290,7 @@ public final class WindowWakeUpPolicyTests {
     }
 
     @Test
-    @EnableFlags({com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS,
-            com.android.server.power.feature.flags.Flags
-                    .FLAG_WAKE_ADJACENT_DISPLAYS_ON_WAKEUP_CALL})
+    @EnableFlags({com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS})
     public void testWakeUpFromKey_invalidDisplay_makesDisplayIdIndependentWakeupCall() {
         final int displayId = Display.INVALID_DISPLAY;
         mPolicy = new WindowWakeUpPolicy(mContextSpy, mClock);

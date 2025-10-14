@@ -931,8 +931,7 @@ public class PowerManagerServiceTest {
         mService.getBinderServiceInstance().releaseWakeLock(token, /* flags= */ 0);
     }
 
-    @RequiresFlagsEnabled({com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS,
-            Flags.FLAG_WAKE_ADJACENT_DISPLAYS_ON_WAKEUP_CALL})
+    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
     @Test
     public void testWakeup_multiplePowerGroups_wakesupAdjacentGroups() {
         // setup
