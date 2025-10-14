@@ -30,7 +30,6 @@ import android.app.RavenwoodAppDriver;
 import android.app.ResourcesManager;
 import android.content.res.Resources;
 import android.os.Build;
-import android.os.HandlerThread;
 import android.view.DisplayAdjustments;
 
 import com.android.internal.annotations.GuardedBy;
@@ -117,9 +116,6 @@ public final class RavenwoodEnvironment {
     private final File mRootDir;
 
     @NonNull
-    private final HandlerThread mMainThread;
-
-    @NonNull
     private final Thread mTestThread;
 
     @GuardedBy("mLock")
@@ -142,8 +138,7 @@ public final class RavenwoodEnvironment {
             @NonNull String moduleName,
             @Nullable String resourceApk,
             @Nullable String targetResourceApk,
-            @NonNull Thread testThread,
-            @NonNull HandlerThread mainThread
+            @NonNull Thread testThread
     ) throws IOException {
         mUid = uid;
         mPid = pid;
@@ -155,7 +150,6 @@ public final class RavenwoodEnvironment {
         mResourceApk = resourceApk;
         mTargetResourceApk = targetResourceApk;
         mTestThread = testThread;
-        mMainThread = mainThread;
 
         mRootDir = Files.createTempDirectory("ravenwood-root-dir-").toFile();
         mRootDir.mkdirs();
@@ -164,7 +158,7 @@ public final class RavenwoodEnvironment {
     /**
      * Create and initialize the singleton instance. Also initializes {@link RavenwoodVmState}.
      */
-    public static void init(HandlerThread mainThread) throws IOException {
+    public static void init() throws IOException {
         final var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
 
         // TODO: Why do we use a random PID? We can get the real PID via JNI. Why not use that?
@@ -192,8 +186,8 @@ public final class RavenwoodEnvironment {
                 moduleName,
                 resourceApk,
                 targetResourceApk,
-                Thread.currentThread(), // Test thread,
-                mainThread);
+                Thread.currentThread() // Test thread
+        );
         if (!sInstance.compareAndSet(null, instance)) {
             throw new RuntimeException("RavenwoodEnvironment already initialized!");
         }
@@ -250,11 +244,6 @@ public final class RavenwoodEnvironment {
     @NonNull
     public Thread getTestThread() {
         return mTestThread;
-    }
-
-    @NonNull
-    public HandlerThread getMainThread() {
-        return mMainThread;
     }
 
     public long getDefaultCallingIdentity() {

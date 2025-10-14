@@ -19,6 +19,8 @@ import static android.platform.test.ravenwood.RavenwoodDriver.sRawStdErr;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Handler;
+import android.os.Handler_ravenwood;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
@@ -213,32 +215,49 @@ public class RavenwoodErrorHandler {
      */
     public static void onBeforeEnqueue(@NonNull Message msg) {
         // Check for pending exception, and throw it if any.
+        // We don't want to enqueue any more messages if a pending exception exists.
         maybeThrowPendingRecoverableUncaughtExceptionNoClear();
         // Track the msg poster in case an exception is thrown later during msg dispatch.
         RavenwoodMessageTracker.getInstance().trackMessagePoster(msg);
     }
 
     /**
-     * Called by {@link android.os.Looper_ravenwood#dispatchMessage}
+     * Called by {@link android.os.Handler_ravenwood#dispatchMessage}
      */
-    public static void dispatchMessage(Message msg) {
+    public static void dispatchMessage(Handler handler, Message msg) {
         // If there's already an exception caught and pending, don't run any more messages.
         if (hasPendingRecoverableUncaughtException()) {
             return;
         }
         try {
-            msg.getTarget().dispatchMessage(msg);
+            handler.dispatchMessageImpl(msg);
         } catch (Throwable th) {
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
             sRawStdErr.println(desc);
 
-            // If it's a tracked message, attach the stacktrace where we posted it as a cause.
-            RavenwoodMessageTracker.getInstance().injectPosterAsCause(th, msg);
-            if (isThrowableRecoverable(th)) {
-                setPendingRecoverableUncaughtException(th);
-                return;
+            if (RavenwoodEnablementChecker.getInstance().wouldRunDisabledTests()) {
+                // Once a MessageQueue has an unhandled exception, the entire MessageQueue may be
+                // left in a broken state. Try our best to clear the MessageQueue. This is very
+                // hacky, so we limit this operation to only when RAVENWOOD_RUN_DISABLED_TESTS=1.
+                Handler_ravenwood.clearMessageQueue(Looper.myQueue());
             }
+
+            // It is possible that this message is dispatched through other mechanisms
+            // (e.g. TestLooperManager). We only really care about messages that are enqueued
+            // through a handler, which will always be tracked through onBeforeEnqueue above.
+            var poster = RavenwoodMessageTracker.getInstance().getPoster(msg);
+            if (poster != null) {
+                // Attach the stacktrace where we posted it as a cause.
+                poster.injectAsCause(th);
+
+                // If the exception is recoverable, don't rethrow
+                if (isThrowableRecoverable(th)) {
+                    setPendingRecoverableUncaughtException(th);
+                    return;
+                }
+            }
+
             throw th;
         }
     }
@@ -342,7 +361,7 @@ public class RavenwoodErrorHandler {
             // Put the test and the main thread at the top.
             var env = RavenwoodEnvironment.getInstance();
             var testThread = env.getTestThread();
-            var mainThread = env.getMainThread();
+            var mainThread = Looper.getMainLooper().getThread();
             if (mainThread != null) {
                 threads.remove(mainThread);
                 threads.add(0, mainThread);

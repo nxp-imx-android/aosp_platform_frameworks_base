@@ -29,4 +29,42 @@ public class Handler_ravenwood {
             long uptimeMillis) {
         RavenwoodErrorHandler.onBeforeEnqueue(msg);
     }
+
+    /**
+     * Called by {@link Handler#dispatchMessage(Message)}
+     */
+    public static void dispatchMessage(Handler handler, @NonNull Message msg) {
+        RavenwoodErrorHandler.dispatchMessage(handler, msg);
+    }
+
+    /**
+     * Go through the MessageQueue to force dispatch all messages immediately, and remove
+     * existing sync barriers. The reason why we do not directly call resetForTest() is because
+     * we still want idle handlers to be called after this message dispatch to unblock waits.
+     *
+     * WARNING: THIS IS VERY HACKY, but it works good enough for Ravenwood.
+     */
+    public static void clearMessageQueue(MessageQueue queue) {
+        // Extract all messages immediately and dispatch them all.
+        // We do this because other threads may be waiting on a specific message to be dispatched.
+        Message pending;
+        while ((pending = queue.pollForTest()) != null) {
+            try {
+                pending.getTarget().dispatchMessageImpl(pending);
+            } catch (Throwable ignored) {
+            }
+        }
+
+        // If the message queue is blocked by sync barrier, we need to remove it.
+        if (queue.isBlockedOnSyncBarrier()) {
+            // Fetch the latest token to guess the previous token.
+            int token = queue.postSyncBarrier();
+            queue.removeSyncBarrier(token);
+            // Try to remove the previous sync barrier.
+            try {
+                queue.removeSyncBarrier(token - 1);
+            } catch (Throwable ignored) {
+            }
+        }
+    }
 }
