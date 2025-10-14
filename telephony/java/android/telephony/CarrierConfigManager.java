@@ -7533,7 +7533,7 @@ public class CarrierConfigManager {
          * {@link SmsManager#SMS_RP_CAUSE_MESSAGE_INCOMPATIBLE_WITH_PROTOCOL_STATE}
          * {@link SmsManager#SMS_RP_CAUSE_INFORMATION_ELEMENT_NON_EXISTENT}
          * {@link SmsManager#SMS_RP_CAUSE_PROTOCOL_ERROR}
-         * {@link SmsManager#SMS_RP_CAUSE_INTERWORKING_UNSPECIFIED
+         * {@link SmsManager#SMS_RP_CAUSE_INTERWORKING_UNSPECIFIED}
          */
         public static final String KEY_SMS_RP_CAUSE_VALUES_TO_RETRY_OVER_IMS_INT_ARRAY =
                 KEY_PREFIX + "sms_rp_cause_values_to_retry_over_ims_int_array";
