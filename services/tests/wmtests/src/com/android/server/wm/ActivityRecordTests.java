@@ -2478,7 +2478,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX)
     public void testSetPictureInPictureParams() {
         final ActivityRecord activity = createActivityWith2LevelTask();
         final Task task = activity.getTask();
