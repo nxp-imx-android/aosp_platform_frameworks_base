@@ -34,7 +34,6 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.view.IWindowManager;
 import android.view.accessibility.AccessibilityManager;
-import android.window.DesktopModeFlags;
 import android.window.SystemPerformanceHinter;
 
 import com.android.internal.logging.UiEventLogger;
@@ -364,15 +363,11 @@ public abstract class WMShellBaseModule {
     @WMSingleton
     @Provides
     static CompatUIStatusManager provideCompatUIStatusManager(@NonNull Context context) {
-        if (DesktopModeFlags.ENABLE_DESKTOP_COMPAT_UI_VISIBILITY_STATUS.isTrue()) {
-            return new CompatUIStatusManager(
-                    newState -> Settings.Secure.putInt(context.getContentResolver(),
-                            COMPAT_UI_EDUCATION_SHOWING, newState),
-                    () -> Settings.Secure.getInt(context.getContentResolver(),
-                            COMPAT_UI_EDUCATION_SHOWING, COMPAT_UI_EDUCATION_HIDDEN));
-        } else {
-            return new CompatUIStatusManager();
-        }
+        return new CompatUIStatusManager(
+                newState -> Settings.Secure.putInt(context.getContentResolver(),
+                        COMPAT_UI_EDUCATION_SHOWING, newState),
+                () -> Settings.Secure.getInt(context.getContentResolver(),
+                        COMPAT_UI_EDUCATION_SHOWING, COMPAT_UI_EDUCATION_HIDDEN));
     }
 
     @WMSingleton
