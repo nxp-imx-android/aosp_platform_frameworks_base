@@ -16,13 +16,12 @@
 
 package android.service.personalcontext;
 
+import static android.service.personalcontext.ContextHintTestUtils.assertParcelUnparcel;
+
 import static com.google.common.truth.Truth.assertThat;
 
-import android.os.Bundle;
-import android.os.Parcel;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWrapper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -37,9 +36,10 @@ import java.util.UUID;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ContextHintTest {
+
     // Tests parceling and unparceling fields on the base ContextHint.
     @Test
-    public void testContextHintWrapperParcelUnparcel() {
+    public void testContextHintParcelUnparcel() {
         final BundleHint hint = new BundleHint();
         RenderToken renderToken =
                 new RenderToken.RenderTokenBuilder()
@@ -58,42 +58,5 @@ public class ContextHintTest {
         RenderToken out = outputHint.getRenderToken();
         assertThat(out.getTokenId()).isEqualTo(renderToken.getTokenId());
         assertThat(out.getRendererComponentId()).isEqualTo(renderToken.getRendererComponentId());
-    }
-
-    @Test
-    public void testBundleHintParcelUnparcel() {
-        final int inputValue = 1234;
-        final String dataKey = "test-key";
-        final Bundle data = new Bundle();
-        data.putInt(dataKey, inputValue);
-
-        final BundleHint hint = new BundleHint();
-        hint.getDataBundle().putAll(data);
-
-        final ContextHint outputHint = assertParcelUnparcel(hint);
-        assertThat(outputHint).isInstanceOf(BundleHint.class);
-        final int outputValue = ((BundleHint) outputHint).getDataBundle().getInt(dataKey);
-
-        assertThat(outputValue).isEqualTo(inputValue);
-    }
-
-    /**
-     * Parcels and unparcels the given {@link ContextHint} and asserts the same amount of data
-     * written to and read from the {@link Parcel}.
-     */
-    public ContextHint assertParcelUnparcel(ContextHint hint) {
-        final ContextHintWrapper wrapper = new ContextHintWrapper(hint);
-
-        Parcel parcel = Parcel.obtain();
-        wrapper.writeToParcel(parcel, 0);
-        final int dataSize = parcel.dataPosition();
-
-        // Reset data position for read.
-        parcel.setDataPosition(0);
-        ContextHintWrapper fromParcel = ContextHintWrapper.CREATOR.createFromParcel(parcel);
-
-        // Same size of data is written and read.
-        assertThat(dataSize).isEqualTo(parcel.dataPosition());
-        return fromParcel.getContextHint();
     }
 }

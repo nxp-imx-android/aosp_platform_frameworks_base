@@ -43063,6 +43063,40 @@ package android.service.personalcontext.hint {
     method @Nullable public final android.service.personalcontext.RenderToken getRenderToken();
     field public static final int HINT_TYPE_BUNDLE = 1; // 0x1
     field public static final int HINT_TYPE_ERROR = -1; // 0xffffffff
+    field public static final int HINT_TYPE_NOTIFICATION = 2; // 0x2
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
+    method public abstract int getEventType();
+    field public static final int EVENT_TYPE_ENQUEUED = 1; // 0x1
+    field public static final int EVENT_TYPE_REMOVED = 2; // 0x2
+    field public static final int EVENT_TYPE_UNKNOWN = -1; // 0xffffffff
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationEvent.NotificationEnqueuedEvent extends android.service.personalcontext.hint.NotificationEvent {
+    ctor public NotificationEvent.NotificationEnqueuedEvent(@NonNull android.service.notification.StatusBarNotification, @NonNull android.app.NotificationChannel, @NonNull android.service.notification.NotificationListenerService.RankingMap);
+    method public int getEventType();
+    method @NonNull public android.app.NotificationChannel getNotificationChannel();
+    method @NonNull public android.service.notification.NotificationListenerService.RankingMap getRankingMap();
+    method @NonNull public android.service.notification.StatusBarNotification getStatusBarNotification();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationEvent.NotificationRemovedEvent extends android.service.personalcontext.hint.NotificationEvent {
+    ctor public NotificationEvent.NotificationRemovedEvent(@NonNull android.service.notification.StatusBarNotification, @NonNull android.service.notification.NotificationListenerService.RankingMap, int);
+    method public int getEventType();
+    method @NonNull public android.service.notification.NotificationListenerService.RankingMap getRankingMap();
+    method public int getReason();
+    method @NonNull public android.service.notification.StatusBarNotification getStatusBarNotification();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class NotificationHint extends android.service.personalcontext.hint.ContextHint {
+    method public int getHintType();
+    method @NonNull public android.service.personalcontext.hint.NotificationEvent getNotificationEvent();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationHint.NotificationHintBuilder {
+    ctor public NotificationHint.NotificationHintBuilder(@NonNull android.service.personalcontext.hint.NotificationEvent);
+    method @NonNull public android.service.personalcontext.hint.NotificationHint build();
   }
 
 }
