@@ -581,6 +581,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-pip-PipInDesktopWindowingTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
       "keywords": [
         "device",
