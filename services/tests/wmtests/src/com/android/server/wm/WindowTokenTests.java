@@ -298,7 +298,7 @@ public class WindowTokenTests extends WindowTestsBase {
         // Pre-condition: make the IME window be controlled by IME insets provider.
         mDisplayContent.getInsetsStateController()
                 .getOrCreateSourceProvider(ID_IME, WindowInsets.Type.ime())
-                .setWindow(mDisplayContent.mInputMethodWindow, null, null);
+                .setWindow(mDisplayContent.getImeWindow(), null, null);
 
         // Simulate an app window to be the IME layering target, assume the app window has no
         // frozen insets state by default.
@@ -310,7 +310,7 @@ public class WindowTokenTests extends WindowTestsBase {
         // Verify invoking setInsetsFrozen shouldn't let IME window setting the frozen insets state.
         app.mToken.setInsetsFrozen(true);
         assertNotNull(app.getFrozenInsetsState());
-        assertNull(mDisplayContent.mInputMethodWindow.getFrozenInsetsState());
+        assertNull(mDisplayContent.getImeWindow().getFrozenInsetsState());
     }
 
     @Test

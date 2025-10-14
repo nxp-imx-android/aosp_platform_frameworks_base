@@ -1981,7 +1981,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 // IME window is always touchable.
                 // Ignore non-touchable windows e.g. Stylus InkWindow.java.
                 && (win.mAttrs.flags & FLAG_NOT_TOUCHABLE) == 0) {
-            displayContent.setInputMethodWindowLocked(win);
+            displayContent.setImeWindow(win);
             imMayMove = false;
         } else if (type == TYPE_INPUT_METHOD_DIALOG) {
             displayContent.computeImeLayeringTarget(true /* update */);
@@ -2246,8 +2246,8 @@ public class WindowManagerService extends IWindowManager.Stub
         ProtoLog.v(WM_DEBUG_WINDOW_MOVEMENT, "Final remove of window: %s", win);
 
         final DisplayContent displayContent = win.getDisplayContent();
-        if (displayContent.mInputMethodWindow == win) {
-            displayContent.setInputMethodWindowLocked(null);
+        if (displayContent.getImeWindow() == win) {
+            displayContent.setImeWindow(null /* win */);
         }
 
         final WindowToken token = win.mToken;
@@ -2729,8 +2729,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     focusMayChange = true;
                 }
                 if (win.mAttrs.type == TYPE_INPUT_METHOD
-                        && displayContent.mInputMethodWindow == null) {
-                    displayContent.setInputMethodWindowLocked(win);
+                        && displayContent.getImeWindow() == null) {
+                    displayContent.setImeWindow(win);
                     imMayMove = true;
                 }
                 win.adjustStartingWindowFlags();
@@ -6973,8 +6973,8 @@ public class WindowManagerService extends IWindowManager.Stub
             // get the right IME touch region.
             for (int i = mRoot.mChildren.size() - 1; i >= 0; --i) {
                 final DisplayContent displayContent = mRoot.mChildren.get(i);
-                if (displayContent.mInputMethodWindow != null) {
-                    displayContent.mInputMethodWindow.getTouchableRegion(r);
+                if (displayContent.getImeWindow() != null) {
+                    displayContent.getImeWindow().getTouchableRegion(r);
                     return r;
                 }
             }
@@ -7113,7 +7113,7 @@ public class WindowManagerService extends IWindowManager.Stub
             if (topFocusedDisplayContent.mFocusedApp != null) {
                 topFocusedDisplayContent.mFocusedApp.writeNameToProto(proto, FOCUSED_APP);
             }
-            final WindowState imeWindow = mRoot.getCurrentInputMethodWindow();
+            final WindowState imeWindow = mRoot.getCurrentImeWindow();
             if (imeWindow != null) {
                 imeWindow.writeIdentifierToProto(proto, INPUT_METHOD_WINDOW);
             }
@@ -7232,7 +7232,7 @@ public class WindowManagerService extends IWindowManager.Stub
         dumpAccessibilityController(pw, /* force= */ false);
 
         if (dumpAll) {
-            final WindowState imeWindow = mRoot.getCurrentInputMethodWindow();
+            final WindowState imeWindow = mRoot.getCurrentImeWindow();
             if (imeWindow != null) {
                 pw.print("  mInputMethodWindow="); pw.println(imeWindow);
             }
@@ -7705,7 +7705,7 @@ public class WindowManagerService extends IWindowManager.Stub
     public void requestImeKeyboardShortcuts(IResultReceiver receiver, int deviceId) {
         enforceRegisterWindowManagerListenersPermission("requestImeKeyboardShortcuts");
 
-        WindowState imeWindow = mRoot.getCurrentInputMethodWindow();
+        final WindowState imeWindow = mRoot.getCurrentImeWindow();
         if (imeWindow == null || imeWindow.mClient == null) {
             notifyReceiverWithEmptyBundle(receiver);
             return;

@@ -1504,7 +1504,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     public void testRequestKeyboardShortcuts_noWindow() {
         doNothing().when(mWm.mContext).enforceCallingOrSelfPermission(anyString(), anyString());
         doReturn(null).when(mWm).getFocusedWindowLocked();
-        doReturn(null).when(mWm.mRoot).getCurrentInputMethodWindow();
+        doReturn(null).when(mWm.mRoot).getCurrentImeWindow();
 
         TestResultReceiver receiver = new TestResultReceiver();
         mWm.requestAppKeyboardShortcuts(receiver, 0);
@@ -1526,7 +1526,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 TYPE_BASE_APPLICATION).setDisplay(mDisplayContent).setClientWindow(window).build();
         doNothing().when(mWm.mContext).enforceCallingOrSelfPermission(anyString(), anyString());
         doReturn(windowState).when(mWm).getFocusedWindowLocked();
-        doReturn(windowState).when(mWm.mRoot).getCurrentInputMethodWindow();
+        doReturn(windowState).when(mWm.mRoot).getCurrentImeWindow();
 
         TestResultReceiver receiver = new TestResultReceiver();
         mWm.requestAppKeyboardShortcuts(receiver, 0);

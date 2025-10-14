@@ -443,13 +443,13 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         doReturn(false).when(firstActivityWin).canBeImeLayeringTarget();
         doReturn(true).when(secondActivityWin).canBeImeLayeringTarget();
 
-        spyOn(mDisplay.mInputMethodWindow);
+        spyOn(mDisplay.getImeWindow());
         imeLayeringTarget = mDisplay.computeImeLayeringTarget(true /* update */);
 
         assertThat(imeLayeringTarget).isEqualTo(secondActivityWin);
         verify(mSecondRoot).placeImeContainer(imeContainer);
         // verify hide() was called on InputMethodWindow.
-        verify(mDisplay.mInputMethodWindow).hide(false /* doAnimation */, false /* requestAnim */);
+        verify(mDisplay.getImeWindow()).hide(false /* doAnimation */, false /* requestAnim */);
     }
 
     @Test
@@ -561,7 +561,7 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("mImeWindow", TYPE_INPUT_METHOD).setDisplay(
                 mDisplay).build();
         imeWindow.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
-        mDisplay.mInputMethodWindow = imeWindow;
+        mDisplay.setImeWindowForTesting(imeWindow);
     }
 
     @NonNull

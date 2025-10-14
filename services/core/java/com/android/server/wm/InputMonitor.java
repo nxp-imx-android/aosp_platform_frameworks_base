@@ -423,8 +423,8 @@ final class InputMonitor {
                     requestFocus(recentsAnimationInputConsumer.mWindowHandle.token,
                             recentsAnimationInputConsumer.mName);
                 }
-                if (mDisplayContent.mInputMethodWindow != null
-                        && mDisplayContent.mInputMethodWindow.isVisible()) {
+                final WindowState imeWindow = mDisplayContent.getImeWindow();
+                if (imeWindow != null && imeWindow.isVisible()) {
                     // Hiding IME/IME icon when recents input consumer gain focus.
                     final boolean isImeAttachedToApp = mDisplayContent.isImeAttachedToApp();
                     if (!isImeAttachedToApp) {
