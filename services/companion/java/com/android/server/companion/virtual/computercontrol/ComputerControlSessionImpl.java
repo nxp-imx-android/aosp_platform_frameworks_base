@@ -165,7 +165,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final VirtualDpad mVirtualDpad;
     @Nullable
     private final VirtualKeyboard mVirtualKeyboard;
+    @Nullable // only until the Flags.computerControlInterceptAudio() is removed
     private final ComputerControlAudioCapture mAudioCapture;
+    @Nullable // only until the Flags.computerControlInterceptAudio() is removed
     private final ComputerControlAudioInjector mAudioInjector;
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
@@ -267,13 +269,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAllowlistedPackages.addAll(mParams.getTargetPackageNames());
         mAllowlistedPackages.add(CUSTOM_BLOCKED_APP_PACKAGE);
 
-        final VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
-                .setName(mParams.getName())
-                .setDevicePolicy(POLICY_TYPE_AUDIO, DEVICE_POLICY_CUSTOM)
-                .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
-                .setDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS, DEVICE_POLICY_CUSTOM)
-                .setAllowedUsers(allowedUsers)
-                .build();
+        final VirtualDeviceParams.Builder virtualDeviceParamsBuilder =
+                new VirtualDeviceParams.Builder()
+                    .setName(mParams.getName())
+                    .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
+                    .setDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS,
+                            DEVICE_POLICY_CUSTOM)
+                    .setAllowedUsers(allowedUsers);
+        if (Flags.computerControlInterceptAudio()) {
+            virtualDeviceParamsBuilder.setDevicePolicy(POLICY_TYPE_AUDIO, DEVICE_POLICY_CUSTOM);
+        }
+        final VirtualDeviceParams virtualDeviceParams = virtualDeviceParamsBuilder.build();
 
         int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
@@ -351,13 +357,18 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             .build();
             mVirtualTouchscreen = mVirtualDevice.createVirtualTouchscreen(virtualTouchscreenConfig);
 
-            // Take control of the audio streams
-            VirtualAudioDevice virtualAudioDevice = mVirtualDevice.createVirtualAudioDevice(
-                    mVirtualDisplay, null, null);
-            mAudioInjector = new ComputerControlAudioInjector(virtualAudioDevice);
-            mAudioInjector.startAudioInjection();
-            mAudioCapture = new ComputerControlAudioCapture(virtualAudioDevice);
-            mAudioCapture.startAudioCapture();
+            if (Flags.computerControlInterceptAudio()) {
+                // Take control of the audio streams
+                VirtualAudioDevice virtualAudioDevice = mVirtualDevice.createVirtualAudioDevice(
+                        mVirtualDisplay, null, null);
+                mAudioInjector = new ComputerControlAudioInjector(virtualAudioDevice);
+                mAudioInjector.startAudioInjection();
+                mAudioCapture = new ComputerControlAudioCapture(virtualAudioDevice);
+                mAudioCapture.startAudioCapture();
+            } else {
+                mAudioInjector = null;
+                mAudioCapture = null;
+            }
 
             mAppToken.linkToDeath(this, 0);
             startSessionCloseGlobalTimeout();
@@ -595,8 +606,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         cancelOngoingKeyGestures();
         cancelOngoingTouchGestures();
         cancelPendingCloseSession();
-        mAudioInjector.stopAudioInjection();
-        mAudioCapture.stopAudioCapture();
+        if (mAudioInjector != null) {
+            mAudioInjector.stopAudioInjection();
+        }
+        if (mAudioCapture != null) {
+            mAudioCapture.stopAudioCapture();
+        }
         mVirtualDevice.close(); // closes also the VirtualAudioDevice
         mAppToken.unlinkToDeath(this, 0);
         mOnClosedListener.accept(this);

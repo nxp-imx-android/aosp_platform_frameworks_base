@@ -346,3 +346,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "computer_control_intercept_audio"
+    namespace: "virtual_devices"
+    description: "Intercept audio streams for playback and capture on a ComputerControlSession"
+    bug: "446853112"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
