@@ -26,6 +26,7 @@ import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.media.dialog.MediaOutputDialog
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.media.dialog.MediaSwitchingType
@@ -36,6 +37,11 @@ import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDet
 import com.android.systemui.volume.panel.component.mediaoutput.domain.model.MediaOutputComponentModel
 import com.android.systemui.volume.panel.dagger.scope.VolumePanelScope
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 
 /** User actions interactor for Media Output Volume Panel component. */
 @VolumePanelScope
@@ -43,6 +49,8 @@ class MediaOutputActionsInteractor
 @Inject
 constructor(
     @Application private val context: Context,
+    @VolumePanelScope private val coroutineScope: CoroutineScope,
+    @Main private val mainDispatcher: CoroutineDispatcher,
     private val mediaOutputDialogManager: MediaOutputDialogManager,
     private val qsPanelAppearanceRepository: QSPanelAppearanceRepository,
     private val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
@@ -60,47 +68,68 @@ constructor(
             if (expandedAudioTileDetailsFeatureInteractor.isEnabled()) {
                 object : MediaOutputDialog.OnDialogEventListener {
                     override fun onConfigurationChanged(dialog: Dialog, newConfig: Configuration) {
-                        updateDialogBounds(dialog, qsPanelAppearanceRepository.qsPanelShape.value)
+                        coroutineScope.launch {
+                            updateDialogBounds(
+                                dialog,
+                                qsPanelAppearanceRepository.qsPanelShape.value
+                            )
+                        }
                     }
 
                     override fun onCreate(dialog: Dialog) {
-                        updateDialogBounds(dialog, qsPanelAppearanceRepository.qsPanelShape.value)
+                        coroutineScope.launch {
+                            updateDialogBounds(
+                                dialog,
+                                qsPanelAppearanceRepository.qsPanelShape.value
+                            )
+                        }
                     }
                 }
             } else {
                 null
             }
 
-        if (model is MediaOutputComponentModel.MediaSession) {
-            mediaOutputDialogManager.createAndShowWithController(
-                packageName = model.session.packageName,
-                aboveStatusBar = false,
-                controller = expandable?.dialogController(),
-                onDialogEventListener = onDialogEventListener,
-                mediaSwitchingType = mediaSwitchingType,
-            )
-        } else {
-            mediaOutputDialogManager.createAndShowForSystemRouting(
-                expandable?.dialogController(),
-                onDialogEventListener,
-                mediaSwitchingType,
-            )
+        coroutineScope.launch {
+            if (model is MediaOutputComponentModel.MediaSession) {
+                suspendCancellableCoroutine { continuation ->
+                    mediaOutputDialogManager.createAndShowWithController(
+                        packageName = model.session.packageName,
+                        aboveStatusBar = false,
+                        controller = expandable?.dialogController(),
+                        onDialogEventListener = onDialogEventListener,
+                        mediaSwitchingType = mediaSwitchingType,
+                    )
+                    continuation.invokeOnCancellation { mediaOutputDialogManager.dismiss() }
+                }
+            } else {
+                suspendCancellableCoroutine { continuation ->
+                    mediaOutputDialogManager.createAndShowForSystemRouting(
+                        expandable?.dialogController(),
+                        onDialogEventListener,
+                        mediaSwitchingType,
+                    )
+                    continuation.invokeOnCancellation { mediaOutputDialogManager.dismiss() }
+                }
+            }
         }
     }
 
-    private fun updateDialogBounds(dialog: Dialog, shape: ShadeScrimShape?) {
-        if (shape == null) {
-            return
+    private suspend fun updateDialogBounds(dialog: Dialog, shape: ShadeScrimShape?) {
+        // Update the dialog UI on main thread.
+        withContext(mainDispatcher) {
+            if (shape == null) {
+                return@withContext
+            }
+            val qsPanelBounds = shape.bounds
+            val lp: WindowManager.LayoutParams = dialog.window!!.attributes
+            lp.gravity = Gravity.TOP or Gravity.LEFT
+            lp.width = mDesktopDialogWidth
+            lp.height = mDesktopDialogHeight
+            // Position the dialog at the center of the qsPanelBounds
+            lp.x = (qsPanelBounds.left + qsPanelBounds.right - mDesktopDialogWidth).toInt() / 2
+            lp.y = (qsPanelBounds.top + qsPanelBounds.bottom - mDesktopDialogHeight).toInt() / 2
+            dialog.window!!.attributes = lp
         }
-        val qsPanelBounds = shape.bounds
-        val lp: WindowManager.LayoutParams = dialog.window!!.attributes
-        lp.gravity = Gravity.TOP or Gravity.LEFT
-        lp.width = mDesktopDialogWidth
-        lp.height = mDesktopDialogHeight
-        // Position the dialog at the center of the qsPanelBounds
-        lp.x = (qsPanelBounds.left + qsPanelBounds.right - mDesktopDialogWidth).toInt() / 2
-        lp.y = (qsPanelBounds.top + qsPanelBounds.bottom - mDesktopDialogHeight).toInt() / 2
-        dialog.window!!.attributes = lp
     }
 
     private fun Expandable.dialogController(): DialogTransitionAnimator.Controller? {
