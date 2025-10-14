@@ -699,6 +699,16 @@ flag {
 }
 
 flag {
+    name: "heads_up_style_provider_display_aware"
+    namespace: "systemui"
+    description: "Make HeadsUpStyleProvider display aware"
+    bug: "432401846"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "pin_input_field_styled_focus_state"
    namespace: "systemui"
    description: "Enables styled focus states on pin input field if keyboard is connected"
