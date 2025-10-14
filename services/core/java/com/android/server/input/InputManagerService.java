@@ -382,6 +382,9 @@ public class InputManagerService extends IInputManager.Stub
     // Manages Keyboard modifier keys remapping
     private final ModifierKeyRemapper mModifierKeyRemapper;
 
+    // Manages Controller remapping
+    private final InputDeviceRemapper mInputDeviceRemapper;
+
     // Manages Keyboard glyphs for specific keyboards
     private final KeyboardGlyphManager mKeyboardGlyphManager;
 
@@ -575,6 +578,8 @@ public class InputManagerService extends IInputManager.Stub
                 mContext, mContext.getMainThreadHandler(), this);
         mModifierKeyRemapper = new ModifierKeyRemapper(mContext, mNative, mDataStore,
                 injector.getLooper());
+        mInputDeviceRemapper = new InputDeviceRemapper(mContext, mNative,
+                injector.getLooper());
         mKeyboardGlyphManager = new KeyboardGlyphManager(mContext, injector.getLooper());
         mPointerIconCache = new PointerIconCache(mContext, mNative);
 
@@ -699,6 +704,7 @@ public class InputManagerService extends IInputManager.Stub
         mKeyboardBacklightController.systemRunning();
         mKeyboardLedController.systemRunning();
         mModifierKeyRemapper.systemRunning();
+        mInputDeviceRemapper.systemRunning();
         mPointerIconCache.systemRunning();
         mKeyboardGlyphManager.systemRunning();
         mKeyGestureController.systemRunning();
@@ -3154,6 +3160,56 @@ public class InputManagerService extends IInputManager.Stub
         return mModifierKeyRemapper.getKeyRemapping();
     }
 
+    @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
+    @Override // Binder call
+    public void remapControllerButton(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier identifier,
+            @InputManager.ControllerButton int fromButton, int toKeyCode) {
+        super.remapControllerButton_enforcePermission();
+        if (!isControllerButton(fromButton)) {
+            throw new IllegalArgumentException(
+                    "Invalid controller fromButton provided for remapping: "
+                            + KeyEvent.keyCodeToString(fromButton));
+        }
+        if (!KeyEvent.isGamepadButton(toKeyCode)) {
+            throw new IllegalArgumentException(
+                    "Invalid controller toKeyCode for remapping: " + KeyEvent.keyCodeToString(
+                            toKeyCode));
+        }
+        mInputDeviceRemapper.remapKey(userId, identifier, fromButton, toKeyCode);
+    }
+
+    @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
+    @Override // Binder call
+    public void removeControllerButtonRemapping(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier identifier,
+            @InputManager.ControllerButton int fromButton) {
+        super.removeControllerButtonRemapping_enforcePermission();
+        if (!isControllerButton(fromButton)) {
+            throw new IllegalArgumentException(
+                    "Invalid controller fromButton provided for remapping: "
+                            + KeyEvent.keyCodeToString(fromButton));
+        }
+        mInputDeviceRemapper.removeKeyRemapping(userId, identifier, fromButton);
+    }
+
+    @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
+    @Override // Binder call
+    public void clearAllControllerButtonRemapping(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier identifier) {
+        super.clearAllControllerButtonRemapping_enforcePermission();
+        mInputDeviceRemapper.clearAllKeyRemapping(userId, identifier);
+    }
+
+    @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
+    @NonNull
+    @Override // Binder call
+    public Map<Integer, Integer> getControllerButtonRemapping(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier identifier) {
+        super.getControllerButtonRemapping_enforcePermission();
+        return mInputDeviceRemapper.getKeyRemapping(userId, identifier);
+    }
+
     // Native callback.
     @SuppressWarnings("unused")
     private String getDeviceAlias(String uniqueId) {
@@ -3343,6 +3399,7 @@ public class InputManagerService extends IInputManager.Stub
 
     private void handleCurrentUserChanged(@UserIdInt int userId) {
         mKeyGestureController.setCurrentUserId(userId);
+        mInputDeviceRemapper.setCurrentUserId(userId);
     }
 
     private void checkDisplayAssociationPermission(int displayId, int callingUid) {
@@ -4264,6 +4321,25 @@ public class InputManagerService extends IInputManager.Stub
     @Nullable
     String getPhysicalLocationPath(int deviceId) {
         return mNative.getPhysicalLocationPath(deviceId);
+    }
+
+    private boolean isControllerButton(int locationCode) {
+        return switch (locationCode) {
+            case InputManager.ControllerButton.CONTROLLER_BUTTON_SOUTH,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_EAST,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_NORTH,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_WEST,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_L1,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_R1,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_L2,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_R2,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_SELECT,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_START,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_MODE,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_THUMBSTICK_LEFT,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_THUMBSTICK_RIGHT -> true;
+            default -> false;
+        };
     }
 
     interface KeyboardBacklightControllerInterface {

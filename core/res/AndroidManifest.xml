@@ -8909,6 +8909,14 @@
     <permission android:name="android.permission.REMAP_MODIFIER_KEYS"
                 android:protectionLevel="signature" />
 
+    <!-- Allows low-level access to re-map controllers.
+         <p>Not for use by third-party applications.
+         @hide
+         @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING) -->
+    <permission android:name="android.permission.CONTROLLER_REMAPPING"
+                android:protectionLevel="signature"
+                android:featureFlag="com.android.hardware.input.controller_remapping" />
+
     <!-- Allows low-level access to monitor keyboard backlight changes.
          <p>Not for use by third-party applications.
          @hide -->
