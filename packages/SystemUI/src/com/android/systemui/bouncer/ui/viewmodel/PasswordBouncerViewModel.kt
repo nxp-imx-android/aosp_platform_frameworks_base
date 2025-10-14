@@ -96,6 +96,12 @@ constructor(
     /** Hides the password if it's been revealed and there was no user interaction. */
     private val HIDE_PASSWORD_DELAY = 5.seconds
 
+    /**
+     * Clears the password if it's possible to reveal it and there was no change in input text
+     * contents for this time.
+     */
+    private val CLEAR_PASSWORD_IF_REVEALABLE_DELAY = 30.seconds
+
     private val _selectedUserId = MutableStateFlow(selectedUserInteractor.getSelectedUserId())
     /** The ID of the currently-selected user. */
     val selectedUserId: StateFlow<Int> = _selectedUserId.asStateFlow()
@@ -166,6 +172,17 @@ constructor(
                         merge(textChangeEvents, revealEvents).debounce(HIDE_PASSWORD_DELAY)
 
                     hidePasswordTrigger.collect { _isPasswordRevealed.value = false }
+                }
+
+                // It is possible to reveal the password through a button. Make sure to clear it
+                // after inactivity.
+                launch {
+                    val textChangeEvents = snapshotFlow { textFieldState.text }.map { Unit }
+                    textChangeEvents.debounce(CLEAR_PASSWORD_IF_REVEALABLE_DELAY).collect {
+                        if (isMoreIndicatorsAndButtonsEnabled) {
+                            textFieldState.clearText()
+                        }
+                    }
                 }
                 awaitCancellation()
             }
