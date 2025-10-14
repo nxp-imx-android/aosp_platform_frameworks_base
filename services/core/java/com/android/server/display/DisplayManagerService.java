@@ -4097,6 +4097,23 @@ public final class DisplayManagerService extends SystemService {
     }
 
     /**
+     * Stop the DisplayPowerControllers and LocalDisplayAdapters.
+     */
+    @VisibleForTesting
+    void stop() {
+        synchronized (mSyncRoot) {
+            for (int i = 0; i < mDisplayPowerControllers.size(); i++) {
+                mDisplayPowerControllers.valueAt(i).stop();
+            }
+            for (DisplayAdapter adapter : mDisplayAdapters) {
+                if (adapter instanceof LocalDisplayAdapter) {
+                    ((LocalDisplayAdapter) adapter).stop();
+                }
+            }
+        }
+    }
+
+    /**
      * This is the object that everything in the display manager locks on.
      * We make it an inner class within the {@link DisplayManagerService} to so that it is
      * clear that the object belongs to the display manager service and that it is
