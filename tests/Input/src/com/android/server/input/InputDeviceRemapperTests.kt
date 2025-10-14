@@ -23,6 +23,7 @@ import android.platform.test.annotations.Presubmit
 import android.testing.TestableContext
 import android.view.InputDevice
 import android.view.KeyEvent
+import android.view.MotionEvent
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.testutils.TestUtils
@@ -182,7 +183,7 @@ class InputDeviceRemapperTests {
     }
 
     @Test
-    fun testDeviceRemoved_removesRemapping() {
+    fun testDeviceRemoved_removesKeyRemapping() {
         setupControllerRemapper()
         val deviceId = 1
         val device = createDevice(deviceId, vendorId = 123, productId = 456)
@@ -201,7 +202,7 @@ class InputDeviceRemapperTests {
     }
 
     @Test
-    fun testSetCurrentUser_appliesRemapping() {
+    fun testSetCurrentUser_appliesKeyRemapping() {
         setupControllerRemapper()
         val deviceId = 1
         val userId = 0
@@ -229,6 +230,205 @@ class InputDeviceRemapperTests {
                 eq(deviceId),
                 eq(intArrayOf(KeyEvent.KEYCODE_1)),
                 eq(intArrayOf(KeyEvent.KEYCODE_2)),
+            )
+    }
+
+    @Test
+    fun testRemapAxis_appliesToCorrectDevice() {
+        setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        reset(native)
+
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+                eq(intArrayOf(MotionEvent.AXIS_Y)),
+            )
+        assertEquals(
+            mInputDeviceRemapper.getAxisRemappings(/* userId= */ 0, device.identifier),
+            mapOf(MotionEvent.AXIS_X to MotionEvent.AXIS_Y),
+        )
+    }
+
+    @Test
+    fun testRemapAxis_doesNotApplyToKeyboard() {
+        setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        reset(native)
+
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+
+        verify(native, never()).setAxisRemappingForDevice(eq(deviceId), any(), any())
+    }
+
+    @Test
+    fun testRemoveAxisRemapping() {
+        setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_Y,
+            MotionEvent.AXIS_Z,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        reset(native)
+
+        mInputDeviceRemapper.removeAxisRemapping(
+            /* userId= */ 0,
+            device.identifier,
+            MotionEvent.AXIS_X,
+        )
+
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_Y)),
+                eq(intArrayOf(MotionEvent.AXIS_Z)),
+            )
+        assertEquals(
+            mInputDeviceRemapper.getAxisRemappings(/* userId= */ 0, device.identifier),
+            mapOf(MotionEvent.AXIS_Y to MotionEvent.AXIS_Z),
+        )
+    }
+
+    @Test
+    fun testClearAllAxisRemappings() {
+        setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_Y,
+            MotionEvent.AXIS_Z,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        reset(native)
+
+        mInputDeviceRemapper.clearAllAxisRemappings(/* userId= */ 0, device.identifier)
+
+        verify(native).setAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+        assertEquals(
+            mInputDeviceRemapper.getAxisRemappings(/* userId= */ 0, device.identifier),
+            mapOf<Int, Int>(),
+        )
+    }
+
+    @Test
+    fun testDeviceRemoved_removesAxisRemappings() {
+        setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        reset(native)
+
+        removeInputDevice(deviceId, device.descriptor)
+
+        verify(native).setAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+    }
+
+    @Test
+    fun testSetCurrentUser_appliesAxisRemappings() {
+        setupControllerRemapper()
+        val deviceId = 1
+        val userId = 0
+        val newUserId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        mInputDeviceRemapper.remapAxis(
+            /* userId = */ 0,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        reset(native)
+
+        // Switch to a different user with no remapping
+        mInputDeviceRemapper.setCurrentUserId(newUserId)
+        TestUtils.flushLoopers(mainLooperManager)
+        verify(native).setAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+
+        // Switch back to the user with remapping
+        mInputDeviceRemapper.setCurrentUserId(userId)
+        TestUtils.flushLoopers(mainLooperManager)
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+                eq(intArrayOf(MotionEvent.AXIS_Y)),
             )
     }
 

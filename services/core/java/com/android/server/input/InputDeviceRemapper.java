@@ -28,9 +28,12 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.UserHandle;
 import android.util.ArrayMap;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -62,6 +65,15 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
     @GuardedBy("mLock")
     private final SparseArray<Map<InputDeviceIdentifier, Map<Integer, Integer>>> mKeyRemappingData =
             new SparseArray<>();
+    /**
+     * A SparseArray where the index is the userId. Each entry is per device axis remapping.
+     * Per device axis mappings are stored as a nested map of InputDeviceIdentifier to axis
+     * remapping.
+     * i.e. [UserId, [InputDeviceIdentifier, [fromAxis, toAxis]]].
+     */
+    @GuardedBy("mLock")
+    private final SparseArray<Map<InputDeviceIdentifier, Map<Integer, Integer>>>
+            mAxisRemappingData = new SparseArray<>();
     @GuardedBy("mLock")
     @UserIdInt
     private int mCurrentUserId = UserHandle.USER_SYSTEM;
@@ -95,6 +107,10 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
 
     public void remapKey(@UserIdInt int userId, @NonNull InputDeviceIdentifier identifier,
             int fromKeyCode, int toKeyCode) {
+        if (fromKeyCode == toKeyCode) {
+            removeKeyRemapping(userId, identifier, fromKeyCode);
+            return;
+        }
         Map<Integer, Integer> remapping;
         synchronized (mLock) {
             if (!mKeyRemappingData.contains(userId)) {
@@ -172,6 +188,93 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
         }
     }
 
+    public void remapAxis(@UserIdInt int userId, @NonNull InputDeviceIdentifier deviceIdentifier,
+            @MotionEvent.Axis int fromAxis, @MotionEvent.Axis int toAxis) {
+        if (fromAxis == toAxis) {
+            removeAxisRemapping(userId, deviceIdentifier, fromAxis);
+            return;
+        }
+        Map<Integer, Integer> deviceRemappings;
+        synchronized (mLock) {
+            if (!mAxisRemappingData.contains(userId)) {
+                mAxisRemappingData.put(userId, new ArrayMap<>());
+            }
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
+                    mAxisRemappingData.get(userId);
+            if (!userRemappings.containsKey(deviceIdentifier)) {
+                userRemappings.put(deviceIdentifier, new ArrayMap<>());
+            }
+            deviceRemappings = userRemappings.get(deviceIdentifier);
+            deviceRemappings.put(fromAxis, toAxis);
+        }
+        findJoystickDeviceAndApplyAxisRemapping(deviceIdentifier, deviceRemappings);
+    }
+
+    public void removeAxisRemapping(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier deviceIdentifier, @MotionEvent.Axis int fromAxis) {
+        Map<Integer, Integer> deviceRemappings;
+        synchronized (mLock) {
+            if (!mAxisRemappingData.contains(userId)) {
+                Slog.d(TAG, "No existing axis remapping for userId = " + userId);
+                return;
+            }
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
+                    mAxisRemappingData.get(userId);
+            if (!userRemappings.containsKey(deviceIdentifier)) {
+                Slog.d(TAG, "No existing axis remapping for device = " + deviceIdentifier);
+                return;
+            }
+            deviceRemappings = userRemappings.get(deviceIdentifier);
+            if (deviceRemappings.remove(fromAxis) == null) {
+                Slog.d(TAG, "No existing axis remapping for device = " + deviceIdentifier
+                        + " for axis = " + fromAxis);
+                return;
+            }
+            if (deviceRemappings.isEmpty()) {
+                userRemappings.remove(deviceIdentifier);
+            }
+            if (userRemappings.isEmpty()) {
+                mAxisRemappingData.remove(userId);
+            }
+        }
+        findJoystickDeviceAndApplyAxisRemapping(deviceIdentifier, deviceRemappings);
+    }
+
+    public void clearAllAxisRemappings(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier deviceIdentifier) {
+        synchronized (mLock) {
+            if (!mAxisRemappingData.contains(userId)) {
+                Slog.d(TAG, "No existing axis remapping for userId = " + userId);
+                return;
+            }
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
+                    mAxisRemappingData.get(userId);
+            if (!userRemappings.containsKey(deviceIdentifier)) {
+                Slog.d(TAG, "No existing axis remapping for device = " + deviceIdentifier);
+                return;
+            }
+            // Cleanup if remapping map is empty
+            userRemappings.remove(deviceIdentifier);
+            if (userRemappings.isEmpty()) {
+                mAxisRemappingData.remove(userId);
+            }
+        }
+        findJoystickDeviceAndApplyAxisRemapping(deviceIdentifier, /* deviceRemappings= */null);
+    }
+
+    @NonNull
+    public Map<Integer, Integer> getAxisRemappings(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier deviceIdentifier) {
+        synchronized (mLock) {
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
+                    mAxisRemappingData.get(userId);
+            if (userRemappings == null) {
+                return new ArrayMap<>();
+            }
+            return userRemappings.getOrDefault(deviceIdentifier, new ArrayMap<>());
+        }
+    }
+
     private boolean handleMessage(Message msg) {
         switch (msg.what) {
             case MSG_UPDATE_EXISTING_DEVICES:
@@ -194,15 +297,18 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
         if (device == null) {
             return;
         }
-        if (!isPhysicalButtonDevice(device)) {
-            return;
+        if (isPhysicalButtonDevice(device)) {
+            setKeyRemapping(deviceId, getKeyRemapping(mCurrentUserId, device.getIdentifier()));
         }
-        setKeyRemapping(deviceId, getKeyRemapping(mCurrentUserId, device.getIdentifier()));
+        if (isPhysicalJoystickDevice(device)) {
+            setAxisRemapping(deviceId, getAxisRemappings(mCurrentUserId, device.getIdentifier()));
+        }
     }
 
     @Override
     public void onInputDeviceRemoved(int deviceId) {
         setKeyRemapping(deviceId, null);
+        setAxisRemapping(deviceId, null);
     }
 
 
@@ -216,6 +322,19 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
             return;
         }
         setKeyRemapping(device.getId(), remapping);
+    }
+
+    private void findJoystickDeviceAndApplyAxisRemapping(
+            @NonNull InputDeviceIdentifier deviceIdentifier,
+            @Nullable Map<Integer, Integer> deviceRemappings) {
+        InputDevice device = getDeviceByIdentifier(deviceIdentifier);
+        if (device == null) {
+            return;
+        }
+        if (!isPhysicalJoystickDevice(device)) {
+            return;
+        }
+        setAxisRemapping(device.getId(), deviceRemappings);
     }
 
     private void setKeyRemapping(int deviceId, @Nullable Map<Integer, Integer> keyRemapping) {
@@ -237,10 +356,102 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
         mNative.setKeyRemappingForDevice(deviceId, fromKeycodeArr, toKeycodeArr);
     }
 
+    private void setAxisRemapping(int deviceId, @Nullable Map<Integer, Integer> deviceRemappings) {
+        int[] fromAxisArr;
+        int[] toAxisArr;
+        if (deviceRemappings == null) {
+            fromAxisArr = new int[0];
+            toAxisArr = new int[0];
+        } else {
+            fromAxisArr = new int[deviceRemappings.size()];
+            toAxisArr = new int[deviceRemappings.size()];
+            int index = 0;
+            for (Map.Entry<Integer, Integer> entry : deviceRemappings.entrySet()) {
+                fromAxisArr[index] = entry.getKey();
+                toAxisArr[index] = entry.getValue();
+                index++;
+            }
+        }
+        mNative.setAxisRemappingForDevice(deviceId, fromAxisArr, toAxisArr);
+    }
+
+    @Nullable
+    private InputDevice getDeviceByIdentifier(@NonNull InputDeviceIdentifier identifier) {
+        return mInputManager.getInputDeviceByDescriptor(identifier.getDescriptor());
+    }
+
     private static boolean isPhysicalButtonDevice(@NonNull InputDevice inputDevice) {
         if (!inputDevice.isPhysicalDevice()) {
             return false;
         }
         return (inputDevice.getSources() & InputDevice.SOURCE_CLASS_BUTTON) != 0;
+    }
+
+    private static boolean isPhysicalJoystickDevice(@NonNull InputDevice inputDevice) {
+        if (!inputDevice.isPhysicalDevice()) {
+            return false;
+        }
+        return (inputDevice.getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0;
+    }
+
+    public void dump(IndentingPrintWriter ipw) {
+        ipw.println("Input Device Remapper State:");
+        ipw.increaseIndent();
+        synchronized (mLock) {
+            ipw.println("Current user ID: " + mCurrentUserId);
+            ipw.println("Key Remapping Data:");
+            ipw.increaseIndent();
+            if (mKeyRemappingData.size() == 0) {
+                ipw.println("<none>");
+            } else {
+                for (int i = 0; i < mKeyRemappingData.size(); i++) {
+                    int userId = mKeyRemappingData.keyAt(i);
+                    ipw.println("User " + userId + ":");
+                    ipw.increaseIndent();
+                    Map<InputDeviceIdentifier, Map<Integer, Integer>> deviceMap =
+                            mKeyRemappingData.valueAt(i);
+                    for (Map.Entry<InputDeviceIdentifier, Map<Integer, Integer>> entry :
+                            deviceMap.entrySet()) {
+                        ipw.println("Device: " + entry.getKey());
+                        ipw.increaseIndent();
+                        for (Map.Entry<Integer, Integer> remapEntry :
+                                entry.getValue().entrySet()) {
+                            ipw.println(KeyEvent.keyCodeToString(remapEntry.getKey()) + " -> "
+                                    + KeyEvent.keyCodeToString(remapEntry.getValue()));
+                        }
+                        ipw.decreaseIndent();
+                    }
+                    ipw.decreaseIndent();
+                }
+            }
+            ipw.decreaseIndent();
+
+            ipw.println("Axis Remapping Data:");
+            ipw.increaseIndent();
+            if (mAxisRemappingData.size() == 0) {
+                ipw.println("<none>");
+            } else {
+                for (int i = 0; i < mAxisRemappingData.size(); i++) {
+                    int userId = mAxisRemappingData.keyAt(i);
+                    ipw.println("User " + userId + ":");
+                    ipw.increaseIndent();
+                    Map<InputDeviceIdentifier, Map<Integer, Integer>> deviceMap =
+                            mAxisRemappingData.valueAt(i);
+                    for (Map.Entry<InputDeviceIdentifier, Map<Integer, Integer>> entry :
+                            deviceMap.entrySet()) {
+                        ipw.println("Device: " + entry.getKey());
+                        ipw.increaseIndent();
+                        for (Map.Entry<Integer, Integer> remapEntry : entry.getValue().entrySet()) {
+                            ipw.println(MotionEvent.axisToString(remapEntry.getKey()) + " -> "
+                                    + MotionEvent.axisToString(remapEntry.getValue()));
+                        }
+                        ipw.decreaseIndent();
+                    }
+                    ipw.decreaseIndent();
+                }
+            }
+        }
+        ipw.decreaseIndent();
+        ipw.decreaseIndent();
     }
 }
