@@ -406,11 +406,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     private int mLocaleConfigRes;
     private boolean mAllowCrossUidActivitySwitchFromBelow;
 
-    @Nullable
-    private int[] mAlternateLauncherIconResIds;
-    @Nullable
-    private int[] mAlternateLauncherLabelResIds;
-
     private List<AndroidPackageSplit> mSplits;
 
     @NonNull
@@ -876,18 +871,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Override
     public List<String> getAdoptPermissions() {
         return adoptPermissions;
-    }
-
-    @Nullable
-    @Override
-    public int[] getAlternateLauncherIconResIds() {
-        return mAlternateLauncherIconResIds;
-    }
-
-    @Nullable
-    @Override
-    public int[] getAlternateLauncherLabelResIds() {
-        return mAlternateLauncherLabelResIds;
     }
 
     @NonNull
@@ -1909,19 +1892,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Override
     public PackageImpl setAllowNativeHeapPointerTagging(boolean value) {
         return setBoolean(Booleans.ALLOW_NATIVE_HEAP_POINTER_TAGGING, value);
-    }
-
-    @Override
-    public PackageImpl setAlternateLauncherIconResIds(@Nullable int[] alternateLauncherIconResIds) {
-        this.mAlternateLauncherIconResIds = alternateLauncherIconResIds;
-        return this;
-    }
-
-    @Override
-    public PackageImpl setAlternateLauncherLabelResIds(
-            @Nullable int[] alternateLauncherLabelResIds) {
-        this.mAlternateLauncherLabelResIds = alternateLauncherLabelResIds;
-        return this;
     }
 
     @Override
@@ -3315,8 +3285,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         dest.writeLong(this.mBooleans2);
         dest.writeBoolean(this.mAllowCrossUidActivitySwitchFromBelow);
         dest.writeInt(this.mIntentMatchingFlags);
-        dest.writeIntArray(this.mAlternateLauncherIconResIds);
-        dest.writeIntArray(this.mAlternateLauncherLabelResIds);
         dest.writeInt(this.mPageSizeAppCompatFlags);
     }
 
@@ -3517,8 +3485,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         this.mBooleans2 = in.readLong();
         this.mAllowCrossUidActivitySwitchFromBelow = in.readBoolean();
         this.mIntentMatchingFlags = in.readInt();
-        this.mAlternateLauncherIconResIds = in.createIntArray();
-        this.mAlternateLauncherLabelResIds = in.createIntArray();
         this.mPageSizeAppCompatFlags = in.readInt();
 
         assignDerivedFields();

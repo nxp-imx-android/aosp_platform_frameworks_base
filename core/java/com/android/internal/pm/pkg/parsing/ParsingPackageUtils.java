@@ -157,13 +157,6 @@ public class ParsingPackageUtils {
 
     private static final String TAG = ParsingUtils.TAG;
 
-    // It is the maximum length of the typedArray of {@link android.R.attr#alternateIcons}
-    // and {@link android.R.attr#alternateLabels}.
-    private static final int MAXIMUM_LAUNCHER_ALTERNATE_IDS_LENGTH = 500;
-
-    private static final String TYPE_STRING = "string";
-    private static final String TYPE_DRAWABLE = "drawable";
-
     public static final boolean DEBUG_JAR = false;
     public static final boolean DEBUG_BACKUP = false;
     public static final float DEFAULT_PRE_O_MAX_ASPECT_RATIO = 1.86f;
@@ -2095,24 +2088,6 @@ public class ParsingPackageUtils {
                 pkg.setManageSpaceActivityName(manageSpaceActivityName);
             }
 
-            if (Flags.changeLauncherBadging()) {
-                ParseResult<int[]> result = drawableResIdArray(input, sa, res,
-                        R.styleable.AndroidManifestApplication_alternateLauncherIcons,
-                        MAXIMUM_LAUNCHER_ALTERNATE_IDS_LENGTH);
-                if (result.isError()) {
-                    return input.error(result);
-                }
-                pkg.setAlternateLauncherIconResIds(result.getResult());
-
-                result = stringResIdArray(input, sa, res,
-                        R.styleable.AndroidManifestApplication_alternateLauncherLabels,
-                        MAXIMUM_LAUNCHER_ALTERNATE_IDS_LENGTH);
-                if (result.isError()) {
-                    return input.error(result);
-                }
-                pkg.setAlternateLauncherLabelResIds(result.getResult());
-            }
-
             if (pkg.isBackupAllowed()) {
                 // backupAgent, killAfterRestore, fullBackupContent, backupInForeground,
                 // and restoreAnyVersion are only relevant if backup is possible for the
@@ -3593,95 +3568,6 @@ public class ParsingPackageUtils {
     @AnyRes
     private static int resId(@StyleableRes int attribute, TypedArray sa) {
         return sa.getResourceId(attribute, 0);
-    }
-
-    /**
-     * Parse the drawable resource id array in the typed array {@code resourceId}
-     * if available. If {@code maxSize} is not zero, only parse and preserve at most
-     * {@code maxSize} ids.
-     */
-    private static ParseResult<int[]> drawableResIdArray(ParseInput input, @NonNull TypedArray sa,
-            @NonNull Resources res, int resourceId, int maxSize) {
-        return resIdArray(input, sa, res, resourceId, TYPE_DRAWABLE, maxSize);
-    }
-
-    /**
-     * Parse the string resource id array in the typed array {@code resourceId}
-     * if available. If {@code maxSize} is not zero, only parse and preserve at most
-     * {@code maxSize} ids.
-     */
-    private static ParseResult<int[]> stringResIdArray(ParseInput input, @NonNull TypedArray sa,
-            @NonNull Resources res, int resourceId, int maxSize) {
-        return resIdArray(input, sa, res, resourceId, TYPE_STRING, maxSize);
-    }
-
-    /**
-     * Parse the resource id array in the typed array {@code resourceId}
-     * if available. If {@code maxSize} is larger than zero, only parse and preserve
-     * at most {@code maxSize} ids that type is matched to the {@code expectedTypeName}.
-     * Because the TypedArray allows mixed types in an array, if {@code expectedTypeName}
-     * is null, it means don't check the type.
-     */
-    private static ParseResult<int[]> resIdArray(ParseInput input, @NonNull TypedArray sa,
-            @NonNull Resources res, int resourceId, @Nullable String expectedTypeName,
-            int maxSize) {
-        if (!sa.hasValue(resourceId)) {
-            return input.success(null);
-        }
-
-        final int typeArrayResId = sa.getResourceId(resourceId, /* defValue= */ 0);
-        if (typeArrayResId == 0) {
-            return input.success(null);
-        }
-
-        // Parse the typedArray
-        try (TypedArray typedArray = res.obtainTypedArray(typeArrayResId)) {
-            final String typedArrayName = res.getResourceName(typeArrayResId);
-            final int length = typedArray.length();
-            if (maxSize > 0 && length > maxSize) {
-                return input.error(TextUtils.formatSimple(
-                        "The length of the typedArray (%s) is larger than %d.",
-                        typedArrayName, maxSize));
-            }
-            Set<Integer> resourceIdSet = new ArraySet<>();
-            for (int i = 0; i < length; i++) {
-                final int id = typedArray.getResourceId(i, /* defValue= */ 0);
-                // Add the id when the conditions are all matched:
-                // 1. The resource Id is not 0
-                // 2. The type is the expected type
-                // 3. The id is not duplicated
-                if (id == 0) {
-                    return input.error(TextUtils.formatSimple(
-                            "There is an item that is not a resource id in the typedArray (%s).",
-                            typedArrayName));
-                }
-
-                try {
-                    if (resourceIdSet.contains(id)) {
-                        return input.error(TextUtils.formatSimple(
-                                "There is a duplicated resource (%s) in the typedArray (%s).",
-                                res.getResourceName(id), typedArrayName));
-                    }
-                    final String typeName = res.getResourceTypeName(id);
-                    if (expectedTypeName != null
-                            && !TextUtils.equals(typeName, expectedTypeName)) {
-                        return input.error(TextUtils.formatSimple(
-                                "There is a resource (%s) in the typedArray (%s) that is not a"
-                                        + " %s type.", res.getResourceName(id), typedArrayName,
-                                expectedTypeName));
-                    }
-                } catch (Resources.NotFoundException e) {
-                    return input.error(TextUtils.formatSimple(
-                            "There is a resource in the typedArray (%s) that is not found in"
-                                    + " the app resources.", typedArrayName));
-                }
-                resourceIdSet.add(id);
-            }
-            if (resourceIdSet.isEmpty()) {
-                return input.success(null);
-            }
-            return input.success(resourceIdSet.stream().mapToInt(i -> i).toArray());
-        }
     }
 
     private static String string(@StyleableRes int attribute, TypedArray sa) {
