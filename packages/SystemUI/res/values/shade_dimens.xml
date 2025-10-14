@@ -43,6 +43,11 @@
     <dimen name="overlay_qs_layout_brightness_vertical_padding">6dp</dimen>
     <dimen name="overlay_qs_layout_toolbar_height">48dp</dimen>
 
+    <!-- QS shade layout -->
+    <!-- The horizontal padding and the vertical padding can be different in alternative resources -->
+    <dimen name="overlay_qs_layout_horizontal_padding">16dp</dimen>
+    <dimen name="overlay_qs_layout_vertical_padding">16dp</dimen>
+
     <!-- QS shade overlay volume bar -->
     <dimen name="overlay_qs_layout_volume_vertical_padding">4dp</dimen>
     <dimen name="overlay_qs_layout_volume_thumb_height">

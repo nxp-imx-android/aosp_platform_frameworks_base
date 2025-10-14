@@ -294,7 +294,12 @@ private fun ContentScope.QuickSettingsContainer(
                 EditMode(
                     viewModel = containerViewModel.editModeViewModel,
                     modifier =
-                        modifier.fillMaxWidth().padding(QuickSettingsShade.Dimensions.Padding),
+                        modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = QuickSettingsShade.Dimensions.HorizontalPadding,
+                                vertical = QuickSettingsShade.Dimensions.VerticalPadding,
+                            ),
                 )
             }
 
@@ -330,11 +335,7 @@ private fun ContentScope.QuickSettingsLayout(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier =
-            modifier.padding(
-                start = QuickSettingsShade.Dimensions.Padding,
-                end = QuickSettingsShade.Dimensions.Padding,
-            ),
+        modifier = modifier.padding(horizontal = QuickSettingsShade.Dimensions.HorizontalPadding),
     ) {
         if (isFullWidthShade()) {
             VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
@@ -345,7 +346,7 @@ private fun ContentScope.QuickSettingsLayout(
 
             VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
         } else {
-            VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
+            VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
         }
 
         val toolbarViewModel =
@@ -370,7 +371,7 @@ private fun ContentScope.QuickSettingsLayout(
             )
 
             if (qsContainerViewModel.showMedia) {
-                VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
+                VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
             }
 
             if (qsContainerViewModel.isBrightnessSliderVisible) {
@@ -396,7 +397,7 @@ private fun ContentScope.QuickSettingsLayout(
             if (volumeSliderViewModel != null) {
                 val volumeSliderState by volumeSliderViewModel.slider.collectAsStateWithLifecycle()
 
-                VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
+                VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
                 Box(
                     Modifier.systemGestureExclusionInShade(
                         enabled = { layoutState.transitionState is TransitionState.Idle }
@@ -444,7 +445,7 @@ private fun ContentScope.QuickSettingsLayout(
                 }
             }
 
-            VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
+            VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
 
             GridAnchor()
             TileGrid(
@@ -464,11 +465,11 @@ private fun ContentScope.QuickSettingsLayout(
                     viewModel = buildNumberViewModel,
                     modifier =
                         Modifier.align(Alignment.Start)
-                            .padding(start = QuickSettingsShade.Dimensions.Padding),
+                            .padding(start = QuickSettingsShade.Dimensions.HorizontalPadding),
                 )
             }
 
-            VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
+            VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
         }
     }
 }
@@ -497,6 +498,16 @@ object QuickSettingsShade {
                     brightnessVerticalPadding,
                 )
 
+        val HorizontalPadding: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_horizontal_padding)
+
+        val VerticalPadding: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_vertical_padding)
+
         val volumeSliderDimensions: VolumeSliderDimensions
             @Composable
             @ReadOnlyComposable
@@ -515,7 +526,6 @@ object QuickSettingsShade {
 
         // This is used around the header and toolbar
         val ShortPadding = 8.dp
-        val Padding = 16.dp
 
         private val brightnessThumbHeight: Dp
             @Composable
@@ -565,9 +575,10 @@ object QuickSettingsShade {
     @Composable
     fun Modifier.systemGestureExclusionInShade(enabled: () -> Boolean): Modifier {
         val density = LocalDensity.current
+        val padding = Dimensions.HorizontalPadding
         return thenIf(enabled()) {
             Modifier.systemGestureExclusion { layoutCoordinates ->
-                val sidePadding = with(density) { Dimensions.Padding.toPx() }
+                val sidePadding = with(density) { padding.toPx() }
                 Rect(
                     offset = Offset(x = -sidePadding, y = 0f),
                     size =

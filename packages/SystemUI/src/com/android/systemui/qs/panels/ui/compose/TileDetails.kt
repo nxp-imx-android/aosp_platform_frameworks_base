@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,9 +38,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsContent
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsViewModel
@@ -54,6 +58,7 @@ import com.android.systemui.qs.tiles.dialog.InternetDetailsContent
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.ModesDetailsContent
 import com.android.systemui.qs.tiles.dialog.ModesDetailsViewModel
+import com.android.systemui.res.R
 
 @Composable
 fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewModel) {
@@ -98,7 +103,9 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                 IconButton(
                     onClick = { detailsViewModel.closeDetailedView() },
                     colors = IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                    modifier = Modifier
+                        .size(TileDetailsDefaults.TitleRowButtonSize)
+                        .align(Alignment.CenterVertically),
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -117,7 +124,9 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                 IconButton(
                     onClick = { tileDetailedViewModel.clickOnSettingsButton() },
                     colors = IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                    modifier = Modifier
+                        .size(TileDetailsDefaults.TitleRowButtonSize)
+                        .align(Alignment.CenterVertically),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
@@ -155,9 +164,22 @@ private fun MapTileDetailsContent(tileDetailsViewModel: TileDetailsViewModel) {
 }
 
 private object TileDetailsDefaults {
-    val TitleRowStart = 2.dp
+    val TitleRowButtonSize: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.tile_details_title_row_button_size)
+
+    val TitleRowStart: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.tile_details_title_row_start)
+
+    val TitleRowEnd: Dp
+        @Composable
+        @ReadOnlyComposable
+        get() = dimensionResource(id = R.dimen.tile_details_title_row_end)
+
     val TitleRowTop = 14.dp
-    val TitleRowEnd = 8.dp
     val TitleRowBottom = 2.dp
     val DetailsMaxHeight = 600.dp
     val DetailsMinHeight = 300.dp

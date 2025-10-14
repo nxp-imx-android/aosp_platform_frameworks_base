@@ -543,7 +543,8 @@ private fun ContentScope.SplitShade(
                                         qsContainerViewModel.editModeViewModel,
                                         Modifier.testTag("edit_mode_scene")
                                             .padding(
-                                                horizontal = QuickSettingsShade.Dimensions.Padding
+                                                horizontal =
+                                                    QuickSettingsShade.Dimensions.HorizontalPadding
                                             ),
                                     )
                                 }

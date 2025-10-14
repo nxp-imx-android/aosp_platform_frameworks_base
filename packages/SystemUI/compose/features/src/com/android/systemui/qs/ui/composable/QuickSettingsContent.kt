@@ -130,13 +130,13 @@ private fun QuickSettingsPanelLayout(
 ) {
     if (mediaInRow) {
         Column(
-            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.Padding),
+            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier,
         ) {
             brightness()
             Row(
-                horizontalArrangement = spacedBy(QuickSettingsShade.Dimensions.Padding),
+                horizontalArrangement = spacedBy(QuickSettingsShade.Dimensions.HorizontalPadding),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(modifier = Modifier.weight(1f)) { tiles() }
@@ -145,7 +145,7 @@ private fun QuickSettingsPanelLayout(
         }
     } else {
         Column(
-            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.Padding),
+            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier,
         ) {
