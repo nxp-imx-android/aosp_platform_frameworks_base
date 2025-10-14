@@ -838,9 +838,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     + mParams.getName());
             final var changedState = mLifecycle.updateLifecycleState(
                     (config) -> config.mBlockedActivityVisible = true);
-            if (Flags.computerControlBlockedState()
-                    && !(changedState instanceof LifecycleState.Blocked)) {
-                return;
+            if (Flags.computerControlBlockedState()) {
+                if (!(changedState instanceof LifecycleState.Blocked)) {
+                    return;
+                }
+                if (Flags.computerControlBlockInputAndScreenshots()) {
+                    try {
+                        intentSender.sendIntent(mContext, 0, null, null, null);
+                    } catch (IntentSender.SendIntentException e) {
+                        Slog.e(TAG, "Failed to start blocked activity's intent, closing session.",
+                                e);
+                        close(CLOSE_REASON_CALLER_INITIATED);
+                    }
+                    // Early return to avoid showing the blocked activity dialog.
+                    return;
+                }
             }
             Intent intent = new Intent()
                     .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
