@@ -50,6 +50,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.ResolveInfo;
+import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
@@ -62,6 +63,7 @@ import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
+import android.media.ImageReader;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -181,9 +183,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ViewConfiguration mViewConfiguration;
     private final long mGlobalSessionTimeoutDurationMs;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
-
-    // Keeps track of the current lifecycle state. Thread safe.
-    private final SessionLifecycle mLifecycle = new SessionLifecycle();
+    private final ImageReader mBlockedStateImageReader;
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
@@ -195,15 +195,25 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 @Override
                 public void onActive() {
                     // TODO: b/441475896 - Lock activity policy; Unblock input and display surface.
+
+                    mVirtualDisplay.setSurface(mClientSurface);
                 }
 
                 @Override
                 public void onBlocked(@ComputerControlSession.SessionCloseReason int reason) {
                     cancelOngoingKeyGestures();
                     cancelOngoingTouchGestures();
-                    // In the short term, we don't do anything special when entering the blocked
-                    // state. The state exists to notify the client through the callback.
-                    // TODO: b/441475896 - Block input and display surface; Unlock activity policy.
+
+                    if (Flags.computerControlBlockInputAndScreenshots()) {
+                        // Prevent the client from being able to see the display by disconnecting
+                        // the client surface from the display.
+                        mVirtualDisplay.setSurface(mBlockedStateImageReader.getSurface());
+
+                        // In the short term, we don't do anything special when entering the blocked
+                        // state. The state exists to notify the client through the callback.
+                        // TODO: b/441475896 - Block input and display surface; Unlock activity
+                        //  policy.
+                    }
                 }
 
                 @Override
@@ -212,6 +222,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 }
             };
 
+    // Keeps track of the current lifecycle state. Thread safe.
+    private final SessionLifecycle mLifecycle = new SessionLifecycle(mStateTransitions);
+
     private final Object mNotificationLock = new Object();
     @GuardedBy("mNotificationLock")
     private NotificationInfo mNotificationInfo = null;
@@ -219,6 +232,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
+    @Nullable
     private Surface mClientSurface;
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
@@ -296,6 +310,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mainDisplayInfo.logicalDensityDpi)
                 .setFlags(displayFlags)
                 .build();
+
+        mBlockedStateImageReader = ImageReader.newInstance(displayWidth, displayHeight,
+                PixelFormat.RGBA_8888, /* maxImages= */ 1);
 
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
@@ -376,8 +393,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
             mAppToken.linkToDeath(this, 0);
             startSessionCloseGlobalTimeout();
-
-            mLifecycle.initializeLifecycle(mStateTransitions);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -411,8 +426,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalStateException("Client surface is already initialized");
         }
         mClientSurface = clientSurface;
-        mVirtualDisplay.setSurface(mClientSurface);
-        mLifecycle.setRemoteCallback(callback);
+
+        mLifecycle.initializeWithRemoteCallback(callback);
     }
 
     @Override

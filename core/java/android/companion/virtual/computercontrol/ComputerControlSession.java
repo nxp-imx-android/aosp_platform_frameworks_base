@@ -284,6 +284,11 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      */
     @Nullable
     public Image getScreenshot() {
+        synchronized (mLifecycle) {
+            if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+                return null;
+            }
+        }
         synchronized (mImageReaderLock) {
             return mImageReader == null ? null : mImageReader.acquireLatestImage();
         }

@@ -82,13 +82,8 @@ final class SessionLifecycle {
         }
     }
 
-    void initializeLifecycle(ComputerControlSession.LifecycleCallback callback) {
-        synchronized (mLifecycle) {
-            mLifecycle.addCallback(callback);
-
-            // Compute the initial state and notify callbacks.
-            updateLifecycleState((config) -> {});
-        }
+    SessionLifecycle(ComputerControlSession.LifecycleCallback localCallback) {
+        mLifecycle.addCallback(localCallback);
     }
 
     /**
@@ -132,12 +127,17 @@ final class SessionLifecycle {
         }
     }
 
-    void setRemoteCallback(IComputerControlLifecycleCallback callback) {
+    void initializeWithRemoteCallback(IComputerControlLifecycleCallback callback) {
         synchronized (mLifecycle) {
             if (mIsRemoteCallbackAdded) {
                 throw new IllegalStateException("Callback already set");
             }
             mIsRemoteCallbackAdded = true;
+
+            // Compute the initial state, if it wasn't already computed.
+            updateLifecycleState((config) -> {});
+
+            // Adding the remote callback will immediately notify it of the initial state.
             mLifecycle.addCallback(new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {

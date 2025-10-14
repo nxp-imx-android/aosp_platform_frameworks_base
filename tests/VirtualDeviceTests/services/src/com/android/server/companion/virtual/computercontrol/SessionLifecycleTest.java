@@ -59,7 +59,7 @@ public class SessionLifecycleTest {
     @Before
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mLifecycle = new SessionLifecycle();
+        mLifecycle = new SessionLifecycle(mLocalCallback);
     }
 
     @After
@@ -69,9 +69,7 @@ public class SessionLifecycleTest {
 
     @Test
     public void initializeLifecycle_startsInActiveState() throws Exception {
-        mLifecycle.setRemoteCallback(mRemoteCallback);
-
-        mLifecycle.initializeLifecycle(mLocalCallback);
+        mLifecycle.initializeWithRemoteCallback(mRemoteCallback);
 
         verify(mRemoteCallback).onActive();
         verify(mLocalCallback).onActive();
@@ -81,10 +79,10 @@ public class SessionLifecycleTest {
 
     @Test
     public void addRemoteCallbackTwice_throwsIllegalStateException() {
-        mLifecycle.setRemoteCallback(mRemoteCallback);
+        mLifecycle.initializeWithRemoteCallback(mRemoteCallback);
 
         assertThrows(IllegalStateException.class,
-                () -> mLifecycle.setRemoteCallback(mRemoteCallback));
+                () -> mLifecycle.initializeWithRemoteCallback(mRemoteCallback));
     }
 
     @Test
@@ -97,6 +95,14 @@ public class SessionLifecycleTest {
         assertThat(state).isInstanceOf(Closed.class);
         assertThat(((Closed) state).reason).isEqualTo(
                 ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
+    }
+
+    @Test
+    public void updateLifecycle_canBeCalledBeforeInitialization() {
+        mLifecycle.updateLifecycleState((config) -> {});
+
+        verify(mLocalCallback).onActive();
+        assertThat(mLifecycle.getCurrentState()).isInstanceOf(Active.class);
     }
 
     @Test
@@ -201,8 +207,7 @@ public class SessionLifecycleTest {
     }
 
     private void initializeCallbacksAndReset() {
-        mLifecycle.setRemoteCallback(mRemoteCallback);
-        mLifecycle.initializeLifecycle(mLocalCallback);
+        mLifecycle.initializeWithRemoteCallback(mRemoteCallback);
         Mockito.reset(mRemoteCallback, mLocalCallback);
     }
 }
