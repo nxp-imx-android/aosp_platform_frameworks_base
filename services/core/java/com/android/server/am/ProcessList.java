@@ -2490,13 +2490,13 @@ public final class ProcessList extends ProcessListInternal
                         // If we're not told to skip the process group creation, go create it.
                         final int res = Process.createProcessGroup(uid, startResult.pid);
                         if (res < 0) {
+                            String errorStr = "Unable to create process group for "
+                                + app.processName + " (uid: " + uid + ", pid: " + startResult.pid
+                                + "), errno: " + res;
                             if (res == -OsConstants.ESRCH) {
-                                Slog.e(ActivityManagerService.TAG,
-                                        "Unable to create process group for "
-                                        + app.processName + " (" + startResult.pid + ")");
+                                Slog.e(ActivityManagerService.TAG, errorStr);
                             } else {
-                                throw new AssertionError("Unable to create process group for "
-                                    + app.processName + " (" + startResult.pid + ")");
+                                throw new AssertionError(errorStr);
                             }
                         } else {
                             app.mProcessGroupCreated = true;
