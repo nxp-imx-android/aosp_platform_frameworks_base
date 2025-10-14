@@ -47,6 +47,8 @@ import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
@@ -63,6 +65,7 @@ import dagger.Lazy
 import javax.inject.Inject
 import kotlin.collections.List
 
+@SysUISingleton
 class StatusBarElementProvider
 @Inject
 constructor(
@@ -76,6 +79,7 @@ constructor(
     private inner class StatusBarElement : LockscreenElement {
         override val key = LockscreenElementKeys.StatusBar
         override val context = this@StatusBarElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {

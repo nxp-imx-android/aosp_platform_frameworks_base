@@ -25,9 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ElementContentScope
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.binder.KeyguardIndicationAreaBinder
 import com.android.systemui.keyguard.ui.view.KeyguardIndicationArea
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardIndicationAreaViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
@@ -38,6 +40,7 @@ import com.android.systemui.statusbar.KeyguardIndicationController
 import javax.inject.Inject
 import kotlinx.coroutines.DisposableHandle
 
+@SysUISingleton
 class IndicationAreaElementProvider
 @Inject
 constructor(
@@ -50,6 +53,7 @@ constructor(
     private inner class IndicationAreaElement : LockscreenElement {
         override val key = LockscreenElementKeys.IndicationArea
         override val context = this@IndicationAreaElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {

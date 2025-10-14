@@ -41,6 +41,7 @@ import com.android.systemui.plugins.keyguard.ui.clocks.AodClockBurnInModel
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockPreviewConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLockscreenElement
@@ -63,6 +64,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
     private inner class SmallClockElement : MovableLockscreenElement {
         override val key = LockscreenElementKeys.Clock.Small
         override val context: Context = view.context
+        override val source = ElementSource.DYNAMIC
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
@@ -79,6 +81,7 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
     private inner class LargeClockElement : MovableLockscreenElement {
         override val key = LockscreenElementKeys.Clock.Large
         override val context: Context = view.context
+        override val source = ElementSource.DYNAMIC
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {

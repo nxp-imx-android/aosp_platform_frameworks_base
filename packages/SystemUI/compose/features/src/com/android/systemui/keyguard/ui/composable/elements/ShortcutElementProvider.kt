@@ -31,9 +31,11 @@ import androidx.core.content.res.ResourcesCompat
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.systemui.animation.view.LaunchableImageView
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.binder.KeyguardQuickAffordanceViewBinder
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordanceViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Shortcuts
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
@@ -45,6 +47,7 @@ import javax.inject.Inject
 import kotlin.collections.List
 import kotlinx.coroutines.flow.Flow
 
+@SysUISingleton
 class ShortcutElementProvider
 @Inject
 constructor(
@@ -65,6 +68,7 @@ constructor(
         private val isStart: Boolean,
     ) : LockscreenElement {
         override val context = this@ShortcutElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {

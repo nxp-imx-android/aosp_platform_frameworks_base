@@ -31,8 +31,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
 import com.android.systemui.customization.clocks.R as clocksR
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.BaseLockscreenElement.ElementSource
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
@@ -42,6 +44,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
 import javax.inject.Inject
 
+@SysUISingleton
 class SmartspaceElementProvider
 @Inject
 constructor(
@@ -65,6 +68,7 @@ constructor(
         private val isLargeClock: Boolean,
     ) : MovableLockscreenElement {
         override val context = this@SmartspaceElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
@@ -91,6 +95,7 @@ constructor(
         private val isLargeClock: Boolean,
     ) : MovableLockscreenElement {
         override val context = this@SmartspaceElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {
@@ -134,6 +139,7 @@ constructor(
     private inner class CardsElement : MovableLockscreenElement {
         override val key = Smartspace.Cards
         override val context = this@SmartspaceElementProvider.context
+        override val source = ElementSource.STANDARD
 
         @Composable
         override fun LockscreenScope<MovableElementContentScope>.LockscreenElement() {

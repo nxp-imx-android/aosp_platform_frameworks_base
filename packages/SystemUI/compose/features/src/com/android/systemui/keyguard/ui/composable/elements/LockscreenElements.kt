@@ -23,6 +23,9 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.Key
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
+import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementProvider
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
@@ -37,8 +40,10 @@ constructor(
     private val builder: LockscreenElementFactoryImpl.Builder,
     private val keyguardClockViewModel: KeyguardClockViewModel,
     private val elementProviders: Lazy<Set<@JvmSuppressWildcards LockscreenElementProvider>>,
-    private val oemElementProviders: Lazy<Set<@JvmSuppressWildcards OEMElementProvider>>,
+    @KeyguardBlueprintLog private val blueprintLog: LogBuffer,
 ) {
+    private val logger = Logger(blueprintLog, LockscreenElements::class.simpleName!!)
+
     @Composable
     fun ContentScope.LockscreenElement(
         key: Key,
@@ -65,15 +70,42 @@ constructor(
                 *elementProviders.get().toTypedArray(),
                 currentClock?.smallClock?.layout,
                 currentClock?.largeClock?.layout,
-                *oemElementProviders.get().toTypedArray(),
             )
 
         return remember(providers) {
-            builder.create(
+            val elements =
                 providers
                     .filterNotNull()
                     .flatMap { provider -> provider.elements }
-                    .associateBy { element -> element.key }
+                    .sortedBy { element -> element.source.priority }
+
+            builder.create(
+                buildMap {
+                    for (element in elements) {
+                        val prevElement = this[element.key]
+                        if (
+                            prevElement != null &&
+                                prevElement.source.priority >= element.source.priority
+                        ) {
+                            logger.e({
+                                "'$str3' has conflicting priority: $str1 ($int1) vs $str2 ($int2)"
+                            }) {
+                                str1 = "$prevElement"
+                                int1 = prevElement.source.priority
+                                str2 = "$element"
+                                int2 = element.source.priority
+                                str3 = "${element.key}"
+                            }
+
+                            // This shouldn't happen, but cheap to double-check
+                            if (prevElement.source.priority > element.source.priority) {
+                                continue
+                            }
+                        }
+
+                        this[element.key] = element
+                    }
+                }
             )
         }
     }
