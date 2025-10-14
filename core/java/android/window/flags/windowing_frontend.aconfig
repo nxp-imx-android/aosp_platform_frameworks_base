@@ -462,3 +462,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "promote_existence_changed_state_to_parent"
+    namespace: "windowing_frontend"
+    description: "Always promote existenceChanged state to parent."
+    bug: "452214913"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

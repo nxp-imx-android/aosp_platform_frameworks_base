@@ -5471,8 +5471,12 @@ final class ActivityRecord extends WindowToken {
         boolean inFinishingTransition = false;
         if (mTransitionController.isShellTransitionsEnabled()) {
             if (mTransitionController.isCollecting()) {
+                if (Flags.promoteExistenceChangedStateToParent() && app == null) {
+                    mTransitionController.collectExistenceChange(this);
+                } else {
+                    mTransitionController.collect(this);
+                }
                 isCollecting = true;
-                mTransitionController.collect(this);
             } else {
                 // Failsafe to make sure that we show any activities that were incorrectly hidden
                 // during a transition. If this vis-change is a result of finishing, ignore it.
