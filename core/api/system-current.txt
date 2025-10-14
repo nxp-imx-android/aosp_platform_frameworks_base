@@ -14177,6 +14177,36 @@ package android.service.persistentdata {
 
 }
 
+package android.service.personalcontext.renderer {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class InsightRendererService extends android.app.Service {
+    ctor public InsightRendererService();
+    method @NonNull public final android.service.personalcontext.RenderToken mintRenderToken();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method @NonNull public abstract android.service.personalcontext.renderer.RendererFilter onRegistered();
+    method public abstract void onRender(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>, boolean);
+    field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RendererFilter implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.Set<java.lang.Integer> getValidHintTypes();
+    method @NonNull public java.util.Set<java.lang.Integer> getValidInsightTypes();
+    method public boolean shouldIncludeRenderedInsights();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.renderer.RendererFilter> CREATOR;
+  }
+
+  public static final class RendererFilter.Builder {
+    ctor public RendererFilter.Builder();
+    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addValidHintType(int);
+    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addValidInsightType(int);
+    method @NonNull public android.service.personalcontext.renderer.RendererFilter build();
+    method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder setShouldIncludeRenderedInsights(boolean);
+  }
+
+}
+
 package android.service.quicksettings {
 
   public class TileService extends android.app.Service {
