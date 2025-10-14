@@ -23486,6 +23486,46 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 /* currentRoleHolder= */ null, /* allowBypass= */ false);
     }
 
+    /**
+     * Returns whether the qualification check for the
+     * {@link RoleManager#ROLE_DEVICE_POLICY_MANAGEMENT} role holder can be bypassed.
+     *
+     * <p>By default, this role can only be held by a specific pre-defined application
+     * ({@link DevicePolicyManager#getDevicePolicyManagementRoleHolderPackage}). However, for
+     * testing purposes (such as CTS), it's necessary to set a different application as the role
+     * holder. This method provides the mechanism to allow that bypass.
+     *
+     * <p>To prevent compromising user privacy, the bypass is only permitted on a device considered
+     * to be without user data. This "clean" state is determined by
+     * {@link #shouldAllowBypassingDevicePolicyManagementRoleQualificationInternal()}, which checks
+     * for two conditions:
+     * <ol>
+     *     <li>There are no existing users other than the initial system user(s).</li>
+     *     <li>There are no user accounts on the device that are incompatible with device or profile
+     *         owner provisioning.</li>
+     * </ol>
+     *
+     * <p>A challenge arises during testing: a test might set a test app as the role holder and then
+     * create additional users or accounts. This action would cause the device to no longer be
+     * "clean", and a naive check against the internal method would return {@code false}, leading
+     * the {@code PermissionController} to reset the role to its default.
+     *
+     * <p>To address this, a persisted flag,
+     * {@link DevicePolicyData#mBypassDevicePolicyManagementRoleQualifications}, is used. This flag
+     * is set to {@code true} by {@code handleDevicePolicyManagementRoleChange()} the first
+     * time the role is successfully overridden on a "clean" device. Once set, this method will
+     * continue to return {@code true}, allowing the bypass to persist for the duration of the test,
+     * even if users or accounts are added.
+     *
+     * <p>While this bypass flag is active, {@code handleDevicePolicyManagementRoleChange()}
+     * also ensures that the role holder cannot be changed to a *different* non-default application,
+     * when the device is no longer "clean".
+     *
+     * <p>The bypass state is cleared by calling the test API
+     * {@link #resetShouldAllowBypassingDevicePolicyManagementRoleQualificationState()}.
+     *
+     * @return {@code true} if the role qualification can be bypassed, {@code false} otherwise.
+     */
     @Override
     public boolean shouldAllowBypassingDevicePolicyManagementRoleQualification() {
         Preconditions.checkCallAuthorization(hasCallingOrSelfPermission(
@@ -23558,6 +23598,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
         }
 
+        /**
+         * @see #shouldAllowBypassingDevicePolicyManagementRoleQualification
+         */
         private void handleDevicePolicyManagementRoleChange(UserHandle user) {
             String newRoleHolder = getDeviceManagementRoleHolder(user);
             if (isDefaultRoleHolder(newRoleHolder)) {
