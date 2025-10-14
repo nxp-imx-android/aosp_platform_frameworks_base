@@ -71,7 +71,7 @@ public final class BackgroundBlurDrawable extends Drawable {
     private float mCornerRadiusBLY;
     private float mCornerRadiusBRX;
     private float mCornerRadiusBRY;
-    private float mAlpha = 1;
+    private int mAlpha = 255;
 
     // Do not update from UiThread. This holds the latest position for this drawable. It is used
     // by the Aggregator from RenderThread to get the final position of the blur region sent to SF
@@ -136,11 +136,16 @@ public final class BackgroundBlurDrawable extends Drawable {
 
     @Override
     public void setAlpha(int alpha) {
-        if (mAlpha != alpha / 255f) {
-            mAlpha = alpha / 255f;
+        if (mAlpha != alpha) {
+            mAlpha = alpha;
             invalidateSelf();
             mAggregator.onBlurDrawableUpdated(this);
         }
+    }
+
+    @Override
+    public int getAlpha() {
+        return mAlpha;
     }
 
     /**
@@ -482,7 +487,7 @@ public final class BackgroundBlurDrawable extends Drawable {
         public final Rect rect;
 
         BlurRegion(BackgroundBlurDrawable drawable) {
-            alpha = drawable.mAlpha;
+            alpha = drawable.mAlpha / 255f;
             blurRadius = drawable.mBlurRadius;
             cornerRadiusTLX = drawable.mCornerRadiusTLX;
             cornerRadiusTLY = drawable.mCornerRadiusTLY;
