@@ -44,7 +44,6 @@ import android.view.InsetsSourceControl;
 import android.view.InsetsState;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
-import android.window.DesktopModeFlags;
 import android.window.RemoteTransition;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -1061,7 +1060,6 @@ public class CompatUIController implements OnDisplaysChangedListener,
                     && mDesktopUserRepositories.get().getCurrent()
                     .isAnyDeskActive(taskInfo.displayId);
         }
-        return DesktopModeFlags.ENABLE_DESKTOP_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE_BUGFIX
-                .isTrue() && isDesktopModeShowing;
+        return isDesktopModeShowing;
     }
 }
