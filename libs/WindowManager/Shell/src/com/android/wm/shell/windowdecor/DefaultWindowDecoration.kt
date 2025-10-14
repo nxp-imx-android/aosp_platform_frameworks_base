@@ -18,6 +18,9 @@ package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
+import android.content.pm.ActivityInfo.CONFIG_FONT_SCALE
+import android.content.pm.ActivityInfo.CONFIG_LOCALE
+import android.content.pm.ActivityInfo.CONFIG_UI_MODE
 import android.content.res.Configuration
 import android.content.res.Resources.ID_NULL
 import android.graphics.Point
@@ -50,6 +53,8 @@ import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.apptoweb.AppToWebRepository
+import com.android.wm.shell.apptoweb.DialogLifecycleListener
+import com.android.wm.shell.apptoweb.OpenByDefaultFirstRunPrompt
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.common.MultiInstanceHelper
@@ -164,6 +169,10 @@ constructor(
     private val taskPositionInParent = Point()
     private var dragResizeListener: DragResizeInputListener? = null
     private var resizeVeil: ResizeVeil? = null
+    private var openByDefaultFirstRunPrompt: OpenByDefaultFirstRunPrompt? = null
+    private val isOpenByDefaultFirstRunPromptActive
+        get() = openByDefaultFirstRunPrompt != null
+
     private val positionInParent
         get() = taskInfo.positionInParent
 
@@ -365,6 +374,13 @@ constructor(
 
             val wct = windowContainerTransactionSupplier.invoke()
             val oldDecorationSurface = decorationContainerSurface
+            // Check for relevant configuration changes
+            val oldConfig = this.taskInfo.configuration
+            val newConfig = relayoutParams.runningTaskInfo.configuration
+            val diff = newConfig.diff(oldConfig)
+            // Check for UI mode (dark/light), locale, or font scale changes
+            val configChanged =
+                (diff and (CONFIG_UI_MODE or CONFIG_LOCALE or CONFIG_FONT_SCALE)) != 0
             relayout(relayoutParams, startT, finishT, wct, taskSurface)
 
             // After this line, [WindowDecoration2.taskInfo] is up-to-date and should be
@@ -397,6 +413,8 @@ constructor(
             decorationContainerSurface?.let {
                 updateDragResizeListenerIfNeeded(oldDecorationSurface)
             }
+
+            updateOpenByDefaultFirstRunPromptIfNeeded(configChanged, taskInfo)
         }
 
     private fun getRelayoutParams(
@@ -873,8 +891,53 @@ constructor(
         (captionController as? AppHeaderController)?.a11yFocusMaximizeButton()
     }
 
+    private fun createOpenByDefaultFirstRunPrompt() {
+        if (isOpenByDefaultFirstRunPromptActive) return
+        openByDefaultFirstRunPrompt =
+            OpenByDefaultFirstRunPrompt(
+                decorWindowContext,
+                userContext,
+                transitions,
+                taskInfo,
+                taskSurface,
+                displayController,
+                taskResourceLoader,
+                surfaceControlTransactionSupplier,
+                mainScope,
+                object : DialogLifecycleListener {
+                    override fun onDialogDismissed() {
+                        openByDefaultFirstRunPrompt = null
+                    }
+
+                    override fun onDialogCreated() {
+                        appToWebRepository.onFirstRunPromptShown(taskInfo)
+                    }
+                },
+            )
+    }
+
+    private fun updateOpenByDefaultFirstRunPromptIfNeeded(
+        configChanged: Boolean,
+        taskInfo: RunningTaskInfo,
+    ) {
+        if (configChanged && isOpenByDefaultFirstRunPromptActive) {
+            // Config changed, so destroy the old dialog and create a new one.
+            // The new one will inflate with the correct resources.
+            openByDefaultFirstRunPrompt?.dismiss()
+            createOpenByDefaultFirstRunPrompt()
+        } else {
+            // No config change, just relayout the existing dialog for size/position changes.
+            openByDefaultFirstRunPrompt?.relayout(taskInfo)
+        }
+
+        if (appToWebRepository.shouldShowFirstRunPrompt(taskInfo)) {
+            createOpenByDefaultFirstRunPrompt()
+        }
+    }
+
     /** Closes the window decoration. */
     override fun close() {
+        openByDefaultFirstRunPrompt?.dismiss()
         taskResourceLoader.onWindowDecorClosed(taskInfo)
         closeDragResizeListener()
         disposeResizeVeil()

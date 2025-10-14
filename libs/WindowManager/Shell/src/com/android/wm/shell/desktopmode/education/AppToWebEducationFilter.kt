@@ -44,6 +44,8 @@ class AppToWebEducationFilter(
         val focusAppPackageName = taskInfo.topActivityInfo?.packageName ?: return false
         val windowingEducationProto = appToWebEducationDatastoreRepository.windowingEducationProto()
 
+        // TODO(b/451763706) - Suppress education nudge when first-run prompt is visible
+
         return if (isAppToWebEducationRequested(taskInfo)) {
             !isEducationViewLimitReached(windowingEducationProto) &&
                 taskInfo.isFocused &&

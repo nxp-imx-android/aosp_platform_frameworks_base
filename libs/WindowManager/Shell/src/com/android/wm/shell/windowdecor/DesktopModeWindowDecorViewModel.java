@@ -1183,6 +1183,24 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         return null;
     }
 
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public boolean shouldShowFirstRunPrompt(RunningTaskInfo taskInfo) {
+        return false;
+    }
+
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public void onFirstRunPromptShown(RunningTaskInfo taskInfo) {
+    }
 
     @Override
     public void removeTaskIfTiled(int displayId, int taskId) {
