@@ -27,6 +27,7 @@ import static com.android.systemui.Flags.enableViewCaptureTracing;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityTaskManager;
 import android.app.IActivityTaskManager;
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -821,13 +822,13 @@ public abstract class WMShellModule {
     static UnfoldAnimationController provideUnfoldAnimationController(
             Optional<ShellUnfoldProgressProvider> progressProvider,
             TransactionPool transactionPool,
-            @UnfoldTransition SplitTaskUnfoldAnimator splitAnimator,
+            Optional<SplitTaskUnfoldAnimator> splitAnimator,
             FullscreenUnfoldTaskAnimator fullscreenAnimator,
             Lazy<Optional<UnfoldTransitionHandler>> unfoldTransitionHandler,
             ShellInit shellInit,
             @ShellMainThread ShellExecutor mainExecutor) {
         final List<UnfoldTaskAnimator> animators = new ArrayList<>();
-        animators.add(splitAnimator);
+        splitAnimator.ifPresent(animators::add);
         animators.add(fullscreenAnimator);
 
         return new UnfoldAnimationController(
@@ -850,24 +851,27 @@ public abstract class WMShellModule {
     }
 
     @Provides
-    static SplitTaskUnfoldAnimator provideSplitTaskUnfoldAnimatorBase(
+    static Optional<SplitTaskUnfoldAnimator> provideSplitTaskUnfoldAnimatorBase(
             Context context,
             UnfoldBackgroundController backgroundController,
             ShellController shellController,
             @ShellMainThread ShellExecutor executor,
             Lazy<Optional<SplitScreenController>> splitScreenOptional,
             DisplayInsetsController displayInsetsController) {
+        if (!ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
+            return Optional.empty();
+        }
         // TODO(b/238217847): The lazy reference here causes some dependency issues since it
         // immediately registers a listener on that controller on init.  We should reference the
         // controller directly once we refactor ShellTaskOrganizer to not depend on the unfold
         // animation controller directly.
-        return new SplitTaskUnfoldAnimator(
+        return Optional.of(new SplitTaskUnfoldAnimator(
                 context,
                 executor,
                 splitScreenOptional,
                 shellController,
                 backgroundController,
-                displayInsetsController);
+                displayInsetsController));
     }
 
     @WMSingleton
@@ -888,7 +892,7 @@ public abstract class WMShellModule {
     static UnfoldTransitionHandler provideUnfoldTransitionHandler(
             Optional<ShellUnfoldProgressProvider> progressProvider,
             FullscreenUnfoldTaskAnimator animator,
-            @UnfoldShellTransition SplitTaskUnfoldAnimator unfoldAnimator,
+            Optional<SplitTaskUnfoldAnimator> unfoldAnimatorOptional,
             TransactionPool transactionPool,
             Transitions transitions,
             @ShellMainThread ShellExecutor executor,
@@ -899,7 +903,7 @@ public abstract class WMShellModule {
                 shellInit,
                 progressProvider.get(),
                 animator,
-                unfoldAnimator,
+                unfoldAnimatorOptional,
                 transactionPool,
                 executor,
                 handler,

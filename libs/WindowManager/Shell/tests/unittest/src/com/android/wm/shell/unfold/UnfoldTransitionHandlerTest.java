@@ -99,7 +99,7 @@ public class UnfoldTransitionHandlerTest extends ShellTestCase {
                 shellInit,
                 mShellUnfoldProgressProvider,
                 mFullscreenUnfoldTaskAnimator,
-                mSplitTaskUnfoldAnimator,
+                Optional.of(mSplitTaskUnfoldAnimator),
                 mTransactionPool,
                 executor,
                 mHandler,
