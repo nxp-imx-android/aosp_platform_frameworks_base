@@ -7740,41 +7740,20 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
-     * Returns {@code true} if handing off this activity should also hand off
-     * all activities in the task of this activity. If this is {@code false} for
-     * any activity in the task, only the topmost activity in the task will be
-     * handed off.
-     *
-     * This method will return {@code false} if {@link #isHandoffEnabled}
-     * is {@code false}.
-     *
-     * @return if full task recreation is allowed
-     */
-    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
-    public final boolean isHandoffFullTaskRecreationAllowed() {
-        return ActivityClient
-            .getInstance()
-            .isHandoffFullTaskRecreationAllowed(mToken);
-    }
-
-    /**
      * Sets if Handoff is enabled for this Activity. See
      * {@link #isHandoffEnabled} to get if Handoff is currently enabled on this
      * Activity.
      *
-     * Note: if Handoff is disabled for the topmost Activity in a task, it will
-     * be disabled for all Activities in the task.
+     * If Handoff is enabled, this Activity will only be eligible to be handed off to other devices
+     * if it is the topmost Activity in its Task.
      *
      * @param handoffEnabled Whether Handoff should be enabled for this Activity.
-     * @param allowFullTaskRecreation Whether activities below this one in the
-     *                                task should be handed off as well.
      */
     @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
-    public final void setHandoffEnabled(
-            boolean handoffEnabled,
-            boolean allowFullTaskRecreation) {
+    public final void setHandoffEnabled(boolean handoffEnabled) {
+        // TODO (b/400970610): Implement Full Task Recreation for Handoff.
         ActivityClient.getInstance().setHandoffEnabled(
-                mToken, handoffEnabled, allowFullTaskRecreation);
+                mToken, handoffEnabled, /* allowFullTaskRecreation= */ false);
     }
 
     /**
