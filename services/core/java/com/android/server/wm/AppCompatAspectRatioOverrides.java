@@ -35,7 +35,6 @@ import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_OVERRIDE;
-import static android.window.DesktopExperienceFlags.LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY;
 
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -187,8 +186,7 @@ class AppCompatAspectRatioOverrides {
                         && (aspectRatio == USER_MIN_ASPECT_RATIO_UNSET
                             || aspectRatio == USER_MIN_ASPECT_RATIO_FULLSCREEN);
 
-        if (dc != null
-                && LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY.isTrue()) {
+        if (dc != null) {
             // If attached to display, cache full-screen override to maintain consistent
             // override behaviour when activity is moved between displays.
             // Only apply full-screen override if activity was started in default display.
@@ -201,8 +199,7 @@ class AppCompatAspectRatioOverrides {
     }
 
     boolean hasSystemFullscreenOverrideCache() {
-        return mIsSystemFullscreenOverrideEnabled == null
-                && LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY.isTrue();
+        return mIsSystemFullscreenOverrideEnabled == null;
     }
 
     boolean resetSystemFullscreenOverrideCache() {
