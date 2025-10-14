@@ -19,6 +19,7 @@ package com.android.server.utils;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.Slog;
 
@@ -139,11 +140,14 @@ public class EventLogger {
         private final long mTimestamp;
 
         public Event() {
-            mTimestamp = System.currentTimeMillis();
+            mTimestamp = SystemClock.elapsedRealtime();
         }
 
         public String toString() {
-            return (new StringBuilder(sFormat.format(new Date(mTimestamp))))
+            final long now = System.currentTimeMillis();
+            // Adjust the event time to be relative to the current time
+            final long eventMillis = now - (SystemClock.elapsedRealtime() - mTimestamp);
+            return (new StringBuilder(sFormat.format(new Date(eventMillis))))
                     .append(" ").append(eventToString()).toString();
         }
 
