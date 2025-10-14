@@ -250,6 +250,11 @@ public class ZenModeHelper {
             ValidateNotificationPeople validator, int contactsTimeoutMs, float timeoutAffinity,
             int callingUid) {
         synchronized (mConfigLock) {
+            if ((mSuppressedEffects & SUPPRESSED_EFFECT_CALLS) != 0) {
+                // equivalent to ZEN_MODE_NO_INTERRUPTION, nothing gets through
+                if (DEBUG) Log.d(TAG, "filtering call due to mSuppressedEffects");
+                return false;
+            }
             return ZenModeFiltering.matchesCallFilter(mContext, mZenMode, mConsolidatedPolicy,
                     userHandle, extras, validator, contactsTimeoutMs, timeoutAffinity,
                     callingUid);
