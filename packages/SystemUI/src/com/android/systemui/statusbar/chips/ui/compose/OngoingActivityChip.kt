@@ -151,8 +151,12 @@ fun OngoingActivityChip(
         onClick = onClick,
         onClickLabel = onClickLabel,
         useModifierBasedImplementation = StatusBarChipsReturnAnimations.isEnabled,
-        // Some chips like the 3-2-1 countdown chip should be very small, smaller than a
-        // reasonable minimum size.
+        // Don't use the default minimum size for 2 reasons:
+        //   1. Some chips like the 3-2-1 countdown chip should have a very small width.
+        //   2. All chips need a background height that's much smaller than 48dp.
+        // For clickable chips, Compose will automatically increase the touch target size outside
+        // the bounds of the composable if needed, so the smaller chip size isn't an accessibility
+        // concern.
         defaultMinSize = false,
         transitionControllerFactory = model.transitionManager?.controllerFactory,
     ) {

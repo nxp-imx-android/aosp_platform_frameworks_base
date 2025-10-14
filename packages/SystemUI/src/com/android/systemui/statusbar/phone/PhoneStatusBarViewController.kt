@@ -176,10 +176,18 @@ private constructor(
     private val configurationListener =
         object : ConfigurationController.ConfigurationListener {
             override fun onDensityOrFontScaleChanged() {
-                ShadeWindowGoesAround.assertInLegacyMode()
-                clock.onDensityOrFontScaleChanged()
+                reloadDimens()
+                if (!ShadeWindowGoesAround.isEnabled) {
+                    // With the flag on, the clock handles the config change itself.
+                    clock.onDensityOrFontScaleChanged()
+                }
             }
         }
+
+    private fun reloadDimens() {
+        // The hover listener uses a resource, so we need to re-create it.
+        updateStartSideContainerHoverListener()
+    }
 
     override fun onViewAttached() {
         clock = mView.requireViewById(R.id.clock)
@@ -207,10 +215,7 @@ private constructor(
         }
 
         progressProvider?.setReadyToHandleTransition(true)
-        if (!ShadeWindowGoesAround.isEnabled) {
-            // the clock handles the config change itself.
-            configurationController.addCallback(configurationListener)
-        }
+        configurationController.addCallback(configurationListener)
         if (!StatusBarConnectedDisplays.isEnabled) {
             mView.setStatusBarWindowControllerStore(statusBarWindowControllerStore)
         }
@@ -231,13 +236,7 @@ private constructor(
         }
 
         startSideContainer = mView.requireViewById(R.id.status_bar_start_side_content)
-        startSideContainer.setOnHoverListener(
-            statusOverlayHoverListenerFactory.createDarkAwareListener(
-                startSideContainer,
-                topHoverMargin = 6,
-                bottomHoverMargin = 6,
-            )
-        )
+        updateStartSideContainerHoverListener()
         if (statusBarTapToExpandShadeEnabled()) {
             startSideContainer.setOnTouchListener(
                 createClickListener(startSideContainer) { shadeController.animateExpandShade() }
@@ -247,6 +246,17 @@ private constructor(
                 createMouseClickListener { shadeController.animateExpandShade() }
             )
         }
+    }
+
+    private fun updateStartSideContainerHoverListener() {
+        val iconContainerHeightPx =
+            context.resources.getDimensionPixelSize(R.dimen.status_bar_icon_container_height)
+        startSideContainer.setOnHoverListener(
+            statusOverlayHoverListenerFactory.createDarkAwareListener(
+                startSideContainer,
+                customHeightPx = iconContainerHeightPx,
+            )
+        )
     }
 
     private fun statusBarTapToExpandShadeEnabled(): Boolean {
@@ -267,9 +277,7 @@ private constructor(
         startSideContainer.setOnHoverListener(null)
         endSideContainer.setOnHoverListener(null)
         progressProvider?.setReadyToHandleTransition(false)
-        if (!ShadeWindowGoesAround.isEnabled) {
-            configurationController.removeCallback(configurationListener)
-        }
+        configurationController.removeCallback(configurationListener)
     }
 
     init {
