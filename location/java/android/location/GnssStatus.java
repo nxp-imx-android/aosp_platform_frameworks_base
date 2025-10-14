@@ -85,10 +85,6 @@ public final class GnssStatus implements Parcelable {
     private static final int SVID_FLAGS_HAS_ELAPSED_REALTIME_NANOS = (1 << 6);
     private static final int SVID_FLAGS_HAS_ELAPSED_REALTIME_UNCERTAINTY_NANOS = (1 << 7);
 
-    private static final int SVID_SHIFT_WIDTH = 12;
-    private static final int CONSTELLATION_TYPE_SHIFT_WIDTH = 8;
-    private static final int CONSTELLATION_TYPE_MASK = 0xf;
-
 
     /**
      * Used for receiving notifications when GNSS events happen.
@@ -141,8 +137,9 @@ public final class GnssStatus implements Parcelable {
      * method.
      *
      * @param svCount The total number of satellites in the list.
-     * @param svidWithFlags An array of packed integers containing SVID, constellation type, and
-     *     boolean flags for each satellite.
+     * @param svFlags Array of boolean flags for each satellite.
+     * @param svids Array of SVID.
+     * @param constellationTypes Array of constellation type.
      * @param cn0DbHzs Array of carrier-to-noise density values at the antenna in dB-Hz for each
      *     satellite.
      * @param elevations Array of satellite elevation values in degrees for each satellite.
@@ -163,7 +160,9 @@ public final class GnssStatus implements Parcelable {
     @NonNull
     public static GnssStatus create(
             int svCount,
-            int[] svidWithFlags,
+            int[] svFlags,
+            int[] svids,
+            int[] constellationTypes,
             float[] cn0DbHzs,
             float[] elevations,
             float[] azimuths,
@@ -173,7 +172,9 @@ public final class GnssStatus implements Parcelable {
             long[] elapsedRealtimeNanos,
             double[] elapsedRealtimeUncertaintyNanos) {
         Preconditions.checkState(svCount >= 0);
-        Preconditions.checkState(svidWithFlags.length >= svCount);
+        Preconditions.checkState(svFlags.length >= svCount);
+        Preconditions.checkState(svids.length >= svCount);
+        Preconditions.checkState(constellationTypes.length >= svCount);
         Preconditions.checkState(elevations.length >= svCount);
         Preconditions.checkState(azimuths.length >= svCount);
         Preconditions.checkState(carrierFrequencies.length >= svCount);
@@ -184,7 +185,9 @@ public final class GnssStatus implements Parcelable {
 
         return new GnssStatus(
                 svCount,
-                svidWithFlags,
+                svFlags,
+                svids,
+                constellationTypes,
                 cn0DbHzs,
                 elevations,
                 azimuths,
@@ -196,7 +199,9 @@ public final class GnssStatus implements Parcelable {
     }
 
     private final int mSvCount;
-    private final int[] mSvidWithFlags;
+    private final int[] mSvFlags;
+    private final int[] mSvids;
+    private final int[] mConstellationTypes;
     private final float[] mCn0DbHzs;
     private final float[] mElevations;
     private final float[] mAzimuths;
@@ -208,7 +213,9 @@ public final class GnssStatus implements Parcelable {
 
     private GnssStatus(
             int svCount,
-            int[] svidWithFlags,
+            int[] svidFlags,
+            int[] svids,
+            int[] constellationTypes,
             float[] cn0DbHzs,
             float[] elevations,
             float[] azimuths,
@@ -218,7 +225,9 @@ public final class GnssStatus implements Parcelable {
             long[] elapsedRealtimeNanos,
             double[] elapsedRealtimeUncertaintyNanos) {
         mSvCount = svCount;
-        mSvidWithFlags = svidWithFlags;
+        mSvFlags = svidFlags;
+        mSvids = svids;
+        mConstellationTypes = constellationTypes;
         mCn0DbHzs = cn0DbHzs;
         mElevations = elevations;
         mAzimuths = azimuths;
@@ -242,8 +251,7 @@ public final class GnssStatus implements Parcelable {
      */
     @ConstellationType
     public int getConstellationType(@IntRange(from = 0) int satelliteIndex) {
-        return ((mSvidWithFlags[satelliteIndex] >> CONSTELLATION_TYPE_SHIFT_WIDTH)
-                & CONSTELLATION_TYPE_MASK);
+        return mConstellationTypes[satelliteIndex];
     }
 
     /**
@@ -274,7 +282,7 @@ public final class GnssStatus implements Parcelable {
      */
     @IntRange(from = 1, to = 206)
     public int getSvid(@IntRange(from = 0) int satelliteIndex) {
-        return mSvidWithFlags[satelliteIndex] >> SVID_SHIFT_WIDTH;
+        return mSvids[satelliteIndex];
     }
 
     /**
@@ -314,7 +322,7 @@ public final class GnssStatus implements Parcelable {
      * @param satelliteIndex An index from zero to {@link #getSatelliteCount()} - 1
      */
     public boolean hasEphemerisData(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_HAS_EPHEMERIS_DATA) != 0;
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_HAS_EPHEMERIS_DATA) != 0;
     }
 
     /**
@@ -323,7 +331,7 @@ public final class GnssStatus implements Parcelable {
      * @param satelliteIndex An index from zero to {@link #getSatelliteCount()} - 1
      */
     public boolean hasAlmanacData(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_HAS_ALMANAC_DATA) != 0;
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_HAS_ALMANAC_DATA) != 0;
     }
 
     /**
@@ -333,7 +341,7 @@ public final class GnssStatus implements Parcelable {
      * @param satelliteIndex An index from zero to {@link #getSatelliteCount()} - 1
      */
     public boolean usedInFix(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_USED_IN_FIX) != 0;
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_USED_IN_FIX) != 0;
     }
 
     /**
@@ -342,7 +350,7 @@ public final class GnssStatus implements Parcelable {
      * @param satelliteIndex An index from zero to {@link #getSatelliteCount()} - 1
      */
     public boolean hasCarrierFrequencyHz(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_HAS_CARRIER_FREQUENCY) != 0;
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_HAS_CARRIER_FREQUENCY) != 0;
     }
 
     /**
@@ -367,7 +375,7 @@ public final class GnssStatus implements Parcelable {
      * @param satelliteIndex An index from zero to {@link #getSatelliteCount()} - 1
      */
     public boolean hasBasebandCn0DbHz(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_HAS_BASEBAND_CN0) != 0;
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_HAS_BASEBAND_CN0) != 0;
     }
 
     /**
@@ -388,7 +396,7 @@ public final class GnssStatus implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_SUPPORT_CODETYPE_IN_GNSS_STATUS)
     public boolean hasCodeType(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_HAS_CODE_TYPE) != 0;
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_HAS_CODE_TYPE) != 0;
     }
 
     /**
@@ -412,7 +420,7 @@ public final class GnssStatus implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_SUPPORT_CODETYPE_IN_GNSS_STATUS)
     public boolean hasElapsedRealtimeNanos(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_HAS_ELAPSED_REALTIME_NANOS) != 0;
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_HAS_ELAPSED_REALTIME_NANOS) != 0;
     }
 
     /**
@@ -433,7 +441,7 @@ public final class GnssStatus implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_SUPPORT_CODETYPE_IN_GNSS_STATUS)
     public boolean hasElapsedRealtimeUncertaintyNanos(@IntRange(from = 0) int satelliteIndex) {
-        return (mSvidWithFlags[satelliteIndex] & SVID_FLAGS_HAS_ELAPSED_REALTIME_UNCERTAINTY_NANOS)
+        return (mSvFlags[satelliteIndex] & SVID_FLAGS_HAS_ELAPSED_REALTIME_UNCERTAINTY_NANOS)
                 != 0;
     }
 
@@ -494,7 +502,9 @@ public final class GnssStatus implements Parcelable {
 
         GnssStatus that = (GnssStatus) o;
         return mSvCount == that.mSvCount
-                && Arrays.equals(mSvidWithFlags, that.mSvidWithFlags)
+                && Arrays.equals(mSvFlags, that.mSvFlags)
+                && Arrays.equals(mSvids, that.mSvids)
+                && Arrays.equals(mConstellationTypes, that.mConstellationTypes)
                 && Arrays.equals(mCn0DbHzs, that.mCn0DbHzs)
                 && Arrays.equals(mElevations, that.mElevations)
                 && Arrays.equals(mAzimuths, that.mAzimuths)
@@ -509,7 +519,7 @@ public final class GnssStatus implements Parcelable {
     @Override
     public int hashCode() {
         int result = Objects.hash(mSvCount);
-        result = 31 * result + Arrays.hashCode(mSvidWithFlags);
+        result = 31 * result + Arrays.hashCode(mSvids);
         result = 31 * result + Arrays.hashCode(mCn0DbHzs);
         return result;
     }
@@ -519,7 +529,9 @@ public final class GnssStatus implements Parcelable {
                 @Override
                 public GnssStatus createFromParcel(Parcel in) {
                     int svCount = in.readInt();
-                    int[] svidWithFlags = new int[svCount];
+                    int[] svFlags = new int[svCount];
+                    int[] svids = new int[svCount];
+                    int[] constellationTypes = new int[svCount];
                     float[] cn0DbHzs = new float[svCount];
                     float[] elevations = new float[svCount];
                     float[] azimuths = new float[svCount];
@@ -530,7 +542,9 @@ public final class GnssStatus implements Parcelable {
                     double[] elapsedRealtimeUncertaintyNanos = new double[svCount];
 
                     for (int i = 0; i < svCount; i++) {
-                        svidWithFlags[i] = in.readInt();
+                        svFlags[i] = in.readInt();
+                        svids[i] = in.readInt();
+                        constellationTypes[i] = in.readInt();
                         cn0DbHzs[i] = in.readFloat();
                         elevations[i] = in.readFloat();
                         azimuths[i] = in.readFloat();
@@ -543,7 +557,9 @@ public final class GnssStatus implements Parcelable {
 
                     return new GnssStatus(
                             svCount,
-                            svidWithFlags,
+                            svFlags,
+                            svids,
+                            constellationTypes,
                             cn0DbHzs,
                             elevations,
                             azimuths,
@@ -569,7 +585,9 @@ public final class GnssStatus implements Parcelable {
     public void writeToParcel(@NonNull Parcel parcel, int flags) {
         parcel.writeInt(mSvCount);
         for (int i = 0; i < mSvCount; i++) {
-            parcel.writeInt(mSvidWithFlags[i]);
+            parcel.writeInt(mSvFlags[i]);
+            parcel.writeInt(mSvids[i]);
+            parcel.writeInt(mConstellationTypes[i]);
             parcel.writeFloat(mCn0DbHzs[i]);
             parcel.writeFloat(mElevations[i]);
             parcel.writeFloat(mAzimuths[i]);
@@ -720,7 +738,9 @@ public final class GnssStatus implements Parcelable {
         @NonNull
         public GnssStatus build() {
             int svCount = mSatellites.size();
-            int[] svidWithFlags = new int[svCount];
+            int[] svFlags = new int[svCount];
+            int[] svids = new int[svCount];
+            int[] constellationTypes = new int[svCount];
             float[] cn0DbHzs = new float[svCount];
             float[] elevations = new float[svCount];
             float[] azimuths = new float[svCount];
@@ -730,8 +750,14 @@ public final class GnssStatus implements Parcelable {
             long[] elapsedRealtimeNanos = new long[svCount];
             double[] elapsedRealtimeUncertaintyNanos = new double[svCount];
 
-            for (int i = 0; i < svidWithFlags.length; i++) {
-                svidWithFlags[i] = mSatellites.get(i).mSvidWithFlags;
+            for (int i = 0; i < svFlags.length; i++) {
+                svFlags[i] = mSatellites.get(i).mSvFlags;
+            }
+            for (int i = 0; i < svids.length; i++) {
+                svids[i] = mSatellites.get(i).mSvid;
+            }
+            for (int i = 0; i < constellationTypes.length; i++) {
+                constellationTypes[i] = mSatellites.get(i).mConstellationType;
             }
             for (int i = 0; i < cn0DbHzs.length; i++) {
                 cn0DbHzs[i] = mSatellites.get(i).mCn0DbHz;
@@ -761,7 +787,9 @@ public final class GnssStatus implements Parcelable {
 
             return new GnssStatus(
                     svCount,
-                    svidWithFlags,
+                    svFlags,
+                    svids,
+                    constellationTypes,
                     cn0DbHzs,
                     elevations,
                     azimuths,
@@ -774,8 +802,9 @@ public final class GnssStatus implements Parcelable {
     }
 
     private static class GnssSvInfo {
-
-        private final int mSvidWithFlags;
+        private final int mSvFlags;
+        private final int mSvid;
+        @ConstellationType private final int mConstellationType;
         private final float mCn0DbHz;
         private final float mElevation;
         private final float mAzimuth;
@@ -786,7 +815,7 @@ public final class GnssStatus implements Parcelable {
         private final double mElapsedRealtimeUncertaintyNanos;
 
         private GnssSvInfo(
-                int constellationType,
+                @ConstellationType int constellationType,
                 int svid,
                 float cn0DbHz,
                 float elevation,
@@ -804,24 +833,22 @@ public final class GnssStatus implements Parcelable {
                 long elapsedRealtimeNanos,
                 boolean hasElapsedRealtimeUncertaintyNanos,
                 double elapsedRealtimeUncertaintyNanos) {
-            mSvidWithFlags =
-                    (svid << SVID_SHIFT_WIDTH)
-                            | ((constellationType & CONSTELLATION_TYPE_MASK)
-                                    << CONSTELLATION_TYPE_SHIFT_WIDTH)
-                            | (hasEphemeris ? SVID_FLAGS_HAS_EPHEMERIS_DATA : SVID_FLAGS_NONE)
-                            | (hasAlmanac ? SVID_FLAGS_HAS_ALMANAC_DATA : SVID_FLAGS_NONE)
-                            | (usedInFix ? SVID_FLAGS_USED_IN_FIX : SVID_FLAGS_NONE)
-                            | (hasCarrierFrequency
-                                    ? SVID_FLAGS_HAS_CARRIER_FREQUENCY
-                                    : SVID_FLAGS_NONE)
-                            | (hasBasebandCn0DbHz ? SVID_FLAGS_HAS_BASEBAND_CN0 : SVID_FLAGS_NONE)
-                            | (hasCodeType ? SVID_FLAGS_HAS_CODE_TYPE : SVID_FLAGS_NONE)
-                            | (hasElapsedRealtimeNanos
-                                    ? SVID_FLAGS_HAS_ELAPSED_REALTIME_NANOS
-                                    : SVID_FLAGS_NONE)
-                            | (hasElapsedRealtimeUncertaintyNanos
-                                    ? SVID_FLAGS_HAS_ELAPSED_REALTIME_UNCERTAINTY_NANOS
-                                    : SVID_FLAGS_NONE);
+            mSvFlags = (hasEphemeris ? SVID_FLAGS_HAS_EPHEMERIS_DATA : SVID_FLAGS_NONE)
+                        | (hasAlmanac ? SVID_FLAGS_HAS_ALMANAC_DATA : SVID_FLAGS_NONE)
+                        | (usedInFix ? SVID_FLAGS_USED_IN_FIX : SVID_FLAGS_NONE)
+                        | (hasCarrierFrequency
+                                ? SVID_FLAGS_HAS_CARRIER_FREQUENCY
+                                : SVID_FLAGS_NONE)
+                        | (hasBasebandCn0DbHz ? SVID_FLAGS_HAS_BASEBAND_CN0 : SVID_FLAGS_NONE)
+                        | (hasCodeType ? SVID_FLAGS_HAS_CODE_TYPE : SVID_FLAGS_NONE)
+                        | (hasElapsedRealtimeNanos
+                                ? SVID_FLAGS_HAS_ELAPSED_REALTIME_NANOS
+                                : SVID_FLAGS_NONE)
+                        | (hasElapsedRealtimeUncertaintyNanos
+                                ? SVID_FLAGS_HAS_ELAPSED_REALTIME_UNCERTAINTY_NANOS
+                                : SVID_FLAGS_NONE);
+            mSvid = svid;
+            mConstellationType = constellationType;
             mCn0DbHz = cn0DbHz;
             mElevation = elevation;
             mAzimuth = azimuth;

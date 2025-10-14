@@ -1145,13 +1145,15 @@ public class GnssNative {
     }
 
     @NativeEntryPoint
-    void reportSvStatus(int svCount, int[] svidWithFlags, float[] cn0DbHzs,
-            float[] elevations, float[] azimuths, float[] carrierFrequencies,
-            float[] basebandCn0DbHzs) {
+    void reportSvStatus(int svCount, int[] svFlags, int[] svids, int[] constellationTypes,
+            float[] cn0DbHzs, float[] elevations, float[] azimuths, float[] carrierFrequencies,
+            float[] basebandCn0DbHzs, String[] codetypes, long[] elapsedRealtimeNanos,
+            double[] elapsedRealtimeUncertaintyNanos) {
         Binder.withCleanCallingIdentity(() -> {
-            GnssStatus gnssStatus = GnssStatus.create(svCount, svidWithFlags, cn0DbHzs, elevations,
-                    azimuths, carrierFrequencies, basebandCn0DbHzs,
-                    new String[svCount], new long[svCount], new double[svCount]);
+            GnssStatus gnssStatus = GnssStatus.create(svCount, svFlags, svids,
+                    constellationTypes, cn0DbHzs, elevations, azimuths, carrierFrequencies,
+                    basebandCn0DbHzs, codetypes, elapsedRealtimeNanos,
+                    elapsedRealtimeUncertaintyNanos);
             for (int i = 0; i < mSvStatusCallbacks.length; i++) {
                 mSvStatusCallbacks[i].onReportSvStatus(gnssStatus);
             }
