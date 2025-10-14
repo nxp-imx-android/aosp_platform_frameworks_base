@@ -18,6 +18,14 @@ flag {
 }
 
 flag {
+  name: "add_fallback_icons"
+  namespace: "biometrics_framework"
+  description: "Feature flag for adding new fallback icons for biometric prompt"
+  is_exported: true
+  bug: "447227164"
+}
+
+flag {
   name: "bp_fallback_options"
   namespace: "biometrics_framework"
   description: "Adds fallback options UI to biometric prompt"

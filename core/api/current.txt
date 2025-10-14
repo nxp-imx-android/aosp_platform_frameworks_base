@@ -19813,9 +19813,12 @@ package android.hardware.biometrics {
     field public static final int BIOMETRIC_SUCCESS = 0; // 0x0
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_ACCOUNT = 2; // 0x2
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_GENERIC = 3; // 0x3
+    field @FlaggedApi("android.hardware.biometrics.add_fallback_icons") public static final int ICON_TYPE_MESSAGE = 6; // 0x6
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_PASSWORD = 0; // 0x0
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_QR_CODE = 1; // 0x1
+    field @FlaggedApi("android.hardware.biometrics.add_fallback_icons") public static final int ICON_TYPE_RESET = 5; // 0x5
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_SETTING = 4; // 0x4
+    field @FlaggedApi("android.hardware.biometrics.add_fallback_icons") public static final int ICON_TYPE_SUPERVISED = 7; // 0x7
   }
 
   public static interface BiometricManager.Authenticators {

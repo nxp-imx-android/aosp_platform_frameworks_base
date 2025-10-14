@@ -23,6 +23,7 @@ import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.Manifest.permission.WRITE_DEVICE_CONFIG;
 import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
 import static android.hardware.biometrics.Flags.FLAG_ADD_FALLBACK;
+import static android.hardware.biometrics.Flags.FLAG_ADD_FALLBACK_ICONS;
 
 import static com.android.internal.util.FrameworkStatsLog.AUTH_DEPRECATED_APIUSED__DEPRECATED_API__API_BIOMETRIC_MANAGER_CAN_AUTHENTICATE;
 
@@ -192,7 +193,10 @@ public class BiometricManager {
             ICON_TYPE_QR_CODE,
             ICON_TYPE_ACCOUNT,
             ICON_TYPE_GENERIC,
-            ICON_TYPE_SETTING
+            ICON_TYPE_SETTING,
+            ICON_TYPE_RESET,
+            ICON_TYPE_MESSAGE,
+            ICON_TYPE_SUPERVISED,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface IconType {}
@@ -226,6 +230,25 @@ public class BiometricManager {
      */
     @FlaggedApi(FLAG_ADD_FALLBACK)
     public static final int ICON_TYPE_SETTING = 4;
+
+    /**
+     * An icon representing a password reset.
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK_ICONS)
+    public static final int ICON_TYPE_RESET = 5;
+
+    /**
+     * An icon representing a message or chat option, such as to contact support or an
+     * administrator.
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK_ICONS)
+    public static final int ICON_TYPE_MESSAGE = 6;
+
+    /**
+     * An icon representing a supervised account.
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK_ICONS)
+    public static final int ICON_TYPE_SUPERVISED = 7;
 
     /**
      * Types of authenticators, defined at a level of granularity supported by
