@@ -570,6 +570,34 @@ public class MainContentCaptureSessionTest {
         verifyNoMoreInteractions(mMockContentCaptureDirectManager);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_FLUSH_ON_NON_EMPTY_TEXT)
+    public void sendEvent_textChanged_emptyToNonEmpty_flushesImmediately() throws Exception {
+        ContentCaptureOptions options =
+                createOptions(
+                        /* enableContentCaptureReceiver= */ true,
+                        /* enableContentProtectionReceiver= */ false);
+        MainContentCaptureSession session = createSession(options);
+        session.mDirectServiceInterface = mMockContentCaptureDirectManager;
+        session.onSessionStarted(0x2, null);
+
+        AutofillId autofillId = new AutofillId(42);
+        ContentCaptureEvent event1 =
+                new ContentCaptureEvent(session.getId(), ContentCaptureEvent.TYPE_VIEW_TEXT_CHANGED)
+                        .setAutofillId(autofillId)
+                        .setText("");
+        session.sendEvent(event1);
+
+        ContentCaptureEvent event2 =
+                new ContentCaptureEvent(session.getId(), ContentCaptureEvent.TYPE_VIEW_TEXT_CHANGED)
+                        .setAutofillId(autofillId)
+                        .setText("text");
+        session.sendEvent(event2);
+        mTestableLooper.processAllMessages();
+
+        verify(mMockContentCaptureDirectManager, times(1)).sendEvents(any(), anyInt(), any());
+    }
+
     /** Simulates the regular content capture events sequence. */
     private void notifyContentCaptureEvents(final MainContentCaptureSession session) {
         final ArrayList<Object> events = new ArrayList<>(

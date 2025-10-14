@@ -55,3 +55,10 @@ flag {
     description: "Feature flag to extend heuristics for calculating whether a node is considered important for content capture"
     bug: "444631439"
 }
+
+flag {
+    name: "flush_on_non_empty_text"
+    namespace: "ailabs"
+    description: "Feature flag to flush text changed event when text is non-empty"
+    bug: "451804320"
+}
