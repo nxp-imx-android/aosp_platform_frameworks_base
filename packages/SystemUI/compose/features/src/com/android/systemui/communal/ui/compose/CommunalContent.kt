@@ -50,12 +50,10 @@ import com.android.systemui.communal.ui.compose.section.CommunalPopupSection
 import com.android.systemui.communal.ui.compose.section.HubOnboardingSection
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
-import com.android.systemui.keyguard.ui.composable.blueprint.LockscreenBlueprintSelector
 import com.android.systemui.keyguard.ui.composable.elements.IndicationAreaElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.LockIconElementProvider
+import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
 import com.android.systemui.keyguard.ui.composable.layout.LockIconAlignmentLines
-import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -75,9 +73,8 @@ constructor(
     private val communalPopupSection: CommunalPopupSection,
     private val widgetSection: CommunalAppWidgetSection,
     private val hubOnboardingSection: HubOnboardingSection,
-    private val blueprintSelectorFactory: LockscreenBlueprintSelector.Factory,
+    private val lockscreenElements: LockscreenElements,
 ) {
-
     @Composable
     fun ContentScope.Content(modifier: Modifier = Modifier) {
         val showLockIconAndChargingStatus = !communalSettingsInteractor.isV2FlagEnabled()
@@ -101,16 +98,7 @@ constructor(
             }
 
             if (SceneContainerFlag.isEnabled) {
-                val blueprintSelector =
-                    rememberViewModel("CommunalContent-blueprintSelector") {
-                        blueprintSelectorFactory.create()
-                    }
-
-                with(blueprintSelector.blueprint) {
-                    Elements(LockscreenElementContext()) {
-                        LockscreenElement(LockscreenElementKeys.StatusBar, Modifier)
-                    }
-                }
+                with(lockscreenElements) { LockscreenElement(LockscreenElementKeys.StatusBar) }
             }
 
             Layout(

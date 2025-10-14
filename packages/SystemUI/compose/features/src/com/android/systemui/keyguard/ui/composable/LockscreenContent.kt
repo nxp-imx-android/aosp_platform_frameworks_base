@@ -38,13 +38,24 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
-import com.android.systemui.keyguard.ui.composable.blueprint.LockscreenBlueprintSelector
+import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
+import com.android.systemui.keyguard.ui.composable.layout.LockscreenSceneLayout
+import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
+import com.android.systemui.keyguard.ui.composable.modifier.nonAuthUI
+import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenBehindScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Clock
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.MediaCarousel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.SettingsMenu
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Shortcuts
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys.Smartspace
 import kotlin.math.min
 
 /**
@@ -57,7 +68,9 @@ class LockscreenContent(
     private val viewModelFactory: LockscreenContentViewModel.Factory,
     private val lockscreenFrontScrimViewModelFactory: LockscreenFrontScrimViewModel.Factory,
     private val lockscreenBehindScrimViewModelFactory: LockscreenBehindScrimViewModel.Factory,
-    private val blueprintSelectorFactory: LockscreenBlueprintSelector.Factory,
+    private val lockscreenElements: LockscreenElements,
+    private val keyguardClockViewModel: KeyguardClockViewModel,
+    private val aodBurnInViewModel: AodBurnInViewModel,
     private val clockInteractor: KeyguardClockInteractor,
     private val interactionJankMonitor: InteractionJankMonitor,
 ) {
@@ -72,11 +85,6 @@ class LockscreenContent(
                         KeyguardTransitionAnimationCallbackImpl(view, interactionJankMonitor),
                     viewState = ViewStateAccessor(alpha = { lockscreenAlpha }),
                 )
-            }
-
-        val blueprintSelector =
-            rememberViewModel("LockscreenContent-blueprintSelector") {
-                blueprintSelectorFactory.create()
             }
 
         LaunchedEffect(viewModel.alpha) { lockscreenAlpha = viewModel.alpha }
@@ -151,19 +159,57 @@ class LockscreenContent(
             onDispose { handle.dispose() }
         }
 
-        with(blueprintSelector.blueprint) {
-            LockscreenBehindScrim(
-                lockscreenBehindScrimViewModel,
-                Modifier.element(LockscreenElementKeys.BehindScrim),
-            )
-            Content(
-                viewModel,
-                modifier
-                    .sysuiResTag("keyguard_root_view")
-                    .element(LockscreenElementKeys.Root)
-                    .graphicsLayer { alpha = min(viewModel.alpha, contentAlphaAnimatable.value) },
-            )
-            LockscreenFrontScrim(lockscreenFrontScrimViewModel)
+        LockscreenBehindScrim(
+            lockscreenBehindScrimViewModel,
+            Modifier.element(LockscreenElementKeys.BehindScrim),
+        )
+        ElementContent(
+            viewModel,
+            modifier
+                .sysuiResTag("keyguard_root_view")
+                .element(LockscreenElementKeys.Root)
+                .graphicsLayer { alpha = min(viewModel.alpha, contentAlphaAnimatable.value) },
+        )
+        LockscreenFrontScrim(lockscreenFrontScrimViewModel)
+    }
+
+    @Composable
+    fun ContentScope.ElementContent(viewModel: LockscreenContentViewModel, modifier: Modifier) {
+        val burnIn = rememberBurnIn(keyguardClockViewModel)
+        LockscreenTouchHandling(
+            viewModelFactory = viewModel.touchHandlingFactory,
+            modifier = modifier,
+        ) { onSettingsMenuPlaced ->
+            val elementContext =
+                LockscreenElementContext(
+                    burnInModifier =
+                        Modifier.burnInAware(
+                            viewModel = aodBurnInViewModel,
+                            params = burnIn.parameters,
+                        ),
+                    onElementPositioned = { key, rect ->
+                        when (key) {
+                            Clock.Small -> {
+                                burnIn.onSmallClockTopChanged(rect.top)
+                                viewModel.setSmallClockBottom(rect.bottom)
+                            }
+                            Smartspace.Cards -> {
+                                burnIn.onSmartspaceTopChanged(rect.top)
+                                viewModel.setSmartspaceCardBottom(rect.bottom)
+                            }
+                            MediaCarousel -> viewModel.setMediaPlayerBottom(rect.bottom)
+                            Shortcuts.Start -> viewModel.setShortcutTop(rect.top)
+                            Shortcuts.End -> viewModel.setShortcutTop(rect.top)
+                            SettingsMenu -> onSettingsMenuPlaced(rect)
+                            else -> {}
+                        }
+                    },
+                    nonAuthUIModifier = Modifier.nonAuthUI(viewModel),
+                )
+
+            with(lockscreenElements) {
+                Elements(elementContext) { LockscreenSceneLayout(viewModel) }
+            }
         }
     }
 }
