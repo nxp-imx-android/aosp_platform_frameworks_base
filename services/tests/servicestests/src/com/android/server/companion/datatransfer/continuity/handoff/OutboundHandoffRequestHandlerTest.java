@@ -239,6 +239,22 @@ public class OutboundHandoffRequestHandlerTest {
                 TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND);
     }
 
+    @Test
+    public void testCancelAllOutboundRequests_notifiesAllCallbacks() {
+        int associationId = 1;
+        int taskId = 1;
+        FakeHandoffRequestCallback callbackHolder = new FakeHandoffRequestCallback();
+        doReturn(TaskContinuityMessenger.SendMessageResult.SUCCESS)
+                .when(mMockTaskContinuityMessenger)
+                .sendMessage(eq(associationId), any());
+        mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callbackHolder);
+        mOutboundHandoffRequestHandler.cancelAllOutboundRequests();
+        callbackHolder.verifyInvoked(
+                associationId,
+                taskId,
+                TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED);
+    }
+
     private void verifyTaskContinuityMessengerFailureCausesFailure(
             TaskContinuityMessenger.SendMessageResult sendMessageResult, int expectedStatusCode) {
 

@@ -92,4 +92,11 @@ public class HandoffControllerTest {
         verify(mMockOutboundHandoffRequestHandler)
                 .onHandoffRequestResultMessageReceived(associationId, handoffRequestResultMessage);
     }
+
+    @Test
+    public void testOnDisabled_cancelsAllOutboundRequests() {
+        mHandoffController.enable();
+        mHandoffController.disable();
+        verify(mMockOutboundHandoffRequestHandler).cancelAllOutboundRequests();
+    }
 }
