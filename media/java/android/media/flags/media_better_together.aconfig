@@ -63,7 +63,7 @@ flag {
 
 flag {
     name: "enable_preferred_device_fixes"
-    namespace: "media_solutions"
+    namespace: "media_better_together"
     description: "Prevents MediaRouter2 from changing routing policies in specific situations where it shouldn't change them."
     bug: "448815259"
 }
