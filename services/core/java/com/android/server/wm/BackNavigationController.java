@@ -969,7 +969,7 @@ class BackNavigationController {
                 final Task topTask = mAnimationHandler.mOpenAnimAdaptor.mAdaptors[0].getTopTask();
                 if (topTask != null) {
                     WindowContainer parent = mAnimationHandler.mOpenActivities[0].getParent();
-                    while (parent != topTask && parent.isDescendantOf(topTask)) {
+                    while (parent != null && parent != topTask && parent.isDescendantOf(topTask)) {
                         controller.collect(parent);
                         parent = parent.getParent();
                     }
