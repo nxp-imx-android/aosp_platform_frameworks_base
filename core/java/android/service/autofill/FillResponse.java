@@ -464,8 +464,8 @@ public final class FillResponse implements Parcelable {
          *
          * <p> <b>IMPORTANT</b>: Extras must be non-null on the intent being set for Android 12
          * otherwise it will cause a crash. Do not use {@link Activity#setResult(int)}, instead use
-         * {@link Activity#setResult(int, Intent) with non-null extras. Consider setting {
-         * @link android.view.autofill.AutofillManager#EXTRA_AUTHENTICATION_RESULT} to null or use
+         * {@link Activity#setResult(int, Intent)} with non-null extras. Consider setting
+         * {@link android.view.autofill.AutofillManager#EXTRA_AUTHENTICATION_RESULT} to null or use
          * {@link Bundle#EMPTY} with {@link Intent#putExtras(Bundle)} on the intent when
          * finishing activity to avoid crash). </p>
          *

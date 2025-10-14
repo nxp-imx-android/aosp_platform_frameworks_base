@@ -8869,7 +8869,7 @@ public class TelephonyManager {
      * </ul>
      *
      * The use of {@link Manifest.permission#READ_PRIVILEGED_PHONE_STATE} is deprecated.
-     * Use {@link Manifest.permission#USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER instead.
+     * Use {@link Manifest.permission#USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER} instead.
      *
      * @param appType the icc application type, like {@link #APPTYPE_USIM}
      * @param authType the authentication type, any one of {@link #AUTHTYPE_EAP_AKA} or
