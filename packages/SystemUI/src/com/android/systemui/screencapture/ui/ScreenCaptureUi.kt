@@ -33,9 +33,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -110,7 +107,7 @@ constructor(
             addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
             addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
             // TODO(b/427481098) Change to TYPE_SCREENSHOT
-            setType(WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY)
+            setType(WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL)
             setWindowAnimations(-1)
         }
     }
@@ -176,9 +173,7 @@ constructor(
                 }
             Box(
                 modifier =
-                    Modifier.windowInsetsPadding(WindowInsets.safeDrawing).focusable().thenIf(
-                        !isLargeScreen
-                    ) {
+                    Modifier.focusable().thenIf(!isLargeScreen) {
                         // On small screens, follow the design pattern of a dialog
                         Modifier.clickable(
                             onClick = { hide() },
