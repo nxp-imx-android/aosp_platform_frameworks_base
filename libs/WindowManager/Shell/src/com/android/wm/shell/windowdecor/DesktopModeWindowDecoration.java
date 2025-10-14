@@ -91,6 +91,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
 import com.android.wm.shell.apptoweb.AppToWebUtils;
 import com.android.wm.shell.apptoweb.AssistContentRequester;
+import com.android.wm.shell.apptoweb.DialogLifecycleListener;
 import com.android.wm.shell.apptoweb.OpenByDefaultDialog;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
@@ -1375,9 +1376,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mDisplayController,
                 mTaskResourceLoader,
                 mSurfaceControlTransactionSupplier,
-                mMainDispatcher,
                 mMainScope,
-                new OpenByDefaultDialog.DialogLifecycleListener() {
+                new DialogLifecycleListener() {
                     @Override
                     public void onDialogCreated() {
                         closeHandleMenu();

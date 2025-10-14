@@ -41,8 +41,8 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.apptoweb.AppToWebRepository
+import com.android.wm.shell.apptoweb.DialogLifecycleListener
 import com.android.wm.shell.apptoweb.OpenByDefaultDialog
-import com.android.wm.shell.apptoweb.OpenByDefaultDialog.DialogLifecycleListener
 import com.android.wm.shell.apptoweb.canShowAppLinks
 import com.android.wm.shell.apptoweb.isBrowserApp
 import com.android.wm.shell.common.DisplayController
@@ -357,7 +357,6 @@ class AppHandleController(
                 displayController,
                 taskResourceLoader,
                 surfaceControlTransactionSupplier,
-                mainDispatcher,
                 mainScope,
                 object : DialogLifecycleListener {
                     override fun onDialogDismissed() {
