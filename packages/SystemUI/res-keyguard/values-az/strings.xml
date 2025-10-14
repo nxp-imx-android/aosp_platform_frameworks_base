@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Barmaq izi ilə açmaq olmur. Çox cəhd edilib."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"İnam agenti əlçatan deyil"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Səhv PIN ilə çox cəhd edildi"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Bu PIN-i artıq sınamısınız. Başqasını sınayın."</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Bu parolu artıq sınamısınız. Başqasını sınayın."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Bu modeli artıq sınamısınız. Başqasını sınayın."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Səhv model ilə çox cəhd edildi"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Səhv parol ilə çox cəhd edildi"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Yanlış PIN ilə çox sayda cəhd edilib\nƏtraflı məlumat: <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Yanlış model ilə çox sayda cəhd edilib\nƏtraflı məlumat: <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Yanlış parol ilə çox sayda cəhd edilib\nƏtraflı məlumat: <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# saniyə sonra yenidən cəhd edin.}other{# saniyə sonra yenidən cəhd edin.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{# saniyə sonra yenidən cəhd edin}other{# saniyə sonra yenidən cəhd edin}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{# dəqiqə sonra yenidən cəhd edin}other{# dəqiqə sonra yenidən cəhd edin}}"</string>

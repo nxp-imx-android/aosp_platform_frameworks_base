@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"ਫਿੰਗਰਪ੍ਰਿੰਟ ਨਾਲ ਅਣਲਾਕ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ।"</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ਭਰੋਸੇਯੋਗ ਏਜੰਟ ਉਪਲਬਧ ਨਹੀਂ ਹੈ"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"ਗਲਤ ਪਿੰਨ ਨਾਲ ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"ਇਹ ਪਿੰਨ ਪਹਿਲਾਂ ਹੀ ਅਜ਼ਮਾਇਆ ਜਾ ਚੁੱਕਿਆ ਹੈ। ਕੋਈ ਹੋਰ ਅਜ਼ਮਾ ਕੇ ਦੇਖੋ।"</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"ਇਹ ਪਾਸਵਰਡ ਪਹਿਲਾਂ ਹੀ ਅਜ਼ਮਾਇਆ ਜਾ ਚੁੱਕਿਆ ਹੈ। ਕੋਈ ਹੋਰ ਅਜ਼ਮਾ ਕੇ ਦੇਖੋ।"</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"ਇਹ ਪੈਟਰਨ ਪਹਿਲਾਂ ਹੀ ਅਜ਼ਮਾਇਆ ਜਾ ਚੁੱਕਿਆ ਹੈ। ਕੋਈ ਹੋਰ ਅਜ਼ਮਾ ਕੇ ਦੇਖੋ।"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ਗਲਤ ਪੈਟਰਨ ਨਾਲ ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"ਗਲਤ ਪਾਸਵਰਡ ਨਾਲ ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ਗਲਤ ਪਿੰਨ ਨਾਲ ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> \'ਤੇ ਹੋਰ ਜਾਣੋ"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"ਗਲਤ ਪੈਟਰਨ ਨਾਲ ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> \'ਤੇ ਹੋਰ ਜਾਣੋ"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"ਗਲਤ ਪਾਸਵਰਡ ਨਾਲ ਬਹੁਤ ਸਾਰੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> \'ਤੇ ਹੋਰ ਜਾਣੋ"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# ਸਕਿੰਟ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।}one{# ਸਕਿੰਟ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।}other{# ਸਕਿੰਟਾਂ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{# ਸਕਿੰਟ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ}one{# ਸਕਿੰਟ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ}other{# ਸਕਿੰਟਾਂ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{# ਮਿੰਟ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ}one{# ਮਿੰਟ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ}other{# ਮਿੰਟਾਂ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ}}"</string>

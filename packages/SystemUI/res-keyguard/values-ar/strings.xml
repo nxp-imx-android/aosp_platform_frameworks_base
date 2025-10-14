@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"يتعذّر الفتح ببصمة الإصبع. أجريت محاولات كثيرة جدًا."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ميزة \"الوكيل المعتمد\" غير متاحة."</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"أجريت محاولات كثيرة جدًا باستخدام رقم تعريف شخصي خاطئ"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"يُرجى إدخال رقم تعريف شخصي آخر لأنّك جرّبته من قبل."</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"يُرجى إدخال كلمة مرور أخرى لأنّك جرّبتها من قبل."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"يُرجى إدخال نقش آخر لأنّك جرّبته من قبل."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"أجريت محاولات كثيرة جدًا باستخدام نقش خاطئ"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"أجريت محاولات كثيرة جدًا باستخدام كلمة مرور خاطئة"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"لقد أجريت محاولات عديدة باستخدام رقم تعريف شخصي خاطئ\nمزيد من المعلومات على <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"لقد أجريت محاولات عديدة باستخدام نقش خاطئ\nمزيد من المعلومات على <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"لقد أجريت محاولات عديدة باستخدام كلمة مرور خاطئة\nمزيد من المعلومات على <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{يُرجى إعادة المحاولة خلال ثانية واحدة.}zero{يُرجى إعادة المحاولة خلال # ثانية.}two{يُرجى إعادة المحاولة خلال ثانيتَين.}few{يُرجى إعادة المحاولة خلال # ثوانٍ.}many{يُرجى إعادة المحاولة خلال # ثانية.}other{يُرجى إعادة المحاولة خلال # ثانية.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{يُرجى إعادة المحاولة بعد ثانية واحدة}zero{يُرجى إعادة المحاولة بعد # ثانية}two{يُرجى إعادة المحاولة بعد ثانيتَين}few{يُرجى إعادة المحاولة بعد # ثوانٍ}many{يُرجى إعادة المحاولة بعد # ثانية}other{يُرجى إعادة المحاولة بعد # ثانية}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{يُرجى إعادة المحاولة بعد دقيقة واحدة}zero{يُرجى إعادة المحاولة بعد # دقيقة}two{يُرجى إعادة المحاولة بعد دقيقتَين}few{يُرجى إعادة المحاولة بعد # دقائق}many{يُرجى إعادة المحاولة بعد # دقيقة}other{يُرجى إعادة المحاولة بعد # دقيقة}}"</string>
