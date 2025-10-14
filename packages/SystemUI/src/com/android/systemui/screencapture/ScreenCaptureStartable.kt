@@ -17,11 +17,13 @@
 package com.android.systemui.screencapture
 
 import android.util.Log
+import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
+import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureComponentInteractor
@@ -33,6 +35,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @SysUISingleton
@@ -54,7 +57,10 @@ constructor(
     private fun observeUiState(type: ScreenCaptureType) {
         combine(
                 screenCaptureUiInteractor.uiState(type),
-                screenCaptureComponentInteractor.screenCaptureComponent(type).filterNotNull(),
+                screenCaptureComponentInteractor
+                    .screenCaptureComponent(type)
+                    .filterNotNull()
+                    .onEach { it.start() },
             ) { state, screenCaptureComponent ->
                 if (state is ScreenCaptureUiState.Visible) {
                     val displayId = focusedDisplayRepository.focusedDisplayId.value
@@ -80,5 +86,16 @@ constructor(
                 }
             }
             .launchIn(appScope)
+    }
+
+    private fun ScreenCaptureComponent.start() {
+        screenCaptureOverlayStateInteractor()
+            .isVisible
+            .mapLatest { visible ->
+                if (visible) {
+                    screenRecordOverlayUi().show()
+                }
+            }
+            .launchInTraced("ScreenCaptureOverlayStateInteractor#show", coroutineScope())
     }
 }
