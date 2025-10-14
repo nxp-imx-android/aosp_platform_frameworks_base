@@ -16,8 +16,8 @@
 
 package com.android.systemui.screenrecord.service
 
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
-import com.android.systemui.screenrecord.domain.interactor.Status
+import com.android.systemui.screenrecord.data.repository.Status
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -29,8 +29,8 @@ import com.android.systemui.screencapture.common.domain.interactor.ScreenCapture
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
-import com.android.systemui.screenrecord.domain.interactor.Status
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
+import com.android.systemui.screenrecord.data.repository.Status
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
@@ -76,7 +76,7 @@ class RecordDetailsTargetViewModel
 @AssistedInject
 constructor(
     @ScreenCaptureUi private val display: Display,
-    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val screenRecordingServiceRepository: ScreenRecordingServiceRepository,
     private val screenCaptureRecentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val labelInteractor: ScreenCaptureLabelInteractor,
 ) : HydratedActivatable() {
@@ -87,11 +87,11 @@ constructor(
     private val _currentTarget = MutableStateFlow<RecordDetailsTargetItemViewModel?>(null)
 
     val canChangeTarget: Boolean by
-        screenRecordingServiceInteractor.status
+        screenRecordingServiceRepository.status
             .map { it.canChangeTarget() }
             .hydratedStateOf(
                 traceName = "RecordDetailsTargetViewModel#canChangeTarget",
-                initialValue = screenRecordingServiceInteractor.status.value.canChangeTarget(),
+                initialValue = screenRecordingServiceRepository.status.value.canChangeTarget(),
             )
     val currentTarget: RecordDetailsTargetItemViewModel? by
         _currentTarget.hydratedStateOf(traceName = "RecordDetailsTargetViewModel#currentTarget")

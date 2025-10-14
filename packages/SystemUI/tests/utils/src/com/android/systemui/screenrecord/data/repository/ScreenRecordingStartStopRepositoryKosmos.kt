@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screenrecord.domain.interactor
+package com.android.systemui.screenrecord.data.repository
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.settings.userTracker
 
-val Kosmos.legacyScreenRecordingStartStopInteractor: LegacyScreenRecordingStartStopInteractor by
-    Kosmos.Fixture { LegacyScreenRecordingStartStopInteractor(userTracker) }
+val Kosmos.legacyScreenRecordingStartStopRepository: LegacyScreenRecordingStartStopRepository by
+    Kosmos.Fixture { LegacyScreenRecordingStartStopRepository(userTracker) }
 
-var Kosmos.screenRecordingStartStopInteractor: ScreenRecordingStartStopInteractor by
-    Kosmos.Fixture { legacyScreenRecordingStartStopInteractor }
+var Kosmos.screenRecordingStartStopRepository: ScreenRecordingStartStopRepository by
+    Kosmos.Fixture { legacyScreenRecordingStartStopRepository }

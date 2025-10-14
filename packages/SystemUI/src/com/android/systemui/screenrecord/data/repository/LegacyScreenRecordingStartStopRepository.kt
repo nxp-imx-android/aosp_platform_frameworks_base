@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screenrecord.domain.interactor
+package com.android.systemui.screenrecord.data.repository
 
 import android.app.Activity
 import android.app.BroadcastOptions
@@ -22,14 +22,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.os.Bundle
 import com.android.systemui.screenrecord.RecordingService
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.settings.UserContextProvider
 import javax.inject.Inject
 
-class LegacyScreenRecordingStartStopInteractor
+class LegacyScreenRecordingStartStopRepository
 @Inject
 constructor(private val userContextProvider: UserContextProvider) :
-    ScreenRecordingStartStopInteractor {
+    ScreenRecordingStartStopRepository {
 
     private val options: Bundle = BroadcastOptions.makeBasic().setInteractive(true).toBundle()
     private val userContext: Context

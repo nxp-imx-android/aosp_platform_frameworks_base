@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screenrecord.domain.interactor
+package com.android.systemui.screenrecord.data.repository
 
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
@@ -22,9 +22,9 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.user.data.repository.userRepository
 
-var Kosmos.screenRecordingServiceInteractor: ScreenRecordingServiceInteractor by
+var Kosmos.screenRecordingServiceRepository: ScreenRecordingServiceRepository by
     Kosmos.Fixture {
-        ScreenRecordingServiceInteractor(
+        ScreenRecordingServiceRepository(
             applicationContext,
             applicationCoroutineScope,
             userRepository,

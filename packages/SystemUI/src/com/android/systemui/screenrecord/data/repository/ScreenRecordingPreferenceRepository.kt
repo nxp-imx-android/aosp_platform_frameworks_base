@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screenrecord.domain
+package com.android.systemui.screenrecord.data.repository
 
 import android.app.Service.MODE_PRIVATE
 import android.content.Context
@@ -22,7 +22,7 @@ import android.content.SharedPreferences
 import android.provider.Settings
 import androidx.core.content.edit
 
-class ScreenRecordingPreferenceUtil(private val context: Context) {
+class ScreenRecordingPreferenceRepository(private val context: Context) {
 
     @JvmOverloads
     fun updateShowTaps(showTaps: Boolean, rememberOriginal: Boolean = true) {
