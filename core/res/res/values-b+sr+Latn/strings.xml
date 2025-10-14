@@ -2383,7 +2383,7 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN za otključavanje dobavljača usluge podskupa mreže"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Zahteva se otključavanje SIM mreže…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Zahteva se otključavanje podskupa SIM mreže…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Zahteva se otključavanje dobavljača usluge SIM-a…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Zahteva se otključavanje SIM-a kod dobavljača usluge…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Zahteva se otključavanje poslovne SIM kartice…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Zahteva se otključavanje pomoću PUK-a…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Zahteva se otključavanje pomoću PUK-a…"</string>
@@ -2410,7 +2410,7 @@
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Zahteva se otključavanje pomoću PUK-a…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Zahtev za otključavanje SIM mreže nije uspeo."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Zahtev za otključavanje podskupa SIM mreže nije uspeo."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Zahtev za otključavanje dobavljača usluge SIM-a nije uspeo."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Zahtev za otključavanje SIM-a kod dobavljača usluge nije uspeo."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Zahtev za otključavanje poslovne SIM kartice nije uspeo."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Zahtev za otključavanje SIM kartice nije uspeo."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Zahtev za otključavanje RUIM mreže 1 nije uspeo."</string>
@@ -2437,7 +2437,7 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Zahtev za otključavanje dobavljača usluge podskupa mreže nije uspeo."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Otključavanje SIM mreže je uspelo."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Otključavanje podskupa SIM mreže je uspelo."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Otključavanje dobavljača usluge SIM-a je uspelo."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Otključavanje SIM-a kod dobavljača usluge je uspelo."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Otključavanje poslovne SIM kartice je uspelo."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Otključavanje SIM kartice je uspelo."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Otključavanje RUIM mreže 1 je uspelo."</string>

@@ -2382,8 +2382,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"PIN za otključavanje IMPI-ja"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"PIN za otključavanje mrežne podgrupe pružaoca usluge"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Zahtijevanje otključavanja mreže na SIM-u…"</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Upućivanje zahtjeva za otključavanje podskupa SIM mreže…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Upućivanje zahtjeva za otključavanje davatelja usluga SIM-a…"</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Upućivanje zahtjeva za otključavanje mrežne podgrupe na SIM-u…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Upućivanje zahtjeva za otključavanje SIM-a pružaoca usluge…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Zahtijevanje otključavanja korporativnog SIM-a…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Zahtijevanje otključavanja PUK-om…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Zahtijevanje otključavanja PUK-om…"</string>
@@ -2409,15 +2409,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Zahtijevanje otključavanja PUK-om…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Zahtijevanje otključavanja PUK-om…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Zahtjev za otključavanje mreže na SIM-u je neuspješan."</string>
-    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Zahtjev za otključavanje podskupa SIM mreže nije uspio."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Zahtjev za otključavanje davatelja usluga SIM-a nije uspio."</string>
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Zahtjev za otključavanje mrežne podgrupe na SIM-u nije uspio."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Zahtjev za otključavanje SIM-a pružaoca usluge nije uspio."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Zahtjev za otključavanje korporativnog SIM-a je neuspješan."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Zahtjev za otključavanje SIM-a je neuspješan."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Zahtjev za otključavanje mreže 1 na RUIM-u je neuspješan."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Zahtjev za otkjučavanje mreže 2 na RUIM-u je neuspješan."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Zahtjev za otključavanje RUIM Hrpd-ja je neuspješan."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Zahtjev za otključavanje korporativnog RUIM-ja je neuspješan."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Zahtjev za otključavanje davatelja usluga RUIM-a nije uspio."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Zahtjev za otključavanje RUIM-a pružaoca usluge nije uspio."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Zahtjev za otključavanje RUIM-a je neuspješan."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Otključavanje PUK-om nije uspjelo."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Otključavanje PUK-om nije uspjelo."</string>
@@ -2437,13 +2437,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Zahtjev za otključavanje mrežne podgrupe pružaoca usluge je neuspješan."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Otključavanje mreže na SIM-u je uspjelo."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Otključavanje mrežne podgrupe na SIM-u je uspjelo."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Davatelj usluga SIM-a je otključan."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Otključavanje SIM-a pružaoca usluge je uspjelo."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Otključavanje korporativnog SIM-a je uspjelo."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Otključavanje SIM-a je uspjelo."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Otključavanje mreže 1 na RUIM-u je uspjelo."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Otključavanje mreže 2 na RUIM-u je uspjelo."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Otključavanje RUIM Hrpd-a je uspjelo."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Davatelj usluga RUIM-a je otključan."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Otključavanje RUIM-a pružaoca usluge je uspjelo."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Otključavanje korporativnog RUIM-a je uspjelo."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Otključavanje RUIM-a je uspjelo."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Otključavanje PUK-om je uspjelo."</string>

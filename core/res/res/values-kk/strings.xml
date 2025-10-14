@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Дұрыс!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Қайталап көріңіз"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Қайталап көріңіз"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Құлыпты ашу үшін басыңыз"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Құлыпты ашу үшін кез келген пернені басыңыз"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Барлық функция мен дерек үшін құлыпты ашыңыз"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Бет тану арқылы ашу әрекеттері анықталған шегінен асып кетті"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM картасы жоқ."</string>

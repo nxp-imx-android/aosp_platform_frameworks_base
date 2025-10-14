@@ -2381,10 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI:n lukituksen avaamisen PIN-koodi"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"Verkon alijoukon palveluntarjoajan lukituksen avaamisen PIN-koodi"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Pyydetään SIM-kortin verkkoversion lukituksen avaamista…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Pyydetään SIM-kortin verkkoversion alijoukon lukituksen avaamista…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Pyydetään SIM-kortin palveluntarjoajaversion lukituksen avaamista…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Pyydetään SIM-kortin yritysversion lukituksen avaamista…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
@@ -2410,18 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Pyydetään lukituksen avausta PUK-koodilla…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"SIM-kortin verkkoversion lukituksen avauspyyntö ei onnistunut."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"SIM-kortin verkkoversion alijoukon lukituksen avauspyyntö ei onnistunut."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"SIM-kortin palveluntarjoajaversion lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"SIM-kortin yritysversion lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM-kortin lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM-kortin verkko1-version lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM-kortin verkko2-version lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM-kortin hrpd-version lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"RUIM-kortin yritysversion lukituksen avauspyyntö ei onnistunut."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM-kortin palveluntarjoajaversion lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM-kortin lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Lukituksen avaus PUK-koodilla ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Lukituksen avaus PUK-koodilla ei onnistunut."</string>
@@ -2441,15 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Verkon alijoukon palveluntarjoajan lukituksen avauspyyntö ei onnistunut."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"SIM-kortin verkkoversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"SIM-kortin verkkoversion alijoukon lukituksen avaus onnistui."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"SIM-kortin palveluntarjoajaversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"SIM-kortin yritysversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM-kortin lukituksen avaaminen onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM-kortin verkko1-version lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM-kortin verkko2-version lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM-kortin hrpd-version lukituksen avaus onnistui."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM-kortin palveluntarjoajaversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"RUIM-kortin yritysversion lukituksen avaus onnistui."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM-kortin lukituksen avaaminen onnistui."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Lukituksen avaus PUK-koodilla ei onnistunut."</string>

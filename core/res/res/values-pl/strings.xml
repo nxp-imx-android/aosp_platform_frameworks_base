@@ -1056,10 +1056,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Poprawnie!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Spróbuj ponownie."</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Spróbuj ponownie."</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Kliknij, aby odblokować"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Naciśnij dowolny klawisz, aby odblokować"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Odblokuj, by używać wszystkich funkcji i danych"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Przekroczono maksymalną liczbę prób rozpoznania twarzy."</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Brak karty SIM"</string>
@@ -2383,10 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"Kod PIN odblokowujący IMPI"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"Kod PIN odblokowujący usługodawcę w podzbiorze sieci"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Wysyłam żądanie odblokowania sieci dla karty SIM…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"Wysyłam prośbę o odblokowanie podzbioru sieci na karcie SIM…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"Wysyłam prośbę o odblokowanie usługodawcy na karcie SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Wysyłam żądanie odblokowania danych korporacyjnych na karcie SIM…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"Wysyłam żądanie odblokowania kodem PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"Wysyłam żądanie odblokowania kodem PUK…"</string>
@@ -2412,18 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"Wysyłam żądanie odblokowania kodem PUK…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"Wysyłam żądanie odblokowania kodem PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Nie udało się zrealizować żądania odblokowania sieci dla karty SIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"Nie udało się zrealizować prośby o odblokowanie podzbioru sieci na karcie SIM."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"Nie udało się zrealizować prośby o odblokowanie usługodawcy na karcie SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Nie udało się zrealizować żądania odblokowania danych korporacyjnych na karcie SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"Nie udało się zrealizować żądania odblokowania karty SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"Nie udało się zrealizować żądania odblokowania sieci typu 1 na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Nie udało się zrealizować żądania odblokowania sieci typu 2 na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Nie udało się zrealizować żądania odblokowania HRDP na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Nie udało się zrealizować żądania odblokowania danych korporacyjnych na karcie RUIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Nie udało się zrealizować prośby o odblokowanie usługodawcy na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Nie udało się zrealizować żądania odblokowania RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Nie udało się odblokować kodem PUK."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Nie udało się odblokować kodem PUK."</string>
@@ -2443,15 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Nie udało się zrealizować żądania odblokowania usługodawcy w podzbiorze sieci."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Odblokowano sieć na karcie SIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Odblokowano podzbiór sieci na karcie SIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"Odblokowano usługodawcę na karcie SIM."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Odblokowano dane korporacyjne na karcie SIM."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"Odblokowano kartę SIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Odblokowano sieć typu 1 na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Odblokowano sieć typu 2 na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Odblokowano HRDP na karcie RUIM."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Odblokowano usługodawcę na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Odblokowano dane korporacyjne na karcie RUIM."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Odblokowano RUIM."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Odblokowano kodem PUK."</string>

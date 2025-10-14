@@ -2416,7 +2416,7 @@
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"Барањето за отклучување на мрежата Network2 на RUIM-картичката е неуспешно."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"Барањето за отклучување на HRPD-мрежата на RUIM-картичката е неуспешно."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Барањето за отклучување на корпоративната RUIM-картичка е неуспешно."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Барањето за отклучување на операторот на РУИМ-картичката е неуспешно."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"Барањето за отклучување на операторот на RUIM-картичката е неуспешно."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"Барањето за отклучување на RUIM-картичката е неуспешно."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"Отклучувањето со PUK е неуспешно."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"Отклучувањето со PUK е неуспешно."</string>
@@ -2442,7 +2442,7 @@
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"Отклучувањето на мрежата Network1 на RUIM-картичката е успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"Отклучувањето на мрежата Network2 на RUIM-картичката е успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"Отклучувањето на HRPD-мрежата на RUIM-картичката е успешно."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Отклучувањето на операторот на РУИМ-картичката е успешно."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"Отклучувањето на операторот на RUIM-картичката е успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Отклучувањето на корпоративната RUIM-картичка е успешно."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"Отклучувањето на RUIM-картичката е успешно."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"Отклучувањето со PUK е успешно."</string>
