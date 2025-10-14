@@ -572,10 +572,6 @@ public class AudioDeviceBroker {
                 mBtHelper.stopBluetoothSco(eventSource);
             }
         }
-        // In BT classic for communication, the device changes from a2dp to sco device,
-        // but for LE Audio or Hearing Aid it stays the same and we must trigger the proper
-        // stream volume alignment.
-        mAudioService.postUpdateContextualVolumes();
 
         updateCommunicationRoute(eventSource);
     }
@@ -2726,8 +2722,8 @@ public class AudioDeviceBroker {
                     mAccessibilityStrategyId, Arrays.asList(preferredCommunicationDevice));
             appliedCommunicationDevice = preferredCommunicationDevice;
         }
-        onUpdatePhoneStrategyDevice(preferredCommunicationDevice);
 
+        onUpdatePhoneStrategyDevice(preferredCommunicationDevice);
 
         if (appliedCommunicationDevice != null && AudioSystem.isBluetoothLeOutDevice(
                 appliedCommunicationDevice.getInternalType())) {
@@ -2859,6 +2855,10 @@ public class AudioDeviceBroker {
         }
         dispatchCommunicationDevice();
         mAudioService.updateRingerModeMutedStreams();
+        // In BT classic for communication, the device changes from a2dp to sco device,
+        // but for LE Audio or Hearing Aid it stays the same and we must trigger the proper
+        // stream volume alignment.
+        mAudioService.postUpdateContextualVolumes();
     }
 
     @GuardedBy("mDeviceStateLock")
