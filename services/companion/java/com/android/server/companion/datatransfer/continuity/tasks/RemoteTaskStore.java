@@ -171,6 +171,15 @@ public class RemoteTaskStore {
         }
     }
 
+    public void clear() {
+        synchronized (mRemoteDeviceTaskLists) {
+            Slog.v(TAG, "Clearing all RemoteDeviceTaskLists");
+
+            mRemoteDeviceTaskLists.clear();
+            notifyListeners();
+        }
+    }
+
     private void onMostRecentTaskChanged(RemoteTask task) {
         notifyListeners();
     }

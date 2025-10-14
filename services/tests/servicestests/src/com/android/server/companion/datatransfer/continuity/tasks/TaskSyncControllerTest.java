@@ -84,6 +84,14 @@ public class TaskSyncControllerTest {
     }
 
     @Test
+    public void onDisable_clearsRemoteTaskStore() {
+        mTaskSyncController.enable();
+        mTaskSyncController.disable();
+
+        verify(mMockRemoteTaskStore).clear();
+    }
+
+    @Test
     public void registerRemoteTaskListener_registersListener() {
         IRemoteTaskListener mockRemoteTaskListener = mock(IRemoteTaskListener.class);
         mTaskSyncController.registerTaskListener(mockRemoteTaskListener);

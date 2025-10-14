@@ -104,6 +104,9 @@ public class TaskSyncController extends FeatureController {
         Slog.v(getTag(), "Unregistering listeners from ActivityTaskManager");
         mActivityTaskManager.unregisterTaskStackListener(mTaskBroadcaster);
         mActivityTaskManagerInternal.unregisterHandoffEnablementListener(mTaskBroadcaster);
+
+        Slog.v(getTag(), "Clearing all tasks from RemoteTaskStore");
+        mRemoteTaskStore.clear();
     }
 
     @Override
