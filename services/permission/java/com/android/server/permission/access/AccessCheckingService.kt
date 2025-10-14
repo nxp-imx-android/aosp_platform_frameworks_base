@@ -56,7 +56,7 @@ class AccessCheckingService(context: Context) : SystemService(context) {
     private val persistence = AccessPersistence(policy)
 
     private lateinit var appOpService: AppOpService
-    private lateinit var permissionService: PermissionService
+    lateinit var permissionService: PermissionService
     private lateinit var appFunctionAccessService: AppFunctionAccessService
 
     private lateinit var packageManagerInternal: PackageManagerInternal
