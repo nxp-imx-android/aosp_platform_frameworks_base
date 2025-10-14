@@ -76,7 +76,6 @@ import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager.LayoutParams;
-import android.window.DesktopExperienceFlags;
 import android.window.SurfaceSyncGroup;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -133,7 +132,6 @@ public class WindowDecorationTests extends ShellTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX,
                 Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS);
     }
 
@@ -199,12 +197,9 @@ public class WindowDecorationTests extends ShellTestCase {
         if (Flags.enableFreeformBoxShadows()) {
             mRelayoutParams.mBoxShadowSettingsIds = new int[]{R.style.BoxShadowParamsKeyFocused};
             mRelayoutParams.mBorderSettingsId = R.style.BorderSettingsFocusedDark;
-        } else if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+        } else {
             mRelayoutParams.mShadowRadiusId = R.dimen.test_freeform_shadow_radius;
             mRelayoutParams.mCornerRadiusId = R.dimen.test_freeform_corner_radius;
-        } else {
-            mRelayoutParams.mShadowRadius = SHADOW_RADIUS;
-            mRelayoutParams.mCornerRadius = CORNER_RADIUS;
         }
 
         when(mMockDisplayController.getDisplay(Display.DEFAULT_DISPLAY))
@@ -342,7 +337,7 @@ public class WindowDecorationTests extends ShellTestCase {
                 verify(mMockSurfaceControlFinishT, never()).setBorderSettings(eq(mMockTaskSurface),
                         any());
             }
-        } else if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+        } else {
             if (inSyncWithTransition) {
                 final int cornerRadius = WindowDecoration.loadDimensionPixelSize(
                         windowDecor.mDecorWindowContext.getResources(),
@@ -361,10 +356,6 @@ public class WindowDecorationTests extends ShellTestCase {
                 verify(mMockSurfaceControlStartT, never()).setShadowRadius(eq(mMockTaskSurface),
                         anyFloat());
             }
-        } else {
-            verify(mMockSurfaceControlStartT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
-            verify(mMockSurfaceControlFinishT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
-            verify(mMockSurfaceControlStartT).setShadowRadius(mMockTaskSurface, SHADOW_RADIUS);
         }
 
         assertEquals(300, mRelayoutResult.mWidth);

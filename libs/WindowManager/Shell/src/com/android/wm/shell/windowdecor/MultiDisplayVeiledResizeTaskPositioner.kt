@@ -489,7 +489,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
     private fun createLongTimeoutJankConfigBuilder(@Cuj.CujType cujType: Int) =
         InteractionJankMonitor.Configuration.Builder.withSurface(
                 cujType,
-                windowDecoration.context,
+                windowDecoration.decorWindowContext,
                 windowDecoration.taskSurface,
                 handler,
             )

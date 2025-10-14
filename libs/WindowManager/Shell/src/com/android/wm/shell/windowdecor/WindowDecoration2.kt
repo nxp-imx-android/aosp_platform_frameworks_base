@@ -75,7 +75,7 @@ import kotlinx.coroutines.launch
  */
 abstract class WindowDecoration2<T>(
     var taskInfo: RunningTaskInfo,
-    private val context: Context,
+    context: Context,
     private val displayController: DisplayController,
     taskSurface: SurfaceControl,
     private val surfaceControlSupplier: () -> SurfaceControl,
@@ -106,6 +106,11 @@ abstract class WindowDecoration2<T>(
     val exclusionRegion = Region.obtain()
     /** The last calculated valid drag area of the task. */
     var lastValidDragArea: Rect? = null
+
+    private val updateDecorWindowContext = { newConfig: Configuration ->
+        decorWindowContext =
+            context.createConfigurationContext(newConfig).apply { setTheme(context.themeResId) }
+    }
 
     private val onDisplaysChangedListener: OnDisplaysChangedListener =
         object : OnDisplaysChangedListener {
@@ -227,20 +232,16 @@ abstract class WindowDecoration2<T>(
                 } else null
 
             val cornerRadius =
-                if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue) {
-                    context.resources.getDimensionPixelSize(
-                        params.cornerRadiusId,
-                        INVALID_CORNER_RADIUS,
-                    )
-                } else INVALID_CORNER_RADIUS
+                decorWindowContext.resources.getDimensionPixelSize(
+                    params.cornerRadiusId,
+                    INVALID_CORNER_RADIUS,
+                )
 
             val shadowRadius =
-                if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue) {
-                    context.resources.getDimensionPixelSize(
-                        params.shadowRadiusId,
-                        INVALID_SHADOW_RADIUS,
-                    )
-                } else INVALID_SHADOW_RADIUS
+                decorWindowContext.resources.getDimensionPixelSize(
+                    params.shadowRadiusId,
+                    INVALID_SHADOW_RADIUS,
+                )
 
             traceSection(
                 traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
@@ -387,11 +388,7 @@ abstract class WindowDecoration2<T>(
         shadowRadius: Int,
         cornerRadius: Int,
     ) {
-        if (
-            (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
-                DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) &&
-                !params.inSyncWithTransition
-        ) {
+        if (!params.inSyncWithTransition) {
             // Update these outline properties only when the relayout is driven by Transition
             // callbacks because they must be updated together with some of other properties (e.g.,
             // position) which is set by transition handler although the outline properties are
@@ -409,25 +406,14 @@ abstract class WindowDecoration2<T>(
             finishT.setBoxShadowSettings(taskSurface, boxShadowSettings)
         }
 
-        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue) {
-            if (shadowRadius != INVALID_SHADOW_RADIUS) {
-                startT.setShadowRadius(taskSurface, shadowRadius.toFloat())
-                finishT.setShadowRadius(taskSurface, shadowRadius.toFloat())
-            }
+        if (shadowRadius != INVALID_SHADOW_RADIUS) {
+            startT.setShadowRadius(taskSurface, shadowRadius.toFloat())
+            finishT.setShadowRadius(taskSurface, shadowRadius.toFloat())
+        }
 
-            if (cornerRadius != INVALID_CORNER_RADIUS) {
-                startT.setCornerRadius(taskSurface, cornerRadius.toFloat())
-                finishT.setCornerRadius(taskSurface, cornerRadius.toFloat())
-            }
-        } else {
-            if (params.shadowRadius != INVALID_SHADOW_RADIUS) {
-                startT.setShadowRadius(taskSurface, params.shadowRadius.toFloat())
-                finishT.setShadowRadius(taskSurface, params.shadowRadius.toFloat())
-            }
-            if (params.cornerRadius != INVALID_CORNER_RADIUS) {
-                startT.setCornerRadius(taskSurface, params.cornerRadius.toFloat())
-                finishT.setCornerRadius(taskSurface, params.cornerRadius.toFloat())
-            }
+        if (cornerRadius != INVALID_CORNER_RADIUS) {
+            startT.setCornerRadius(taskSurface, cornerRadius.toFloat())
+            finishT.setCornerRadius(taskSurface, cornerRadius.toFloat())
         }
     }
 
@@ -494,8 +480,7 @@ abstract class WindowDecoration2<T>(
                 if (!obtainDisplayOrRegisterListener()) {
                     return
                 }
-                decorWindowContext = context.createConfigurationContext(newConfig)
-                decorWindowContext.setTheme(context.themeResId)
+                updateDecorWindowContext(newConfig)
             }
         }
 
@@ -596,8 +581,6 @@ abstract class WindowDecoration2<T>(
         val isInsetSource: Boolean = true,
         @InsetsSource.Flags val insetSourceFlags: Int = 0,
         val displayExclusionRegion: Region = Region.obtain(),
-        @Deprecated("") val shadowRadius: Int = INVALID_SHADOW_RADIUS,
-        @Deprecated("") val cornerRadius: Int = INVALID_CORNER_RADIUS,
         val shadowRadiusId: Int = Resources.ID_NULL,
         val cornerRadiusId: Int = Resources.ID_NULL,
         val borderSettingsId: Int = Resources.ID_NULL,

@@ -99,7 +99,6 @@ import kotlinx.coroutines.launch
 class AppHeaderController(
     taskInfo: RunningTaskInfo,
     windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
-    private val context: Context,
     private val userContext: Context,
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
@@ -448,7 +447,7 @@ class AppHeaderController(
         if (isOpenByDefaultDialogActive) return
         openByDefaultDialog =
             OpenByDefaultDialog(
-                context,
+                decorWindowContext,
                 userContext,
                 transitions,
                 taskInfo,
@@ -616,7 +615,7 @@ class AppHeaderController(
                         captionLayoutResult.captionTopPadding,
                 displayController = displayController,
                 rootTdaOrganizer = rootTaskDisplayAreaOrganizer,
-                context = context,
+                context = decorWindowContext,
                 desktopUserRepositories = desktopUserRepositories,
                 surfaceControlBuilderSupplier = surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier = surfaceControlTransactionSupplier,
@@ -689,7 +688,7 @@ class AppHeaderController(
 
     /** Returns the valid drag area for a task based on elements in the app chip. */
     override fun calculateValidDragArea(): Rect {
-        val resources = context.resources
+        val resources = decorWindowContext.resources
         val leftButtonsWidth =
             resources.getDimensionPixelSize(R.dimen.desktop_mode_app_details_width_minus_text) +
                 viewHolder.appNameTextWidth

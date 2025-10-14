@@ -330,14 +330,12 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                     params.mBoxShadowSettingsIds);
         }
 
-        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
-            outResult.mCornerRadius = params.mCornerRadiusId == Resources.ID_NULL
-                    ? INVALID_CORNER_RADIUS : loadDimensionPixelSize(resources,
-                    params.mCornerRadiusId);
-            outResult.mShadowRadius = params.mShadowRadiusId == Resources.ID_NULL
-                    ? INVALID_SHADOW_RADIUS : loadDimensionPixelSize(resources,
-                    params.mShadowRadiusId);
-        }
+        outResult.mCornerRadius = params.mCornerRadiusId == Resources.ID_NULL
+                ? INVALID_CORNER_RADIUS : loadDimensionPixelSize(resources,
+                params.mCornerRadiusId);
+        outResult.mShadowRadius = params.mShadowRadiusId == Resources.ID_NULL
+                ? INVALID_SHADOW_RADIUS : loadDimensionPixelSize(resources,
+                params.mShadowRadiusId);
 
         Trace.beginSection("relayout-createViewHostIfNeeded");
         createViewHostIfNeeded(mDecorWindowContext, mDisplay);
@@ -554,9 +552,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     private void updateTaskSurfaceOutline(
             RelayoutParams params, SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT, RelayoutResult<T> outResult) {
-        if ((DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()
-                || DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue())
-                && !params.mInSyncWithTransition) {
+        if (!params.mInSyncWithTransition) {
             // Update these outline properties only when the relayout is driven by Transition
             // callbacks because they must be updated together with some of other properties (e.g.,
             // position) which is set by transition handler although the outline properties are
@@ -576,24 +572,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             finishT.setBoxShadowSettings(mTaskSurface, outResult.mBoxShadowSettings);
         }
 
-        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
-            if (outResult.mShadowRadius != INVALID_SHADOW_RADIUS) {
-                startT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
-                finishT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
-            }
-            if (outResult.mCornerRadius != INVALID_CORNER_RADIUS) {
-                startT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
-                finishT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
-            }
-        } else {
-            if (params.mShadowRadius != INVALID_SHADOW_RADIUS) {
-                startT.setShadowRadius(mTaskSurface, params.mShadowRadius);
-                finishT.setShadowRadius(mTaskSurface, params.mShadowRadius);
-            }
-            if (params.mCornerRadius != INVALID_CORNER_RADIUS) {
-                startT.setCornerRadius(mTaskSurface, params.mCornerRadius);
-                finishT.setCornerRadius(mTaskSurface, params.mCornerRadius);
-            }
+        if (outResult.mShadowRadius != INVALID_SHADOW_RADIUS) {
+            startT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
+            finishT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
+        }
+        if (outResult.mCornerRadius != INVALID_CORNER_RADIUS) {
+            startT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
+            finishT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
         }
     }
 
@@ -865,13 +850,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mBorderSettingsId = Resources.ID_NULL;
             mBoxShadowSettingsIds = null;
 
-            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
-                mShadowRadiusId = Resources.ID_NULL;
-                mCornerRadiusId = Resources.ID_NULL;
-            } else {
-                mShadowRadius = INVALID_SHADOW_RADIUS;
-                mCornerRadius = INVALID_SHADOW_RADIUS;
-            }
+            mShadowRadiusId = Resources.ID_NULL;
+            mCornerRadiusId = Resources.ID_NULL;
 
             mCaptionTopPadding = 0;
             mIsCaptionVisible = false;
@@ -918,10 +898,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mRootView = null;
             mBorderSettings = null;
             mBoxShadowSettings = null;
-            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
-                mCornerRadius = INVALID_CORNER_RADIUS;
-                mShadowRadius = INVALID_SHADOW_RADIUS;
-            }
+            mCornerRadius = INVALID_CORNER_RADIUS;
+            mShadowRadius = INVALID_SHADOW_RADIUS;
         }
     }
 

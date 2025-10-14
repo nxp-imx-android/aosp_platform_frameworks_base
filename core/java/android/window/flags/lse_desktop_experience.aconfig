@@ -988,16 +988,6 @@ flag {
 }
 
 flag {
-    name: "enable_dynamic_radius_computation_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables bugfix to compute the corner/shadow radius of desktop windows dynamically with the current window context."
-    bug: "399630464"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_empty_desk_on_minimize"
     namespace: "lse_desktop_experience"
     description: "Keep desktop open when the last window is minimized."

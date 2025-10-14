@@ -99,7 +99,7 @@ class DefaultWindowDecoration
 constructor(
     taskInfo: RunningTaskInfo,
     taskSurface: SurfaceControl,
-    val context: Context,
+    context: Context,
     private val userContext: Context,
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
@@ -194,6 +194,10 @@ constructor(
 
     val manageWindowsMenuController: ManageWindowsMenuController?
         get() = captionController?.manageWindowsMenuController
+
+    private val appTheme = { taskInfo: RunningTaskInfo ->
+        DecorThemeUtil(context).getAppTheme(taskInfo)
+    }
 
     init {
         taskResourceLoader.onWindowDecorCreated(taskInfo)
@@ -346,7 +350,6 @@ constructor(
 
             val relayoutParams =
                 getRelayoutParams(
-                    context,
                     taskInfo,
                     splitScreenController,
                     applyStartTransactionOnDraw,
@@ -397,7 +400,6 @@ constructor(
         }
 
     private fun getRelayoutParams(
-        context: Context,
         taskInfo: RunningTaskInfo,
         splitScreenController: SplitScreenController,
         applyStartTransactionOnDraw: Boolean,
@@ -498,7 +500,12 @@ constructor(
             } else if (desktopConfig.useDesktopOverrideDensity) {
                 // The task has had its density overridden, but keep using the system's density to
                 // layout the header.
-                Configuration(context.resources.configuration)
+                val config =
+                    displayController
+                        .getDisplayContext(taskInfo.displayId)
+                        ?.resources
+                        ?.configuration ?: taskInfo.configuration
+                Configuration(config)
             } else {
                 Configuration(taskInfo.configuration)
             }
@@ -515,8 +522,6 @@ constructor(
             isInsetSource = isInsetSource,
             insetSourceFlags = insetSourceFlags,
             displayExclusionRegion = Region.obtain(displayExclusionRegion),
-            shadowRadius = getShadowRadius(captionType, hasGlobalFocus),
-            cornerRadius = getCornerRadius(captionType, shouldIgnoreCornerRadius),
             shadowRadiusId = getShadowRadiusId(captionType, hasGlobalFocus),
             cornerRadiusId = getCornerRadiusId(captionType, shouldIgnoreCornerRadius),
             borderSettingsId = getBorderSettingsId(captionType, taskInfo, hasGlobalFocus),
@@ -560,7 +565,7 @@ constructor(
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
             ID_NULL
-        } else if (DecorThemeUtil(context).getAppTheme(taskInfo) == Theme.DARK) {
+        } else if (appTheme(taskInfo) == Theme.DARK) {
             if (hasGlobalFocus) {
                 R.style.BorderSettingsFocusedDark
             } else {
@@ -578,8 +583,7 @@ constructor(
         if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
             ID_NULL
         } else if (
-            !DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
-                !shouldDecorateBorders(captionType) ||
+            !shouldDecorateBorders(captionType) ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
             ID_NULL
@@ -589,52 +593,12 @@ constructor(
             R.dimen.freeform_decor_shadow_unfocused_thickness
         }
 
-    @Deprecated("")
-    private fun getShadowRadius(
-        captionType: CaptionController.CaptionType,
-        hasGlobalFocus: Boolean,
-    ): Int =
-        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
-            INVALID_SHADOW_RADIUS
-        } else if (
-            DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
-                !shouldDecorateBorders(captionType) ||
-                !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
-        ) {
-            INVALID_SHADOW_RADIUS
-        } else if (hasGlobalFocus) {
-            context.resources.getDimensionPixelSize(R.dimen.freeform_decor_shadow_focused_thickness)
-        } else {
-            context.resources.getDimensionPixelSize(
-                R.dimen.freeform_decor_shadow_unfocused_thickness
-            )
-        }
-
-    @Deprecated("")
-    private fun getCornerRadius(
-        captionType: CaptionController.CaptionType,
-        shouldIgnoreCornerRadius: Boolean,
-    ): Int =
-        if (
-            !shouldDecorateBorders(captionType) ||
-                DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
-                !desktopConfig.useRoundedCorners ||
-                shouldIgnoreCornerRadius
-        ) {
-            INVALID_CORNER_RADIUS
-        } else {
-            context.resources.getDimensionPixelSize(
-                com.android.wm.shell.shared.R.dimen.desktop_windowing_freeform_rounded_corner_radius
-            )
-        }
-
     private fun getCornerRadiusId(
         captionType: CaptionController.CaptionType,
         shouldIgnoreCornerRadius: Boolean,
     ): Int =
         if (
             !shouldDecorateBorders(captionType) ||
-                !DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue ||
                 !desktopConfig.useRoundedCorners ||
                 shouldIgnoreCornerRadius
         ) {
@@ -720,7 +684,7 @@ constructor(
         val listener =
             dragResizeListener
                 ?: DragResizeInputListener(
-                    context,
+                    decorWindowContext,
                     WindowManagerGlobal.getWindowSession(),
                     mainExecutor,
                     if (DesktopModeFlags.ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD.isTrue) {
@@ -741,19 +705,9 @@ constructor(
                 )
         val touchSlop = ViewConfiguration.get(decorWindowContext).scaledTouchSlop
         val res = decorWindowContext.resources
-        val shouldIgnoreCornerRadius =
-            isRecentsTransitionRunning &&
-                DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue
         val newGeometry =
             DragResizeWindowGeometry(
-                if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue) {
-                    context.resources.getDimensionPixelSize(
-                        getCornerRadiusId(captionType, shouldIgnoreCornerRadius),
-                        defaultValue = 0,
-                    )
-                } else {
-                    getCornerRadius(captionType, shouldIgnoreCornerRadius)
-                },
+                getCornerRadius(),
                 Size(taskWidth, taskHeight),
                 getResizeEdgeHandleSize(res),
                 getResizeHandleEdgeInset(res),
@@ -765,6 +719,16 @@ constructor(
             onUpdateFinished.invoke(listener.setGeometry(newGeometry, touchSlop))
         }
         dragResizeListener = listener
+    }
+
+    private fun getCornerRadius(): Int {
+        val shouldIgnoreCornerRadius =
+            isRecentsTransitionRunning &&
+                DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue
+        return decorWindowContext.resources.getDimensionPixelSize(
+            getCornerRadiusId(captionType, shouldIgnoreCornerRadius),
+            defaultValue = 0,
+        )
     }
 
     /**
@@ -823,7 +787,7 @@ constructor(
         val veil =
             resizeVeil
                 ?: ResizeVeil(
-                    context = context,
+                    context = decorWindowContext,
                     displayController = displayController,
                     taskResourceLoader = taskResourceLoader,
                     mainDispatcher = mainDispatcher,
@@ -927,7 +891,6 @@ constructor(
                 AppHeaderController(
                     taskInfo = taskInfo,
                     windowDecorViewHostSupplier = windowDecorViewHostSupplier,
-                    context = context,
                     userContext = userContext,
                     displayController = displayController,
                     taskResourceLoader = taskResourceLoader,
@@ -966,7 +929,6 @@ constructor(
                 AppHandleController(
                     taskInfo,
                     windowDecorViewHostSupplier,
-                    context,
                     userContext,
                     transitions,
                     displayController,
@@ -998,7 +960,6 @@ constructor(
                 AppPinnedController(
                     taskInfo,
                     windowDecorViewHostSupplier,
-                    context,
                     decorWindowContext,
                     displayController,
                     onTouchListener = onTouchListener,

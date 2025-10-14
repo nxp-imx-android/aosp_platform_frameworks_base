@@ -48,7 +48,6 @@ import kotlinx.coroutines.CoroutineScope
 class AppPinnedController(
     taskInfo: RunningTaskInfo,
     windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
-    private val context: Context,
     private val decorWindowContext: Context,
     private val displayController: DisplayController,
     private val onTouchListener: View.OnTouchListener,
@@ -122,14 +121,14 @@ class AppPinnedController(
         arrayListOf(
             OccludingElement(
                 width =
-                    context.resources.getDimensionPixelSize(
+                    decorWindowContext.resources.getDimensionPixelSize(
                         R.dimen.desktop_mode_pinned_header_margin_start
                     ),
                 alignment = OccludingElement.Alignment.START,
             ),
             OccludingElement(
                 width =
-                    context.resources.getDimensionPixelSize(
+                    decorWindowContext.resources.getDimensionPixelSize(
                         R.dimen.desktop_mode_pinned_header_margin_end
                     ),
                 alignment = OccludingElement.Alignment.END,
@@ -137,8 +136,9 @@ class AppPinnedController(
         )
 
     override fun getCaptionHeight(): Int =
-        context.resources.getDimensionPixelSize(R.dimen.desktop_mode_pinned_header_height) +
-            getCaptionTopPadding()
+        decorWindowContext.resources.getDimensionPixelSize(
+            R.dimen.desktop_mode_pinned_header_height
+        ) + getCaptionTopPadding()
 
     override fun getCaptionWidth(): Int =
         taskInfo.getConfiguration().windowConfiguration.bounds.width()
