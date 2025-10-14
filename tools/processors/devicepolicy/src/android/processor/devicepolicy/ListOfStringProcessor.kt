@@ -76,6 +76,9 @@ class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
                                     listOfStringDefinition.base
                                 )
                         )
+                        .setEmptyListAllowed(
+                            listOfStringDefinition.emptyListAllowed
+                        )
                 ).build()
 
         return Pair(typeSpecificMetadata, listOfStringDefinition.base.base)

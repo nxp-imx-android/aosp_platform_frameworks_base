@@ -242,9 +242,24 @@ object PolicyMetadataCodeGenerator {
     private val stringPolicyMetadataType =
         ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")
 
+    private fun CodeBlock.Builder.addStringMetadataInformation(
+        emptyStringAllowed: Boolean
+    ) =
+        this.add("/* emptyStringAllowed= */ \$L", emptyStringAllowed)
 
     private fun generateStringPolicyAdder(policy: PolicyMetadata) =
-        genericPolicyAdder(policy, stringPolicyMetadataType)
+        CodeBlock.builder()
+            .add("policies.add(new \$T(\n", stringPolicyMetadataType)
+            .indent()
+            .addPolicyArguments(policy)
+            .add(",\n")
+            .addStringMetadataInformation(
+                policy.typeSpecificMetadata.stringMetadata.emptyStringAllowed
+            )
+            .add("\n")
+            .unindent()
+            .addStatement("))")
+            .build()
 
     private val listPolicyMetadataType =
         ClassName.get(METADATA_PACKAGE, "ListPolicyMetadata")
@@ -281,8 +296,20 @@ object PolicyMetadataCodeGenerator {
                     .build()
             )
             .addPolicyInformation(policy)
+            .add(",\n")
+            .addStringMetadataInformation(
+                policy
+                    .typeSpecificMetadata
+                    .listOfStringMetadata
+                    .elementMetadata
+                    .emptyStringAllowed
+            )
             .unindent()
-            .add("\n)\n")
+            .add("\n),\n")
+            .add(
+                "/* emptyListAllowed= */ \$L\n",
+                policy.typeSpecificMetadata.listOfStringMetadata.emptyListAllowed
+            )
             .unindent()
             .addStatement("))")
             .build()

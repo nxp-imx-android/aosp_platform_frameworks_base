@@ -31,10 +31,12 @@ import java.util.List;
 public class ListPolicyMetadata<T> extends PolicyMetadata<List<T>> {
     @NonNull
     private final PolicyMetadata<T> mElementMetadata;
+    private final boolean mEmptyListAllowed;
 
     public ListPolicyMetadata(
             @NonNull PolicyIdentifier<List<T>> id,
-            @NonNull PolicyMetadata<T> elementMetadata
+            @NonNull PolicyMetadata<T> elementMetadata,
+            boolean emptyListAllowed
     ) {
         super(
                 id,
@@ -45,10 +47,16 @@ public class ListPolicyMetadata<T> extends PolicyMetadata<List<T>> {
         );
 
         mElementMetadata = elementMetadata;
+        mEmptyListAllowed = emptyListAllowed;
     }
 
     @NonNull
     public PolicyMetadata<T> getElementMetadata() {
+
         return mElementMetadata;
+    }
+
+    public boolean getEmptyListAllowed() {
+        return mEmptyListAllowed;
     }
 }

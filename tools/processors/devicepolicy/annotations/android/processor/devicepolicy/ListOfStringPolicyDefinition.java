@@ -31,4 +31,10 @@ public @interface ListOfStringPolicyDefinition {
      * Base data for all policies.
      */
     StringPolicyDefinition base();
+
+    /**
+     * By default an empty list is not allowed as a policy value. Set it to true if it should
+     * be allowed.
+     */
+    boolean emptyListAllowed() default false;
 }

@@ -302,7 +302,8 @@ class PolicyMetadataCodeGeneratorTest {
                     ),
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
-                    /* requiredCrossUserPermission= */ null
+                    /* requiredCrossUserPermission= */ null,
+                    /* emptyStringAllowed= */ false
                 ));
                 """
             )
@@ -354,8 +355,10 @@ class PolicyMetadataCodeGeneratorTest {
                         ),
                         /* affectedResource= */ 1,
                         /* requiredPermission= */ null,
-                        /* requiredCrossUserPermission= */ null
-                    )
+                        /* requiredCrossUserPermission= */ null,
+                        /* emptyStringAllowed= */ false
+                    ),
+                    /* emptyListAllowed= */ false
                 ));
                 """
             )

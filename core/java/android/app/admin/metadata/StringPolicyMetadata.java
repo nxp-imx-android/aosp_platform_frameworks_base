@@ -28,12 +28,16 @@ import java.util.Set;
  * @hide
  */
 public class StringPolicyMetadata extends PolicyMetadata<String> {
+    private final boolean mEmptyStringAllowed;
+
     public StringPolicyMetadata(
             @NonNull PolicyIdentifier<String> id,
             @NonNull Set<Integer> allowedScopes,
             int affectedResource,
             @Nullable String requiredPermission,
-            @Nullable String requiredCrossUserPermission) {
+            @Nullable String requiredCrossUserPermission,
+            boolean emptyStringAllowed
+    ) {
         super(
                 id,
                 allowedScopes,
@@ -41,5 +45,11 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
                 requiredPermission,
                 requiredCrossUserPermission
         );
+
+        mEmptyStringAllowed = emptyStringAllowed;
+    }
+
+    public boolean getValidateIsNotEmpty() {
+        return mEmptyStringAllowed;
     }
 }

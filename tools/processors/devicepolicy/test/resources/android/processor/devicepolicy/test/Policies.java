@@ -72,7 +72,8 @@ public class Policies {
             ),
             /* affectedResource= */ 1,
             /* requiredPermission= */ null,
-            /* requiredCrossUserPermission= */ null
+            /* requiredCrossUserPermission= */ null,
+            /* emptyStringAllowed= */ false
         ));
         policies.add(new ListPolicyMetadata<String>(
             /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY,
@@ -83,8 +84,10 @@ public class Policies {
                 ),
                 /* affectedResource= */ 1,
                 /* requiredPermission= */ null,
-                /* requiredCrossUserPermission= */ null
-            )
+                /* requiredCrossUserPermission= */ null,
+                /* emptyStringAllowed= */ true
+            ),
+            /* emptyListAllowed= */ false
         ));
         return policies;
     }
