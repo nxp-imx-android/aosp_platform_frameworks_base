@@ -916,7 +916,7 @@ constructor(
                                 Modifier.fillMaxWidth()
                                     .sysuiResTag(ResIdTags.quickSettingsPanel)
                                     .padding(
-                                        top = QuickSettingsShade.Dimensions.Padding,
+                                        top = QuickSettingsShade.Dimensions.VerticalPadding,
                                         start = qsHorizontalMargin(),
                                         end = qsHorizontalMargin(),
                                     )
@@ -951,12 +951,13 @@ constructor(
     @Composable
     private fun EditModeElement(modifier: Modifier = Modifier) {
         // No need for top padding, the Scaffold inside takes care of the correct insets
+        val horizontalPadding = QuickSettingsShade.Dimensions.HorizontalPadding
         EditMode(
             viewModel = viewModel.containerViewModel.editModeViewModel,
             modifier =
                 modifier
                     .fillMaxWidth()
-                    .padding(horizontal = { QuickSettingsShade.Dimensions.Padding.roundToPx() })
+                    .padding(horizontal = { horizontalPadding.roundToPx() })
                     .padding(top = { viewModel.qqsHeaderHeight }),
         )
     }
@@ -1443,12 +1444,12 @@ fun QuickSettingsLayout(
 ) {
     if (mediaInRow) {
         Column(
-            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.Padding),
+            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             brightness()
             Row(
-                horizontalArrangement = spacedBy(QuickSettingsShade.Dimensions.Padding),
+                horizontalArrangement = spacedBy(QuickSettingsShade.Dimensions.HorizontalPadding),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(modifier = Modifier.weight(1f)) { tiles() }
@@ -1457,7 +1458,7 @@ fun QuickSettingsLayout(
         }
     } else {
         Column(
-            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.Padding),
+            verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             brightness()

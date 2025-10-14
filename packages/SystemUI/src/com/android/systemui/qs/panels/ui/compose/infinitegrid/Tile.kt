@@ -207,7 +207,7 @@ fun ContentScope.Tile(
         val contentRevealModifier: Modifier
         if (enableRevealEffect) {
             val marginBottom =
-                with(LocalDensity.current) { QuickSettingsShade.Dimensions.Padding.toPx() }
+                with(LocalDensity.current) { QuickSettingsShade.Dimensions.VerticalPadding.toPx() }
 
             val animatedCornerRadius by animateDpAsState(TileDefaults.tileRadius(uiState))
 
