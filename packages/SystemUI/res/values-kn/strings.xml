@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ಆ್ಯಪ್ ಅಥವಾ ಸಂಸ್ಥೆಯು ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ತೆಗೆಯುವುದನ್ನು ಅನುಮತಿಸುವುದಿಲ್ಲ"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳುವುದನ್ನು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು ನಿರ್ಬಂಧಿಸಿದ್ದಾರೆ"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ಎಡಿಟ್ ಮಾಡಿ"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ ಅನ್ನು ಎಡಿಟ್ ಮಾಡಿ"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"ಹಂಚಿಕೊಳ್ಳಿ"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"ಇನ್ನಷ್ಟು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ವಜಾಗೊಳಿಸಿ"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್ ಸಂದೇಶವನ್ನು ವಜಾಗೊಳಿಸಿ"</string>
@@ -1025,6 +1027,8 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ಆ್ಯಪ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ಸೆಟ್ಟಿಂಗ್‍ಗಳನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ಡಿಜಿಟಲ್ ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ತೆರೆಯಿರಿ"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ಟಿಪ್ಪಣಿಯನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ಮಲ್ಟಿಟಾಸ್ಕಿಂಗ್"</string>

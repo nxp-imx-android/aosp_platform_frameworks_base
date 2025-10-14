@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Appen eller organisationen tillåter inte att du tar skärmbilder"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Möjligheten att ta skärmbilder blockeras av IT-administratören"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Redigera"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"Redigera skärmbild"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"Dela"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"Dela skärmbild"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Fånga mer"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Stäng skärmbild"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Stäng meddelandet om jobbprofilen"</string>
@@ -1025,6 +1027,8 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Öppna applistan"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Öppna inställningarna"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Öppna digital assistent"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Lås skärmen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Anteckna"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multikörning"</string>
