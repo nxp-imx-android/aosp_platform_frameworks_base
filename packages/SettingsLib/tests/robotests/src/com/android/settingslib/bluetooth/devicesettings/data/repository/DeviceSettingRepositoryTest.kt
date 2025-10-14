@@ -497,7 +497,13 @@ class DeviceSettingRepositoryTest {
     }
 
     private fun setUpConfigService(success: Boolean, config: DeviceSettingsConfig?) {
-        `when`(configService.getDeviceSettingsConfig(any(), any())).then { input ->
+        `when`(
+            configService.getDeviceSettingsConfigWithOptions(
+                any(),
+                any(),
+                any()
+            )
+        ).then { input ->
             input
                 .getArgument<IGetDeviceSettingsConfigCallback>(1)
                 .onResult(

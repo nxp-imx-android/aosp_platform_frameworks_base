@@ -181,8 +181,7 @@ class DeviceSettingServiceConnection(
         options: DeviceSettingConfigOptions,
     ): DeviceSettingsConfig? = suspendCancellableCoroutine { continuation ->
         try {
-            // TODO: Use the new API function with options
-            service.getDeviceSettingsConfig(
+            service.getDeviceSettingsConfigWithOptions(
                 deviceInfo,
                 object : IGetDeviceSettingsConfigCallback.Stub() {
                     override fun onResult(
@@ -196,6 +195,7 @@ class DeviceSettingServiceConnection(
                         }
                     }
                 },
+                options,
             )
         } catch (e: RemoteException) {
             Log.i(TAG, "Fail to get config")
