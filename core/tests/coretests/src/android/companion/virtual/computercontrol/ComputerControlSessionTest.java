@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,7 +31,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
-import android.hardware.display.IVirtualDisplayCallback;
 import android.os.RemoteException;
 import android.util.Size;
 import android.view.DisplayInfo;
@@ -67,8 +67,6 @@ public class ComputerControlSessionTest {
     @Mock
     private IAccessibilityManager mAccessibilityManager;
     @Mock
-    private IVirtualDisplayCallback mVirtualDisplayCallback;
-    @Mock
     private IInteractiveMirror mMockInteractiveMirror;
     @Mock
     private Runnable mMockOnClosedRunnable;
@@ -89,14 +87,18 @@ public class ComputerControlSessionTest {
         AccessibilityManager accessibilityManager = new AccessibilityManager(
                 context, context.getMainThreadHandler(), mAccessibilityManager, 0, true);
 
-        mSession = new ComputerControlSession(DISPLAY_ID, mVirtualDisplayCallback, mMockSession,
-                accessibilityManager, mMockOnClosedRunnable,
-                new DisplayManagerGlobal(mDisplayManager));
+        mSession = new ComputerControlSession(DISPLAY_ID, mMockSession, accessibilityManager,
+                mMockOnClosedRunnable, new DisplayManagerGlobal(mDisplayManager));
     }
 
     @After
     public void tearDown() throws Exception {
         mMockitoSession.close();
+    }
+
+    @Test
+    public void constructor_initializesSession() throws RemoteException {
+        verify(mMockSession).initialize(notNull(), notNull());
     }
 
     @Test
@@ -188,13 +190,13 @@ public class ComputerControlSessionTest {
 
     @Test
     public void setLifecycleCallback_providesLifecycleCallbacks() throws RemoteException {
+        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
+                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
+        verify(mMockSession).initialize(lifecycleCallbackCaptor.capture(), notNull());
         ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
                 ComputerControlSession.LifecycleCallback.class);
 
         mSession.setLifecycleCallback(new TestExecutor(), mockCallback);
-        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
-                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
-        verify(mMockSession).setLifecycleCallback(lifecycleCallbackCaptor.capture());
 
         lifecycleCallbackCaptor.getValue().onClosed(123);
         verify(mockCallback).onClosed(eq(123));
@@ -211,12 +213,12 @@ public class ComputerControlSessionTest {
 
     @Test
     public void clearLifecycleCallback_stopsLifecycleCallbacks() throws RemoteException {
+        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
+                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
+        verify(mMockSession).initialize(lifecycleCallbackCaptor.capture(), notNull());
         ComputerControlSession.LifecycleCallback mockCallback = Mockito.mock(
                 ComputerControlSession.LifecycleCallback.class);
         mSession.setLifecycleCallback(new TestExecutor(), mockCallback);
-        ArgumentCaptor<IComputerControlLifecycleCallback> lifecycleCallbackCaptor =
-                ArgumentCaptor.forClass(IComputerControlLifecycleCallback.class);
-        verify(mMockSession).setLifecycleCallback(lifecycleCallbackCaptor.capture());
 
         mSession.clearLifecycleCallback();
 

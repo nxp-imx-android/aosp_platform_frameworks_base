@@ -215,7 +215,7 @@ public class ComputerControlSessionProcessorTest {
             }
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS))
-                    .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                    .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
 
             mProcessor.processNewSessionRequest(
                     ATTRIBUTION_SOURCE, generateUniqueParams(-1), mComputerControlSessionCallback);
@@ -229,7 +229,7 @@ public class ComputerControlSessionProcessorTest {
                     ATTRIBUTION_SOURCE, generateUniqueParams(-1), mComputerControlSessionCallback);
             verify(mComputerControlSessionCallback,
                     timeout(CALLBACK_TIMEOUT_MS).times(MAXIMUM_CONCURRENT_SESSIONS + 1))
-                    .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                    .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
         } finally {
             for (IComputerControlSession session : mSessionArgumentCaptor.getAllValues()) {
                 session.close();
@@ -252,7 +252,7 @@ public class ComputerControlSessionProcessorTest {
                 Intent.EXTRA_RESULT_RECEIVER, ResultReceiver.class);
         resultReceiver.send(Activity.RESULT_OK, null);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
         mSessionArgumentCaptor.getValue().close();
     }
 
@@ -279,7 +279,7 @@ public class ComputerControlSessionProcessorTest {
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
         assertThrows(IllegalArgumentException.class,
                 () -> mProcessor.processNewSessionRequest(
                         ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
@@ -293,7 +293,7 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
         mSessionArgumentCaptor.getValue().close();
     }
 
@@ -353,7 +353,7 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback,
                 timeout(CALLBACK_TIMEOUT_MS).times(1))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
 
         assertTrue(mProcessor.isComputerControlDisplay(VIRTUAL_DISPLAY_ID));
 
@@ -371,7 +371,7 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback,
                 timeout(CALLBACK_TIMEOUT_MS).times(1))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
 
         mSessionArgumentCaptor.getValue().attachNotificationInfo(notificationId, notificationTag);
 
@@ -388,7 +388,7 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback,
                 timeout(CALLBACK_TIMEOUT_MS).times(1))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
 
         assertFalse(mProcessor.isComputerControlNotification(5, "hello", OWNER_PACKAGE_NAME));
     }
@@ -403,7 +403,7 @@ public class ComputerControlSessionProcessorTest {
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
         verify(mComputerControlSessionCallback,
                 timeout(CALLBACK_TIMEOUT_MS).times(1))
-                .onSessionCreated(anyInt(), any(), mSessionArgumentCaptor.capture());
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
 
         mSessionArgumentCaptor.getValue().attachNotificationInfo(notificationId, notificationTag);
 

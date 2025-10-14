@@ -242,8 +242,7 @@ public class ComputerControlSessionProcessor {
         }
 
         try {
-            callback.onSessionCreated(
-                    session.getVirtualDisplayId(), session.getVirtualDisplayToken(), session);
+            callback.onSessionCreated(session.getVirtualDisplayId(), session);
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to notify ComputerControlSession " + params.getName()
                     + " about session creation success");

@@ -31,8 +31,7 @@ oneway interface IComputerControlSessionCallback {
     void onSessionPending(in PendingIntent pendingIntent);
 
     /** Called when the session has been successfully created. */
-    void onSessionCreated(int displayId, in IVirtualDisplayCallback displayToken,
-            in IComputerControlSession session);
+    void onSessionCreated(int displayId, in IComputerControlSession session);
 
     /** Called when the session failed to be created. */
     void onSessionCreationFailed(int errorCode);

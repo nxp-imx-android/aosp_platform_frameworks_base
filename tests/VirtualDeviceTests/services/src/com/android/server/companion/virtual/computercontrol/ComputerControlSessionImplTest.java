@@ -91,6 +91,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.KeyEvent;
+import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
@@ -163,6 +164,8 @@ public class ComputerControlSessionImplTest {
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
     @Mock
     private IComputerControlLifecycleCallback mLifecycleCallback;
+    @Mock
+    private Surface mClientSurface;
     @Mock
     private Consumer<ComputerControlSessionImpl> mOnClosedListener;
     @Mock
@@ -667,7 +670,7 @@ public class ComputerControlSessionImplTest {
                 () -> mTransaction, mAppToken, params,
                 new AttributionSource(UserHandle.getUid(USER_ID, 0), "com.package", "tag"),
                 mVirtualDeviceFactory, ALLOWED_USERS, mOnClosedListener);
-        mSession.setLifecycleCallback(mLifecycleCallback);
+        mSession.initialize(mLifecycleCallback, mClientSurface);
     }
 
     @SuppressLint("MissingPermission")
