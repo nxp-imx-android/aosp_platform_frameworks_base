@@ -102,7 +102,6 @@ aconfig_declarations_group {
         "com.android.internal.app.procstats-aconfig-java",
         "com.android.internal.compat.flags-aconfig-java",
         "com.android.internal.content.storage.flags-aconfig-java",
-        "com.android.internal.foldables.flags-aconfig-java",
         "com.android.internal.os.flags-aconfig-java",
         "com.android.internal.pm.pkg.component.flags-aconfig-java",
         "com.android.internal.widget.flags-aconfig-java",
@@ -1104,12 +1103,6 @@ java_aconfig_library {
 cc_aconfig_library {
     name: "android.server.display.flags-aconfig-cc",
     aconfig_declarations: "display_flags",
-}
-
-java_aconfig_library {
-    name: "com.android.internal.foldables.flags-aconfig-java",
-    aconfig_declarations: "fold_lock_setting_flags",
-    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
 // Platform Compat

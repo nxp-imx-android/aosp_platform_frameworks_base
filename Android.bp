@@ -397,7 +397,6 @@ java_defaults {
         "aconfig_storage_reader_java",
         "android.hardware.common.fmq-V1-java",
         "bouncycastle-repackaged-unbundled",
-        "com.android.sysprop.foldlockbehavior",
         "com.android.sysprop.view",
         "framework-internal-utils",
         "dropboxmanager_aidl-java",
