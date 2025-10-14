@@ -79,9 +79,6 @@ class KeyguardController {
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
             Flags.ensureKeyguardDoesTransitionStartingBugFix();
 
-    private static final boolean REMOVE_DEFAULT_DISPLAY_USAGE =
-            Flags.keyguardRemoveDefaultDisplayUsage();
-
     private static final String TAG = TAG_WITH_CLASS_NAME ? "KeyguardController" : TAG_ATM;
 
     static final String KEYGUARD_SLEEP_TOKEN_TAG = "keyguard";
@@ -345,12 +342,8 @@ class KeyguardController {
             mRootWindowContainer.resumeFocusedTasksTopActivities();
             mRootWindowContainer.ensureActivitiesVisible();
             mRootWindowContainer.addStartingWindowsForVisibleActivities();
-            if (REMOVE_DEFAULT_DISPLAY_USAGE) {
-                for (int i = changedDisplays.size() - 1; i >= 0; i--) {
-                    changedDisplays.get(i).executeAppTransition();
-                }
-            } else {
-                mWindowManager.executeAppTransition();
+            for (int i = changedDisplays.size() - 1; i >= 0; i--) {
+                changedDisplays.get(i).executeAppTransition();
             }
         } finally {
             mService.continueWindowLayout();
@@ -550,11 +543,7 @@ class KeyguardController {
             dc.mAtmService.getTransitionController().requestTransitionIfNeeded(
                     TRANSIT_OPEN, TRANSIT_FLAG_KEYGUARD_GOING_AWAY, null /* trigger */, dc, chain);
             updateKeyguardSleepToken();
-            if (REMOVE_DEFAULT_DISPLAY_USAGE) {
-                dc.executeAppTransition();
-            } else {
-                mWindowManager.executeAppTransition();
-            }
+            dc.executeAppTransition();
         } finally {
             mService.continueWindowLayout();
             mService.mChainTracker.endPartial();
