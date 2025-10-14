@@ -237,6 +237,20 @@ internal object BubbleFlickerTestHelper {
         return joinToString(separator = ", ") { bubble -> bubble.contentDescription() }
     }
 
+    /** Expands the bubble app [testApp], which is previously collapsed. */
+    fun expandCollapsedBubbleApp(
+        testApp: StandardAppHelper,
+        tapl: LauncherInstrumentation,
+        uiDevice: UiDevice,
+        wmHelper: WindowManagerStateHelper,
+    ) {
+        if (tapl.isTablet) {
+            expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
+        } else {
+            expandBubbleAppViaTapOnBubbleStack(testApp, wmHelper)
+        }
+    }
+
     /**
      * Expands the bubble app [testApp], which is previously collapsed via tapping on bubble bar.
      * Note that this method only works on device with bubble bar.
