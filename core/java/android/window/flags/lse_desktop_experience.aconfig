@@ -348,16 +348,6 @@ flag {
 }
 
 flag {
-    name: "enable_crash_logging_for_desktop"
-    namespace: "lse_desktop_experience"
-    description: "Enables crash reporting indicating activity was in desktop."
-    bug: "331162483"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_cross_displays_app_launch_transition"
     namespace: "lse_desktop_experience"
     description: "Enables a transition for launching an already opened app on another display."

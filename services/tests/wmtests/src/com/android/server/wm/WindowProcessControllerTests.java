@@ -63,12 +63,9 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.LocaleList;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.Display;
 import android.view.DisplayInfo;
-
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -515,7 +512,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeFalse() {
         doReturn(false).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         final ActivityRecord activity = createActivityRecord(mWpc);
@@ -525,7 +521,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeFalse_relaunchReason() {
         doReturn(false).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         final ActivityRecord activity = createActivityRecord(mWpc);
@@ -537,7 +532,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeTrue_freeform() {
         doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         final ActivityRecord activity = createActivityRecord(mWpc);
@@ -547,7 +541,6 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CRASH_LOGGING_FOR_DESKTOP)
     public void testGetCrashTag_desktopModeTrue_freeformOnExternalDisplay() {
         doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(mContext));
         DisplayInfo displayInfo = new DisplayInfo();
