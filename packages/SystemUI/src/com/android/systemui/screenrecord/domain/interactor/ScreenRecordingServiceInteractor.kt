@@ -24,6 +24,7 @@ import android.graphics.drawable.Icon
 import android.media.projection.StopReason
 import android.net.Uri
 import android.os.IBinder
+import android.util.Log
 import android.view.Display
 import androidx.annotation.WorkerThread
 import com.android.app.tracing.coroutines.flow.asStateFlowTraced
@@ -32,6 +33,7 @@ import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screenrecord.ScreenRecordUxController
+import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.service.IScreenRecordingService
 import com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback
@@ -47,9 +49,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
@@ -65,7 +69,7 @@ constructor(
 ) : ScreenRecordingStartStopInteractor {
     private val serviceCallback = ServiceCallback()
     private val isServiceBound = MutableStateFlow(false)
-    private val service: Flow<IScreenRecordingService?> =
+    private val service: Flow<RecordingService?> =
         isServiceBound
             .flatMapLatest { currentIsServiceBound ->
                 if (currentIsServiceBound) bindService() else flowOf(null)
@@ -80,6 +84,7 @@ constructor(
                 }
                 new
             }
+            .map { it?.let(::RecordingService) }
             .stateInTraced(
                 "ScreenRecordingServiceInteractor#service",
                 coroutineScope,
@@ -97,18 +102,25 @@ constructor(
                 currentService ->
                 RecordingContext(status = currentStatus, service = currentService)
             }
-            .onEach { currentRecordingContext ->
-                with(currentRecordingContext) {
+            .onEach { recordingContext ->
+                with(recordingContext) {
                     if (service != null) {
                         when (status) {
                             is Status.Started -> {
-                                service.startRecording(status)
-                                screenRecordUxController.updateState(true)
+                                val parameters = status.parameters
+                                if (service.isRecording) {
+                                    service.updateParameters(parameters)
+                                } else {
+                                    service.startRecording(parameters)
+                                    screenRecordUxController.updateState(true)
+                                }
                             }
+
                             is Status.Stopped -> {
                                 service.stopRecording(status.reason)
                                 screenRecordUxController.updateState(false)
                             }
+
                             is Status.Initial -> {
                                 /* do nothing */
                             }
@@ -116,6 +128,7 @@ constructor(
                     }
                 }
             }
+            .catch { Log.e("ScreenRecordingServiceInteractor", "Couldn't reach the service", it) }
             .launchInTraced("ScreenRecordingServiceInteractor#_status", coroutineScope)
     }
 
@@ -136,6 +149,28 @@ constructor(
                 currentStatus
             } else {
                 Status.Stopped(reason)
+            }
+        }
+    }
+
+    /** Updates shouldShowTaps if there is an ongoing recording */
+    fun updateAudioSource(audioSource: ScreenRecordingAudioSource) {
+        updateParameters { copy(audioSource = audioSource) }
+    }
+
+    /** Updates shouldShowTaps if there is an ongoing recording */
+    fun updateShouldShowTaps(shouldShowTaps: Boolean) {
+        updateParameters { copy(shouldShowTaps = shouldShowTaps) }
+    }
+
+    private fun updateParameters(
+        update: ScreenRecordingParameters.() -> ScreenRecordingParameters
+    ) {
+        _status.update { currentStatus ->
+            if (currentStatus is Status.Started) {
+                currentStatus.copy(parameters = currentStatus.parameters.update())
+            } else {
+                currentStatus
             }
         }
     }
@@ -183,13 +218,28 @@ constructor(
         override fun onRecordingSaved(recordingUri: Uri?, thumbnail: Icon?) {}
     }
 
-    private data class RecordingContext(val status: Status, val service: IScreenRecordingService?)
-}
+    private data class RecordingService(private val service: IScreenRecordingService?) {
 
-private fun IScreenRecordingService.startRecording(status: Status.Started) {
-    with(status.parameters) {
-        startRecording(captureTarget, audioSource.ordinal, displayId, shouldShowTaps)
+        var isRecording: Boolean = false
+            private set
+
+        fun updateParameters(parameters: ScreenRecordingParameters) {
+            require(isRecording)
+            service?.updateParameters(parameters)
+        }
+
+        fun startRecording(parameters: ScreenRecordingParameters) {
+            service?.startRecording(parameters)
+            isRecording = true
+        }
+
+        fun stopRecording(reason: Int) {
+            service?.stopRecording(reason)
+            isRecording = false
+        }
     }
+
+    private data class RecordingContext(val status: Status, val service: RecordingService?)
 }
 
 sealed interface Status {

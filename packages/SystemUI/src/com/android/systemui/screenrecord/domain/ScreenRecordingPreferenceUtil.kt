@@ -23,10 +23,12 @@ import android.provider.Settings
 import androidx.core.content.edit
 
 class ScreenRecordingPreferenceUtil(private val context: Context) {
-    fun updateShowTaps(whileRecording: Boolean) {
+
+    @JvmOverloads
+    fun updateShowTaps(showTaps: Boolean, rememberOriginal: Boolean = true) {
         val originalSetting = getShowTaps()
-        setShowTaps(whileRecording)
-        if (whileRecording != originalSetting) {
+        setShowTaps(showTaps)
+        if (rememberOriginal && showTaps != originalSetting) {
             sharedPreference().edit {
                 putBoolean(STORED_SHOW_TAPS_VALUE, originalSetting)
                 putBoolean(UPDATE_SHOW_TAPS, true)

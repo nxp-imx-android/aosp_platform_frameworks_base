@@ -18,7 +18,6 @@ package com.android.systemui.screencapture.record.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import dagger.assisted.AssistedFactory
@@ -34,11 +33,6 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
         interactor.parameters
             .map { it.audioSource }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#audioSource", null)
-
-    val target: ScreenCaptureTarget? by
-        interactor.parameters
-            .map { it.target }
-            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#target", null)
 
     val shouldShowTaps: Boolean? by
         interactor.parameters
@@ -92,10 +86,6 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
 
     fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
         interactor.setAudioSource(audioSource)
-    }
-
-    fun setRecordTarget(target: ScreenCaptureTarget) {
-        interactor.setRecordTarget(target)
     }
 
     fun setShouldShowTaps(shouldShowTaps: Boolean) {

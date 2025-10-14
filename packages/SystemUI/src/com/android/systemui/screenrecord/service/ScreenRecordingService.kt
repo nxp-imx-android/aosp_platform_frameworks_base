@@ -35,6 +35,7 @@ import com.android.systemui.screenrecord.RecordingServiceStrings
 import com.android.systemui.screenrecord.ScreenMediaRecorder
 import com.android.systemui.screenrecord.ScreenMediaRecorder.SavedRecording
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.ScreenRecordingPreferenceUtil
 import com.android.systemui.screenrecord.notification.NotificationInteractor
 import com.android.systemui.screenrecord.notification.ScreenRecordingServiceNotificationInteractor
@@ -212,28 +213,33 @@ protected constructor(
             recordingContext?.stopRecording(reason)
         }
 
-        override fun startRecording(
-            captureTarget: MediaProjectionCaptureTarget?,
-            audioSource: Int,
-            displayId: Int,
-            shouldShowTaps: Boolean,
-        ) {
-            val screenRecordingAudioSource = ScreenRecordingAudioSource.entries[audioSource]
+        override fun updateParameters(parameters: ScreenRecordingParameters) {
+            if (Flags.restoreShowTapsSetting()) {
+                preferenceUtil.updateShowTaps(
+                    showTaps = parameters.shouldShowTaps,
+                    rememberOriginal = false,
+                )
+            } else {
+                setShouldShowTouches(parameters.shouldShowTaps)
+            }
+        }
+
+        override fun startRecording(parameters: ScreenRecordingParameters) {
             val context =
                 RecordingContext(
                     notificationId = UUID.randomUUID().mostSignificantBits.toInt(),
                     originalShouldShowTouches = getShouldShowTouches(),
-                    captureTarget = captureTarget,
-                    audioSource = screenRecordingAudioSource,
+                    captureTarget = parameters.captureTarget,
+                    audioSource = parameters.audioSource,
                     displayId = displayId,
-                    shouldShowTaps = shouldShowTaps,
+                    shouldShowTaps = parameters.shouldShowTaps,
                     recorder =
                         ScreenMediaRecorder(
                             this@ScreenRecordingService,
                             Handler(Looper.getMainLooper()),
                             Process.myUid(),
-                            screenRecordingAudioSource,
-                            captureTarget,
+                            parameters.audioSource,
+                            parameters.captureTarget,
                             displayId,
                             screenMediaRecorderListener,
                         ),
