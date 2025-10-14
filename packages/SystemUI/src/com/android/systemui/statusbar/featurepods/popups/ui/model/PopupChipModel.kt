@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.featurepods.popups.ui.model
 
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupViewModel
 
@@ -67,7 +68,7 @@ sealed class PopupChipModel {
         val showPopup: () -> Unit = {},
         val hidePopup: () -> Unit = {},
         val hoverBehavior: HoverBehavior = HoverBehavior.None,
-        val contentDescription: String? = null,
+        val contentDescription: ContentDescription? = null,
         val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,
     ) : PopupChipModel() {
         override val logName = "Shown(id=$chipId, toggled=$isPopupShown)"
