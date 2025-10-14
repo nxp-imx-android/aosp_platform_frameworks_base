@@ -18,12 +18,17 @@
 
 #include "com_android_server_vibrator_VibratorManagerService.h"
 
+#include <aidl/android/hardware/vibrator/HapticGeneratorConfig.h>
 #include <aidl/android/hardware/vibrator/IVibratorManager.h>
+#include <aidl/android/hardware/vibrator/VibrationEffectContent.h>
 #include <android/binder_ibinder_jni.h>
 #include <android_os_vibrator.h>
 #include <nativehelper/JNIHelp.h>
+#include <nativehelper/ScopedPrimitiveArray.h>
 #include <utils/Log.h>
 #include <utils/misc.h>
+#include <vibratorflinger/HapticGeneratorSession.h>
+#include <vibratorflinger/HapticGeneratorStream.h>
 #include <vibratorservice/VibratorManagerHalController.h>
 
 #include <unordered_map>
@@ -39,11 +44,14 @@ using CompositeEffect = aidl::android::hardware::vibrator::CompositeEffect;
 using CompositePwleV2 = aidl::android::hardware::vibrator::CompositePwleV2;
 using Effect = aidl::android::hardware::vibrator::Effect;
 using EffectStrength = aidl::android::hardware::vibrator::EffectStrength;
+using HapticGeneratorConfig = aidl::android::hardware::vibrator::HapticGeneratorConfig;
+using HapticGeneratorSession = aidl::android::hardware::vibrator::HapticGeneratorSession;
+using IVibrationSession = aidl::android::hardware::vibrator::IVibrationSession;
 using IVibrator = aidl::android::hardware::vibrator::IVibrator;
 using IVibratorManager = aidl::android::hardware::vibrator::IVibratorManager;
-using IVibrationSession = aidl::android::hardware::vibrator::IVibrationSession;
 using PrimitivePwle = aidl::android::hardware::vibrator::PrimitivePwle;
 using VendorEffect = aidl::android::hardware::vibrator::VendorEffect;
+using VibrationEffectContent = aidl::android::hardware::vibrator::VibrationEffectContent;
 using VibrationSessionConfig = aidl::android::hardware::vibrator::VibrationSessionConfig;
 
 // Used to attach HAL callbacks to JNI environment and send them back to vibrator manager service.
@@ -233,7 +241,7 @@ public:
             auto jniEnv = GetOrAttachJNIEnvironment(sJvm);
             jniEnv->CallVoidMethod(mCallbackListener, sMethodIdOnVibrationSessionComplete,
                                    sessionId);
-            std::lock_guard<std::mutex> lock(mSessionMutex);
+            std::lock_guard<std::mutex> lock(mMutex);
             auto it = mSessions.find(sessionId);
             if (it != mSessions.end()) {
                 mSessions.erase(it);
@@ -249,13 +257,13 @@ public:
             return false;
         }
 
-        std::lock_guard<std::mutex> lock(mSessionMutex);
+        std::lock_guard<std::mutex> lock(mMutex);
         mSessions[sessionId] = std::move(result.value());
         return true;
     }
 
     void closeSession(jlong sessionId) {
-        std::lock_guard<std::mutex> lock(mSessionMutex);
+        std::lock_guard<std::mutex> lock(mMutex);
         auto it = mSessions.find(sessionId);
         if (it != mSessions.end()) {
             it->second->close();
@@ -264,7 +272,7 @@ public:
     }
 
     void abortSession(jlong sessionId) {
-        std::lock_guard<std::mutex> lock(mSessionMutex);
+        std::lock_guard<std::mutex> lock(mMutex);
         auto it = mSessions.find(sessionId);
         if (it != mSessions.end()) {
             it->second->abort();
@@ -274,16 +282,39 @@ public:
 
     void clearSessions() {
         hal()->clearSessions();
-        std::lock_guard<std::mutex> lock(mSessionMutex);
+        std::lock_guard<std::mutex> lock(mMutex);
         mSessions.clear();
     }
 
+    void addHapticGeneratorSession(jlong sessionId,
+                                   std::shared_ptr<vibrator::HapticGeneratorSession> session) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        mHapticGeneratorSessions[sessionId] = std::move(session);
+    }
+
+    void removeHapticGeneratorSession(jlong sessionId) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        // If the key doesn't exist, this is a no-op.
+        mHapticGeneratorSessions.erase(sessionId);
+    }
+
+    std::shared_ptr<vibrator::HapticGeneratorSession> getHapticGeneratorSession(jlong sessionId) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        auto it = mHapticGeneratorSessions.find(sessionId);
+        if (it == mHapticGeneratorSessions.end() || it->second == nullptr) {
+            return nullptr;
+        }
+        return it->second;
+    }
+
 private:
+    std::mutex mMutex;
+    std::unordered_map<jlong, std::shared_ptr<vibrator::HapticGeneratorSession>>
+            mHapticGeneratorSessions GUARDED_BY(mMutex);
+
     // TODO(b/409002423): remove this once remove_hidl_support flag removed
-    std::mutex mSessionMutex;
     const std::unique_ptr<vibrator::ManagerHalController> mHal;
-    std::unordered_map<jlong, std::shared_ptr<IVibrationSession>> mSessions
-            GUARDED_BY(mSessionMutex);
+    std::unordered_map<jlong, std::shared_ptr<IVibrationSession>> mSessions GUARDED_BY(mMutex);
     const jobject mCallbackListener;
 
     const jweak mManagerCallbacks;
@@ -666,6 +697,205 @@ static void nativeClearSessions(JNIEnv* env, jclass /* clazz */, jlong servicePt
     service->clearSessions();
 }
 
+// TODO(434631745) Add HapticGeneratorSession.Config param
+static jboolean nativeStartHapticGeneratorSessionWithCallback(JNIEnv* env, jclass /* clazz */,
+                                                              jlong servicePtr, jlong sessionId,
+                                                              jint vibratorId) {
+    if (DEBUG) {
+        ALOGD("%s(vibratorId=%d, sessionId=%lld)", __func__, static_cast<int32_t>(vibratorId),
+              static_cast<long long>(sessionId));
+    }
+    auto service = toNativeService(servicePtr, __func__);
+    auto hal = loadManagerHal(service, __func__);
+    if (hal == nullptr) {
+        return JNI_FALSE;
+    }
+
+    std::vector<int32_t> ids = {vibratorId};
+    // TODO(434631745) setup config properly
+    const HapticGeneratorConfig nativeConfig = {};
+    // TODO(434631745) Add callback support
+    std::shared_ptr<::aidl::android::hardware::vibrator::IVibratorCallback> callback = nullptr;
+
+    HapticGeneratorSession halSession;
+    auto status = hal->startHapticGeneratorSession(ids, nativeConfig, callback, &halSession);
+    service->processManagerStatus(status, __func__);
+    if (!status.isOk()) {
+        return JNI_FALSE;
+    }
+
+    auto session = std::make_shared<vibrator::HapticGeneratorSession>(std::move(halSession));
+
+    if (halSession.queues.size() != 1) {
+        ALOGE("%s: received %zu vibrator queues for vibrator %d, expected one", __func__,
+              halSession.queues.size(), static_cast<int32_t>(vibratorId));
+        return JNI_FALSE;
+    }
+
+    const auto& halQueues = halSession.queues[0];
+
+    if (halQueues.vibratorId != vibratorId) {
+        ALOGE("%s: received vibrator id %d for queues, expected id %d", __func__,
+              halQueues.vibratorId, static_cast<int32_t>(vibratorId));
+        return JNI_FALSE;
+    }
+
+    // Store the session in the service's map
+    service->addHapticGeneratorSession(sessionId, std::move(session));
+
+    return JNI_TRUE;
+}
+
+static jboolean nativeCloseHapticGeneratorSession(JNIEnv* env, jclass /* clazz */, jlong servicePtr,
+                                                  jlong nativeSessionPtr, jlong sessionId) {
+    if (DEBUG) {
+        ALOGD("%s(sessionId=%lld)", __func__, static_cast<long long>(sessionId));
+    }
+
+    auto* service = toNativeService(servicePtr, __func__);
+    if (service == nullptr) {
+        return JNI_FALSE;
+    }
+
+    auto session = service->getHapticGeneratorSession(sessionId);
+    if (session == nullptr) {
+        ALOGW("%s: Haptic session %lld not found or has already been closed.", __func__,
+              static_cast<long long>(sessionId));
+        return JNI_FALSE;
+    }
+
+    status_t status = session->close(); // this might block on the session lock waiting to close it
+    service->removeHapticGeneratorSession(sessionId);
+
+    return (status == OK) ? JNI_TRUE : JNI_FALSE;
+}
+
+static void nativeClearHapticGeneratorSession(JNIEnv* /* env */, jclass /* clazz */,
+                                              jlong servicePtr, jlong sessionId) {
+    if (DEBUG) {
+        ALOGD("%s(sessionId=%lld)", __func__, static_cast<long long>(sessionId));
+    }
+    auto* service = toNativeService(servicePtr, __func__);
+    if (service == nullptr) {
+        return;
+    }
+
+    service->removeHapticGeneratorSession(sessionId);
+}
+
+static jboolean nativeStartHapticGeneratorStream(JNIEnv* env, jclass /* clazz */, jlong servicePtr,
+                                                 jlong sessionId, jint vibratorId,
+                                                 jobject effects) {
+    if (DEBUG) {
+        ALOGD("%s(sessionId=%lld, vibratorId=%d)", __func__, static_cast<long long>(sessionId),
+              vibratorId);
+    }
+    auto* service = toNativeService(servicePtr, __func__);
+    if (service == nullptr) {
+        ALOGE("%s: native service was not initialized.", __func__);
+        return JNI_FALSE;
+    }
+
+    auto session = service->getHapticGeneratorSession(sessionId);
+    if (session == nullptr) {
+        ALOGE("%s: Haptic session %lld not found or has been closed.", __func__,
+              static_cast<long long>(sessionId));
+        return JNI_FALSE;
+    }
+
+    auto halEffects = vectorFromJavaParcel<VibrationEffectContent>(env, effects);
+    if (halEffects.empty()) {
+        ALOGE("%s: nativeCreateHapticStream failed because no effects were provided.", __func__);
+        return JNI_FALSE;
+    }
+
+    status_t status = session->startStream(static_cast<int32_t>(vibratorId), halEffects);
+
+    if (status != OK) {
+        ALOGE("%s: Failed to create native haptic generator stream for vibrator %d: %d", __func__,
+              vibratorId, status);
+        return JNI_FALSE;
+    }
+
+    return JNI_TRUE;
+}
+
+static jint nativeReadHapticGeneratorStream(JNIEnv* env, jclass /* clazz */, jlong servicePtr,
+                                            jlong sessionId, jint vibratorId, jbyteArray buffer) {
+    if (DEBUG) {
+        ALOGD("%s(sessionId=%lld, vibratorId=%d)", __func__, static_cast<long long>(sessionId),
+              vibratorId);
+    }
+
+    auto* service = toNativeService(servicePtr, __func__);
+    if (service == nullptr) {
+        ALOGE("%s: native service was not initialized.", __func__);
+        return -1;
+    }
+
+    ScopedByteArrayRW pcmBuffer(env, buffer);
+    if (pcmBuffer.get() == nullptr) {
+        ALOGE("%s: nativeReadHapticStream failed to get byte array elements for read buffer.",
+              __func__);
+        return -1;
+    }
+
+    size_t bufferSize = pcmBuffer.size();
+    if (bufferSize == 0) {
+        return 0; // Nothing to read
+    }
+
+    auto session = service->getHapticGeneratorSession(sessionId);
+    if (session == nullptr) {
+        ALOGE("%s: Haptic session %lld not found or has been closed.", __func__,
+              static_cast<long long>(sessionId));
+        return -1;
+    }
+
+    size_t totalBytesRead = 0;
+    int8_t* bufferPtr = reinterpret_cast<int8_t*>(pcmBuffer.get());
+
+    status_t status = session->readStream(static_cast<int32_t>(vibratorId), bufferSize, bufferPtr,
+                                          &totalBytesRead);
+
+    if (status != OK) {
+        ALOGE("%s: Error reading from haptic stream: %d", __func__, status);
+        return -1;
+    }
+
+    return static_cast<jint>(totalBytesRead);
+}
+
+static jboolean nativeStopHapticGeneratorStream(JNIEnv* /* env */, jclass /* clazz */,
+                                                jlong servicePtr, jlong sessionId,
+                                                jint vibratorId) {
+    if (DEBUG) {
+        ALOGD("%s(sessionId=%lld, vibratorId=%d)", __func__, static_cast<long long>(sessionId),
+              vibratorId);
+    }
+    auto* service = toNativeService(servicePtr, __func__);
+    if (service == nullptr) {
+        ALOGE("%s: native service was not initialized.", __func__);
+        return JNI_FALSE;
+    }
+
+    auto session = service->getHapticGeneratorSession(sessionId);
+    if (session == nullptr) {
+        ALOGE("%s: Haptic session %lld not found or has been closed.", __func__,
+              static_cast<long long>(sessionId));
+        return JNI_FALSE;
+    }
+
+    status_t status = session->stopStream(static_cast<int32_t>(vibratorId));
+
+    if (status != OK) {
+        ALOGE("%s: Failed to stop haptic generator stream for vibrator %d: %d", __func__,
+              vibratorId, status);
+    }
+
+    return (status == OK) ? JNI_TRUE : JNI_FALSE;
+}
+
 inline static constexpr auto sNativeInitMethodSignature =
         "(Lcom/android/server/vibrator/HalVibratorManager$Callbacks;)J";
 
@@ -699,6 +929,14 @@ static const JNINativeMethod method_table[] = {
          (void*)nativeVibratorComposePwleEffectWithCallback},
         {"nativeVibratorComposePwleV2EffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
          (void*)nativeVibratorComposePwleV2EffectWithCallback},
+        {"nativeStartHapticGeneratorSessionWithCallback", "(JJI)Z",
+         (void*)nativeStartHapticGeneratorSessionWithCallback},
+        {"nativeCloseHapticGeneratorSession", "(JJ)Z", (void*)nativeCloseHapticGeneratorSession},
+        {"nativeClearHapticGeneratorSession", "(JJ)V", (void*)nativeClearHapticGeneratorSession},
+        {"nativeStartHapticGeneratorStream", "(JJILandroid/os/Parcel;)Z",
+         (void*)nativeStartHapticGeneratorStream},
+        {"nativeReadHapticGeneratorStream", "(JJI[B)I", (void*)nativeReadHapticGeneratorStream},
+        {"nativeStopHapticGeneratorStream", "(JJI)Z", (void*)nativeStopHapticGeneratorStream},
 };
 
 int register_android_server_vibrator_VibratorManagerService(JavaVM* jvm, JNIEnv* env) {
