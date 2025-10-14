@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.policy
 
 import android.app.ActivityOptions
+import android.app.Flags.notificationAnimatedActionContentDescription
 import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY
@@ -463,6 +464,14 @@ constructor(
         return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
                 text = action.title
+                if (
+                    notificationAnimatedActionContentDescription() &&
+                        isAnimatedAction &&
+                        action.extras.containsKey(Notification.Action.EXTRA_CONTENT_DESCRIPTION)
+                ) {
+                    contentDescription =
+                        action.extras.getString(Notification.Action.EXTRA_CONTENT_DESCRIPTION)
+                }
 
                 // We received the Icon from the application - so use the Context of the application
                 // to
@@ -587,6 +596,13 @@ constructor(
                     // attributionText with different color to choice text
                     val fullTextWithAttribution = formatChoiceWithAttribution(choice)
                     text = fullTextWithAttribution
+                    if (notificationAnimatedActionContentDescription()) {
+                        val animatedReplyContentDescription =
+                            getAnimatedReplyContentDescription(choice)
+                        if (animatedReplyContentDescription != null) {
+                            contentDescription = animatedReplyContentDescription
+                        }
+                    }
                     // Add the icon to the Animated Reply button
                     val animatedReplyIconSize =
                         context.resources.getDimensionPixelSize(
@@ -716,6 +732,19 @@ constructor(
             }
         }
         return false
+    }
+
+    // Get content description if it's animated reply.
+    private fun getAnimatedReplyContentDescription(choice: CharSequence): String? {
+        if (choice is Spanned) {
+            val annotations = choice.getSpans(0, choice.length, Annotation::class.java)
+            for (annotation in annotations) {
+                if (annotation.key == "contentDescription") {
+                    return annotation.value
+                }
+            }
+        }
+        return null
     }
 
     // Format the text by concatenating attributionText with attribution text color to choice text
