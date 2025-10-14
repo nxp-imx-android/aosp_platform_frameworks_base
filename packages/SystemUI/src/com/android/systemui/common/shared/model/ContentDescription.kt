@@ -34,8 +34,10 @@ sealed class ContentDescription {
         /**
          * Returns the loaded content description string, or null if we don't have one.
          *
-         * Prefer [com.android.systemui.common.ui.binder.ContentDescriptionViewBinder.bind] over
-         * this method. This should only be used for testing or concatenation purposes.
+         * To use a content description in UI, don't use this method. Instead, use
+         * [com.android.systemui.common.ui.compose.load] for Composables or
+         * [com.android.systemui.common.ui.binder.ContentDescriptionViewBinder.bind] for views. This
+         * method should only be used for testing or concatenation purposes.
          */
         @JvmStatic
         fun ContentDescription?.loadContentDescription(context: Context): String? {
