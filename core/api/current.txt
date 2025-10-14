@@ -6542,14 +6542,14 @@ package android.app {
     method public android.graphics.drawable.Icon getLargeIcon();
     method @Nullable public android.content.LocusId getLocusId();
     method public CharSequence getSettingsText();
-    method @FlaggedApi("android.app.api_rich_ongoing") @Nullable public String getShortCriticalText();
+    method @Nullable public String getShortCriticalText();
     method public String getShortcutId();
     method public android.graphics.drawable.Icon getSmallIcon();
     method public String getSortKey();
     method @FlaggedApi("android.app.nm_summarization_all") @Nullable public CharSequence getSummarizedContent();
     method public long getTimeoutAfter();
     method public boolean hasImage();
-    method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
+    method public boolean hasPromotableCharacteristics();
     method @FlaggedApi("android.app.nm_summarization") public boolean hasSummarizedContent();
     method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean isRequestPromotedOngoing();
     method public void writeToParcel(android.os.Parcel, int);
@@ -6646,7 +6646,7 @@ package android.app {
     field public static final int FLAG_NO_CLEAR = 32; // 0x20
     field public static final int FLAG_ONGOING_EVENT = 2; // 0x2
     field public static final int FLAG_ONLY_ALERT_ONCE = 8; // 0x8
-    field @FlaggedApi("android.app.api_rich_ongoing") public static final int FLAG_PROMOTED_ONGOING = 262144; // 0x40000
+    field public static final int FLAG_PROMOTED_ONGOING = 262144; // 0x40000
     field @Deprecated public static final int FLAG_SHOW_LIGHTS = 1; // 0x1
     field public static final int FOREGROUND_SERVICE_DEFAULT = 0; // 0x0
     field public static final int FOREGROUND_SERVICE_DEFERRED = 2; // 0x2
@@ -6890,7 +6890,7 @@ package android.app {
     method @NonNull public android.app.Notification.Builder setRemoteInputHistory(CharSequence[]);
     method @FlaggedApi("android.app.opt_in_rich_ongoing") @NonNull public android.app.Notification.Builder setRequestPromotedOngoing(boolean);
     method @NonNull public android.app.Notification.Builder setSettingsText(CharSequence);
-    method @FlaggedApi("android.app.api_rich_ongoing") @NonNull public android.app.Notification.Builder setShortCriticalText(@Nullable String);
+    method @NonNull public android.app.Notification.Builder setShortCriticalText(@Nullable String);
     method @NonNull public android.app.Notification.Builder setShortcutId(String);
     method @NonNull public android.app.Notification.Builder setShowWhen(boolean);
     method @NonNull public android.app.Notification.Builder setSmallIcon(@DrawableRes int);
@@ -7092,7 +7092,7 @@ package android.app {
     method @NonNull public android.app.Notification.MetricStyle setMetrics(@NonNull java.util.List<android.app.Notification.Metric>);
   }
 
-  @FlaggedApi("android.app.api_rich_ongoing") public static class Notification.ProgressStyle extends android.app.Notification.Style {
+  public static class Notification.ProgressStyle extends android.app.Notification.Style {
     ctor public Notification.ProgressStyle();
     method @NonNull public android.app.Notification.ProgressStyle addProgressPoint(@NonNull android.app.Notification.ProgressStyle.Point);
     method @NonNull public android.app.Notification.ProgressStyle addProgressSegment(@NonNull android.app.Notification.ProgressStyle.Segment);
@@ -7299,7 +7299,7 @@ package android.app {
     method public boolean areNotificationsEnabled();
     method public boolean areNotificationsPaused();
     method public boolean canNotifyAsPackage(@NonNull String);
-    method @FlaggedApi("android.app.api_rich_ongoing") public boolean canPostPromotedNotifications();
+    method public boolean canPostPromotedNotifications();
     method public boolean canUseFullScreenIntent();
     method public void cancel(int);
     method public void cancel(@Nullable String, int);
@@ -38821,7 +38821,7 @@ package android.provider {
     field public static final String ACTION_APPLICATION_SETTINGS = "android.settings.APPLICATION_SETTINGS";
     field public static final String ACTION_APP_LOCALE_SETTINGS = "android.settings.APP_LOCALE_SETTINGS";
     field public static final String ACTION_APP_NOTIFICATION_BUBBLE_SETTINGS = "android.settings.APP_NOTIFICATION_BUBBLE_SETTINGS";
-    field @FlaggedApi("android.app.api_rich_ongoing") public static final String ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS = "android.settings.APP_NOTIFICATION_PROMOTION_SETTINGS";
+    field public static final String ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS = "android.settings.APP_NOTIFICATION_PROMOTION_SETTINGS";
     field public static final String ACTION_APP_NOTIFICATION_SETTINGS = "android.settings.APP_NOTIFICATION_SETTINGS";
     field public static final String ACTION_APP_OPEN_BY_DEFAULT_SETTINGS = "android.settings.APP_OPEN_BY_DEFAULT_SETTINGS";
     field public static final String ACTION_APP_SEARCH_SETTINGS = "android.settings.APP_SEARCH_SETTINGS";

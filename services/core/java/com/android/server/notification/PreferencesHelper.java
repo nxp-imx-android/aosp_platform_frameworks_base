@@ -899,7 +899,6 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean canBePromoted(String packageName, int uid) {
         if (android.app.Flags.uiRichOngoing()) {
             Log.e(TAG, "Should not be checking here if uiRichOngoingPermission flag enabled");
@@ -911,7 +910,6 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean setCanBePromoted(String packageName, int uid, boolean promote,
             boolean fromUser) {
 

@@ -2490,7 +2490,6 @@ public final class Settings {
      * <p>
      * Output: Nothing.
      */
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS
             = "android.settings.APP_NOTIFICATION_PROMOTION_SETTINGS";

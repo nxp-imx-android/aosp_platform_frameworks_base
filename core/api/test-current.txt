@@ -375,7 +375,7 @@ package android.app {
     method public boolean isNotificationPolicyAccessGrantedForPackage(@NonNull String);
     method public boolean removeAutomaticZenRule(@NonNull String, boolean);
     method public void setAssistantAdjustmentKeyTypeState(int, boolean);
-    method @FlaggedApi("android.app.api_rich_ongoing") public void setCanPostPromotedNotifications(@NonNull String, int, boolean);
+    method public void setCanPostPromotedNotifications(@NonNull String, int, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATION_LISTENERS) public void setNotificationListenerAccessGranted(@NonNull android.content.ComponentName, boolean, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_TOAST_RATE_LIMITING) public void setToastRateLimitingEnabled(boolean);
     method public boolean updateAutomaticZenRule(@NonNull String, @NonNull android.app.AutomaticZenRule, boolean);
