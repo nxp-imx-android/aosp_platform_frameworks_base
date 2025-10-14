@@ -440,7 +440,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
     }
 
-    /** Records an activity as transient-launch. This activity must be already collected. */
+    /** Records an activity as transient-launch. */
     void setTransientLaunch(@NonNull ActivityRecord activity, @Nullable Task restoreBelow) {
         if (mTransientLaunches == null) {
             mTransientLaunches = new ArrayMap<>();
@@ -693,7 +693,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     /**
      * Sets the FLAG_TRANSIENT_LAUNCH flag to all changes associated with the given activity
-     * container and parent tasks.
+     * container and parent tasks. This is mainly used to force a change when keyguard is occluded.
      */
     private void setTransientLaunchToChanges(@NonNull WindowContainer wc) {
         for (WindowContainer curr = wc; curr != null && mChanges.containsKey(curr);
@@ -819,7 +819,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         snapshotStartState(getAnimatableParent(wc));
         if (mParticipants.contains(wc)) return;
         // Transient-hide may be hidden later, so no need to request redraw.
-        if (!isInTransientHide(wc)) {
+        // Also, recents transition can play without waiting for its host to draw.
+        if (!isInTransientHide(wc) && (!com.android.window.flags.Flags.skipAddRecentsToSyncSet()
+                || !isLaunchingRecents(wc))) {
             mSyncEngine.addToSyncSet(mSyncId, wc);
         }
         if (wc.asWindowToken() != null && wc.asWindowToken().mRoundedCornerOverlay) {
@@ -864,6 +866,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (wc.asTaskFragment() == null && wc.asActivityRecord() == null) return;
         if (!isInTransientHide(wc)) return;
         info.mFlags |= ChangeInfo.FLAG_TRANSIENT_HIDE;
+    }
+
+    private boolean isLaunchingRecents(@NonNull WindowContainer<?> wc) {
+        if (mParallelCollectType != PARALLEL_TYPE_RECENTS || mTransientLaunches == null) {
+            return false;
+        }
+        final ActivityRecord activity = wc.asActivityRecord();
+        return activity != null && mTransientLaunches.containsKey(activity);
     }
 
     private void recordDisplay(DisplayContent dc) {
