@@ -34,12 +34,14 @@ import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -66,10 +68,12 @@ import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.settings.fakeSettings
 import com.android.systemui.util.time.FakeSystemClock
+import com.google.common.truth.Truth.assertThat
 import java.util.Locale
 import javax.inject.Provider
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -656,26 +660,40 @@ class MediaCarouselControllerTest : SysuiTestCase() {
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
     @Test
-    fun testOnSecureLockDeviceMode_hideMediaCarousel() {
-        kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
-        mediaCarouselController.mediaCarousel = mediaCarousel
+    fun testOnSecureLockDeviceMode_hideMediaCarousel() =
+        kosmos.testScope.runTest {
+            val isSecureLockDeviceEnabled by
+                collectLastValue(kosmos.secureLockDeviceInteractor.isSecureLockDeviceEnabled)
 
-        keyguardCallback.value.onStrongAuthStateChanged(context.userId)
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            runCurrent()
 
-        verify(mediaCarousel).visibility = View.GONE
-    }
+            assertThat(isSecureLockDeviceEnabled).isTrue()
+
+            mediaCarouselController.mediaCarousel = mediaCarousel
+            keyguardCallback.value.onStrongAuthStateChanged(context.userId)
+
+            verify(mediaCarousel).visibility = View.GONE
+        }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
     @Test
-    fun testOnSecureLockDeviceModeOff_showMediaCarousel() {
-        kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceDisabled()
-        whenever(keyguardUpdateMonitor.isUserUnlocked(context.userId)).thenReturn(true)
-        mediaCarouselController.mediaCarousel = mediaCarousel
+    fun testOnSecureLockDeviceModeOff_showMediaCarousel() =
+        kosmos.testScope.runTest {
+            val isSecureLockDeviceEnabled by
+                collectLastValue(kosmos.secureLockDeviceInteractor.isSecureLockDeviceEnabled)
 
-        keyguardCallback.value.onStrongAuthStateChanged(context.userId)
+            kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceDisabled()
+            runCurrent()
 
-        verify(mediaCarousel).visibility = View.VISIBLE
-    }
+            assertThat(isSecureLockDeviceEnabled).isFalse()
+
+            whenever(keyguardUpdateMonitor.isUserUnlocked(context.userId)).thenReturn(true)
+            mediaCarouselController.mediaCarousel = mediaCarousel
+            keyguardCallback.value.onStrongAuthStateChanged(context.userId)
+
+            verify(mediaCarousel).visibility = View.VISIBLE
+        }
 
     @Test
     fun testKeyguardGone_showMediaCarousel() =
