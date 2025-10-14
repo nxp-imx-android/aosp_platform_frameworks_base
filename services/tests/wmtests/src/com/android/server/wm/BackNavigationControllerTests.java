@@ -241,7 +241,6 @@ public class BackNavigationControllerTests extends WindowTestsBase {
                 .isEqualTo(typeToString(BackNavigationInfo.TYPE_RETURN_TO_HOME));
     }
 
-    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_INTERCEPT_TRANSITION)
     @Test
     public void noBackInTransition() {
         Task taskA = createTask(mDefaultDisplay);

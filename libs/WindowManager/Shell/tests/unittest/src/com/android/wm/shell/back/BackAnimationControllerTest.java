@@ -60,7 +60,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.IRemoteAnimationRunner;
@@ -82,7 +81,6 @@ import android.window.WindowContainerToken;
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
@@ -279,7 +277,6 @@ public class BackAnimationControllerTest extends ShellTestCase {
         }
     }
 
-    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_INTERCEPT_TRANSITION)
     @Test
     public void noStartInTransition() throws RemoteException {
         registerAnimation(BackNavigationInfo.TYPE_RETURN_TO_HOME);
@@ -292,7 +289,6 @@ public class BackAnimationControllerTest extends ShellTestCase {
         verify(mTransitions).runOnIdle(any());
     }
 
-    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_INTERCEPT_TRANSITION)
     @Test
     public void testInTransition_retriesWhenIdle() throws RemoteException {
         // Setup: First call to startBackNavigation returns IN_TRANSITION, second is successful.
@@ -333,7 +329,6 @@ public class BackAnimationControllerTest extends ShellTestCase {
         verify(mAnimatorCallback, atLeastOnce()).onBackStarted(any(BackMotionEvent.class));
     }
 
-    @EnableFlags(Flags.FLAG_PREDICTIVE_BACK_INTERCEPT_TRANSITION)
     @Test
     public void testInTransition_retryIsCancelledIfGestureFinished() throws RemoteException {
         // Setup: startBackNavigation returns IN_TRANSITION
