@@ -696,6 +696,13 @@ filegroup {
     srcs: ["overview.html"],
 }
 
+filegroup {
+    name: "framework-telecom-core-shared-srcs",
+    srcs: [
+        "com/android/internal/os/SomeArgs.java",
+    ],
+}
+
 // Avoid including Parcelable classes as we don't want to have two copies of
 // Parcelable cross the libraries. This is used by telephony-common (frameworks/opt/telephony)
 // and TeleService app (packages/services/Telephony).
