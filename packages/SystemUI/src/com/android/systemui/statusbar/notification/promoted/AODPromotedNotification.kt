@@ -466,7 +466,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             it.chronometer?.isVisible = false
         }
         val metrics = content.metrics ?: return
-        for (i in metrics.indices) {
+        for (i in metrics.indices.take(MAX_METRICS)) {
             val metric = metrics[i]
             val metricView = metricViews[i]
 
@@ -854,6 +854,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     companion object {
         /** Maximum aspect ratio of the large icon. 16:9 */
         private const val MAX_LARGE_ICON_ASPECT_RATIO: Float = 16f / 9f
+        /**
+         * Maximum allowed Notification.Metric count. Same as Notification.MetricStyle.MAX_METRICS
+         */
+        private const val MAX_METRICS: Int = 3
     }
 }
 
