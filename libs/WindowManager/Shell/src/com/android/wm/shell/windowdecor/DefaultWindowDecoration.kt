@@ -741,7 +741,6 @@ constructor(
                     surfaceControlBuilderSupplier,
                     surfaceControlTransactionSupplier,
                     displayController,
-                    desktopModeEventLogger,
                 )
         val touchSlop = ViewConfiguration.get(decorWindowContext).scaledTouchSlop
         val res = decorWindowContext.resources
