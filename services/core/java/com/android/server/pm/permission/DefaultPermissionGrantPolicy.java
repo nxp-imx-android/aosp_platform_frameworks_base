@@ -48,7 +48,6 @@ import android.os.Message;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
-import android.permission.flags.Flags;
 import android.permission.PermissionManager;
 import android.print.PrintManager;
 import android.provider.CalendarContract;
@@ -238,9 +237,6 @@ final class DefaultPermissionGrantPolicy {
 
     private static final Set<String> NEARBY_DEVICES_PERMISSIONS = new ArraySet<>();
     static {
-        if (Flags.accessLocalNetworkPermissionEnabled()) {
-            NEARBY_DEVICES_PERMISSIONS.add(Manifest.permission.ACCESS_LOCAL_NETWORK);
-        }
         NEARBY_DEVICES_PERMISSIONS.add(Manifest.permission.BLUETOOTH_ADVERTISE);
         NEARBY_DEVICES_PERMISSIONS.add(Manifest.permission.BLUETOOTH_CONNECT);
         NEARBY_DEVICES_PERMISSIONS.add(Manifest.permission.BLUETOOTH_SCAN);
