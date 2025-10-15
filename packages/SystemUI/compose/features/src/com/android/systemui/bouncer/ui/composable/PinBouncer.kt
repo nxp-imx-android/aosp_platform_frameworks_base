@@ -29,6 +29,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -289,7 +291,8 @@ private fun PinPadButton(
         animateColorAsState(
             when {
                 isAnimationEnabled && isPressed -> MaterialTheme.colorScheme.primary
-                lockscreenTimeoutDeactivatePinPad() && !isEnabled -> backgroundColor.copy(alpha = 0.18f)
+                lockscreenTimeoutDeactivatePinPad() && !isEnabled ->
+                    backgroundColor.copy(alpha = 0.18f)
                 else -> backgroundColor
             },
             label = "Pin button container color",
@@ -299,7 +302,8 @@ private fun PinPadButton(
         animateColorAsState(
             when {
                 isAnimationEnabled && isPressed -> MaterialTheme.colorScheme.onPrimary
-                lockscreenTimeoutDeactivatePinPad() && !isEnabled -> foregroundColor.copy(alpha = 0.38f)
+                lockscreenTimeoutDeactivatePinPad() && !isEnabled ->
+                    foregroundColor.copy(alpha = 0.38f)
                 else -> foregroundColor
             },
             label = "Pin button container color",
@@ -335,6 +339,14 @@ private fun PinPadButton(
                                 onPointerDown?.let { it(view) }
                             }
                             false
+                        }
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, _ ->
+                                // Consume any changes that are part of the drag to make it less
+                                // likely for accidental drags to happen while the user is trying to
+                                // tap on buttons in the pin pad.
+                                change.consume()
+                            }
                         }
                 }
                 .thenIf(elementId != null) { Modifier.sysuiResTag(elementId!!) },
