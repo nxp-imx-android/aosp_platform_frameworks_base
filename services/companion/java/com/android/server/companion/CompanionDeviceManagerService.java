@@ -200,7 +200,7 @@ public class CompanionDeviceManagerService extends SystemService {
         mTransportManager = new CompanionTransportManager(context, mAssociationStore);
 
         mActionRequestProcessor = new ActionRequestProcessor(mAssociationStore,
-                mDevicePresenceProcessor, mCompanionAppBinder, mTransportManager);
+                mDevicePresenceProcessor, mCompanionAppBinder);
 
         mDisassociationProcessor = new DisassociationProcessor(context, activityManager,
                 mAssociationStore, packageManagerInternal, mDevicePresenceProcessor,

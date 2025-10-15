@@ -18,7 +18,6 @@ package android.companion;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
-import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -30,50 +29,58 @@ import java.util.Objects;
  * A result reported by a companion app in response to an {@link ActionRequest}.
  *
  * @see CompanionDeviceManager#notifyActionResult(int, ActionResult)
- * @hide
  */
-@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
 public final class ActionResult implements Parcelable {
     /** @hide */
     @IntDef(prefix = {"RESULT_"}, value = {
-            RESULT_SUCCESS,
-            RESULT_FAILED,
+            RESULT_ACTIVATED,
+            RESULT_FAILED_TO_ACTIVATE,
+            RESULT_DEACTIVATED
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ResultCode {}
 
     /**
-     * A result code indicating that the requested action was completed successfully.
+     * A result code indicating that the requested activation was completed successfully.
+     * This is sent in response to an {@link ActionRequest#OP_ACTIVATE} request.
      */
-    public static final int RESULT_SUCCESS = 0;
+    public static final int RESULT_ACTIVATED = 0;
 
     /**
-     * A result code indicating that the requested action failed.
+     * A result code indicating that the requested activation failed.
+     * This is sent in response to an {@link ActionRequest#OP_ACTIVATE} request.
      */
-    public static final int RESULT_FAILED = 1;
+    public static final int RESULT_FAILED_TO_ACTIVATE = 1;
 
-    private final int mResultCode;
-    private final ActionRequest mActionRequest;
+    /**
+     * A result code indicating that a previously active action is now inactive.
+     * This can be sent for two reasons:
+     * 1. As a successful response to an {@link ActionRequest#OP_DEACTIVATE} request.
+     * 2. Action was failed after initially succeed.
+     */
+    public static final int RESULT_DEACTIVATED = 2;
+
+    private final @ResultCode int mResultCode;
+    private final @ActionRequest.RequestAction int mAction;
 
     private ActionResult(Builder builder) {
         mResultCode = builder.mResultCode;
-        mActionRequest = builder.mActionRequest;
+        mAction = builder.mAction;
     }
 
     /**
-     * @return the result code, e.g., {@link #RESULT_SUCCESS}.
+     * @return the result code, e.g., {@link #RESULT_ACTIVATED}.
      */
     public @ResultCode int getResultCode() {
         return mResultCode;
     }
 
     /**
-     * @return The {@link ActionRequest} for this result.
+     * @return the action this result refers to, e.g. {@link ActionRequest#REQUEST_NEARBY_SCANNING}.
      */
-    @NonNull
-    public ActionRequest getActionRequest() {
-        return mActionRequest;
+    public @ActionRequest.RequestAction int getAction() {
+        return mAction;
     }
 
     @Override
@@ -84,7 +91,7 @@ public final class ActionResult implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mResultCode);
-        dest.writeTypedObject(mActionRequest, flags);
+        dest.writeInt(mAction);
     }
 
     @Override
@@ -93,18 +100,18 @@ public final class ActionResult implements Parcelable {
         if (o == null || getClass() != o.getClass()) return false;
         ActionResult that = (ActionResult) o;
         return  mResultCode == that.mResultCode
-                && Objects.equals(mActionRequest, that.mActionRequest);
+                && mAction == that.mAction;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mResultCode, mActionRequest);
+        return Objects.hash(mResultCode, mAction);
     }
 
     @Override
     public String toString() {
         return "ActionResult{"
-                + ", mActionRequest=" + mActionRequest
+                + ", mAction=" + mAction
                 + ", mResultCode=" + mResultCode
                 + '}';
     }
@@ -126,7 +133,7 @@ public final class ActionResult implements Parcelable {
 
     private ActionResult(Parcel in) {
         mResultCode = in.readInt();
-        mActionRequest = in.readTypedObject(ActionRequest.CREATOR);
+        mAction = in.readInt();
     }
 
     /**
@@ -135,16 +142,16 @@ public final class ActionResult implements Parcelable {
     public static final class Builder {
 
         private final int mResultCode;
-        private final ActionRequest mActionRequest;
+        private final @ActionRequest.RequestAction int mAction;
 
         /**
-         * @param actionRequest The original {@link ActionRequest} for this result.
+         * @param action The action this result is for,
+         *               e.g. {@link ActionRequest#REQUEST_NEARBY_SCANNING}.
+         *
          * @param resultCode The result code for this result.
          */
-        public Builder(@NonNull ActionRequest actionRequest, @ResultCode int resultCode) {
-            Objects.requireNonNull(actionRequest, "ActionRequest cannot be null.");
-
-            mActionRequest = actionRequest;
+        public Builder(@ActionRequest.RequestAction int action, @ResultCode int resultCode) {
+            mAction = action;
             mResultCode = resultCode;
         }
 

@@ -3508,21 +3508,6 @@ package android.apphibernation {
 
 package android.companion {
 
-  @FlaggedApi("android.companion.enable_data_sync") public final class ActionResult implements android.os.Parcelable {
-    method public int describeContents();
-    method @NonNull public android.companion.ActionRequest getActionRequest();
-    method public int getResultCode();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.companion.ActionResult> CREATOR;
-    field public static final int RESULT_FAILED = 1; // 0x1
-    field public static final int RESULT_SUCCESS = 0; // 0x0
-  }
-
-  public static final class ActionResult.Builder {
-    ctor public ActionResult.Builder(@NonNull android.companion.ActionRequest, int);
-    method @NonNull public android.companion.ActionResult build();
-  }
-
   public final class AssociationInfo implements android.os.Parcelable {
     method @NonNull public String getPackageName();
   }
@@ -3535,7 +3520,6 @@ package android.companion {
     method @NonNull @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public java.util.List<android.companion.AssociationInfo> getAllAssociations();
     method @FlaggedApi("android.companion.association_verification") @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_INFO) public android.companion.AssociationInfo getAssociationByDeviceId(@NonNull android.companion.DeviceId);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public boolean isDeviceAssociatedForWifiConnection(@NonNull String, @NonNull android.net.MacAddress, @NonNull android.os.UserHandle);
-    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyActionResult(int, @NonNull android.companion.ActionResult);
     method @Deprecated @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDeviceAppeared(int);
     method @Deprecated @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDeviceDisappeared(int);
     method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDevicePresence(int, @NonNull android.companion.DevicePresenceEvent);
