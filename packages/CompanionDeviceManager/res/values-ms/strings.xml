@@ -74,7 +74,7 @@
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Segerakkan skrin anda"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Strim apl"</string>
     <string name="permission_schedule_exact_alarm" msgid="5680932535987512225">"Tetapkan penggera dan peringatan"</string>
-    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Tetapan Memintas Jangan Ganggu"</string>
+    <string name="permission_bypass_dnd" msgid="1241123166903040347">"Pintas tetapan Jangan Ganggu"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Membuat dan mengurus panggilan telefon"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Baca dan tulis log panggilan telefon"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Menghantar dan melihat mesej SMS"</string>

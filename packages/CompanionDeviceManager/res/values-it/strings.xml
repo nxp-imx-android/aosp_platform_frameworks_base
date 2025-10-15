@@ -31,7 +31,7 @@
     <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"fitness tracker"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Vuoi consentire all\'app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; di gestire &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispositivo"</string>
-    <string name="summary_glasses" msgid="5469208629679579157">"Questa app potrà accedere alle seguenti autorizzazioni <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>:"</string>
+    <string name="summary_glasses" msgid="5469208629679579157">"Questa app potrà accedere alle seguenti autorizzazioni sul tuo <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>:"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"dispositivo medico"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Consentire all\'app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; di riprodurre in streaming funzionalità di sistema e app tra <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> e &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"All\'app <xliff:g id="APP_NAME">%1$s</xliff:g> verranno concesse le seguenti autorizzazioni:"</string>
@@ -85,14 +85,14 @@
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Legge tutte le notifiche, incluse informazioni come contatti, messaggi e foto"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• Leggi tutte le notifiche, incluse informazioni come contatti, messaggi e foto&lt;br/&gt;• Invia notifiche&lt;br/&gt;&lt;br/&gt;Puoi gestire la capacità dell\'app di leggere e inviare notifiche in qualsiasi momento in Impostazioni &gt; Notifiche."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
-    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Inviare notifiche"</string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Ti invia notifiche"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Riproduci in streaming dati del microfono, della fotocamera e di altri sensori da &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; sul tuo <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Registra, trasmetti o condividi lo schermo del tuo <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> su &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> avrà accesso a tutto ciò che è visibile o riprodotto sul tuo <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, inclusi audio, foto, dati di pagamento, password e messaggi."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Riproduci in streaming le app di <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> su &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> avrà accesso a tutto ciò che è visibile o riprodotto su <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, inclusi audio, foto, dati di pagamento, password e messaggi, anche quando <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> è bloccato."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accedi a un elenco di dispositivi disponibili e controlla quale di questi riproduce in streaming o trasmette audio o video da altre app"</string>
     <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
     <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
-    <string name="device_type" product="default" msgid="8268703872070046263">"telefono"</string>
+    <string name="device_type" product="default" msgid="8268703872070046263">"smartphone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"della TV"</string>
     <string name="device_type" product="device" msgid="1526125965802507189">"del dispositivo"</string>

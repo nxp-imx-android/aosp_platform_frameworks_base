@@ -85,7 +85,7 @@
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"すべての通知の読み取り（連絡先、メッセージ、写真に関する情報を含む）"</string>
     <string name="permission_notifications_summary" msgid="6819393427371255636">"• すべての通知の読み取り（連絡先、メッセージ、写真に関する情報を含む）&lt;br/&gt;• 通知の送信&lt;br/&gt;&lt;br/&gt;このアプリの通知読み取り機能と通知送信機能はいつでも [設定] &gt; [通知] で管理できます。"</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
-    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"通知を送信する"</string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"通知の送信"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; から <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> にマイク、カメラ、その他のセンサーデータをストリーミングします。"</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> の画面を &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; に録画、キャスト、共有します。&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> は、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> のアプリを &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; にストリーミングします。&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> は、<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> がロックされている場合でも、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。"</string>
