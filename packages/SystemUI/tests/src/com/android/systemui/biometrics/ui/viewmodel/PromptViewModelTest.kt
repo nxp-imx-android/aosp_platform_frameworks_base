@@ -129,7 +129,8 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     @Mock private lateinit var activityInfo: ActivityInfo
     @Mock private lateinit var runningTaskInfo: RunningTaskInfo
 
-    private val defaultLogoIconFromAppInfo = context.getDrawable(R.drawable.ic_android)
+    private val defaultLogoIcon = context.getDrawable(R.drawable.ic_android)
+    private val defaultLogoIconFromAppInfo = context.getDrawable(R.drawable.ic_gift)
     private val defaultLogoIconFromActivityInfo = context.getDrawable(R.drawable.ic_add)
     private val defaultLogoIconWithBadge = context.getDrawable(R.drawable.ic_alarm)
     private val logoResFromApp = R.drawable.ic_cake
@@ -301,7 +302,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
             )
             .thenReturn(applicationInfoNoIconOrDescription)
         whenever(kosmos.packageManager.getApplicationIcon(applicationInfoNoIconOrDescription))
-            .thenReturn(null)
+            .thenReturn(defaultLogoIcon)
         whenever(kosmos.packageManager.getApplicationLabel(applicationInfoNoIconOrDescription))
             .thenReturn("")
 
@@ -1571,11 +1572,11 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         }
 
     @Test
-    fun logo_defaultIsNull() =
+    fun logo_defaultIsDefault() =
         runGenericTest(packageName = OP_PACKAGE_NAME_NO_LOGO_INFO) {
             val logoInfo by collectLastValue(kosmos.promptViewModel.logoInfo)
             assertThat(logoInfo).isNotNull()
-            assertThat(logoInfo!!.first).isNull()
+            assertThat(logoInfo!!.first).isEqualTo(defaultLogoIcon)
             assertThat(logoInfo!!.second).isEqualTo("")
         }
 
