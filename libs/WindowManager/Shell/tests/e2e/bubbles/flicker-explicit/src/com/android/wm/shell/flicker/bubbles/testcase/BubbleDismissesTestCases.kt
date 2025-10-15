@@ -31,6 +31,10 @@ interface BubbleDismissesTestCases : BubbleExitTestCases {
      */
     @Test
     fun appWindowIsGoneAtEnd() {
-        wmStateSubjectAtEnd.notContains(testApp)
+        if (com.android.wm.shell.Flags.bugDontRemoveTaskBubble()) {
+            wmStateSubjectAtEnd.isAppWindowInvisible(testApp)
+        } else {
+            wmStateSubjectAtEnd.notContains(testApp)
+        }
     }
 }
