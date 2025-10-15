@@ -11,3 +11,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "limit_pending_broadcasts_per_sender_uid"
+    namespace: "backstage_power"
+    description: "Enables the mechanism to limit the number of pending enqueued broadcasts for each sender UID"
+    bug: "452063905"
+}
