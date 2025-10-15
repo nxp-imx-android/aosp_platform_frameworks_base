@@ -3280,8 +3280,7 @@ public class DeviceIdleController extends SystemService
     void addPowerSaveTempWhitelistAppDirectInternal(int callingUid, int uid,
             long duration, @TempAllowListType int tempAllowListType, boolean sync,
             @ReasonCode int reasonCode, @Nullable String reason) {
-        final long timeNow = Flags.useCpuTimeForTempAllowlist() ? mInjector.getUptimeMillis()
-                : mInjector.getElapsedRealtime();
+        final long timeNow = mInjector.getUptimeMillis();
         boolean informWhitelistChanged = false;
         int appId = UserHandle.getAppId(uid);
         synchronized (this) {
@@ -3367,8 +3366,7 @@ public class DeviceIdleController extends SystemService
     }
 
     void checkTempAppWhitelistTimeout(int uid) {
-        final long timeNow = Flags.useCpuTimeForTempAllowlist() ? mInjector.getUptimeMillis()
-                : mInjector.getElapsedRealtime();
+        final long timeNow = mInjector.getUptimeMillis();
         final int appId = UserHandle.getAppId(uid);
         if (DEBUG) {
             Slog.d(TAG, "checkTempAppWhitelistTimeout: uid=" + uid + ", timeNow=" + timeNow);
@@ -5260,10 +5258,6 @@ public class DeviceIdleController extends SystemService
 
         pw.println("  Flags:");
         pw.print("    ");
-        pw.print(Flags.FLAG_USE_CPU_TIME_FOR_TEMP_ALLOWLIST);
-        pw.print("=");
-        pw.println(Flags.useCpuTimeForTempAllowlist());
-        pw.print("    ");
         pw.print(Flags.FLAG_REMOVE_IDLE_LOCATION);
         pw.print("=");
         pw.println(Flags.removeIdleLocation());
@@ -5503,8 +5497,7 @@ public class DeviceIdleController extends SystemService
                 pw.println("  Temp whitelist schedule:");
                 prefix = "    ";
             }
-            final long timeNow = Flags.useCpuTimeForTempAllowlist() ? mInjector.getUptimeMillis()
-                    : mInjector.getElapsedRealtime();
+            final long timeNow = mInjector.getUptimeMillis();
             for (int i = 0; i < size; i++) {
                 pw.print(prefix);
                 pw.print("UID=");
