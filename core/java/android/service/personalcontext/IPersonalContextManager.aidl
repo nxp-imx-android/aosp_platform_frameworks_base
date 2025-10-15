@@ -18,10 +18,18 @@ package android.service.personalcontext;
 
 import android.content.ComponentName;
 
+import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.insight.ContextInsightWrapper;
+
 /**
  * {@link IPersonalContextManager} is the internal interface for accessing the
  * PersonalContextManagerService. Public usage should go through PersonalContextManager.
  * @hide
  */
 interface IPersonalContextManager {
+    oneway void publishTriggeringHint(
+            in List<ContextHintWrapper> hints, in RenderToken renderToken);
+
+    oneway void publishInsight(in List<ContextInsightWrapper> insights);
 }

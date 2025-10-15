@@ -25,6 +25,9 @@ import android.content.pm.ResolveInfo;
 import android.os.UserHandle;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
+import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -130,6 +133,18 @@ public class PersonalContextManagerService extends SystemService {
 
         private BinderService(PersonalContextManagerService service) {
             mService = new WeakReference<>(service);
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void publishTriggeringHint(List<ContextHintWrapper> hints, RenderToken renderToken) {
+            // TODO(b/450547433): Implement this.
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void publishInsight(List<ContextInsightWrapper> insights) {
+            // TODO(b/450547433): Implement this.
         }
 
         @PermissionManuallyEnforced

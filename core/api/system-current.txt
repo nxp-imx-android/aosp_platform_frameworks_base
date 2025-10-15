@@ -14177,6 +14177,16 @@ package android.service.persistentdata {
 
 }
 
+package android.service.personalcontext {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method public void publishInsight(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
+    method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable android.service.personalcontext.RenderToken);
+    field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
+  }
+
+}
+
 package android.service.personalcontext.renderer {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class InsightRendererService extends android.app.Service {
