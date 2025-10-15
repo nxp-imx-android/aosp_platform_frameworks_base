@@ -354,6 +354,8 @@ import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
 import com.android.server.notification.GroupHelper.NotificationAttributes;
+import android.service.personalcontext.hint.NotificationEvent;
+import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.notification.NotificationManagerService.NotificationAssistants;
 import com.android.server.notification.NotificationManagerService.NotificationListeners;
 import com.android.server.notification.NotificationManagerService.PostNotificationTracker;
@@ -502,6 +504,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private LightsManager mLightsManager;
     @Mock
     private BitmapOffloadInternal mBitmapOffloader;
+    @Mock
+    private PersonalContextManagerInternal mPersonalContextManagerInternal;
 
     private final ArrayList<WakeLock> mAcquiredWakeLocks = new ArrayList<>();
     private final TestPostNotificationTrackerFactory mPostNotificationTrackerFactory =
@@ -659,6 +663,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
         LocalServices.addService(SecureLockDeviceServiceInternal.class,
                 mSecureLockDeviceServiceInternal);
+        LocalServices.removeServiceForTest(PersonalContextManagerInternal.class);
+        LocalServices.addService(PersonalContextManagerInternal.class,
+                mPersonalContextManagerInternal);
         mContext.addMockSystemService(Context.ALARM_SERVICE, mAlarmManager);
         mContext.addMockSystemService(NotificationManager.class, mMockNm);
         mContext.addMockSystemService(RoleManager.class, mock(RoleManager.class));
@@ -2369,6 +2376,28 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mBinderService.getActiveNotifications(mPkg)).hasLength(1);
         assertThat(mPostNotificationTrackerFactory.mCreatedTrackers).hasSize(1);
         assertThat(mPostNotificationTrackerFactory.mCreatedTrackers.get(0).isOngoing()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void testEnqueue_sendsToPersonalContextManager() throws Exception {
+        final NotificationRecord nr = generateNotificationRecord(mTestNotificationChannel);
+        final StatusBarNotification sbn = nr.getSbn();
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                sbn.getId(), sbn.getNotification(), sbn.getUserId());
+        waitForIdle();
+
+        ArgumentCaptor<NotificationEvent> captor =
+                ArgumentCaptor.forClass(NotificationEvent.class);
+        verify(mPersonalContextManagerInternal).onNotificationEvent(captor.capture());
+        NotificationEvent event = captor.getValue();
+        assertThat(event).isInstanceOf(NotificationEvent.NotificationEnqueuedEvent.class);
+        NotificationEvent.NotificationEnqueuedEvent enqueuedEvent =
+                (NotificationEvent.NotificationEnqueuedEvent) event;
+        assertThat(enqueuedEvent.getStatusBarNotification().getKey()).isEqualTo(sbn.getKey());
+        assertThat(enqueuedEvent.getNotificationChannel().getId()).isEqualTo(
+                mTestNotificationChannel.getId());
+        assertThat(enqueuedEvent.getRankingMap()).isNotNull();
     }
 
     @Test

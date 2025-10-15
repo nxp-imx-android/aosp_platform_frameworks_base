@@ -172,6 +172,7 @@ import static android.service.notification.NotificationListenerService.Ranking.R
 import static android.service.notification.NotificationListenerService.Ranking.VISIBILITY_NO_OVERRIDE;
 import static android.service.notification.NotificationListenerService.TRIM_FULL;
 import static android.service.notification.NotificationListenerService.TRIM_LIGHT;
+import static android.service.personalcontext.Flags.enablePersonalContextService;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.contentprotection.flags.Flags.rapidClearNotificationsByListenerAppOpEnabled;
 
@@ -335,6 +336,8 @@ import android.service.notification.ZenDeviceEffects;
 import android.service.notification.ZenModeConfig;
 import android.service.notification.ZenModeProto;
 import android.service.notification.ZenPolicy;
+import android.service.personalcontext.hint.NotificationEvent;
+import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueuedEvent;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.text.Annotation;
@@ -407,6 +410,7 @@ import com.android.server.notification.NotificationRecordLogger.NotificationRepo
 import com.android.server.notification.toast.CustomToastRecord;
 import com.android.server.notification.toast.TextToastRecord;
 import com.android.server.notification.toast.ToastRecord;
+import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
@@ -10125,6 +10129,18 @@ public class NotificationManagerService extends SystemService {
                 // can to avoid extracting signals.
                 handleGroupedNotificationLocked(r, old, callingUid, callingPid);
 
+                if (enablePersonalContextService()) {
+                    final PersonalContextManagerInternal pcmi =
+                            getLocalService(PersonalContextManagerInternal.class);
+                    if (pcmi != null) {
+                        final NotificationRankingUpdate update = makeRankingUpdateLocked(null);
+                        final NotificationEvent event =
+                                new NotificationEnqueuedEvent(
+                                        r.getSbn(), r.getChannel(), update.getRankingMap());
+                        pcmi.onNotificationEvent(event);
+                    }
+                }
+
                 // if this is a group child, unsnooze parent summary
                 if (n.isGroup() && notification.isGroupChild()) {
                     mSnoozeHelper.repostGroupSummary(pkg, r.getUserId(), n.getGroupKey());
@@ -12308,11 +12324,11 @@ public class NotificationManagerService extends SystemService {
     }
 
     /**
-     * Generates a NotificationRankingUpdate from 'sbns', considering only
-     * notifications visible to the given listener.
+     * Generates a NotificationRankingUpdate from 'sbns', considering only notifications visible to
+     * the given listener.
      */
     @GuardedBy("mNotificationLock")
-    NotificationRankingUpdate makeRankingUpdateLocked(ManagedServiceInfo info) {
+    NotificationRankingUpdate makeRankingUpdateLocked(@Nullable ManagedServiceInfo info) {
         final int N = mNotificationList.size();
         final ArrayList<NotificationListenerService.Ranking> rankings = new ArrayList<>();
 
@@ -12321,7 +12337,8 @@ public class NotificationManagerService extends SystemService {
             if (isInLockDownMode(record.getUser().getIdentifier())) {
                 continue;
             }
-            if (!isVisibleToListener(record.getSbn(), record.getNotificationType(), info)) {
+            if (info != null
+                    && !isVisibleToListener(record.getSbn(), record.getNotificationType(), info)) {
                 continue;
             }
             final String key = record.getSbn().getKey();
@@ -12330,7 +12347,7 @@ public class NotificationManagerService extends SystemService {
             ArrayList<Notification.Action> smartActions = record.getSystemGeneratedSmartActions();
             ArrayList<CharSequence> smartReplies = record.getSmartReplies();
             boolean hasSensitiveContent = record.hasSensitiveContent();
-            if (redactSensitiveNotificationsFromUntrustedListeners()) {
+            if (info != null && redactSensitiveNotificationsFromUntrustedListeners()) {
                 if (!mListeners.isUidTrusted(info.uid) && mListeners.hasSensitiveContent(record)) {
                     smartActions = null;
                     smartReplies = null;

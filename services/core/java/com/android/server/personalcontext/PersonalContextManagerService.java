@@ -26,8 +26,11 @@ import android.os.UserHandle;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.hint.NotificationEvent;
+import android.service.personalcontext.hint.NotificationHint;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -73,6 +76,16 @@ public class PersonalContextManagerService extends SystemService {
     @NonNull private List<ComponentName> mTransformerComponents = Collections.emptyList();
     @NonNull private List<ComponentName> mRendererComponents = Collections.emptyList();
 
+    private final PersonalContextManagerInternal mInternalService =
+            new PersonalContextManagerInternal() {
+                @Override
+                public void onNotificationEvent(@NonNull NotificationEvent event) {
+                    final List<ContextHint> hints =
+                            List.of(new NotificationHint.NotificationHintBuilder(event).build());
+                    // TODO(b/434644900): Start refiner workflow with the hints.
+                }
+            };
+
     public PersonalContextManagerService(Context context) {
         super(context);
     }
@@ -82,6 +95,7 @@ public class PersonalContextManagerService extends SystemService {
         publishBinderService(
                 PersonalContextManager.PERSONAL_CONTEXT_SERVICE,
                 new BinderService(this));
+        publishLocalService(PersonalContextManagerInternal.class, mInternalService);
 
         Log.d(TAG, "Service started");
     }
