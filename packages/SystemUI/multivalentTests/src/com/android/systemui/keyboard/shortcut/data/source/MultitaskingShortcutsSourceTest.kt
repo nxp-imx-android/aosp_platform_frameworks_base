@@ -165,7 +165,6 @@ class MultitaskingShortcutsSourceTest : SysuiTestCase() {
         Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
         Flags.FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS,
         Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-        Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT,
     )
     fun shortcutGroups_desktopDisabled_doesNotContainDesktopShortcuts() {
         testScope.runTest {

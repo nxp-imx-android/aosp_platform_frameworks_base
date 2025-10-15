@@ -321,15 +321,13 @@ final class InputGestureManager {
                             /* allowCaptureByFocusedWindow = */false
                     ));
         }
-        if (DesktopExperienceFlags.CLOSE_TASK_KEYBOARD_SHORTCUT.isTrue()) {
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_W,
-                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
-                            /* allowCaptureByFocusedWindow = */false
-                    ));
-        }
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_W,
+                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_DESKTOP_TASK,
+                        /* allowCaptureByFocusedWindow = */false
+                ));
         if (enableQuickSettingsPanelShortcut()) {
             systemShortcuts.add(
                     createKeyGesture(
