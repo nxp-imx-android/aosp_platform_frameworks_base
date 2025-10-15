@@ -809,7 +809,7 @@ class TransitionController {
             @NonNull WindowContainer readyGroupRef, @NonNull ActionChain chain) {
         if (mTransitionPlayers.isEmpty()) {
             if (Flags.fallbackTransitionPlayer()) {
-                throw new IllegalStateException("Somehow requesting transition while flushing");
+                Slog.wtfStack(TAG, "Somehow requesting transition while flushing");
             }
             return null;
         }
