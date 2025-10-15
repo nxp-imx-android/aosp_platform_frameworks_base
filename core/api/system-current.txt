@@ -8243,12 +8243,12 @@ package android.media {
   }
 
   public class Ringtone {
-    method @FlaggedApi("com.android.server.telecom.flags.resolve_hidden_dependencies_two") public boolean hasHapticChannels();
+    method @FlaggedApi("com.android.media.flags.release_ringtone_as_api") public boolean hasHapticChannels();
   }
 
   public class RingtoneManager {
     method @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public static void ensureDefaultRingtones(@NonNull android.content.Context);
-    method @FlaggedApi("com.android.server.telecom.flags.resolve_hidden_dependencies_two") @Nullable public static android.media.Ringtone getRingtone(@NonNull android.content.Context, @NonNull android.net.Uri, @Nullable android.media.VolumeShaper.Configuration, @NonNull android.media.AudioAttributes);
+    method @FlaggedApi("com.android.media.flags.release_ringtone_as_api") @Nullable public static android.media.Ringtone getRingtone(@NonNull android.content.Context, @NonNull android.net.Uri, @Nullable android.media.VolumeShaper.Configuration, @NonNull android.media.AudioAttributes);
   }
 
   public final class RouteDiscoveryPreference implements android.os.Parcelable {

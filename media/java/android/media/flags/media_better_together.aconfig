@@ -266,3 +266,10 @@ flag {
     description: "Add a preference for device suggestions in the media settings page"
     bug: "415096359"
 }
+
+flag {
+    name: "release_ringtone_as_api"
+    namespace: "telecom"
+    description: "Flag for unhiding ringtone APIs"
+    bug: "450092456"
+}
