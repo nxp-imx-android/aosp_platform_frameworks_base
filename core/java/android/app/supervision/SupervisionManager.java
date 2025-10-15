@@ -322,15 +322,29 @@ public class SupervisionManager {
     }
 
     /**
-     * Registers a listener to be notified on supervision state changes.
+     * Registers a listener to be notified on supervision state changes for the current user .
      *
      * @param listener Listener to be registered. Can't be null.
      * @hide
      */
     public void registerSupervisionListener(@NonNull SupervisionListener listener) {
+        registerSupervisionListenerForUser(mContext.getUserId(), listener);
+    }
+
+    /**
+     * Registers a listener to be notified on supervision state changes for a given user.
+     *
+     * <p>The listener will only be notified on supervision state changes for the specified user.
+     *
+     * @param userId the int ID of the user to register the listener for.
+     * @param listener Listener to be registered. Can't be null.
+     * @hide
+     */
+    public void registerSupervisionListenerForUser(
+            @UserIdInt int userId, @NonNull SupervisionListener listener) {
         if (mService != null) {
             try {
-                mService.registerSupervisionListener(mContext.getUserId(), listener.mListener);
+                mService.registerSupervisionListener(userId, listener.mListener);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
