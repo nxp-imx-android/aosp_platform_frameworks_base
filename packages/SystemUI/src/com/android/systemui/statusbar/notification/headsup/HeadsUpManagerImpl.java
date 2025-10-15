@@ -985,7 +985,7 @@ public class HeadsUpManagerImpl
      * @param userUnPinned The unpinned action is trigger by user real operation.
      */
     @Override
-    public void unpinAll(boolean userUnPinned) {
+    public void unpinAll(boolean userUnPinned, String reason) {
         for (String key : mHeadsUpEntryMap.keySet()) {
             HeadsUpEntry headsUpEntry = getHeadsUpEntry(key);
             if (headsUpEntry == null) {
@@ -996,7 +996,7 @@ public class HeadsUpManagerImpl
             Runnable runnable = () -> {
                 mLogger.logUnpinEntry(key);
 
-                setEntryPinned(headsUpEntry, PinnedStatus.NotPinned, "unpinAll");
+                setEntryPinned(headsUpEntry, PinnedStatus.NotPinned, reason + " => unpinAll");
                 // maybe it got un sticky
                 headsUpEntry.updateEntry(false /* updatePostTime */, "unpinAll");
 

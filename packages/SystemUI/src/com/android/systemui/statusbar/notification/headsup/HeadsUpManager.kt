@@ -231,7 +231,7 @@ interface HeadsUpManager : Dumpable {
      *
      * @param userUnPinned The unpinned action is trigger by user real operation.
      */
-    fun unpinAll(userUnPinned: Boolean)
+    fun unpinAll(userUnPinned: Boolean, reason: String)
 
     /**
      * Called when the notification state has been updated.
@@ -339,7 +339,7 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
 
     override fun snooze() {}
 
-    override fun unpinAll(userUnPinned: Boolean) {}
+    override fun unpinAll(userUnPinned: Boolean, reason: String) {}
 
     override fun updateNotification(key: String, requestedPinnedStatus: PinnedStatus) {}
 
