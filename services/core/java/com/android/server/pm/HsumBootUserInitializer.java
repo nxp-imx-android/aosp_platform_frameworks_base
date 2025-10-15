@@ -114,7 +114,7 @@ public final class HsumBootUserInitializer {
         mIsManagedDevice = isManagedDevice;
         mDeviceProvisionedObserver = (Flags.hsuDeviceProvisioner()
                     ? new HsuDeviceProvisioner(
-                            context, new Handler(Looper.getMainLooper()), contentResolver)
+                            context, new Handler(Looper.getMainLooper()), contentResolver, ums)
                     : new ContentObserver(new Handler(Looper.getMainLooper())) {
                         @Override
                         public void onChange(boolean selfChange) {
@@ -442,7 +442,9 @@ public final class HsumBootUserInitializer {
 
     @VisibleForTesting
     void observeDeviceProvisioning() {
-        if (Flags.hsuDeviceProvisioner()) {
+        // TODO(b/446947591): Remove the cast once Flags.hsuDeviceProvisioner() is completely
+        // pushed.
+        if (mDeviceProvisionedObserver instanceof HsuDeviceProvisioner) {
             ((HsuDeviceProvisioner) mDeviceProvisionedObserver).init();
             return;
         }
@@ -504,8 +506,9 @@ public final class HsumBootUserInitializer {
         }
         // TODO(b/446947591): Remove the cast once Flags.hsuDeviceProvisioner() is completely
         // pushed.
+        // Sets the boot user to eventually copy secure settings to system user.
         if (mDeviceProvisionedObserver instanceof HsuDeviceProvisioner) {
-            ((HsuDeviceProvisioner) mDeviceProvisionedObserver).setBootUser(bootUserId);
+            ((HsuDeviceProvisioner) mDeviceProvisionedObserver).setSettingsSourceUser(bootUserId);
         }
         final boolean started = mAms.startUserInForegroundWithListener(bootUserId,
                 /* unlockListener= */ null);
@@ -551,7 +554,8 @@ public final class HsumBootUserInitializer {
         return context.getResources().getBoolean(R.bool.config_createInitialUser);
     }
 
-    private static UserFilter getFullAdminFilter() {
+    @VisibleForTesting
+    static UserFilter getFullAdminFilter() {
         return UserFilter.builder().setRequiredFlags(FLAG_FULL | FLAG_ADMIN).build();
     }
 

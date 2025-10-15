@@ -16,6 +16,11 @@
 package com.android.server.pm;
 
 import android.Manifest;
+import static android.content.pm.UserInfo.FLAG_ADMIN;
+import static android.content.pm.UserInfo.FLAG_FULL;
+
+import static com.android.server.pm.HsumBootUserInitializer.getFullAdminFilter;
+
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.Context;
@@ -31,6 +36,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 
@@ -47,6 +53,9 @@ final class HsuDeviceProvisioner extends ContentObserver {
 
     private final ContentResolver mContentResolver;
     private final PackageManager mPm;
+    private final UserManagerService mUms;
+
+    private @UserIdInt int mSettingsSourceUserId = UserHandle.USER_NULL;
     private @UserIdInt int mBootUserId = UserHandle.USER_NULL;
 
     /**
@@ -58,10 +67,12 @@ final class HsuDeviceProvisioner extends ContentObserver {
      * <p>Consequently, the {@link PackageManager} obtained via {@code context.getPackageManager()}
      * will operate with the privileges and scope of the system user.
      */
-    public HsuDeviceProvisioner(Context context, Handler handler, ContentResolver contentResolver) {
+    public HsuDeviceProvisioner(Context context, Handler handler, ContentResolver contentResolver,
+            UserManagerService ums) {
         super(handler);
         mContentResolver = contentResolver;
         mPm = context.getPackageManager();
+        mUms = ums;
     }
 
     /**
@@ -71,6 +82,7 @@ final class HsuDeviceProvisioner extends ContentObserver {
      */
     public void init() {
         if (isDeviceProvisioned()) {
+            copySecureSettingFromFirstAdmin();
             return;
         }
 
@@ -92,7 +104,7 @@ final class HsuDeviceProvisioner extends ContentObserver {
             mContentResolver.unregisterContentObserver(this);
             disableSetupWizardHomeForSystemUser();
             // Copy settings from the Real user to the system user.
-            copySecureSettings();
+            copySecureSettingFromSourceUser();
         }
     }
 
@@ -110,28 +122,41 @@ final class HsuDeviceProvisioner extends ContentObserver {
         }
     }
 
-    private void copySecureSettings() {
-        copySecureSettingFromBootUser(Settings.Secure.BUGREPORT_IN_POWER_MENU,
+    @VisibleForTesting
+    void copySecureSettingFromSourceUser() {
+        copySecureSettingFromSourceUser(Settings.Secure.BUGREPORT_IN_POWER_MENU,
                 /* defaultValue= */ 0);
     }
 
-    private void copySecureSettingFromBootUser(String settingName, int defaultValue) {
-        if (mBootUserId == UserHandle.USER_NULL) {
-            Slogf.w(TAG, "copySecureSettingFromBootUser called before boot user was set");
+    private void copySecureSettingFromFirstAdmin() {
+        var filter = getFullAdminFilter();
+        var users = mUms.getUsers(filter);
+        if (users.isEmpty()) {
+            Slogf.wtf(TAG, "No users found matching filter %s", filter);
             return;
         }
-        if (mBootUserId == UserHandle.USER_SYSTEM) {
+        int firstUserId = users.get(0).id;
+        setSettingsSourceUser(firstUserId);
+        copySecureSettingFromSourceUser();
+    }
+
+    private void copySecureSettingFromSourceUser(String settingName, int defaultValue) {
+        if (mSettingsSourceUserId == UserHandle.USER_NULL) {
+            Slogf.w(TAG, "copySecureSettingFromSourceUser called before source user was set");
+            return;
+        }
+        if (mSettingsSourceUserId == UserHandle.USER_SYSTEM) {
             if (DEBUG) {
-                Slogf.d(TAG, "Skipping copySecureSettingFromBootUser for %s: "
-                        + "boot user is system user", settingName);
+                Slogf.d(TAG, "Skipping copySecureSettingFromSourceUser for %s: "
+                        + "source user is system user", settingName);
             }
             return;
         }
         int settingValue =
                 Settings.Secure.getIntForUser(
-                        mContentResolver, settingName, defaultValue, mBootUserId);
-        Slogf.i(TAG, "copySecureSettingFromBootUser (userId=%d): %s, value=%d", mBootUserId,
-                settingName, settingValue);
+                        mContentResolver, settingName, defaultValue, mSettingsSourceUserId);
+        Slogf.i(TAG, "copySecureSettingFromSourceUser (userId=%d): %s, value=%d",
+                mSettingsSourceUserId, settingName, settingValue);
         Settings.Secure.putIntForUser(
                 mContentResolver, settingName, settingValue, UserHandle.USER_SYSTEM);
     }
@@ -173,13 +198,10 @@ final class HsuDeviceProvisioner extends ContentObserver {
     }
 
     /**
-     * Sets the user ID of the user that was booted. This is used to copy settings from the boot
-     * user to the system user.
-     *
-     * @param userId The user ID of the boot user.
+     * Sets the user ID of the user to copy settings from.
      */
-    void setBootUser(@UserIdInt int userId) {
-        mBootUserId = userId;
-        Slogf.i(TAG, "Boot User set %d", mBootUserId);
+    void setSettingsSourceUser(@UserIdInt int sourceUserId) {
+        mSettingsSourceUserId = sourceUserId;
+        Slogf.i(TAG, "Settings Source User set %d", mSettingsSourceUserId);
     }
 }

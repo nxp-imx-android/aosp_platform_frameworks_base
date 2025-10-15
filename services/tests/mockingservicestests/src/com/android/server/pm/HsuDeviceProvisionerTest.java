@@ -15,6 +15,8 @@
  */
 package com.android.server.pm;
 
+import static android.content.pm.UserInfo.FLAG_ADMIN;
+import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.provider.Settings.Global.DEVICE_PROVISIONED;
@@ -33,13 +35,15 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.UserInfo;
+import android.content.pm.UserInfo.UserInfoFlag;
 import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.Looper;
@@ -48,6 +52,7 @@ import android.provider.Settings;
 import android.util.Log;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.server.pm.UserFilter.DeathPredictor;
 
 import com.google.common.truth.Expect;
 
@@ -56,9 +61,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 public final class HsuDeviceProvisionerTest {
 
@@ -67,8 +77,9 @@ public final class HsuDeviceProvisionerTest {
 
     private static final String TAG = HsuDeviceProvisionerTest.class.getSimpleName();
 
-    @UserIdInt
-    private static final int MAIN_USER_ID = 4;
+    private static final @UserIdInt int ADMIN_USER_ID = 8;
+    private static final @UserIdInt int ANOTHER_ADMIN_USER_ID = 15;
+    private static final @UserIdInt int MAIN_USER_ID = 4;
 
     @Rule public final Expect expect = Expect.create();
     @Rule
@@ -84,13 +95,15 @@ public final class HsuDeviceProvisionerTest {
     @Mock private PackageManager mMockPackageManager;
 
     private HsuDeviceProvisioner mFixture;
+    private UserInfo mAdminUser, mAnotherAdminUser;
 
     @Before
     public void setFixtures() {
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
-        mFixture =
-                new HsuDeviceProvisioner(
-                    mMockContext, new Handler(Looper.getMainLooper()), mMockContentResolver);
+        mFixture = new HsuDeviceProvisioner(mMockContext, new Handler(Looper.getMainLooper()),
+                mMockContentResolver, mMockUms);
+        mAdminUser = createUser(ADMIN_USER_ID, FLAG_ADMIN | FLAG_FULL);
+        mAnotherAdminUser = createUser(ANOTHER_ADMIN_USER_ID, FLAG_ADMIN | FLAG_FULL);
     }
 
     @Test
@@ -139,32 +152,43 @@ public final class HsuDeviceProvisionerTest {
     @Test
     public void testOnChange_provisioned_copyBugreportInPowerMenu_RealUser() {
         mockIsDeviceProvisioned(true);
-        mFixture.setBootUser(MAIN_USER_ID);
-        mockSettingValue(Settings.Secure.BUGREPORT_IN_POWER_MENU, 1, MAIN_USER_ID);
+        mFixture.setSettingsSourceUser(MAIN_USER_ID);
+        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, MAIN_USER_ID);
 
         mFixture.onChange(true);
 
-        verifySettingCopiedForUser(Settings.Secure.BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
+        verifySettingCopiedForUser(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
     }
 
     @Test
     public void testOnChange_provisioned_copyBugreportInPowerMenu_NoUser() {
         mockIsDeviceProvisioned(true);
-        mFixture.setBootUser(USER_NULL);
+        mFixture.setSettingsSourceUser(USER_NULL);
 
         mFixture.onChange(true);
 
-        verifySettingNotCopied(Settings.Secure.BUGREPORT_IN_POWER_MENU);
+        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
     }
 
     @Test
     public void testOnChange_provisioned_copyBugreportInPowerMenu_SystemUser() {
         mockIsDeviceProvisioned(true);
-        mFixture.setBootUser(USER_SYSTEM);
+        mFixture.setSettingsSourceUser(USER_SYSTEM);
 
         mFixture.onChange(true);
 
-        verifySettingNotCopied(Settings.Secure.BUGREPORT_IN_POWER_MENU);
+        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
+    }
+
+    @Test
+    public void testInit_provisioned_copySettingsFromAdmin() {
+        mockIsDeviceProvisioned(true);
+        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
+        mockGetUsers(mAdminUser, mAnotherAdminUser);
+
+        mFixture.init();
+
+        verifySettingCopiedForUser(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
     }
 
     private void mockIsDeviceProvisioned(boolean value) {
@@ -276,5 +300,51 @@ public final class HsuDeviceProvisionerTest {
             Log.e(TAG, "verify failure:", t);
             expect.withMessage("Settings should have been copied: %s", t).fail();
         }
+    }
+
+    private static UserInfo createUser(@UserIdInt int userId, @UserInfoFlag int flags) {
+        return new UserInfo(userId, /* name= */ null, /* iconPath= */ null, flags,
+                // Not using userType (for now)
+                /* userType= */ "AB Positive");
+    }
+
+    // NOTE: copied from TestableDeviceConfig, should be moved to a helper class
+    private static void log(InvocationOnMock invocation) {
+        // InvocationOnMock.toString() prints one argument per line, which would spam logcat
+        try {
+            Log.v(TAG, "answering " + invocation.getMethod().getName() + "("
+                    + Arrays.stream(invocation.getArguments()).map(Object::toString)
+                    .collect(Collectors.joining(", ")) + ")");
+        } catch (Exception e) {
+            // Fallback in case logic above fails
+            Log.v(TAG, "answering " + invocation);
+        }
+    }
+
+    private void mockGetUsers(UserInfo... users) {
+        DeathPredictor deathPredictor = user -> false;
+        when(mMockUms.getUsers(ArgumentCaptor.forClass(UserFilter.class).capture()))
+                .thenAnswer(invocation -> {
+                    log(invocation);
+                    var filter = (UserFilter) invocation.getArgument(0);
+                    ArrayList<UserInfo> matchedUsers = new ArrayList<>(users.length);
+                    for (var user : users) {
+                        if (filter.matches(deathPredictor, user)) {
+                            matchedUsers.add(user);
+                        }
+                    }
+                    Log.v(TAG, "getUsers(filter): returning " + matchedUsers);
+                    return matchedUsers;
+                });
+        when(mMockUms.getNumberOfUsers(ArgumentCaptor.forClass(UserFilter.class).capture()))
+                .thenAnswer(invocation -> {
+                    log(invocation);
+                    var filter = (UserFilter) invocation.getArgument(0);
+                    int number = (int) Arrays.stream(users)
+                            .filter(user -> filter.matches(deathPredictor, user))
+                            .count();
+                    Log.v(TAG, "getNumberOfUsers(filter): returning " + number);
+                    return number;
+                });
     }
 }
