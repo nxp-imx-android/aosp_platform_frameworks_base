@@ -30,7 +30,6 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.companion.virtual.ActivityPolicyExemption;
-import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
@@ -225,11 +224,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     ComputerControlSessionImpl(Context context, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Set<UserHandle> allowedUsers, Consumer<ComputerControlSessionImpl> onClosedListener) {
+            Consumer<ComputerControlSessionImpl> onClosedListener) {
         this(context, DisplayManagerGlobal.getInstance(), ViewConfiguration.get(context),
                 DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS, SurfaceControl.Transaction::new,
-                appToken, params, attributionSource, virtualDeviceFactory, allowedUsers,
-                onClosedListener);
+                appToken, params, attributionSource, virtualDeviceFactory, onClosedListener);
     }
 
     @VisibleForTesting
@@ -238,7 +236,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             Supplier<SurfaceControl.Transaction> transactionSupplier, IBinder appToken,
             ComputerControlSessionParams params, AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Set<UserHandle> allowedUsers, Consumer<ComputerControlSessionImpl> onClosedListener) {
+            Consumer<ComputerControlSessionImpl> onClosedListener) {
         mContext = context;
         mViewConfiguration = viewConfiguration;
         mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
@@ -276,8 +274,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     .setName(mParams.getName())
                     .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
                     .setDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS,
-                            DEVICE_POLICY_CUSTOM)
-                    .setAllowedUsers(allowedUsers);
+                            DEVICE_POLICY_CUSTOM);
+        if (Flags.computerControlUserRestriction()) {
+            // TODO: b/451568055 - Support cross-user sessions.
+            virtualDeviceParamsBuilder.setAllowedUsers(Set.of(mOwnerUser));
+        }
         if (Flags.computerControlInterceptAudio()) {
             virtualDeviceParamsBuilder.setDevicePolicy(POLICY_TYPE_AUDIO, DEVICE_POLICY_CUSTOM);
         }

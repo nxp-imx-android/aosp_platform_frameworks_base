@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.app.AppOpsManager;
 import android.app.KeyguardManager;
+import android.app.admin.DevicePolicyManagerInternal;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.audio.AudioCapture;
 import android.companion.virtual.audio.AudioInjection;
@@ -112,9 +113,9 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private UserManagerInternal mUserManagerInternal;
     @Mock
-    private InputManagerInternal mInputManagerInternal;
+    private DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     @Mock
-    private UserManager mUserManager;
+    private InputManagerInternal mInputManagerInternal;
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
     @Mock
@@ -149,8 +150,12 @@ public class ComputerControlSessionProcessorTest {
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
 
+        // Needed only for getMainDisplayAssignedToUser in ComputerControlSessionImpl.
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
+
+        LocalServices.removeServiceForTest(DevicePolicyManagerInternal.class);
+        LocalServices.addService(DevicePolicyManagerInternal.class, mDevicePolicyManagerInternal);
 
         LocalServices.removeServiceForTest(InputManagerInternal.class);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
@@ -159,13 +164,10 @@ public class ComputerControlSessionProcessorTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(context.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
         when(context.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
-        when(context.getSystemService(Context.USER_SERVICE)).thenReturn(mUserManager);
         when(context.getPackageManager()).thenReturn(mPackageManager);
 
-        when(mUserManager.getUserInfo(CALLING_USER_ID))
-                .thenReturn(new UserInfo(
-                        CALLING_USER_ID, "name", "icon", /* flags= */ 0, USER_TYPE_FULL_SECONDARY));
-        when(mUserManager.getAllProfiles()).thenReturn(List.of(UserHandle.of(CALLING_USER_ID)));
+        when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
+                .thenReturn(false);
 
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
@@ -334,11 +336,9 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
-    public void validateParams_userNotAllowed_throwsSecurityException() {
-        when(mUserManager.getUserInfo(CALLING_USER_ID))
-                .thenReturn(new UserInfo(
-                        CALLING_USER_ID, "name", "icon", /* flags= */ 0,
-                        USER_TYPE_PROFILE_MANAGED));
+    public void validateParams_userManaged_throwsSecurityException() {
+        when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
+                .thenReturn(true);
 
         assertThrows(SecurityException.class, () ->
                 mProcessor.processNewSessionRequest(
