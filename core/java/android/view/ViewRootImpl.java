@@ -12263,6 +12263,16 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @NonNull
+    @Override
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_MIRROR_SURFACE_API)
+    public SurfaceControl createMirror() {
+        return SurfaceControl.mirrorSurface(mSurfaceControl);
+    }
+
+    /**
      * Class for managing the accessibility interaction connection
      * based on the global accessibility state.
      */
