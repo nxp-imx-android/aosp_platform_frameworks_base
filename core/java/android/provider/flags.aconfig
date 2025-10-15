@@ -96,3 +96,12 @@ flag {
     description: "Enable the new Account Attributes APIs for contacts"
     bug: "330326187"
 }
+
+# OWNER=cassycc TARGET=26Q2
+flag {
+    name: "enable_sync_state"
+    is_exported: true
+    namespace: "documentscontract"
+    description: "This flag will enable the content sync state document column"
+    bug: "415947063"
+}
