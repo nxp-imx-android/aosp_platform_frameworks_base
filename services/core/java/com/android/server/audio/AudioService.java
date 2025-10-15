@@ -4532,6 +4532,9 @@ public class AudioService extends IAudioService.Stub
         }
 
         if (!registeredAsAbsoluteVolume) {
+            if (muted) {
+                newIndex = getVssForStreamOrDefault(streamType).getMinIndex();
+            }
             if (streamTypeAlias == getBluetoothContextualVolumeStream()
                     && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType)
                     && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
