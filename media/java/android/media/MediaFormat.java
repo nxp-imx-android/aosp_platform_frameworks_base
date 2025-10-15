@@ -22,7 +22,6 @@ import static android.media.codec.Flags.FLAG_AUDIO_MIX_PRESENTATION_SUPPORT;
 import static android.media.codec.Flags.FLAG_IN_PROCESS_SW_AUDIO_CODEC;
 import static android.media.codec.Flags.FLAG_NUM_INPUT_SLOTS;
 import static android.media.codec.Flags.FLAG_REGION_OF_INTEREST;
-import static android.media.codec.Flags.FLAG_VVC_SUPPORT;
 import static android.media.tv.flags.Flags.FLAG_APPLY_PICTURE_PROFILES;
 
 import static com.android.media.codec.flags.Flags.FLAG_CODEC_IMPORTANCE;
@@ -177,8 +176,6 @@ public final class MediaFormat {
     public static final String MIMETYPE_VIDEO_RAW = "video/raw";
     public static final String MIMETYPE_VIDEO_DOLBY_VISION = "video/dolby-vision";
     public static final String MIMETYPE_VIDEO_SCRAMBLED = "video/scrambled";
-    @FlaggedApi(FLAG_VVC_SUPPORT)
-    public static final String MIMETYPE_VIDEO_VVC = "video/vvc";
 
     public static final String MIMETYPE_AUDIO_AMR_NB = "audio/3gpp";
     public static final String MIMETYPE_AUDIO_AMR_WB = "audio/amr-wb";
