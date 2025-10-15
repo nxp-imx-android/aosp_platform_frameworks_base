@@ -173,8 +173,7 @@ public class RavenwoodDriver {
 
         // Parse ravenwood properties and initialize the "environment".
         // This also unlocks the ability to use android.util.Log.
-        var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
-        RavenwoodEnvironment.init(mainThread);
+        RavenwoodEnvironment.init();
         Log_ravenwood.setLogLevels(getLogTags());
 
         // Set up global error handling infrastructure
@@ -252,6 +251,7 @@ public class RavenwoodDriver {
         ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
 
         // Start the main thread.
+        var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
         mainThread.start();
         Looper.setMainLooperForTest(mainThread.getLooper());
 

@@ -138,7 +138,7 @@ public abstract class RavenwoodEnablementChecker {
      *
      * (But if a policy file says "never", we still won't run it.)
      */
-    private static RunMode getRunMode() {
+    private static RunMode getDefaultRunMode() {
             return RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_RUN_DISABLED_TESTS")
                 ? RunMode.AlsoDisabledTests : RunMode.Normal;
     }
@@ -168,7 +168,7 @@ public abstract class RavenwoodEnablementChecker {
      */
     @VisibleForTesting
     public static void setDefaultInstance() {
-        sInstance = new RavenwoodEnablementCheckerImpl(getRunMode(), getPolicyFiles(),
+        sInstance = new RavenwoodEnablementCheckerImpl(getDefaultRunMode(), getPolicyFiles(),
                 RavenwoodEnvironment.getInstance().getEnvVar("RAVENWOOD_FORCE_FILTER_REGEX", null));
     }
 
@@ -202,6 +202,11 @@ public abstract class RavenwoodEnablementChecker {
      * @return if a test method should be executed.
      */
     public abstract boolean shouldEnableOnRavenwood(Description description);
+
+    /**
+     * @return if disabled tests would run.
+     */
+    public abstract boolean wouldRunDisabledTests();
 
     /**
      * Actual logic. This combines the annotation policy with the text policy.
@@ -251,6 +256,11 @@ public abstract class RavenwoodEnablementChecker {
         @Override
         public boolean shouldEnableOnRavenwood(Description description) {
             return mRunMode.shouldRun(mChecker.getMethodPolicy(description));
+        }
+
+        @Override
+        public boolean wouldRunDisabledTests() {
+            return mRunMode.shouldRun(RunPolicy.Disabled);
         }
     }
 

@@ -120,7 +120,17 @@ public class Handler {
     /**
      * Handle system messages here.
      */
+    @RavenwoodRedirect(comment = "Allow ravenwood to hook message dispatches.")
     public void dispatchMessage(@NonNull Message msg) {
+        dispatchMessageImpl(msg);
+    }
+
+    /**
+     * Extracted to allow Ravenwood to call this method directly.
+     *
+     * @hide
+     */
+    public void dispatchMessageImpl(@NonNull Message msg) {
         if (msg.callback != null) {
             handleCallback(msg);
         } else {
@@ -811,21 +821,19 @@ public class Handler {
         return sendMessage(msg);
     }
 
-    @RavenwoodRedirect
+    @RavenwoodRedirect(comment = "Allow ravenwood to hook message enqueues.")
     private static void onBeforeEnqueue(@NonNull MessageQueue queue, @NonNull Message msg,
-            long uptimeMillis) {
-        // Ravenwood will check for a pending exception, and throw it if any.
-    }
+            long uptimeMillis) {}
 
     private boolean enqueueMessage(@NonNull MessageQueue queue, @NonNull Message msg,
             long uptimeMillis) {
-        onBeforeEnqueue(queue, msg, uptimeMillis);
         msg.target = this;
         msg.workSourceUid = ThreadLocalWorkSource.getUid();
 
         if (mAsynchronous) {
             msg.setAsynchronous(true);
         }
+        onBeforeEnqueue(queue, msg, uptimeMillis);
         return queue.enqueueMessage(msg, uptimeMillis);
     }
 

@@ -57,7 +57,6 @@ import java.util.Objects;
   *  }</pre>
   */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
-@android.ravenwood.annotation.RavenwoodRedirectionClass("Looper_ravenwood")
 public final class Looper {
     /*
      * API Implementation Note:
@@ -267,7 +266,7 @@ public final class Looper {
         }
         long origWorkSource = ThreadLocalWorkSource.setUid(msg.workSourceUid);
         try {
-            dispatchMessage(msg);
+            msg.target.dispatchMessage(msg);
             if (observer != null) {
                 observer.messageDispatched(token, msg);
             }
@@ -332,12 +331,6 @@ public final class Looper {
         msg.recycleUnchecked();
 
         return true;
-    }
-
-    /** Allow ravenwood to hook any "dispatch". */
-    @android.ravenwood.annotation.RavenwoodRedirect
-    private static void dispatchMessage(Message msg) {
-        msg.target.dispatchMessage(msg);
     }
 
     /**
