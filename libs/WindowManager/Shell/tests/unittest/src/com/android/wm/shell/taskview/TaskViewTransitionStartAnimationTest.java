@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.taskview;
 
+import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
@@ -145,6 +146,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         mTaskInfo = new ActivityManager.RunningTaskInfo();
         mTaskInfo.token = mToken;
         mTaskInfo.taskId = 314;
+        mTaskInfo.parentTaskId = INVALID_TASK_ID;
         mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
         mTaskInfo.launchCookies.add(mLaunchCookie);
 
@@ -153,6 +155,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         mUnregisteredTaskInfo.token = mUnregisteredToken;
         // Same id as the other to match pending info id
         mUnregisteredTaskInfo.taskId = 314;
+        mUnregisteredTaskInfo.parentTaskId = INVALID_TASK_ID;
         mUnregisteredTaskInfo.launchCookies.add(mock(IBinder.class));
         mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
 

@@ -1215,8 +1215,11 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         // to its "original" parent by default.
         if (finishTransaction != null) {
             finishTransaction.reparent(leash, tvSurface)
-                    .setPosition(leash, 0, 0)
-                    .setWindowCrop(leash, boundsOnScreen.width(), boundsOnScreen.height());
+                    .setPosition(leash, 0, 0);
+            if (!BubbleAnythingFlagHelper.enableRootTaskForBubble() || !taskInfo.hasParentTask()) {
+                finishTransaction.setWindowCrop(leash, boundsOnScreen.width(),
+                        boundsOnScreen.height());
+            }
         }
         updateBoundsState(taskView, boundsOnScreen);
         updateVisibilityState(taskView, true /* visible */);
