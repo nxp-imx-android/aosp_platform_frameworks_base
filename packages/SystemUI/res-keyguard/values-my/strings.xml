@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"လက်ဗွေဖြင့် ဖွင့်၍မရပါ။ ကြိုးပမ်းမှုအကြိမ်ရေ များလွန်းသည်။"</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ယုံကြည်မှု အေးဂျင့်ကို မရနိုင်ပါ"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"ပင်နံပါတ် မှားသည့်အကြိမ်ရေ များလွန်းသည်"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"၎င်းပင်နံပါတ်ကို စမ်းပြီးဖြစ်သည်။ အခြားတစ်ခု စမ်းကြည့်ပါ။"</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"၎င်းစကားဝှက်ကို စမ်းပြီးဖြစ်သည်။ အခြားတစ်ခု စမ်းကြည့်ပါ။"</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"၎င်းပုံဖော်ခြင်းကို စမ်းပြီးဖြစ်သည်။ အခြားတစ်ခု စမ်းကြည့်ပါ။"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ပုံဖော်ခြင်း မှားသည့်အကြိမ်ရေ များလွန်းသည်"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"စကားဝှက် မှားသည့်အကြိမ်ရေ များလွန်းသည်"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ပင်နံပါတ်အမှားဖြင့် ကြိုးပမ်းမှုအကြိမ်ရေ များနေသည်\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> တွင် ပိုလေ့လာပါ"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"ပုံဖော်ခြင်းအမှားဖြင့် ကြိုးပမ်းမှုအကြိမ်ရေ များနေသည်\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> တွင် ပိုလေ့လာပါ"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"စကားဝှက်အမှားဖြင့် ကြိုးပမ်းမှုအကြိမ်ရေ များနေသည်\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> တွင် ပိုလေ့လာပါ"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# စက္ကန့်အကြာတွင် ထပ်စမ်းကြည့်နိုင်သည်။}other{# စက္ကန့်အကြာတွင် ထပ်စမ်းကြည့်နိုင်သည်။}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{# စက္ကန့်အကြာတွင် ထပ်စမ်းကြည့်ပါ}other{# စက္ကန့်အကြာတွင် ထပ်စမ်းကြည့်ပါ}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{# မိနစ်အကြာတွင် ထပ်စမ်းကြည့်ပါ}other{# မိနစ်အကြာတွင် ထပ်စမ်းကြည့်ပါ}}"</string>

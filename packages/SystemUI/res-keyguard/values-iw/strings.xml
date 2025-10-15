@@ -92,7 +92,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"כבר ניסית את קו פתיחת הנעילה הזה. כדאי לנסות קו אחר."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ציירת קו פתיחת נעילה שגוי יותר מדי פעמים"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"הסיסמה שהקלדת הייתה שגויה יותר מדי פעמים"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ציירת קוד אימות שגוי יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"הקלדת קוד אימות שגוי יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"ציירת קו פתיחת נעילה שגוי יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"הקלדת סיסמה שגויה יותר מדי פעמים\nמידע נוסף זמין בכתובת <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{אפשר לנסות שוב בעוד שנייה אחת.}one{אפשר לנסות שוב בעוד # שניות.}two{אפשר לנסות שוב בעוד # שניות.}other{אפשר לנסות שוב בעוד # שניות.}}"</string>

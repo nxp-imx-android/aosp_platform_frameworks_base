@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"No pots desbloquejar amb l\'empremta. Massa intents."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"L\'agent de confiança no està disponible"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Massa intents amb un PIN incorrecte"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Ja has provat aquest PIN. Prova\'n un altre."</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Ja has provat aquesta contrasenya. Prova\'n una altra."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Ja has provat aquest patró. Prova\'n un altre."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Massa intents amb un patró incorrecte"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Massa intents amb una contrasenya incorrecta"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Massa intents amb un PIN incorrecte\nMés informació a <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Massa intents amb un patró incorrecte\nMés informació a <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Massa intents amb una contrasenya incorrecta\nMés informació a <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Torna-ho a provar d\'aquí a # segon.}many{Torna-ho a provar d\'aquí a # segons.}other{Torna-ho a provar d\'aquí a # segons.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{Torna-ho a provar d\'aquí a # segon}many{Torna-ho a provar d\'aquí a # de segons}other{Torna-ho a provar d\'aquí a # segons}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{Torna-ho a provar d\'aquí a # minut}many{Torna-ho a provar d\'aquí a # de minuts}other{Torna-ho a provar d\'aquí a # minuts}}"</string>
