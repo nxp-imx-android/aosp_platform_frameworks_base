@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.transition;
 
+import static com.android.wm.shell.Flags.addOneOffHandlerLeashes;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.IBinder;
@@ -55,6 +57,7 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
     private static final String TAG = "RemoteTransitionHandler";
 
     private final ShellExecutor mMainExecutor;
+    private final TransitionLeashManager mTransitionLeashManager;
 
     /** Includes remotes explicitly requested by, eg, ActivityOptions */
     private final ArrayMap<IBinder, RemoteTransition> mRequestedRemotes = new ArrayMap<>();
@@ -67,8 +70,11 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
 
     private final ArrayMap<IBinder, RemoteDeathHandler> mDeathHandlers = new ArrayMap<>();
 
-    RemoteTransitionHandler(@NonNull ShellExecutor mainExecutor) {
+    RemoteTransitionHandler(
+            @NonNull ShellExecutor mainExecutor,
+            @NonNull TransitionLeashManager transitionLeashManager) {
         mMainExecutor = mainExecutor;
+        mTransitionLeashManager = transitionLeashManager;
     }
 
     void addFiltered(TransitionFilter filter, RemoteTransition remote) {
@@ -166,6 +172,20 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
 
         if (pendingRemote == null) return false;
 
+        final Transitions.TransitionFinishCallback wrappedCallback;
+        if (addOneOffHandlerLeashes()) {
+            // Provide handler-specific leashes to make sure that animations remain contained to the
+            // scope of ownership of the handler. This is only necessary because we are handing the
+            // animation off to a remote, over which we have no control.
+            mTransitionLeashManager.setUpLeashes(transition, info, startTransaction);
+            wrappedCallback = wct -> {
+                finishCallback.onTransitionFinished(wct);
+                mTransitionLeashManager.cleanUp(transition);
+            };
+        } else {
+            wrappedCallback = finishCallback;
+        }
+
         final RemoteTransition remote = pendingRemote;
         IRemoteTransitionFinishedCallback cb = new IRemoteTransitionFinishedCallback.Stub() {
             @Override
@@ -174,13 +194,13 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         "Received remote transition finished callback for (#%d)",
                         info.getDebugId());
-                unhandleDeath(remote.asBinder(), finishCallback);
+                unhandleDeath(remote.asBinder(), wrappedCallback);
                 if (sct != null) {
                     finishTransaction.merge(sct);
                 }
                 mMainExecutor.execute(() -> {
                     mRequestedRemotes.remove(transition);
-                    finishCallback.onTransitionFinished(wct);
+                    wrappedCallback.onTransitionFinished(wct);
                 });
             }
         };
@@ -191,7 +211,7 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
         final TransitionInfo remoteInfo =
                 remoteStartT == startTransaction ? info : info.localRemoteCopy();
         try {
-            handleDeath(remote.asBinder(), finishCallback);
+            handleDeath(remote.asBinder(), wrappedCallback);
             remote.getRemoteTransition().startAnimation(transition, remoteInfo, remoteStartT, cb);
             // assume that remote will apply the start transaction.
             startTransaction.clear();
@@ -202,9 +222,9 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
                 remoteStartT.close();
             }
             startTransaction.apply();
-            unhandleDeath(remote.asBinder(), finishCallback);
+            unhandleDeath(remote.asBinder(), wrappedCallback);
             mRequestedRemotes.remove(transition);
-            mMainExecutor.execute(() -> finishCallback.onTransitionFinished(null /* wct */));
+            mMainExecutor.execute(() -> wrappedCallback.onTransitionFinished(null /* wct */));
         }
         return true;
     }
@@ -287,8 +307,8 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "Found matching remote to takeover (#%d)", info.getDebugId());
 
-                OneShotRemoteHandler oneShot =
-                        new OneShotRemoteHandler(mMainExecutor, registered.second);
+                OneShotRemoteHandler oneShot = new OneShotRemoteHandler(
+                        mMainExecutor, mTransitionLeashManager, registered.second);
                 oneShot.setTransition(transition);
                 return oneShot;
             }

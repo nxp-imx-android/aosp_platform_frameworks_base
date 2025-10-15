@@ -55,7 +55,7 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        handler = RemoteTransitionHandler(testExecutor)
+        handler = RemoteTransitionHandler(testExecutor, mock<TransitionLeashManager>())
     }
 
     @Test
@@ -78,13 +78,14 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
         val request = TransitionRequestInfo(WindowManager.TRANSIT_OPEN, null, null)
         handler.handleRequest(mock(), request)
 
-        val isHandled = handler.startAnimation(
-            /* transition= */ mock(),
-            /* info= */ createTransitionInfo(),
-            /* startTransaction= */ mock(),
-            /* finishTransaction= */ mock(),
-            /* finishCallback= */ {},
-        )
+        val isHandled =
+            handler.startAnimation(
+                /* transition= */ mock(),
+                /* info= */ createTransitionInfo(),
+                /* startTransaction= */ mock(),
+                /* finishTransaction= */ mock(),
+                /* finishCallback= */ {},
+            )
 
         assertFalse(isHandled)
     }
@@ -96,13 +97,14 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
         handler.addFiltered(TransitionFilter(), testRemoteTransition)
         handler.handleRequest(mock(), request)
 
-        val isHandled = handler.startAnimation(
-            /* transition= */ testRemoteTransition.remoteTransition.asBinder(),
-            /* info= */ createTransitionInfo(),
-            /* startTransaction= */ mock(),
-            /* finishTransaction= */ mock(),
-            /* finishCallback= */ {},
-        )
+        val isHandled =
+            handler.startAnimation(
+                /* transition= */ testRemoteTransition.remoteTransition.asBinder(),
+                /* info= */ createTransitionInfo(),
+                /* startTransaction= */ mock(),
+                /* finishTransaction= */ mock(),
+                /* finishCallback= */ {},
+            )
 
         assertTrue(isHandled)
     }
@@ -114,19 +116,23 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
             TransitionRequestInfo(WindowManager.TRANSIT_CHANGE, null, testRemoteTransitionInfo)
         handler.addFiltered(TransitionFilter(), testRemoteTransition)
         handler.handleRequest(mock(), request)
-        val transitionInfo = TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
-            addChange(createDisplayChange().apply {
-                setRotation(Surface.ROTATION_0, Surface.ROTATION_90)
-            })
-        }
+        val transitionInfo =
+            TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
+                addChange(
+                    createDisplayChange().apply {
+                        setRotation(Surface.ROTATION_0, Surface.ROTATION_90)
+                    }
+                )
+            }
 
-        val isHandled = handler.startAnimation(
-            /* transition= */ testRemoteTransition.remoteTransition.asBinder(),
-            /* info= */ transitionInfo,
-            /* startTransaction= */ mock(),
-            /* finishTransaction= */ mock(),
-            /* finishCallback= */ {},
-        )
+        val isHandled =
+            handler.startAnimation(
+                /* transition= */ testRemoteTransition.remoteTransition.asBinder(),
+                /* info= */ transitionInfo,
+                /* startTransaction= */ mock(),
+                /* finishTransaction= */ mock(),
+                /* finishCallback= */ {},
+            )
 
         assertFalse(isHandled)
     }
@@ -138,17 +144,19 @@ class RemoteTransitionHandlerTest : ShellTestCase() {
             TransitionRequestInfo(WindowManager.TRANSIT_OPEN, null, testRemoteTransitionInfo)
         handler.addFiltered(TransitionFilter(), testRemoteTransition)
         handler.handleRequest(mock(), request)
-        val transitionInfo = TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
-            addChange(createDisplayChange())
-        }
+        val transitionInfo =
+            TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
+                addChange(createDisplayChange())
+            }
 
-        val isHandled = handler.startAnimation(
-            /* transition= */ testRemoteTransition.remoteTransition.asBinder(),
-            /* info= */ transitionInfo,
-            /* startTransaction= */ mock(),
-            /* finishTransaction= */ mock(),
-            /* finishCallback= */ {},
-        )
+        val isHandled =
+            handler.startAnimation(
+                /* transition= */ testRemoteTransition.remoteTransition.asBinder(),
+                /* info= */ transitionInfo,
+                /* startTransaction= */ mock(),
+                /* finishTransaction= */ mock(),
+                /* finishCallback= */ {},
+            )
 
         assertTrue(isHandled)
     }

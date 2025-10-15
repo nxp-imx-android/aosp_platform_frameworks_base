@@ -1498,7 +1498,8 @@ class DesktopTasksController(
         val transition: IBinder
         if (remoteTransition != null) {
             val transitionType = transitionType(remoteTransition)
-            val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
+            val remoteTransitionHandler =
+                OneShotRemoteHandler(mainExecutor, transitions.leashManager, remoteTransition)
             transition = transitions.startTransition(transitionType, wct, remoteTransitionHandler)
             remoteTransitionHandler.setTransition(transition)
         } else {
@@ -1550,7 +1551,8 @@ class DesktopTasksController(
         val transition: IBinder
         if (remoteTransition != null) {
             val transitionType = transitionType(remoteTransition)
-            val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
+            val remoteTransitionHandler =
+                OneShotRemoteHandler(mainExecutor, transitions.leashManager, remoteTransition)
             transition = transitions.startTransition(transitionType, wct, remoteTransitionHandler)
             remoteTransitionHandler.setTransition(transition)
         } else {
@@ -2222,7 +2224,8 @@ class DesktopTasksController(
         val transition =
             if (remoteTransition != null) {
                 val transitionType = transitionType(remoteTransition)
-                val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
+                val remoteTransitionHandler =
+                    OneShotRemoteHandler(mainExecutor, transitions.leashManager, remoteTransition)
                 transitions.startTransition(transitionType, wct, remoteTransitionHandler).also {
                     remoteTransitionHandler.setTransition(it)
                 }
@@ -2539,7 +2542,8 @@ class DesktopTasksController(
             } else if (taskIdToMinimize == null) {
                 // TODO(b/412761429): Move OneShotRemoteHandler call to within
                 //  DesktopMixedTransitionHandler.
-                val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
+                val remoteTransitionHandler =
+                    OneShotRemoteHandler(mainExecutor, transitions.leashManager, remoteTransition)
                 transitions
                     .startTransition(transitionType, launchTransaction, remoteTransitionHandler)
                     .also { remoteTransitionHandler.setTransition(it) }
@@ -2547,6 +2551,7 @@ class DesktopTasksController(
                 val remoteTransitionHandler =
                     DesktopWindowLimitRemoteHandler(
                         mainExecutor,
+                        transitions.leashManager,
                         rootTaskDisplayAreaOrganizer,
                         remoteTransition,
                         taskIdToMinimize,
@@ -5757,7 +5762,11 @@ class DesktopTasksController(
             val transitionType = transitionType(remoteTransition)
             val handler =
                 remoteTransition?.let {
-                    OneShotRemoteHandler(transitions.mainExecutor, remoteTransition)
+                    OneShotRemoteHandler(
+                        transitions.mainExecutor,
+                        transitions.leashManager,
+                        remoteTransition,
+                    )
                 }
 
             val transition = transitions.startTransition(transitionType, wct, handler)

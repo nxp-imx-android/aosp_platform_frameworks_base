@@ -94,6 +94,7 @@ import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
+import com.android.wm.shell.transition.TransitionLeashManager;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.util.StubTransaction;
 
@@ -143,6 +144,8 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     @Mock
     private Transitions mTransitions;
     @Mock
+    private TransitionLeashManager mTransitionLeashManager;
+    @Mock
     private UserManager mUserManager;
     @Mock
     private DesksOrganizer mDesksOrganizer;
@@ -185,6 +188,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 R.dimen.desktop_windowing_freeform_rounded_corner_radius)
         ).thenReturn(FREEFORM_TASK_CORNER_RADIUS_ON_CD);
         when(mBubbleController.hasStableBubbleForTask(anyInt())).thenReturn(false);
+        when(mTransitions.getLeashManager()).thenReturn(mTransitionLeashManager);
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));

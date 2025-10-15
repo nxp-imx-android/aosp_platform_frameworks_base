@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.transition;
 
+import static com.android.wm.shell.Flags.addOneOffHandlerLeashes;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.IBinder;
@@ -40,6 +42,8 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
  */
 public class OneShotRemoteHandler implements Transitions.TransitionHandler {
     private final ShellExecutor mMainExecutor;
+    private final TransitionLeashManager mTransitionLeashManager;
+
 
     /** The specific transition that this handler is associated with. Just for validation. */
     private IBinder mTransition = null;
@@ -47,9 +51,12 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
     /** The remote to delegate animation to */
     private RemoteTransition mRemote;
 
-    public OneShotRemoteHandler(@NonNull ShellExecutor mainExecutor,
+    public OneShotRemoteHandler(
+            @NonNull ShellExecutor mainExecutor,
+            @NonNull TransitionLeashManager transitionLeashManager,
             @NonNull RemoteTransition remote) {
         mMainExecutor = mainExecutor;
+        mTransitionLeashManager = transitionLeashManager;
         mRemote = remote;
     }
 
@@ -143,9 +150,7 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
                 + "remote transition %s to take over (#%d).", mRemote, info.getDebugId());
 
         final IBinder.DeathRecipient remoteDied = createDeathRecipient(finishCallback);
-        IRemoteTransitionFinishedCallback cb = createFinishedCallback(
-                info, null /* finishTransaction */, finishCallback, remoteDied);
-
+        Transitions.TransitionFinishCallback wrappedCallback = finishCallback;
         Transitions.setRunningRemoteTransitionDelegate(transition);
 
         try {
@@ -159,6 +164,23 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
                     RemoteTransitionHandler.copyIfLocal(transaction, mRemote.getRemoteTransition());
             final TransitionInfo remoteInfo =
                     remoteStartT == transaction ? info : info.localRemoteCopy();
+
+            if (addOneOffHandlerLeashes()) {
+                // Make sure that leashes are sanitized so the previous handler cannot keep
+                // animating the surfaces.
+                mTransitionLeashManager.detachLeashes(transition, remoteInfo, remoteStartT);
+                // Provide handler-specific leashes to make sure that animations remain contained to
+                // the scope of ownership of the handler. This is only necessary because we are
+                // handing the animation off to a remote, over which we have no control.
+                mTransitionLeashManager.setUpLeashes(transition, remoteInfo, remoteStartT);
+                wrappedCallback = wct -> {
+                    finishCallback.onTransitionFinished(wct);
+                    mTransitionLeashManager.cleanUp(mTransition);
+                };
+            }
+
+            IRemoteTransitionFinishedCallback cb = createFinishedCallback(
+                    info, null /* finishTransaction */, wrappedCallback, remoteDied);
             mRemote.getRemoteTransition().takeOverAnimation(
                     transition, remoteInfo, remoteStartT, cb, states);
 
@@ -170,7 +192,7 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
             if (mRemote.asBinder() != null) {
                 mRemote.asBinder().unlinkToDeath(remoteDied, 0 /* flags */);
             }
-            finishCallback.onTransitionFinished(null /* wct */);
+            wrappedCallback.onTransitionFinished(null /* wct */);
             mRemote = null;
         }
 

@@ -357,8 +357,8 @@ class SplitScreenTransitions {
 
     void startFullscreenTransition(WindowContainerTransaction wct,
             @Nullable RemoteTransition handler) {
-        OneShotRemoteHandler fullscreenHandler =
-                new OneShotRemoteHandler(mTransitions.getMainExecutor(), handler);
+        OneShotRemoteHandler fullscreenHandler = new OneShotRemoteHandler(
+                mTransitions.getMainExecutor(), mTransitions.getLeashManager(), handler);
         fullscreenHandler.setTransition(mTransitions
                 .startTransition(TRANSIT_OPEN, wct, fullscreenHandler));
     }
@@ -638,7 +638,8 @@ class SplitScreenTransitions {
                 // Wrapping the remote transition for ease-of-use. (OneShot handles all the binder
                 // linking/death stuff)
                 mRemoteHandler = new OneShotRemoteHandler(
-                        mTransitions.getMainExecutor(), remoteTransition);
+                        mTransitions.getMainExecutor(), mTransitions.getLeashManager(),
+                        remoteTransition);
                 mRemoteHandler.setTransition(transition);
             }
             mExtraTransitType = extraTransitType;

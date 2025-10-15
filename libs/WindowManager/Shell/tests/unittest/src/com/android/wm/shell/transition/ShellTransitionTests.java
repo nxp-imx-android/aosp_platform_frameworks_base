@@ -162,6 +162,7 @@ public class ShellTransitionTests extends ShellTestCase {
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
                 mOrganizer, mTransactionPool, createTestDisplayController(), mDisplayInsets,
                 mMainExecutor, mMainHandler, mAnimExecutor,
+                mock(TransitionLeashManager.class),
                 mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
         // One from Transitions, one from RootTaskDisplayAreaOrganizer
         verify(shellInit).addInitCallback(any(), eq(t));
@@ -175,6 +176,7 @@ public class ShellTransitionTests extends ShellTestCase {
         final Transitions t = new Transitions(mContext, shellInit, shellController,
                 mOrganizer, mTransactionPool, createTestDisplayController(), mDisplayInsets,
                 mMainExecutor, mMainHandler, mAnimExecutor,
+                mock(TransitionLeashManager.class),
                 mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
         shellInit.init();
         verify(shellController, times(1)).addExternalInterface(
@@ -682,7 +684,8 @@ public class ShellTransitionTests extends ShellTestCase {
 
         final int transitType = TRANSIT_FIRST_CUSTOM + 1;
 
-        OneShotRemoteHandler oneShot = new OneShotRemoteHandler(mMainExecutor,
+        OneShotRemoteHandler oneShot = new OneShotRemoteHandler(
+                mMainExecutor, transitions.getLeashManager(),
                 new RemoteTransition(testRemote, "Test"));
 
         // Verify that it responds to the remote but not other things.
@@ -1278,7 +1281,7 @@ public class ShellTransitionTests extends ShellTestCase {
                 new Transitions(mContext, shellInit, mock(ShellController.class), mOrganizer,
                         mTransactionPool, createTestDisplayController(), mDisplayInsets,
                         mMainExecutor, mMainHandler, mAnimExecutor,
-                        mock(HomeTransitionObserver.class),
+                        mock(TransitionLeashManager.class), mock(HomeTransitionObserver.class),
                         mock(FocusTransitionObserver.class));
         final RecentTasksController mockRecentsTaskController = mock(RecentTasksController.class);
         doReturn(mContext).when(mockRecentsTaskController).getContext();
@@ -1916,8 +1919,8 @@ public class ShellTransitionTests extends ShellTestCase {
         ShellInit shellInit = new ShellInit(executor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
                 mOrganizer, mTransactionPool, createTestDisplayController(), mDisplayInsets,
-                executor, mMainHandler, mAnimExecutor, mock(HomeTransitionObserver.class),
-                mock(FocusTransitionObserver.class));
+                executor, mMainHandler, mAnimExecutor, mock(TransitionLeashManager.class),
+                mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;
     }

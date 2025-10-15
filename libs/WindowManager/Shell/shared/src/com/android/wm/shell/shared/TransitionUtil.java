@@ -230,6 +230,26 @@ public class TransitionUtil {
     }
 
     /**
+     * Checks whether a transition change should be skipped when setting up surfaces and leashes,
+     * based on whether it is independent or an order-only display-level change.
+     */
+    public static boolean skipReparenting(
+            @NonNull TransitionInfo.Change change, @NonNull TransitionInfo info) {
+        // Don't reparent anything that isn't independent within its parents.
+        if (!TransitionInfo.isIndependent(change, info)) {
+            return true;
+        }
+
+        // Don't reparent display level if only changing order (since root will be inside it).
+        if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)
+                && change.getStartRotation() == change.getEndRotation()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Reparents a transition participant into its transition root, and orders it based on: the
      * global transit type, their transit mode, and their destination z-order.
      */
@@ -237,13 +257,7 @@ public class TransitionUtil {
             @NonNull TransitionInfo info, int order, @NonNull SurfaceControl.Transaction t) {
         final SurfaceControl leash = change.getLeash();
 
-        // Don't reparent anything that isn't independent within its parents
-        if (!TransitionInfo.isIndependent(change, info)) {
-            return;
-        }
-        // Don't reparent display level if only changing order (since root will be inside it).
-        if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)
-                && change.getStartRotation() == change.getEndRotation()) {
+        if (skipReparenting(change, info)) {
             return;
         }
 
@@ -369,7 +383,7 @@ public class TransitionUtil {
     }
 
     @SuppressLint("NewApi")
-    private static SurfaceControl createLeash(TransitionInfo info, TransitionInfo.Change change,
+    public static SurfaceControl createLeash(TransitionInfo info, TransitionInfo.Change change,
             int order, SurfaceControl.Transaction t) {
         // TODO: once we can properly sync transactions across process, then get rid of this leash.
         if (change.getParent() != null && (change.getFlags() & FLAG_IS_WALLPAPER) != 0) {

@@ -120,8 +120,6 @@ class DefaultTransitionHelper : RemoteTransitionHelper {
                 displayHeight,
             )
         }
-
-        transaction.apply()
     }
 
     /** Sets up the surfaces for a transition that puts Launcher in front. */

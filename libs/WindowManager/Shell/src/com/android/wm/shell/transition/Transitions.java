@@ -218,6 +218,7 @@ public class Transitions implements RemoteCallable<Transitions>,
     private final Context mContext;
     private final ShellExecutor mMainExecutor;
     private final ShellExecutor mAnimExecutor;
+    private final TransitionLeashManager mTransitionLeashManager;
     private final TransitionPlayerImpl mPlayerImpl;
     private final DefaultTransitionHandler mDefaultTransitionHandler;
     private final RemoteTransitionHandler mRemoteTransitionHandler;
@@ -321,10 +322,12 @@ public class Transitions implements RemoteCallable<Transitions>,
             @NonNull ShellExecutor mainExecutor,
             @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
+            @NonNull TransitionLeashManager transitionLeashManager,
             @NonNull HomeTransitionObserver homeTransitionObserver,
             @NonNull FocusTransitionObserver focusTransitionObserver) {
         this(context, shellInit, new ShellCommandHandler(), shellController, organizer, pool,
                 displayController, displayInsetsController, mainExecutor, mainHandler, animExecutor,
+                transitionLeashManager,
                 new RootTaskDisplayAreaOrganizer(mainExecutor, context, shellInit),
                 homeTransitionObserver, focusTransitionObserver);
     }
@@ -340,6 +343,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             @NonNull ShellExecutor mainExecutor,
             @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
+            @NonNull TransitionLeashManager transitionLeashManager,
             @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             @NonNull HomeTransitionObserver homeTransitionObserver,
             @NonNull FocusTransitionObserver focusTransitionObserver) {
@@ -347,12 +351,14 @@ public class Transitions implements RemoteCallable<Transitions>,
         mContext = context;
         mMainExecutor = mainExecutor;
         mAnimExecutor = animExecutor;
+        mTransitionLeashManager = transitionLeashManager;
         mDisplayController = displayController;
         mPlayerImpl = new TransitionPlayerImpl();
         mDefaultTransitionHandler = new DefaultTransitionHandler(context, shellInit,
                 displayController, displayInsetsController, pool, mainExecutor, mainHandler,
                 animExecutor, rootTDAOrganizer, InteractionJankMonitor.getInstance());
-        mRemoteTransitionHandler = new RemoteTransitionHandler(mMainExecutor);
+        mRemoteTransitionHandler =
+                new RemoteTransitionHandler(mMainExecutor, mTransitionLeashManager);
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         // The very last handler (0 in the list) should be the default one.
@@ -450,6 +456,10 @@ public class Transitions implements RemoteCallable<Transitions>,
 
     public ShellExecutor getAnimExecutor() {
         return mAnimExecutor;
+    }
+
+    public TransitionLeashManager getLeashManager() {
+        return mTransitionLeashManager;
     }
 
     /** Only use this in tests. This is used to avoid running animations during tests. */
