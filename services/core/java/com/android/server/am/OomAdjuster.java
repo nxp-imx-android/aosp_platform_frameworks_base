@@ -1527,13 +1527,7 @@ public abstract class OomAdjuster {
             initialize(app, adj, foregroundActivities, hasVisibleActivities, procState,
                     schedGroup, processCurTop, reportDebugMsgs);
 
-            final int flags;
-            if (Flags.pushActivityStateToOomadjuster()) {
-                flags = mApp.getActivityStateFlags();
-            } else {
-                flags = mApp.getActivityStateFlagsLegacy();
-            }
-
+            final int flags = mApp.getActivityStateFlags();
             if ((flags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0) {
                 onVisibleActivity(flags);
             } else if ((flags & ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED) != 0) {
@@ -1541,12 +1535,7 @@ public abstract class OomAdjuster {
             } else if ((flags & ACTIVITY_STATE_FLAG_IS_STOPPING) != 0) {
                 onStoppingActivity((flags & ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING) != 0);
             } else {
-                final long ts;
-                if (Flags.pushActivityStateToOomadjuster()) {
-                    ts = mApp.getPerceptibleTaskStoppedTimeMillis();
-                } else {
-                    ts = mApp.getPerceptibleTaskStoppedTimeMillisLegacy();
-                }
+                final long ts = mApp.getPerceptibleTaskStoppedTimeMillis();
                 onOtherActivity(ts);
             }
 
@@ -1568,7 +1557,6 @@ public abstract class OomAdjuster {
 
             mApp.setCachedAdj(mAdj);
             mApp.setCachedForegroundActivities(mForegroundActivities);
-            mApp.setCachedHasVisibleActivities(mHasVisibleActivities);
             mApp.setCachedProcState(mProcState);
             mApp.setCachedSchedGroup(mSchedGroup);
             mApp.setCachedAdjType(mAdjType);
@@ -1757,67 +1745,39 @@ public abstract class OomAdjuster {
     }
 
     protected int getTopProcessState() {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mGlobalState.getTopProcessState();
-        } else {
-            return mService.mAtmInternal.getTopProcessState();
-        }
+        return mGlobalState.getTopProcessState();
     }
 
     protected boolean useTopSchedGroupForTopProcess() {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            if (mGlobalState.isUnlocking()) {
-                // Keyguard is unlocking, suppress the top process priority for now.
-                return false;
-            }
-            if (mGlobalState.hasExpandedNotificationShade()) {
-                // The notification shade is occluding the top process, suppress top.
-                return false;
-            }
-            return true;
-        } else {
-            return mService.mAtmInternal.useTopSchedGroupForTopProcess();
+        if (mGlobalState.isUnlocking()) {
+            // Keyguard is unlocking, suppress the top process priority for now.
+            return false;
         }
+        if (mGlobalState.hasExpandedNotificationShade()) {
+            // The notification shade is occluding the top process, suppress top.
+            return false;
+        }
+        return true;
     }
 
     protected ProcessRecordInternal getTopProcess() {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mGlobalState.getTopProcess();
-        } else {
-            return mService.getTopApp();
-        }
+        return mGlobalState.getTopProcess();
     }
 
     protected boolean isHomeProcess(ProcessRecordInternal proc) {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mGlobalState.getHomeProcess() == proc;
-        } else {
-            return proc.getCachedIsHomeProcess();
-        }
+        return mGlobalState.getHomeProcess() == proc;
     }
 
     protected boolean isHeavyWeightProcess(ProcessRecordInternal proc) {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mGlobalState.getHeavyWeightProcess() == proc;
-        } else {
-            return proc.getCachedIsHeavyWeight();
-        }
+        return mGlobalState.getHeavyWeightProcess() == proc;
     }
 
     protected boolean isVisibleDozeUiProcess(ProcessRecordInternal proc) {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mGlobalState.getShowingUiWhileDozingProcess() == proc;
-        } else {
-            return proc.isShowingUiWhileDozing();
-        }
+        return mGlobalState.getShowingUiWhileDozingProcess() == proc;
     }
 
     protected boolean isPreviousProcess(ProcessRecordInternal proc) {
-        if (Flags.pushActivityStateToOomadjuster()) {
-            return mGlobalState.getPreviousProcess() == proc;
-        } else {
-            return proc.getCachedIsPreviousProcess();
-        }
+        return mGlobalState.getPreviousProcess() == proc;
     }
 
     /**

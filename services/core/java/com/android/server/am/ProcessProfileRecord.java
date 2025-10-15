@@ -17,7 +17,6 @@
 package com.android.server.am;
 
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
-import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_ACTIVITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_EMPTY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_STARTED_SERVICE;
 
@@ -741,15 +740,6 @@ final class ProcessProfileRecord implements ProcessRecordInternal.StartedService
             addHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
         } else {
             clearHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
-        }
-    }
-
-    @Override
-    public void onHasActivitiesChanged(boolean hasActivities) {
-        if (hasActivities) {
-            addHostingComponentType(HOSTING_COMPONENT_TYPE_ACTIVITY);
-        } else {
-            clearHostingComponentType(HOSTING_COMPONENT_TYPE_ACTIVITY);
         }
     }
 }

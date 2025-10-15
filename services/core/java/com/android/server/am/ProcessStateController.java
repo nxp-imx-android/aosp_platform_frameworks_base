@@ -953,12 +953,10 @@ public class ProcessStateController {
     private void commitStagedEvents() {
         mGlobalState.commitStagedState();
 
-        if (Flags.pushActivityStateToOomadjuster()) {
-            // Drain any activity state changes from the staging queue.
-            final ConcurrentLinkedQueue<Runnable> queue = mStagingQueue;
-            while (!queue.isEmpty()) {
-                queue.poll().run();
-            }
+        // Drain any activity state changes from the staging queue.
+        final ConcurrentLinkedQueue<Runnable> queue = mStagingQueue;
+        while (!queue.isEmpty()) {
+            queue.poll().run();
         }
     }
 
@@ -989,8 +987,6 @@ public class ProcessStateController {
          * the returned AsyncBatchSession is closed.
          */
         public AsyncBatchSession startBatchSession() {
-            if (!Flags.pushActivityStateToOomadjuster()) return null;
-
             final AsyncBatchSession session = getBatchSession();
             session.start(OOM_ADJ_REASON_ACTIVITY);
             return session;
@@ -1007,8 +1003,6 @@ public class ProcessStateController {
          * Set whether the device is currently unlocking.
          */
         public void setDeviceUnlocking(boolean unlocking) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             mPsc.mGlobalState.mUnlockingStaged = unlocking;
         }
 
@@ -1016,8 +1010,6 @@ public class ProcessStateController {
          * Set whether the top process is occluded by the notification shade.
          */
         public void setExpandedNotificationShadeAsync(boolean expandedShade) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             getBatchSession().stage(() -> mPsc.setExpandedNotificationShade(expandedShade));
         }
 
@@ -1026,8 +1018,6 @@ public class ProcessStateController {
          */
         public void setTopProcessAsync(@Nullable WindowProcessController wpc, boolean clearPrev,
                 boolean cancelExpandedShade) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecord top = wpc != null ? (ProcessRecord) wpc.mOwner : null;
             getBatchSession().stage(() -> {
                 mPsc.setTopProcess(top);
@@ -1044,8 +1034,6 @@ public class ProcessStateController {
          * Set which process state Top processes should get.
          */
         public void setTopProcessStateAsync(@ActivityManager.ProcessState int procState) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             getBatchSession().stage(() -> mPsc.setTopProcessState(procState));
         }
 
@@ -1053,8 +1041,6 @@ public class ProcessStateController {
          * Set which process is considered the Previous process, if any.
          */
         public void setPreviousProcessAsync(@Nullable WindowProcessController wpc) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecordInternal prev = wpc != null
                     ? (ProcessRecordInternal) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setPreviousProcess(prev));
@@ -1065,8 +1051,6 @@ public class ProcessStateController {
          * Set which process is considered the Home process, if any.
          */
         public void setHomeProcessAsync(@Nullable WindowProcessController wpc) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecordInternal home = wpc != null
                     ? (ProcessRecordInternal) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setHomeProcess(home));
@@ -1077,8 +1061,6 @@ public class ProcessStateController {
          * Set which process is considered the Heavy Weight process, if any.
          */
         public void setHeavyWeightProcessAsync(@Nullable WindowProcessController wpc) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecord heavy = wpc != null ? (ProcessRecord) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setHeavyWeightProcess(heavy));
         }
@@ -1087,8 +1069,6 @@ public class ProcessStateController {
          * Set which process is showing UI while the screen is off, if any.
          */
         public void setVisibleDozeUiProcessAsync(@Nullable WindowProcessController wpc) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecord dozeUi = wpc != null ? (ProcessRecord) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
         }
@@ -1097,8 +1077,6 @@ public class ProcessStateController {
          * Note whether the process has an activity or not.
          */
         public void setHasActivityAsync(@NonNull WindowProcessController wpc, boolean hasActivity) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
             getBatchSession().stage(() -> mPsc.setHasActivity(activity, hasActivity));
         }
@@ -1108,8 +1086,6 @@ public class ProcessStateController {
          */
         public void setActivityStateAsync(@NonNull WindowProcessController wpc, int flags,
                 long perceptibleStopTimeMs) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
             getBatchSession().stage(() -> {
                 mPsc.setActivityStateFlags(activity, flags);
@@ -1122,8 +1098,6 @@ public class ProcessStateController {
          */
         public void setHasRecentTasksAsync(@NonNull WindowProcessController wpc,
                 boolean hasRecentTasks) {
-            if (!Flags.pushActivityStateToOomadjuster()) return;
-
             final ProcessRecordInternal proc = (ProcessRecordInternal) wpc.mOwner;
             getBatchSession().stage(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
         }
