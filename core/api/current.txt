@@ -39078,6 +39078,7 @@ package android.provider {
     field public static final String COLUMN_SUMMARY = "summary";
     field public static final String COLUMN_TITLE = "title";
     field public static final int FLAG_EMPTY = 64; // 0x40
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int FLAG_LIMITED_FUNCTIONALITY_WHEN_OFFLINE = 1048576; // 0x100000
     field public static final int FLAG_LOCAL_ONLY = 2; // 0x2
     field public static final int FLAG_SUPPORTS_CREATE = 1; // 0x1
     field public static final int FLAG_SUPPORTS_EJECT = 32; // 0x20
