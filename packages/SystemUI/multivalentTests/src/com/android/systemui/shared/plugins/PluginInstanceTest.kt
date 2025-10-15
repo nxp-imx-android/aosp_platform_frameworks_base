@@ -17,6 +17,7 @@ package com.android.systemui.shared.plugins
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -47,6 +48,10 @@ import junit.framework.TestCase.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @FlakyTest(bugId = 395832204)
@@ -61,6 +66,14 @@ class PluginInstanceTest : SysuiTestCase() {
     private lateinit var mPluginInstance: PluginInstance<TestPlugin>
     private lateinit var mPluginInstanceFactory: PluginInstance.Factory
     private lateinit var mAppInfo: ApplicationInfo
+
+    private val mockPrefsEditor = mock<SharedPreferences.Editor>()
+    private val mockPrefs =
+        mock<SharedPreferences> { mock -> whenever(mock.edit()).thenReturn(mockPrefsEditor) }
+    private val spyContext =
+        spy(mContext) { mock ->
+            whenever(mock.getSharedPreferences(any<String>(), any<Int>())).thenReturn(mockPrefs)
+        }
 
     // Because we're testing memory in this file, we must be careful not to assert the target
     // objects, or capture them via mockito if we expect the garbage collector to later free them.
@@ -104,7 +117,7 @@ class PluginInstanceTest : SysuiTestCase() {
 
         mPluginInstance =
             mPluginInstanceFactory.create(
-                mContext,
+                spyContext,
                 mAppInfo,
                 TEST_PLUGIN_COMPONENT_NAME,
                 TestPlugin::class.java,
@@ -134,7 +147,7 @@ class PluginInstanceTest : SysuiTestCase() {
 
         mPluginInstanceFactory
             .create(
-                mContext,
+                spyContext,
                 mAppInfo,
                 wrongVersionTestPluginComponentName,
                 TestPlugin::class.java,
