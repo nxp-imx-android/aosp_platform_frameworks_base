@@ -25,7 +25,7 @@ import com.android.systemui.screencapture.common.shared.model.screenCaptureUiPar
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenshotInteractor
-import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
+import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
 
 val Kosmos.preCaptureViewModelFactory by Fixture {
     object : PreCaptureViewModel.Factory {
@@ -37,7 +37,7 @@ val Kosmos.preCaptureViewModelFactory by Fixture {
                 screenshotInteractor = screenshotInteractor,
                 drawableLoaderViewModelImpl = drawableLoaderViewModelImpl,
                 screenCaptureUiInteractor = screenCaptureUiInteractor,
-                screenRecordingServiceInteractor = screenRecordingServiceInteractor,
+                screenRecordingServiceRepository = screenRecordingServiceRepository,
                 screenCaptureUiParams = screenCaptureUiParameters,
                 uiEventLogger = uiEventLogger,
                 toolbarViewModelFactory = preCaptureToolbarViewModelFactory,

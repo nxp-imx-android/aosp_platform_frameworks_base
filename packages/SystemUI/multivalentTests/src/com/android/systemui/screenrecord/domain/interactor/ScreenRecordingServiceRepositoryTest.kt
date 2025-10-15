@@ -29,11 +29,13 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
+import com.android.systemui.screenrecord.data.repository.Status
 import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.screenrecord.service.FakeScreenRecordingService
 import com.android.systemui.screenrecord.service.FakeScreenRecordingServiceCallbackWrapper
 import com.android.systemui.screenrecord.service.callbackStatus
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.userRepository
 import com.google.common.truth.Truth.assertThat
@@ -48,16 +50,16 @@ private val componentName = ComponentName("com.android.systemui", "test")
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ScreenRecordingServiceInteractorTest : SysuiTestCase() {
+class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val service = FakeScreenRecordingService()
 
     private var serviceConnection: ServiceConnection? = null
 
-    private val underTest: ScreenRecordingServiceInteractor by lazy {
+    private val underTest: ScreenRecordingServiceRepository by lazy {
         with(kosmos) {
-            ScreenRecordingServiceInteractor(
+            ScreenRecordingServiceRepository(
                 mockedContext,
                 applicationCoroutineScope,
                 userRepository,
@@ -122,7 +124,7 @@ class ScreenRecordingServiceInteractorTest : SysuiTestCase() {
         }
 }
 
-private fun ScreenRecordingServiceInteractor.startRecording() {
+private fun ScreenRecordingServiceRepository.startRecording() {
     startRecording(
         ScreenRecordingParameters(
             captureTarget = null,

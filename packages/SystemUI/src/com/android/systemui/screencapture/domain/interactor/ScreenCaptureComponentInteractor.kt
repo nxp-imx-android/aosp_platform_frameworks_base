@@ -23,8 +23,8 @@ import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.data.repository.ScreenCaptureComponentRepository
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
-import com.android.systemui.screenrecord.domain.interactor.Status
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
+import com.android.systemui.screenrecord.data.repository.Status
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -48,7 +48,7 @@ constructor(
     private val repository: ScreenCaptureComponentRepository,
     private val componentBuilder: ScreenCaptureComponent.Builder,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val screenRecordingServiceRepository: ScreenRecordingServiceRepository,
 ) {
 
     suspend fun initialize() {
@@ -103,7 +103,7 @@ constructor(
     private fun isCaptureInProgress(type: ScreenCaptureType): Flow<Boolean> {
         return when (type) {
             ScreenCaptureType.RECORD ->
-                screenRecordingServiceInteractor.status.map { it is Status.Started }
+                screenRecordingServiceRepository.status.map { it is Status.Started }
             ScreenCaptureType.SHARE_SCREEN -> flowOf(false)
             ScreenCaptureType.CAST -> flowOf(false)
         }

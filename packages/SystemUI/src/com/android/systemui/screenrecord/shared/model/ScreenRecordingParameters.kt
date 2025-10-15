@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screenrecord.domain
+package com.android.systemui.screenrecord.shared.model
 
 import android.os.Parcel
 import android.os.Parcelable

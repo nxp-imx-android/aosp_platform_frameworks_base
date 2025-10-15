@@ -43,7 +43,7 @@ import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN
 import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.screenrecord.domain.interactor.screenRecordingStartStopInteractor
+import com.android.systemui.screenrecord.data.repository.screenRecordingStartStopRepository
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -106,7 +106,7 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
                 systemUIDialogFactory,
                 context,
                 context.getSystemService(DisplayManager::class.java)!!,
-                kosmos.screenRecordingStartStopInteractor,
+                kosmos.screenRecordingStartStopRepository,
                 kosmos.shadeDialogContextInteractor,
             )
         dialog = underTest.createDialog()

@@ -28,7 +28,7 @@ import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.mediaprojection.permission.ScreenShareMode
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingStartStopInteractor
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingStartStopRepository
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
@@ -50,7 +50,7 @@ class ScreenRecordPermissionDialogDelegate(
     @StyleRes private val theme: Int,
     private val context: Context,
     private val displayManager: DisplayManager,
-    private val screenRecordingStartStopInteractor: ScreenRecordingStartStopInteractor,
+    private val screenRecordingStartStopRepository: ScreenRecordingStartStopRepository,
     private val shadeDialogContextInteractor: ShadeDialogContextInteractor,
 ) :
     BaseMediaProjectionPermissionDialogDelegate<SystemUIDialog>(
@@ -74,7 +74,7 @@ class ScreenRecordPermissionDialogDelegate(
         systemUIDialogFactory: SystemUIDialog.Factory,
         @ShadeDisplayAware context: Context,
         displayManager: DisplayManager,
-        screenRecordingStartStopInteractor: ScreenRecordingStartStopInteractor,
+        screenRecordingStartStopRepository: ScreenRecordingStartStopRepository,
         shadeDialogContextInteractor: ShadeDialogContextInteractor,
     ) : this(
         hostUserHandle,
@@ -88,7 +88,7 @@ class ScreenRecordPermissionDialogDelegate(
         theme = SystemUIDialog.DEFAULT_THEME,
         context,
         displayManager,
-        screenRecordingStartStopInteractor,
+        screenRecordingStartStopRepository,
         shadeDialogContextInteractor,
     )
 
@@ -112,7 +112,7 @@ class ScreenRecordPermissionDialogDelegate(
             controller,
             activityStarter,
             onStartRecordingClicked,
-            screenRecordingStartStopInteractor,
+            screenRecordingStartStopRepository,
         )
     }
 

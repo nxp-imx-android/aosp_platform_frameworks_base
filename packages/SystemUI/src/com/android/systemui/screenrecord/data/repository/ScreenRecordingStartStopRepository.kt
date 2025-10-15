@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screenrecord.domain.interactor
+package com.android.systemui.screenrecord.data.repository
 
 import android.media.projection.StopReason
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 
-interface ScreenRecordingStartStopInteractor {
+interface ScreenRecordingStartStopRepository {
 
     fun startRecording(parameters: ScreenRecordingParameters)
 

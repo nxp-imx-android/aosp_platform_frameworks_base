@@ -28,8 +28,8 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
-import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
+import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.launch
@@ -50,7 +50,7 @@ class ScreenCaptureComponentInteractorTest : SysuiTestCase() {
                 screenCaptureType = ScreenCaptureType.RECORD,
                 parameters = ScreenCaptureUiParameters.Record(),
                 startCapture = {
-                    screenRecordingServiceInteractor.startRecording(
+                    screenRecordingServiceRepository.startRecording(
                         ScreenRecordingParameters(
                             captureTarget = null,
                             audioSource = ScreenRecordingAudioSource.NONE,
@@ -60,7 +60,7 @@ class ScreenCaptureComponentInteractorTest : SysuiTestCase() {
                     )
                 },
                 stopCapture = {
-                    screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
+                    screenRecordingServiceRepository.stopRecording(StopReason.STOP_HOST_APP)
                 },
             )
         }

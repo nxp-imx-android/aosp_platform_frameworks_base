@@ -42,11 +42,11 @@ import com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor.ScreenR
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.ui.mapper.ScreenRecordTileMapper
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
+import com.android.systemui.screenrecord.data.repository.LegacyScreenRecordingStartStopRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
-import com.android.systemui.screenrecord.domain.interactor.LegacyScreenRecordingStartStopInteractor
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingStartStopInteractor
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingStartStopRepository
 import com.android.systemui.settings.UserTracker
 import dagger.Binds
 import dagger.Lazy
@@ -125,15 +125,15 @@ interface ScreenRecordModule {
 
         @Provides
         @SysUISingleton
-        fun provideScreenRecordingStartStopInteractor(
-            legacyScreenRecordingStartStopInteractor:
-                Lazy<LegacyScreenRecordingStartStopInteractor>,
-            screenRecordingServiceInteractor: Lazy<ScreenRecordingServiceInteractor>,
-        ): ScreenRecordingStartStopInteractor {
+        fun provideScreenRecordingStartStopRepository(
+            legacyScreenRecordingStartStopRepository:
+                Lazy<LegacyScreenRecordingStartStopRepository>,
+            screenRecordingServiceRepository: Lazy<ScreenRecordingServiceRepository>,
+        ): ScreenRecordingStartStopRepository {
             return if (Flags.thinScreenRecordingService()) {
-                    screenRecordingServiceInteractor
+                    screenRecordingServiceRepository
                 } else {
-                    legacyScreenRecordingStartStopInteractor
+                    legacyScreenRecordingStartStopRepository
                 }
                 .get()
         }

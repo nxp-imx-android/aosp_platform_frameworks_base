@@ -19,26 +19,26 @@ package com.android.systemui.screencapture.record.domain.interactor
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.data.repository.ScreenCaptureRecordParametersRepository
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
 import javax.inject.Inject
 
 @ScreenCaptureScope
 class ScreenCaptureRecordParametersInteractor
 @Inject
 constructor(
-    private val serviceInteractor: ScreenRecordingServiceInteractor,
+    private val serviceRepository: ScreenRecordingServiceRepository,
     private val repository: ScreenCaptureRecordParametersRepository,
 ) {
 
     val parameters = repository.parameters
 
     fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
-        serviceInteractor.updateAudioSource(audioSource)
+        serviceRepository.updateAudioSource(audioSource)
         repository.updateParameters { it.copy(audioSource = audioSource) }
     }
 
     fun setShouldShowTaps(shouldShowTaps: Boolean) {
-        serviceInteractor.updateShouldShowTaps(shouldShowTaps)
+        serviceRepository.updateShouldShowTaps(shouldShowTaps)
         repository.updateParameters { it.copy(shouldShowTaps = shouldShowTaps) }
     }
 

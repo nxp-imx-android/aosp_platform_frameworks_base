@@ -53,7 +53,7 @@ import com.android.systemui.recordissue.ScreenRecordingStartTimeStore;
 import com.android.systemui.res.R;
 import com.android.systemui.screenrecord.ScreenMediaRecorder.SavedRecording;
 import com.android.systemui.screenrecord.ScreenMediaRecorder.ScreenMediaRecorderListener;
-import com.android.systemui.screenrecord.domain.ScreenRecordingPreferenceUtil;
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingPreferenceRepository;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 
@@ -111,8 +111,8 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
     protected int mNotificationId = NOTIF_BASE_ID;
     private RecordingServiceStrings mStrings;
 
-    private final ScreenRecordingPreferenceUtil mPreferenceUtil =
-            new ScreenRecordingPreferenceUtil(this);
+    private final ScreenRecordingPreferenceRepository mRecordingPreferenceRepository =
+            new ScreenRecordingPreferenceRepository(this);
 
     @Inject
     public RecordingService(ScreenRecordUxController controller, @LongRunning Executor executor,
@@ -213,7 +213,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
                 int displayId = intent.getIntExtra(EXTRA_DISPLAY_ID, Display.DEFAULT_DISPLAY);
 
                 if (Flags.restoreShowTapsSetting()) {
-                    mPreferenceUtil.updateShowTaps(mShowTaps);
+                    mRecordingPreferenceRepository.updateShowTaps(mShowTaps);
                 } else {
                     setTapsVisible(mShowTaps);
                 }
@@ -508,7 +508,7 @@ public class RecordingService extends Service implements ScreenMediaRecorderList
         UserHandle currentUser = new UserHandle(userId);
         Log.d(getTag(), "notifying for user " + userId);
         if (Flags.restoreShowTapsSetting()) {
-            mPreferenceUtil.maybeRestoreShowTapsSetting();
+            mRecordingPreferenceRepository.maybeRestoreShowTapsSetting();
         } else {
             setTapsVisible(mOriginalShowTaps);
         }

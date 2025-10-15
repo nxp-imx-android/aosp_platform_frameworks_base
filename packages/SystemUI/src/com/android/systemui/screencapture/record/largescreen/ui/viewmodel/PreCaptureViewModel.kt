@@ -31,8 +31,8 @@ import com.android.systemui.screencapture.record.largescreen.domain.interactor.S
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
-import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -52,7 +52,7 @@ constructor(
     private val screenshotInteractor: ScreenshotInteractor,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val screenRecordingServiceRepository: ScreenRecordingServiceRepository,
     private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
@@ -170,7 +170,7 @@ constructor(
         closeUi()
 
         backgroundScope.launch {
-            screenRecordingServiceInteractor.startRecording(
+            screenRecordingServiceRepository.startRecording(
                 // TODO(b/437971334): Get options from the UI.
                 ScreenRecordingParameters(
                     captureTarget = null, // Fullscreen.

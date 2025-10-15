@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screenrecord.domain.interactor
+package com.android.systemui.screenrecord.data.repository
 
 import android.content.ComponentName
 import android.content.Context
@@ -34,10 +34,10 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
-import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.service.IScreenRecordingService
 import com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback
 import com.android.systemui.screenrecord.service.ScreenRecordingService
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.kotlin.pairwiseBy
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -59,14 +59,14 @@ import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
-class ScreenRecordingServiceInteractor
+class ScreenRecordingServiceRepository
 @Inject
 constructor(
     private val context: Context,
     @Background coroutineScope: CoroutineScope,
     private val userRepository: UserRepository,
     private val screenRecordUxController: ScreenRecordUxController,
-) : ScreenRecordingStartStopInteractor {
+) : ScreenRecordingStartStopRepository {
     private val serviceCallback = ServiceCallback()
     private val isServiceBound = MutableStateFlow(false)
     private val service: Flow<RecordingService?> =
