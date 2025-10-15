@@ -21,6 +21,7 @@ import android.app.StatusBarManager.WINDOW_STATE_HIDING
 import android.app.StatusBarManager.WINDOW_STATE_SHOWING
 import android.app.StatusBarManager.WINDOW_STATUS_BAR
 import android.content.Context
+import android.content.res.mainResources
 import android.graphics.Insets
 import android.graphics.Region
 import android.hardware.display.DisplayManagerGlobal
@@ -60,6 +61,7 @@ import com.android.systemui.shade.StatusBarLongPressGestureDetector
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.defaultShadeDisplayPolicy
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -111,6 +113,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     private val mStatusBarConfigurationController = kosmos.mockStatusBarConfigurationController
     private val windowRootView = mock<WindowRootView>()
     private val statusBarContentInsetsProvider = kosmos.mockStatusBarContentInsetsProvider
+    private val resources = kosmos.mainResources
 
     private val fakeDarkIconDispatcher = kosmos.fakeDarkIconDispatcher
     @Mock private lateinit var shadeViewController: ShadeViewController
@@ -126,6 +129,9 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Mock private lateinit var viewUtil: ViewUtil
     @Mock private lateinit var mStatusBarLongPressGestureDetector: StatusBarLongPressGestureDetector
     @Mock private lateinit var statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
+    @Mock
+    private lateinit var shadeExpansionTargetDisplayInteractor:
+        ShadeExpansionTargetDisplayInteractor
     @Mock private lateinit var shadeDisplayRepository: ShadeDisplaysRepository
     @Mock private lateinit var statusBarWindowControllerStore: StatusBarWindowControllerStore
     private lateinit var statusBarWindowStateController: StatusBarWindowStateController
@@ -531,8 +537,14 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy)
-            .setExpansionIntentFromStatusBarEvent(eq(event.x), eq(event.displayId), any())
+        verify(shadeExpansionTargetDisplayInteractor)
+            .setExpansionIntentFromStatusBarEvent(
+                eq(event.x),
+                eq(event.displayId),
+                any(),
+                any(),
+                any(),
+            )
     }
 
     @Test
@@ -542,8 +554,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy, never())
-            .setExpansionIntentFromStatusBarEvent(any(), any(), any())
+        verify(shadeExpansionTargetDisplayInteractor, never())
+            .setExpansionIntentFromStatusBarEvent(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -553,8 +565,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         view.onInterceptTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy, never())
-            .setExpansionIntentFromStatusBarEvent(any(), any(), any())
+        verify(shadeExpansionTargetDisplayInteractor, never())
+            .setExpansionIntentFromStatusBarEvent(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -567,8 +579,14 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy)
-            .setExpansionIntentFromStatusBarEvent(eq(event.x), eq(event.displayId), any())
+        verify(shadeExpansionTargetDisplayInteractor)
+            .setExpansionIntentFromStatusBarEvent(
+                eq(event.x),
+                eq(event.displayId),
+                any(),
+                any(),
+                any(),
+            )
     }
 
     @Test
@@ -581,8 +599,14 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         val statusContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy)
-            .setExpansionIntentFromStatusBarEvent(eq(event.x), eq(event.displayId), any())
+        verify(shadeExpansionTargetDisplayInteractor)
+            .setExpansionIntentFromStatusBarEvent(
+                eq(event.x),
+                eq(event.displayId),
+                any(),
+                any(),
+                any(),
+            )
     }
 
     @Test
@@ -595,8 +619,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
         statusContainer.dispatchTouchEvent(event)
 
-        verify(statusBarTouchShadeDisplayPolicy, never())
-            .setExpansionIntentFromStatusBarEvent(any(), any(), any())
+        verify(shadeExpansionTargetDisplayInteractor, never())
+            .setExpansionIntentFromStatusBarEvent(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -883,6 +907,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         return PhoneStatusBarViewController.Factory(
                 Optional.of(progressProvider),
                 userChipViewModel,
+                resources,
                 centralSurfacesImpl,
                 statusBarWindowStateController,
                 shadeControllerImpl,
@@ -898,6 +923,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
                 fakeDarkIconDispatcher,
                 statusBarContentInsetsProvider,
                 { statusBarTouchShadeDisplayPolicy },
+                shadeExpansionTargetDisplayInteractor,
                 { shadeDisplayRepository },
                 statusBarWindowControllerStore,
             )

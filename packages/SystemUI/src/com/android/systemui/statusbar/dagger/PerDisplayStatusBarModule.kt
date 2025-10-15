@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.dagger
 
 import android.content.Context
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.Display
 import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
@@ -186,6 +187,13 @@ interface PerDisplayStatusBarModule {
                     .createWindowContext(display, TYPE_STATUS_BAR, /* options= */ Bundle.EMPTY)
                     .also { it.setTheme(R.style.Theme_SystemUI) }
             }
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun provideStatusBarWindowResources(@DisplayAwareStatusBar context: Context): Resources {
+            return context.resources
         }
     }
 }

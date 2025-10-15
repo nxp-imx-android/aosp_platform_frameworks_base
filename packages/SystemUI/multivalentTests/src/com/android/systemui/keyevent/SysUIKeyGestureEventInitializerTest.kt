@@ -37,8 +37,8 @@ import com.android.systemui.LauncherProxyService
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboardShortcutInteractor
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shared.recents.ILauncherProxy
-import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.statusbar.CommandQueue
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -62,7 +62,9 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @JvmField @Rule var mockitoRule = MockitoJUnit.rule()
     @Mock private lateinit var inputManager: InputManager
     @Mock private lateinit var commandQueue: CommandQueue
-    @Mock private lateinit var shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
+    @Mock
+    private lateinit var shadeExpansionTargetDisplayInteractor:
+        ShadeExpansionTargetDisplayInteractor
     @Mock
     private lateinit var screenCaptureKeyboardShortcutInteractor:
         ScreenCaptureKeyboardShortcutInteractor
@@ -86,7 +88,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 resources,
                 inputManager,
                 commandQueue,
-                shadeDisplayPolicy,
+                shadeExpansionTargetDisplayInteractor,
                 screenCaptureKeyboardShortcutInteractor,
                 launcherProxyService,
             )
@@ -141,7 +143,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
             /* focusedToken= */ null,
         )
 
-        verify(shadeDisplayPolicy).onNotificationPanelKeyboardShortcut()
+        verify(shadeExpansionTargetDisplayInteractor).onNotificationPanelKeyboardShortcut()
         verify(commandQueue).toggleNotificationsPanel()
     }
 
@@ -159,7 +161,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
             /* focusedToken= */ null,
         )
 
-        verify(shadeDisplayPolicy).onQSPanelKeyboardShortcut()
+        verify(shadeExpansionTargetDisplayInteractor).onQSPanelKeyboardShortcut()
         verify(commandQueue).toggleQuickSettingsPanel()
     }
 
@@ -197,7 +199,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
         verify(launcherProxy)
             .invokeContextualSearch(
                 eq(ContextualSearchManager.ENTRYPOINT_KEYBOARD_SHORTCUT),
-                eq(null)
+                eq(null),
             )
     }
 

@@ -56,6 +56,7 @@ import com.android.systemui.settings.FakeDisplayTracker
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shared.recents.ILauncherProxy
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NAVIGATION_BAR_DISABLED
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_MASK
@@ -148,6 +149,9 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         Optional<UnfoldTransitionProgressForwarder>
     @Mock private lateinit var broadcastDispatcher: BroadcastDispatcher
     @Mock private lateinit var statusBarShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
+    @Mock
+    private lateinit var shadeExpansionTargetDisplayInteractor:
+        ShadeExpansionTargetDisplayInteractor
     @Mock private lateinit var backAnimation: Optional<BackAnimation>
     private lateinit var desktopState: FakeDesktopState
     private val fakeHeadlessSystemUserMode = HeadlessSystemUserModeFake()
@@ -370,7 +374,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                 .thenReturn(true)
 
             subject.mSysUiProxy.onStatusBarTrackpadEvent(event)
-            verify(statusBarShadeDisplayPolicy)
+            verify(shadeExpansionTargetDisplayInteractor)
                 .setExpansionIntentForNotificationElement(eq(event.displayId))
         }
 
@@ -395,7 +399,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
-            verify(statusBarShadeDisplayPolicy)
+            verify(shadeExpansionTargetDisplayInteractor)
                 .setExpansionIntentForNotificationElement(eq(event.displayId))
         }
 
@@ -437,7 +441,8 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
-            verify(statusBarShadeDisplayPolicy).setExpansionIntentForNotificationElement(eq(0))
+            verify(shadeExpansionTargetDisplayInteractor)
+                .setExpansionIntentForNotificationElement(eq(0))
         }
 
     @Test
@@ -457,9 +462,9 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
 
             subject.mSysUiProxy.onStatusBarTouchEvent(event)
-            verify(statusBarShadeDisplayPolicy)
+            verify(shadeExpansionTargetDisplayInteractor)
                 .setExpansionIntentForNotificationElement(eq(shadeDisplayId))
-            verify(statusBarShadeDisplayPolicy)
+            verify(shadeExpansionTargetDisplayInteractor)
                 .setExpansionIntentForNotificationElement(eq(event.displayId))
         }
 
@@ -478,6 +483,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             kosmos.fakeSysUIStatePerDisplayRepository,
             { sceneInteractor },
             statusBarShadeDisplayPolicy,
+            shadeExpansionTargetDisplayInteractor,
             userTracker,
             userManager,
             wakefulnessLifecycle,

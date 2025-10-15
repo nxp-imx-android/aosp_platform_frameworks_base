@@ -16,7 +16,6 @@
 
 package com.android.systemui.shade.data.repository
 
-import android.content.res.mainResources
 import com.android.systemui.display.data.repository.FakeFocusedDisplayRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.keyguard.data.repository.keyguardRepository
@@ -29,8 +28,6 @@ import com.android.systemui.shade.display.FocusShadeDisplayPolicy
 import com.android.systemui.shade.display.ShadeDisplayPolicy
 import com.android.systemui.shade.display.ShadeExpansionIntent
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
-import com.android.systemui.shade.domain.interactor.notificationElement
-import com.android.systemui.shade.domain.interactor.qsElement
 import com.android.systemui.util.settings.fakeGlobalSettings
 import com.android.systemui.util.settings.fakeSettings
 
@@ -48,12 +45,8 @@ val Kosmos.anyExternalShadeDisplayPolicy: AnyExternalShadeDisplayPolicy by
 val Kosmos.statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy by
     Kosmos.Fixture {
         StatusBarTouchShadeDisplayPolicy(
-            resources = mainResources,
-            focusedDisplayRepository = fakeFocusedDisplayRepository,
             displayRepository = displayRepository,
             backgroundScope = testScope.backgroundScope,
-            qsShadeElement = { qsElement },
-            notificationElement = { notificationElement },
         )
     }
 val Kosmos.shadeExpansionIntent: ShadeExpansionIntent by

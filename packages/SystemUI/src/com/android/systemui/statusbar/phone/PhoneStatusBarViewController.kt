@@ -16,6 +16,7 @@
 package com.android.systemui.statusbar.phone
 
 import android.app.StatusBarManager.WINDOW_STATUS_BAR
+import android.content.res.Resources
 import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.GestureDetector
@@ -38,6 +39,7 @@ import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.StatusBarLongPressGestureDetector
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
+import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
@@ -67,6 +69,7 @@ class PhoneStatusBarViewController
 private constructor(
     view: PhoneStatusBarView,
     @Named(UNFOLD_STATUS_BAR) private val progressProvider: ScopedUnfoldTransitionProgressProvider?,
+    @DisplayAware private val resources: Resources,
     private val centralSurfaces: CentralSurfaces,
     private val statusBarWindowStateController: StatusBarWindowStateController,
     private val shadeController: ShadeController,
@@ -83,6 +86,7 @@ private constructor(
     private val darkIconDispatcher: DarkIconDispatcher,
     private val statusBarContentInsetsProvider: StatusBarContentInsetsProvider,
     private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
+    private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
     private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
 ) : ViewController<PhoneStatusBarView>(view) {
@@ -91,6 +95,9 @@ private constructor(
     private lateinit var clock: Clock
     private lateinit var startSideContainer: View
     private lateinit var endSideContainer: View
+
+    private val shadeInvocationSplitRatio: Float =
+        resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
 
     // Creates a [View.OnTouchListener] that only handles mouse click events.
     private fun createMouseClickListener(onClick: () -> Unit): View.OnTouchListener =
@@ -154,9 +161,14 @@ private constructor(
             // Notify the shade display policy that the status bar was touched. This may cause
             // the shade to change display if the touch was in a display different than the shade
             // one.
-            lazyStatusBarShadeDisplayPolicy
-                .get()
-                .setExpansionIntentFromStatusBarEvent(event.x, event.displayId, mView.width)
+            val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+            shadeExpansionTargetDisplayInteractor.setExpansionIntentFromStatusBarEvent(
+                event.x,
+                event.displayId,
+                mView.width,
+                shadeInvocationSplitRatio,
+                isRtl,
+            )
         }
     }
 
@@ -426,6 +438,7 @@ private constructor(
         @Named(UNFOLD_STATUS_BAR)
         private val progressProvider: Optional<ScopedUnfoldTransitionProgressProvider>,
         private val userChipViewModel: StatusBarUserChipViewModel,
+        @DisplayAware private val resources: Resources,
         private val centralSurfaces: CentralSurfaces,
         @DisplayAware private val statusBarWindowStateController: StatusBarWindowStateController,
         private val shadeController: ShadeController,
@@ -442,6 +455,7 @@ private constructor(
         @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,
         @DisplayAware private val statusBarContentInsetsProvider: StatusBarContentInsetsProvider,
         private val lazyStatusBarShadeDisplayPolicy: Lazy<StatusBarTouchShadeDisplayPolicy>,
+        private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
         private val lazyShadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
         private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     ) {
@@ -449,6 +463,7 @@ private constructor(
             return PhoneStatusBarViewController(
                 view,
                 progressProvider.getOrNull(),
+                resources,
                 centralSurfaces,
                 statusBarWindowStateController,
                 shadeController,
@@ -465,6 +480,7 @@ private constructor(
                 darkIconDispatcher,
                 statusBarContentInsetsProvider,
                 lazyStatusBarShadeDisplayPolicy,
+                shadeExpansionTargetDisplayInteractor,
                 lazyShadeDisplaysRepository,
                 statusBarWindowControllerStore,
             )
