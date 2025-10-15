@@ -16,13 +16,18 @@
 
 package com.android.systemui.screencapture.record.largescreen.data.repository
 
+import android.net.Uri
+import android.os.Environment
+import android.provider.DocumentsContract
 import com.android.systemui.common.data.datastore.DataStoreWrapper
 import com.android.systemui.common.data.datastore.DataStoreWrapperFactory
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.user.data.repository.UserRepository
+import java.io.File
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
+import kotlin.text.substringAfter
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -75,27 +80,81 @@ constructor(
             .map { preferencesMap -> preferencesMap[CUSTOM_SAVE_LOCATION_URI_KEY_NAME].orEmpty() }
             .distinctUntilChanged()
 
-    suspend fun updateCustomSaveLocationUriString(uriString: String) =
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isCustomSaveLocationActive: Flow<Boolean> =
+        dataStore
+            .flatMapLatest { it.data }
+            .map { preferencesMap ->
+                preferencesMap[CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME].toBoolean()
+            }
+            .distinctUntilChanged()
+
+    /**
+     * Updates the custom save location URI string.
+     * - If [uri] is null or corresponds to the default screenshots folder, the custom save location
+     *   is deactivated (this means we will use the default folder).
+     * - Otherwise, the custom save location is activated, and the [uri] string is saved to the data
+     *   store.
+     *
+     * @param uri The [Uri] of the custom save location, or null to deactivate it.
+     */
+    suspend fun updateCustomSaveLocationUriString(uri: Uri?) {
+        if (uri == null) {
+            updateIsCustomSaveLocationActive(false)
+            return
+        }
+
+        val documentId = DocumentsContract.getTreeDocumentId(uri)
+        val path = documentId?.substringAfter("primary:")
+
+        if (path == DEFAULT_SCREENSHOTS_FOLDER) {
+            updateIsCustomSaveLocationActive(false)
+        } else {
+            val uriString = uri.toString()
+            updateIsCustomSaveLocationActive(true)
+            withContext(backgroundDispatcher) {
+                val currentDataStore = dataStore.first()
+
+                currentDataStore.edit { preferencesMap ->
+                    val keyName = CUSTOM_SAVE_LOCATION_URI_KEY_NAME
+
+                    val currentUri = preferencesMap[keyName].orEmpty()
+
+                    if (currentUri != uriString) {
+                        preferencesMap[keyName] = uriString
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates whether the custom save location is active.
+     *
+     * If active, it means we should be using the custom save location If inactive, it means we
+     * should use the default save location
+     *
+     * @param isActive Whether the custom save location is active.
+     */
+    suspend fun updateIsCustomSaveLocationActive(isActive: Boolean) =
         withContext(backgroundDispatcher) {
             val currentDataStore = dataStore.first()
 
             currentDataStore.edit { preferencesMap ->
-                val keyName = CUSTOM_SAVE_LOCATION_URI_KEY_NAME
-                val currentUri = preferencesMap[keyName].orEmpty()
+                val keyName = CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME
+                val currentIsActive = preferencesMap[keyName].toBoolean()
 
-                if (currentUri != uriString) {
-                    // UriString is empty when location is set to default
-                    if (uriString.isEmpty()) {
-                        preferencesMap.remove(keyName)
-                    } else {
-                        preferencesMap[keyName] = uriString
-                    }
+                if (currentIsActive != isActive) {
+                    preferencesMap[keyName] = isActive.toString()
                 }
             }
         }
 
     companion object {
         private const val CUSTOM_SAVE_LOCATION_URI_KEY_NAME = "custom_save_location_uri"
+        private const val CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME = "custom_save_location_is_active"
         private const val DATA_STORE_FILE_NAME = "screen_capture_settings.preferences_pb"
+        private val DEFAULT_SCREENSHOTS_FOLDER =
+            Environment.DIRECTORY_PICTURES + File.separator + Environment.DIRECTORY_SCREENSHOTS
     }
 }

@@ -69,6 +69,16 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
         kosmos.runTest { assertThat(viewModel.screenRecordingSupported).isFalse() }
 
     @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_SAVE_LOCATION)
+    fun customSaveLocationSupported_whenFeatureEnabled_isTrue() =
+        kosmos.runTest { assertThat(viewModel.customSaveLocationSupported).isTrue() }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_SAVE_LOCATION)
+    fun customSaveLocationSupported_whenFeatureDisabled_isFalse() =
+        kosmos.runTest { assertThat(viewModel.customSaveLocationSupported).isFalse() }
+
+    @Test
     fun updateOpacityForRegionBox_isInteracting_opacityIsZero() =
         kosmos.runTest {
             viewModel.updateOpacityForRegionBox(isInteracting = true, regionBoxBounds = null)
@@ -117,6 +127,10 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
     @Test
     fun customSaveLocationUriString_initialValue_isEmpty() =
         kosmos.runTest { assertThat(viewModel.customSaveLocationUriString).isEmpty() }
+
+    @Test
+    fun isCustomSaveLocationActive_initialValue_isFalse() =
+        kosmos.runTest { assertThat(viewModel.isCustomSaveLocationActive).isFalse() }
 
     @Test
     fun recordParametersViewModel_updatesAudioSourceState() =
