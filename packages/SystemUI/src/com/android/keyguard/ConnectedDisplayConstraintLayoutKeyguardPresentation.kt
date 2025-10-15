@@ -94,11 +94,9 @@ constructor(
                     )
                 clipChildren = false
             }
-
+        setCancelable(false)
         setContentView(constraintLayoutRootView)
-
         setFullscreen()
-
         setClock(constraintLayoutRootView, clockRegistry.createCurrentClock(context))
     }
 
