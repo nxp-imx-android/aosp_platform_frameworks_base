@@ -20,7 +20,7 @@
 #include <binder/IInterface.h>
 #include <cutils/sockets.h>
 #include <flatbuffers/flatbuffers.h>
-#include <libzygote_schemas/messages.h>
+#include <libzygote_messages_schemas/messages.h>
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
 #include <sys/socket.h>

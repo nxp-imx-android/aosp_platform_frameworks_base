@@ -425,7 +425,7 @@ cc_defaults_for_libandroid_runtime {
                 "tensorflow_headers",
             ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
                 true: [
-                    "libzygote_schema_headers",
+                    "libzygote_messages_schema_headers",
                 ],
                 default: [],
             }),
