@@ -36,6 +36,7 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.google.common.truth.Truth.assertThat
@@ -65,6 +66,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     private val desktopUserRepositories = mock<DesktopUserRepositories>()
     private val desktopRepository = mock<DesktopRepository>()
     private val shellController = mock<ShellController>()
+    private val pinnedController = mock<PinnedLayerController>()
     private val desktopState =
         FakeDesktopState().apply {
             canEnterDesktopMode = true
@@ -74,10 +76,16 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     @Before
     fun setUp() {
         desktopTaskChangeListener =
-            DesktopTaskChangeListener(desktopUserRepositories, desktopState, shellController)
+            DesktopTaskChangeListener(
+                desktopUserRepositories,
+                desktopState,
+                shellController,
+                pinnedController,
+            )
 
         whenever(desktopUserRepositories.current).thenReturn(desktopRepository)
         whenever(desktopUserRepositories.getProfile(anyInt())).thenReturn(desktopRepository)
+        whenever(pinnedController.isPinned(any())).thenReturn(false)
     }
 
     @Test
@@ -194,6 +202,17 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
+    fun onTaskOpening_pinDesktopTask_removeTaskFromRepo() {
+        val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = false }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(pinnedController.isPinned(task.taskId)).thenReturn(true)
+
+        desktopTaskChangeListener.onTaskOpening(task)
+
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
+    }
+
+    @Test
     fun onTaskChanging_fullscreenTask_activeInDesktopRepository_removesTaskFromRepo() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
@@ -289,6 +308,17 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
+    fun onTaskChanging_taskIsPinned_removeTaskFromRepo() {
+        val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = false }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(pinnedController.isPinned(task.taskId)).thenReturn(true)
+
+        desktopTaskChangeListener.onTaskChanging(task)
+
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
+    }
+
+    @Test
     fun onTaskMovingToFront_fullscreenTask_activeTaskInDesktopRepo_removesTaskFromRepo() {
         val task = createFullscreenTask().apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
@@ -365,6 +395,17 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = true }
         desktopTaskChangeListener.onTaskMovingToFront(task)
         assertThat(desktopTaskChangeListener.isTaskPerceptible(task.taskId)).isTrue()
+    }
+
+    @Test
+    fun onTaskMovingToFront_taskIsPinned_removeTaskFromRepo() {
+        val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = false }
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        whenever(pinnedController.isPinned(task.taskId)).thenReturn(true)
+
+        desktopTaskChangeListener.onTaskMovingToFront(task)
+
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test

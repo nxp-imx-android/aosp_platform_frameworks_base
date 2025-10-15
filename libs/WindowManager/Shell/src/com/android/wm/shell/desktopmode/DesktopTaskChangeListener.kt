@@ -27,6 +27,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.server.am.Flags
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.freeform.TaskChangeListener
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
@@ -36,6 +37,7 @@ class DesktopTaskChangeListener(
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desktopState: DesktopState,
     private val shellController: ShellController,
+    private val pinnedController: PinnedLayerController?,
 ) : TaskChangeListener {
     private val perceptibleTasks: MutableSet<Int> = mutableSetOf()
 
@@ -44,9 +46,10 @@ class DesktopTaskChangeListener(
             desktopUserRepositories.getProfile(taskInfo.userId)
         val isFreeformTask = taskInfo.isFreeform
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
+        val isTaskPinned = isTaskPinned(taskInfo)
         logD(
             "onTaskOpening for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%d isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -54,8 +57,9 @@ class DesktopTaskChangeListener(
             taskInfo.parentTaskId,
             isFreeformTask,
             isActiveTask,
+            isTaskPinned,
         )
-        if (!isFreeformTask && isActiveTask) {
+        if (!isDesktopTask(taskInfo) && isActiveTask) {
             removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
             return
         }
@@ -70,7 +74,7 @@ class DesktopTaskChangeListener(
             )
             return
         }
-        if (isFreeformTask && !isActiveTask) {
+        if (isDesktopTask(taskInfo) && !isActiveTask) {
             // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
             // [DesktopWallpaperActivity] launch which should always be in fullscreen.
             if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
@@ -95,6 +99,8 @@ class DesktopTaskChangeListener(
             desktopUserRepositories.getProfile(taskInfo.userId)
         val isFreeformTask = taskInfo.isFreeform
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
+        val isTaskPinned = isTaskPinned(taskInfo)
+        val isDesktopTask = isDesktopTask(taskInfo)
         if (
             !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
@@ -106,7 +112,7 @@ class DesktopTaskChangeListener(
             )
             if (
                 DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue &&
-                    !isFreeformTask &&
+                    !isDesktopTask &&
                     isActiveTask
             ) {
                 logD(
@@ -120,7 +126,7 @@ class DesktopTaskChangeListener(
         }
         logD(
             "onTaskChanging for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%d isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b isDesktopTask=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -128,6 +134,8 @@ class DesktopTaskChangeListener(
             taskInfo.parentTaskId,
             isFreeformTask,
             isActiveTask,
+            isTaskPinned,
+            isDesktopTask,
         )
         // TODO: b/394281403 - with multiple desks, it's possible to have a non-freeform task
         //  inside a desk, so this should be decoupled from windowing mode.
@@ -136,11 +144,11 @@ class DesktopTaskChangeListener(
         //  more accurate than assuming it's always the default/active desk in the display, as this
         //  method does.
         // Case 1: When the task change is from a task in the desktop repository which is now
-        // fullscreen,
-        // remove the task from the desktop repository since it is no longer a freeform task.
-        if (!isFreeformTask && isActiveTask) {
+        // no longer a desktop task.
+        // remove the task from the desktop repository since it is no longer a desktop task.
+        if (!isDesktopTask && isActiveTask) {
             removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
-        } else if (isFreeformTask) {
+        } else if (isDesktopTask) {
             // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
             // [DesktopWallpaperActivity] launch which should always be in fullscreen.
             if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
@@ -219,9 +227,11 @@ class DesktopTaskChangeListener(
             desktopUserRepositories.getProfile(taskInfo.userId)
         val isFreeformTask = taskInfo.isFreeform
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
+        val isTaskPinned = isTaskPinned(taskInfo)
+        val isDesktopTask = isDesktopTask(taskInfo)
         logD(
             "onTaskMovingToFront for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%d isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b isDesktopTask=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -229,13 +239,15 @@ class DesktopTaskChangeListener(
             taskInfo.parentTaskId,
             isFreeformTask,
             isActiveTask,
+            isTaskPinned,
+            isDesktopTask,
         )
         // When the task change is from a task in the desktop repository which is now fullscreen,
         // remove the task from the desktop repository since it is no longer a freeform task.
-        if (!isFreeformTask && isActiveTask) {
+        if (!isDesktopTask && isActiveTask) {
             removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
         }
-        if (isFreeformTask) {
+        if (isDesktopTask) {
             // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
             // [DesktopWallpaperActivity] launch which should always be in fullscreen.
             if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
@@ -411,6 +423,12 @@ class DesktopTaskChangeListener(
             }
         }
     }
+
+    private fun isDesktopTask(taskInfo: RunningTaskInfo): Boolean =
+        taskInfo.isFreeform && !isTaskPinned(taskInfo)
+
+    private fun isTaskPinned(taskInfo: RunningTaskInfo) =
+        pinnedController?.isPinned(taskInfo.taskId) ?: false
 
     @VisibleForTesting fun isTaskPerceptible(taskId: Int): Boolean = taskId in perceptibleTasks
 
