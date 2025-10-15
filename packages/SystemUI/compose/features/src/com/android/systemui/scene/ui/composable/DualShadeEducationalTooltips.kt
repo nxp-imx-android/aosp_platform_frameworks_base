@@ -142,7 +142,7 @@ private fun AnchoredTooltip(
                         containerColor = LocalAndroidColorScheme.current.tertiaryFixed,
                         contentColor = LocalAndroidColorScheme.current.onTertiaryFixed,
                     ),
-                caretSize = caretSize,
+                caretShape = TooltipDefaults.caretShape(),
                 shadowElevation = 2.dp,
             ) {
                 Text(text = text ?: "", modifier = Modifier.padding(8.dp))
