@@ -1762,6 +1762,13 @@ flag {
 }
 
 flag {
+    name: "large_screen_region_recording"
+    namespace: "systemui"
+    description: "Enables the region recording option on large screen devices."
+    bug: "450918585"
+}
+
+flag {
     name: "large_screen_screenshot_save_location"
     namespace: "systemui"
     description: "Enables ability to specify a custom save location for screenshots within settings menu on large screen devices."
