@@ -1821,10 +1821,15 @@ public class Vpn {
                 throw new IllegalArgumentException("At least one address must be specified");
             }
             Connection connection = new Connection();
-            if (!mContext.bindServiceAsUser(intent, connection,
-                    Context.BIND_AUTO_CREATE | Context.BIND_FOREGROUND_SERVICE,
-                    new UserHandle(mUserId))) {
-                throw new IllegalStateException("Cannot bind " + config.user);
+            final long oldToken = Binder.clearCallingIdentity();
+            try {
+                if (!mContext.bindServiceAsUser(intent, connection,
+                        Context.BIND_AUTO_CREATE | Context.BIND_FOREGROUND_SERVICE,
+                        new UserHandle(mUserId))) {
+                    throw new IllegalStateException("Cannot bind " + config.user);
+                }
+            } finally {
+                Binder.restoreCallingIdentity(oldToken);
             }
 
             mConnection = connection;
