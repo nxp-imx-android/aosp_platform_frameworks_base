@@ -34,6 +34,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -2635,6 +2636,29 @@ class DesktopTasksController(
             return@moveToNextDisplay true
         }
 
+    private fun calculateRememberedBounds(
+        repository: DesktopRepository,
+        componentName: ComponentName?,
+        displayLayout: DisplayLayout,
+    ): Rect? {
+        if (!Flags.enableRememberedBounds()) {
+            return null
+        }
+        val packageName = componentName?.packageName ?: return null
+        // TODO: b/452162812 - Support collision avoidance. Maybe we can merge it with
+        // cascadeWindow?
+        // TODO: b/452162813 - Do not use remembered bounds when another instance of the same
+        // package is active.
+        val ratio = repository.getRememberedBoundsRatio(packageName) ?: return null
+        val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
+        return Rect().apply {
+            left = (stableBounds.left + stableBounds.width() * ratio.left).toInt()
+            top = (stableBounds.top + stableBounds.height() * ratio.top).toInt()
+            right = (stableBounds.left + stableBounds.width() * ratio.right).toInt()
+            bottom = (stableBounds.top + stableBounds.height() * ratio.bottom).toInt()
+        }
+    }
+
     /**
      * Start an intent through a launch transition for starting tasks whose transition does not get
      * handled by [handleRequest]
@@ -2648,19 +2672,29 @@ class DesktopTasksController(
         val repository = userRepositories.getProfile(userId)
         val wct = WindowContainerTransaction()
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return
-        val bounds = calculateDefaultDesktopTaskBounds(displayLayout)
+        val rememberedBounds =
+            calculateRememberedBounds(
+                repository,
+                pendingIntent.intent.resolveActivity(
+                    userProfileContexts.getOrCreate(userId).packageManager
+                ),
+                displayLayout,
+            )
+        val bounds = rememberedBounds ?: calculateDefaultDesktopTaskBounds(displayLayout)
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
-        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
-        cascadeWindow(
-            context,
-            recentTasksController,
-            repository,
-            shellTaskOrganizer,
-            bounds,
-            displayLayout,
-            deskId,
-            stableBounds,
-        )
+        if (rememberedBounds == null) {
+            val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+            cascadeWindow(
+                context,
+                recentTasksController,
+                repository,
+                shellTaskOrganizer,
+                bounds,
+                displayLayout,
+                deskId,
+                stableBounds,
+            )
+        }
         val ops =
             ActivityOptions.fromBundle(options).apply {
                 launchWindowingMode = WINDOWING_MODE_FREEFORM
@@ -2670,7 +2704,7 @@ class DesktopTasksController(
                 launchDisplayId = displayId
                 if (DesktopModeFlags.ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX.isTrue) {
                     // Sets launch bounds size as flexible so core can recalculate.
-                    flexibleLaunchSize = true
+                    flexibleLaunchSize = rememberedBounds == null
                 }
             }
 
@@ -4179,7 +4213,14 @@ class DesktopTasksController(
             task = task,
             transition = transition,
             targetDisplayId = task.displayId,
-            requestedTaskBounds = null,
+            requestedTaskBounds =
+                displayController.getDisplayLayout(task.displayId)?.let { displayLayout ->
+                    calculateRememberedBounds(
+                        userRepositories.getProfile(task.userId),
+                        task.baseActivity,
+                        displayLayout,
+                    )
+                },
             requestType = requestType,
             enterReason = EnterReason.TASK_LAUNCH,
         )
@@ -4957,11 +4998,8 @@ class DesktopTasksController(
         wct.setBounds(taskInfo.token, boundsWithinDisplay)
     }
 
-    private fun getInitialBounds(
-        displayLayout: DisplayLayout,
-        taskInfo: TaskInfo,
-        deskId: Int,
-    ): Rect {
+    @VisibleForTesting
+    fun getInitialBounds(displayLayout: DisplayLayout, taskInfo: TaskInfo, deskId: Int): Rect {
         val repository = userRepositories.getProfile(taskInfo.userId)
         // If caption insets should be excluded from app bounds, ensure caption insets
         // are excluded from the ideal initial bounds when scaling non-resizeable apps.
@@ -4974,7 +5012,11 @@ class DesktopTasksController(
             } else {
                 0
             }
-        val bounds = calculateInitialBounds(displayLayout, taskInfo, captionInsets = captionInsets)
+        val rememberedBounds =
+            calculateRememberedBounds(repository, taskInfo.baseActivity, displayLayout)
+        val bounds =
+            rememberedBounds
+                ?: calculateInitialBounds(displayLayout, taskInfo, captionInsets = captionInsets)
         var hasLayoutGravityApplied = false
         if (!repository.isActiveTask(taskInfo.taskId)) {
             // Only apply layout gravity to new tasks in desk.
@@ -4982,7 +5024,7 @@ class DesktopTasksController(
             displayLayout.getStableBoundsForDesktopMode(stableBounds)
             hasLayoutGravityApplied = applyLayoutGravityIfNeeded(taskInfo, bounds, stableBounds)
         }
-        if (!hasLayoutGravityApplied) {
+        if (!hasLayoutGravityApplied && rememberedBounds == null) {
             cascadeWindow(
                 context,
                 recentTasksController,

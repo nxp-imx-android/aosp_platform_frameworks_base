@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode.data
 
 import android.graphics.Rect
+import android.graphics.RectF
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
@@ -1995,6 +1996,15 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         assertThat(repo.getTaskInFullImmersiveState(DEFAULT_DESKTOP_ID)).isEqualTo(1)
         assertThat(repo.getTaskInFullImmersiveState(SECOND_DISPLAY)).isEqualTo(2)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun setRememberedBoundsRatio_getRememberedBoundsRatio_returnsCorrectValue() {
+        val packageName = "com.test.app"
+        val bounds = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+        repo.setRememberedBoundsRatio(packageName, bounds)
+        assertThat(repo.getRememberedBoundsRatio(packageName)).isEqualTo(bounds)
     }
 
     @Test
