@@ -163,6 +163,7 @@ public class UsbService extends IUsbManager.Stub {
     private UsbHostManager mHostManager;
     private UsbPortManager mPortManager;
     private Usb4Manager mUsb4Manager;
+    private UsbAuthManager mAuthManager;
     private final UsbAlsaManager mAlsaManager;
     private KeyguardManager.KeyguardLockedStateListener mKeyguardLockedStateListener;
 
@@ -210,7 +211,9 @@ public class UsbService extends IUsbManager.Stub {
         if (com.android.server.usb.flags.Flags.enableUsb4()) {
             mUsb4Manager = new Usb4Manager(context, mUserManager);
         }
-
+        if (com.android.server.usb.flags.Flags.enableUsbAuthorization()) {
+            mAuthManager = new UsbAuthManager(context, mUserManager);
+        }
         final PackageManager pm = mContext.getPackageManager();
         if (pm.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
             mHostManager = new UsbHostManager(context, mAlsaManager, mPermissionManager);
@@ -292,6 +295,9 @@ public class UsbService extends IUsbManager.Stub {
         if (mUsb4Manager != null) {
             mUsb4Manager.onUpdateScreenLockedState(locked);
         }
+        if (mAuthManager != null) {
+            mAuthManager.onUpdateScreenLockedState(locked);
+        }
     }
 
     /**
@@ -317,6 +323,9 @@ public class UsbService extends IUsbManager.Stub {
             if (mUsb4Manager != null) {
                 mUsb4Manager.onUpdateLoggedInState(true, newUserId);
             }
+            if (mAuthManager != null) {
+                mAuthManager.onUpdateLoggedInState(true, newUserId);
+            }
         }
     }
 
@@ -330,6 +339,9 @@ public class UsbService extends IUsbManager.Stub {
 
         if (mUsb4Manager != null) {
             mUsb4Manager.onUpdateLoggedInState(false, stoppedUser.getIdentifier());
+        }
+        if (mAuthManager != null) {
+            mAuthManager.onUpdateLoggedInState(false, stoppedUser.getIdentifier());
         }
     }
 
