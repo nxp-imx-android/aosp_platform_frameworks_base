@@ -795,6 +795,22 @@ class BroadcastQueueImpl extends BroadcastQueue {
             mService.getCachedAppOptimizer().freezeAppAsyncImmediateLSP(r.callerApp);
             return;
         }
+
+        if (Flags.limitPendingBroadcastsPerSenderUid()) {
+            final int numPending = mHistory.getPendingBroadcastCountForSenderUid(r.callingUid);
+            if (numPending >= mConstants.MAX_PENDING_BROADCASTS_PER_SENDER_UID) {
+                final long oldestPendingTime = mHistory.getOldestPendingBroadcastEnqueueTime(
+                        r.callingUid);
+                if (oldestPendingTime > SystemClock.uptimeMillis() - DateUtils.HOUR_IN_MILLIS) {
+                    final StringBuilder sb = new StringBuilder();
+                    sb.append("Too many pending broadcasts from uid ").append(r.callingUid)
+                            .append("; dropping ").append(r).append(".");
+                    mHistory.appendPendingBroadcastsSummaryForUid(sb, r.callingUid);
+                    Slog.wtf(TAG, sb.toString());
+                }
+            }
+        }
+
         if (DEBUG_BROADCAST || r.debugLog()) {
             logv("Enqueuing " + r + " for " + r.receivers.size() + " receivers");
         }
