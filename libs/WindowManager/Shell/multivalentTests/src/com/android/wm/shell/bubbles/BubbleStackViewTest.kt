@@ -335,6 +335,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             // simulate a request from the bubble data listener to expand the stack
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
         }
 
@@ -353,6 +354,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             // simulate a request from the bubble data listener to collapse the stack
+            bubbleData.isExpanded = false
             bubbleStackView.isExpanded = false
         }
 
@@ -384,6 +386,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             // simulate a request from the bubble data listener to expand the stack
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
         }
 
@@ -401,6 +404,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             // simulate a request from the bubble data listener to collapse the stack
+            bubbleData.isExpanded = false
             bubbleStackView.isExpanded = false
         }
 
@@ -460,6 +464,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             // simulate a request from the bubble data listener to expand the stack
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             verify(sysuiProxy).onStackExpandChanged(true)
             shellExecutor.flushAll()
@@ -472,6 +477,7 @@ class BubbleStackViewTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             // simulate a request from the bubble data listener to collapse the stack
+            bubbleData.isExpanded = false
             bubbleStackView.isExpanded = false
             verify(sysuiProxy).onStackExpandChanged(false)
             shellExecutor.flushAll()
@@ -839,6 +845,7 @@ class BubbleStackViewTest {
             bubbleStackView.addBubble(bubble)
             bubbleStackView.setSelectedBubble(bubble)
             bubbleStackView.animateExpand(null, runnable)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -868,6 +875,7 @@ class BubbleStackViewTest {
             bubbleStackView.addBubble(bubble)
             bubbleStackView.addBubble(bubble2)
             bubbleStackView.setSelectedBubble(bubble)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -913,6 +921,7 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
             bubbleStackView.setSelectedBubble(bubble)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -933,6 +942,7 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
             bubbleStackView.setSelectedBubble(bubble)
+            bubbleData.isExpanded = true
             bubbleStackView.snapToExpanded()
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
@@ -1048,6 +1058,7 @@ class BubbleStackViewTest {
             bubbleStackView.addBubble(bubble1)
             bubbleStackView.addBubble(bubble2)
             bubbleStackView.setSelectedBubble(bubble2)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -1090,7 +1101,8 @@ class BubbleStackViewTest {
             bubbleStackView.addBubble(bubble1)
             bubbleStackView.addBubble(bubble2)
             bubbleStackView.setSelectedBubble(bubble2)
-            bubbleStackView.setExpanded(true)
+            bubbleData.isExpanded = true
+            bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -1129,6 +1141,7 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
             bubbleStackView.setSelectedBubble(bubble)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -1165,6 +1178,7 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
             bubbleStackView.setSelectedBubble(bubble)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -1214,6 +1228,7 @@ class BubbleStackViewTest {
             bubbleStackView.addBubble(openingBubble)
             bubbleStackView.setSelectedBubble(openingBubble)
             bubbleStackView.hideJumpcutClosingBubble(closingBubble)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -1257,6 +1272,7 @@ class BubbleStackViewTest {
             bubbleStackView.addBubble(bubble1)
             bubbleStackView.addBubble(bubble2)
             bubbleStackView.setSelectedBubble(bubble2)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
         }
@@ -1280,6 +1296,7 @@ class BubbleStackViewTest {
         }
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleData.isExpanded = false
             bubbleStackView.isExpanded = false
             shellExecutor.flushAll()
         }
@@ -1309,6 +1326,7 @@ class BubbleStackViewTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             bubbleStackView.addBubble(bubble)
             bubbleStackView.setSelectedBubble(bubble)
+            bubbleData.isExpanded = true
             bubbleStackView.isExpanded = true
             shellExecutor.flushAll()
             animatorTestRule.advanceTimeBy(100)

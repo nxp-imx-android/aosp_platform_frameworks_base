@@ -2698,7 +2698,7 @@ public class BubbleStackView extends FrameLayout
                 logBubbleEvent(mExpandedBubble,
                         FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__COLLAPSED);
                 mSessionTracker.log(SessionEvent.Ended.forFloatingBubble());
-            } else {
+            } else if (mBubbleData.isExpanded()) {
                 expand(animateExpansion);
                 logBubbleEvent(mExpandedBubble,
                         FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__EXPANDED);
@@ -2711,12 +2711,16 @@ public class BubbleStackView extends FrameLayout
                         startMonitoringSwipeUpGesture();
                     }
                 });
+            } else {
+                BubbleLog.d("BubbleStackView onImeHidden runnable running. Wanted to animate "
+                        + "expand but we are collapsed");
             }
             notifyExpansionChanged(mExpandedBubble, mIsExpanded);
             announceExpandForAccessibility(mExpandedBubble, mIsExpanded);
         };
 
         if (mPositioner.isImeVisible()) {
+            BubbleLog.d("BubbleStackView.setExpanded IME is visible, delaying animation");
             hideCurrentInputMethod(onImeHidden);
         } else {
             // Clear out the existing runnable if one was scheduled to run after IME was hidden.
