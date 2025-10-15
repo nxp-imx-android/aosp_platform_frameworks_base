@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.common
 import android.app.Activity
 import com.android.systemui.CoreStartable
 import com.android.systemui.screencapture.ScreenCaptureStartable
+import com.android.systemui.screencapture.record.largescreen.ui.DirectoryPickerActivity
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screencapture.ui.ShareScreenActivity
 import dagger.Binds
@@ -45,4 +46,9 @@ interface ScreenCaptureModule {
     fun provideSmallScreenPostRecordingActivity(
         activity: SmallScreenPostRecordingActivity
     ): Activity
+
+    @Binds
+    @IntoMap
+    @ClassKey(DirectoryPickerActivity::class)
+    fun bindDirectoryPickerActivity(activity: DirectoryPickerActivity): Activity
 }

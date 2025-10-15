@@ -50,8 +50,6 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
     val recordParameters = viewModel.recordParametersViewModel
     val icons = viewModel.icons
 
-    val customSaveLocationUri = viewModel.customSaveLocationUriString
-
     val settingsButtonContentDescription =
         stringResource(R.string.screen_capture_toolbar_settings_button_a11y)
 
@@ -108,15 +106,7 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
             if (viewModel.customSaveLocationSupported) {
                 // TODO (b/444278100) - Implement UI provided by designer, this is a placeholder
                 DropdownMenuItem(
-                    text = {
-                        Text(
-                            if (customSaveLocationUri.isBlank()) {
-                                "Save Location: Default"
-                            } else {
-                                "Save Location: $customSaveLocationUri..."
-                            }
-                        )
-                    },
+                    text = { Text("Save Location: ${viewModel.customSaveLocationUriString}") },
                     onClick = { /* TODO (b/444278100) - Add selectable options based off UI design */
                     },
                 )
@@ -125,19 +115,7 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 DropdownMenuItem(
                     text = { Text("Set Custom Save Location (Test)") },
                     onClick = {
-                        // TODO (b/444277547) - Handle opening file picker & saving logic
-                        val testUri = "content://com.example.documents/tree/TEST_FOLDER"
-                        viewModel.updateCustomSaveLocationUriString(testUri)
-                        showMenu = false
-                    },
-                )
-
-                // TODO (b/444278100) - This is a placeholder for testing & will be later deleted
-                DropdownMenuItem(
-                    text = { Text("Clear Custom Save Location (Test)") },
-                    onClick = {
-                        val testUri = ""
-                        viewModel.updateCustomSaveLocationUriString(testUri)
+                        viewModel.requestLaunchDirectoryPicker()
                         showMenu = false
                     },
                 )

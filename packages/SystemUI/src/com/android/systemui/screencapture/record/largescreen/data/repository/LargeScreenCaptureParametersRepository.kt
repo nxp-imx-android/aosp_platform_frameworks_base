@@ -65,11 +65,7 @@ constructor(
                     awaitCancellation()
                 }
             }
-            .stateIn(
-                scope = backgroundScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = null,
-            )
+            .stateIn(scope = backgroundScope, started = SharingStarted.Lazily, initialValue = null)
             .filterNotNull()
 
     @OptIn(ExperimentalCoroutinesApi::class)
