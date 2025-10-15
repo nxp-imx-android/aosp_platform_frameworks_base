@@ -65,7 +65,6 @@ import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITI
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_INTRA_OPEN;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_NONE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_OPEN;
-import static com.android.wm.shell.Flags.enableDynamicInsetsForAppLaunch;
 import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildSurfaceAnimation;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionBackgroundColorIfSet;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionTypeFromInfo;
@@ -307,9 +306,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     @Nullable
     final TransitionAnimationHelper.RoundedContentPerDisplay getRoundedContentBounds(
             TransitionInfo.Change change) {
-        if (!enableDynamicInsetsForAppLaunch()) {
-            return null;
-        }
         if (change.getTaskInfo() == null && change.getActivityComponent() == null) {
             return null;
         }
