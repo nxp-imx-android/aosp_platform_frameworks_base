@@ -57,7 +57,7 @@ abstract class DragMoveWindowToNextDisplay {
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule(order = 1)
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
     @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
     @get:Rule(order = 3) val desktopMouseRule = DesktopMouseTestRule()
     @get:Rule(order = 4)

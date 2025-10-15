@@ -34,7 +34,10 @@ import org.junit.Ignore
 import org.junit.Rule
 
 @Ignore("Base Test Class")
-abstract class TestScenarioBase(private val rotation: Rotation = Rotation.ROTATION_0) {
+abstract class TestScenarioBase(
+    private val rotation: Rotation = Rotation.ROTATION_0,
+    private val navigationMode: NavBar = NavBar.MODE_GESTURAL,
+) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val device = UiDevice.getInstance(instrumentation)
 
@@ -44,7 +47,7 @@ abstract class TestScenarioBase(private val rotation: Rotation = Rotation.ROTATI
     private val tapl = LauncherInstrumentation()
 
     @Rule
-    @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
+    @JvmField val testSetupRule = Utils.testSetupRuleFunctional(navigationMode, rotation)
 
     @Before
     fun baseSetup() {
