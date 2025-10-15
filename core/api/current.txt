@@ -6557,6 +6557,7 @@ package android.app {
     method @Nullable public android.util.Pair<android.app.RemoteInput,android.app.Notification.Action> findRemoteInputActionPair(boolean);
     method public boolean getAllowSystemGeneratedContextualActions();
     method public int getBadgeIconType();
+    method @FlaggedApi("android.app.bridged_notifications_api") @Nullable public android.app.Notification.BridgedNotificationMetadata getBridgedNotificationMetadata();
     method @Nullable public android.app.Notification.BubbleMetadata getBubbleMetadata();
     method public String getChannelId();
     method @NonNull public java.util.List<android.app.Notification.Action> getContextualActions();
@@ -6821,6 +6822,22 @@ package android.app {
     method public android.app.Notification.BigTextStyle bigText(CharSequence);
     method public android.app.Notification.BigTextStyle setBigContentTitle(CharSequence);
     method public android.app.Notification.BigTextStyle setSummaryText(CharSequence);
+  }
+
+  @FlaggedApi("android.app.bridged_notifications_api") public static final class Notification.BridgedNotificationMetadata implements android.os.Parcelable {
+    ctor public Notification.BridgedNotificationMetadata(int, @NonNull String, @NonNull android.graphics.drawable.Icon);
+    method public int describeContents();
+    method @NonNull public android.graphics.drawable.Icon getIcon();
+    method public int getOriginDeviceType();
+    method @NonNull public String getPackageName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int BRIDGED_METADATA_TYPE_LAPTOP = 3; // 0x3
+    field public static final int BRIDGED_METADATA_TYPE_PHONE = 1; // 0x1
+    field public static final int BRIDGED_METADATA_TYPE_TABLET = 2; // 0x2
+    field public static final int BRIDGED_METADATA_TYPE_TV = 5; // 0x5
+    field public static final int BRIDGED_METADATA_TYPE_UNKNOWN = 0; // 0x0
+    field public static final int BRIDGED_METADATA_TYPE_WATCH = 4; // 0x4
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.BridgedNotificationMetadata> CREATOR;
   }
 
   public static final class Notification.BubbleMetadata implements android.os.Parcelable {

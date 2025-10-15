@@ -617,6 +617,7 @@ applications that come with the platform
         <!-- Permission required for CTS test CtsNotificationTestCases -->
         <permission name="android.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS" />
         <permission name="android.permission.HIDE_STATUS_BAR_NOTIFICATION" />
+        <permission name="android.permission.POST_BRIDGED_NOTIFICATIONS" />
         <!-- Permission required for BinaryTransparencyService shell API and host test -->
         <permission name="android.permission.GET_BACKGROUND_INSTALLED_PACKAGES" />
         <permission name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"/>

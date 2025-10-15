@@ -53,11 +53,7 @@ import static android.app.Notification.FLAG_ONGOING_EVENT;
 import static android.app.Notification.FLAG_ONLY_ALERT_ONCE;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.Notification.FLAG_USER_INITIATED_JOB;
-import static android.app.NotificationChannel.NEWS_ID;
 import static android.app.NotificationChannel.OLD_CONVERSATION_CHANNEL_ID_FORMAT;
-import static android.app.NotificationChannel.PROMOTIONS_ID;
-import static android.app.NotificationChannel.RECS_ID;
-import static android.app.NotificationChannel.SOCIAL_MEDIA_ID;
 import static android.app.NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED;
 import static android.app.NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED;
 import static android.app.NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED;
@@ -9236,6 +9232,21 @@ public class NotificationManagerService extends SystemService {
             }
         } else {
             notification.extras.remove(Notification.EXTRA_HIDE_STATUS_BAR_NOTIFICATION);
+        }
+        if (android.app.Flags.bridgedNotificationsApi()) {
+            // Ensure only allowed packages add bridged notification metadata.
+            if (notification.getBridgedNotificationMetadata() != null) {
+                int hasPermission = getContext().checkPermission(
+                        permission.POST_BRIDGED_NOTIFICATIONS, -1, notificationUid);
+                if (hasPermission != PERMISSION_GRANTED) {
+                    notification.removeBridgedNotificationMetadata();
+                    Slog.w(TAG, "warning: pkg " + pkg + " attempting to set bridged notification"
+                            + " metadata without holding permission "
+                            + "permission.POST_BRIDGED_NOTIFICATIONS");
+                }
+            }
+        } else {
+            notification.removeBridgedNotificationMetadata();
         }
     }
 

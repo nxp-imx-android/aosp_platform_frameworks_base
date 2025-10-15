@@ -16,6 +16,7 @@
 
 package android.app;
 
+import static android.app.Notification.BridgedNotificationMetadata;
 import static android.app.Notification.CarExtender.UnreadConversation.KEY_ON_READ;
 import static android.app.Notification.CarExtender.UnreadConversation.KEY_ON_REPLY;
 import static android.app.Notification.CarExtender.UnreadConversation.KEY_REMOTE_INPUT;
@@ -960,6 +961,42 @@ public class NotificationTest {
         assertEquals(
                 Notification.Action.SEMANTIC_ACTION_DELETE,
                 action.clone().getSemanticAction());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS_API)
+    public void testBuilder_setBridgedNotificationMetadata() {
+        Icon icon = Icon.createWithBitmap(
+                Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888));
+        BridgedNotificationMetadata metadata = new BridgedNotificationMetadata(
+                BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE,
+                "test_package", icon);
+
+        Notification notification = new Notification.Builder(mContext, "whatever")
+                .setBridgedNotificationMetadata(metadata).build();
+        assertEquals(metadata.getOriginDeviceType(),
+                notification.getBridgedNotificationMetadata().getOriginDeviceType());
+        assertEquals(metadata.getPackageName(),
+                notification.getBridgedNotificationMetadata().getPackageName());
+        metadata.getIcon().sameAs(notification.getBridgedNotificationMetadata().getIcon());
+
+        Notification clone = writeAndReadParcelable(notification);
+        assertEquals(metadata.getOriginDeviceType(),
+                clone.getBridgedNotificationMetadata().getOriginDeviceType());
+        assertEquals(metadata.getPackageName(),
+                clone.getBridgedNotificationMetadata().getPackageName());
+        metadata.getIcon().sameAs(clone.getBridgedNotificationMetadata().getIcon());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS_API)
+    public void testBuilder_dontSetBridgedMetadata() {
+        Notification notification = new Notification.Builder(mContext, "whatever")
+                .build();
+        assertNull(notification.getBridgedNotificationMetadata());
+
+        Notification clone = writeAndReadParcelable(notification);
+        assertNull(clone.getBridgedNotificationMetadata());
     }
 
     @Test

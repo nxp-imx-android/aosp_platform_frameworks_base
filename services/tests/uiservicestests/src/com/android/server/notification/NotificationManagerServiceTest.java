@@ -17281,6 +17281,13 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             parcel.writeInt(0);
         }
 
+        if (notif.getBridgedNotificationMetadata() != null) {
+            parcel.writeInt(1);
+            notif.getBridgedNotificationMetadata().writeToParcel(parcel, 0);
+        } else {
+            parcel.writeInt(0);
+        }
+
         parcel.writeBoolean(notif.getAllowSystemGeneratedContextualActions());
 
         parcel.writeInt(Notification.FOREGROUND_SERVICE_DEFAULT); // no getter for mFgsDeferBehavior
