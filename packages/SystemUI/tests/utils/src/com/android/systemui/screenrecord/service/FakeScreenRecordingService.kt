@@ -32,7 +32,7 @@ class FakeScreenRecordingService : IScreenRecordingService.Stub() {
     val currentCallback: FakeScreenRecordingServiceCallbackWrapper?
         get() = _callback.value
 
-    private val _status = MutableStateFlow<Status>(Status.Initial)
+    private val _status = MutableStateFlow<Status>(Status.initial)
     val status: Flow<Status> = _status.asStateFlow()
 
     override fun setCallback(callback: IScreenRecordingServiceCallback?) {

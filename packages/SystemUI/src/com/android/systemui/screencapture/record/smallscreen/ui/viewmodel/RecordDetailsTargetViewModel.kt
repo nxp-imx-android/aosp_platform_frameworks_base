@@ -169,4 +169,4 @@ constructor(
     }
 }
 
-private fun Status.canChangeTarget(): Boolean = this is Status.Stopped || this is Status.Initial
+private fun Status.canChangeTarget(): Boolean = this is Status.Stopped

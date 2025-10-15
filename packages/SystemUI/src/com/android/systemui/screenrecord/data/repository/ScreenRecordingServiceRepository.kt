@@ -26,14 +26,17 @@ import android.net.Uri
 import android.os.IBinder
 import android.util.Log
 import android.view.Display
+import androidx.annotation.VisibleForTesting
 import androidx.annotation.WorkerThread
-import com.android.app.tracing.coroutines.flow.asStateFlowTraced
 import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.data.repository.Status.Started
+import com.android.systemui.screenrecord.data.repository.Status.Starting
+import com.android.systemui.screenrecord.data.repository.Status.Stopped
 import com.android.systemui.screenrecord.service.IScreenRecordingService
 import com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback
 import com.android.systemui.screenrecord.service.ScreenRecordingService
@@ -42,9 +45,14 @@ import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.kotlin.pairwiseBy
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,10 +60,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+
+private val defaultRecordingRelay: Duration = 3.seconds
+private val startingStatusUpdateInterval: Duration = 1.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
@@ -92,12 +105,31 @@ constructor(
                 null,
             )
 
-    private val _status = MutableStateFlow<Status>(Status.Initial)
+    private val statusUpdates = MutableStateFlow<Status>(Status.initial)
+
+    /** @see Status */
     val status: StateFlow<Status> =
-        _status.asStateFlowTraced("ScreenRecordingServiceInteractor#status")
+        statusUpdates
+            .flatMapLatest { status ->
+                if (status is Starting) {
+                    countDownFlow(
+                        duration = status.untilStarted,
+                        onTick = { status.copy(untilStarted = it) },
+                        onFinished = { Started(status.parameters) },
+                    )
+                } else {
+                    flowOf(status)
+                }
+            }
+            .stateInTraced(
+                name = "ScreenRecordingServiceInteractor#status",
+                scope = coroutineScope,
+                started = SharingStarted.Eagerly,
+                initialValue = Status.initial,
+            )
 
     init {
-        combine(status.onEach { isServiceBound.value = it is Status.Started }, service) {
+        combine(status.onEach { isServiceBound.value = it is Started }, service) {
                 currentStatus,
                 currentService ->
                 RecordingContext(status = currentStatus, service = currentService)
@@ -106,7 +138,7 @@ constructor(
                 with(recordingContext) {
                     if (service != null) {
                         when (status) {
-                            is Status.Started -> {
+                            is Started -> {
                                 val parameters = status.parameters
                                 if (service.isRecording) {
                                     service.updateParameters(parameters)
@@ -115,13 +147,11 @@ constructor(
                                     screenRecordUxController.updateState(true)
                                 }
                             }
-
-                            is Status.Stopped -> {
+                            is Stopped -> {
                                 service.stopRecording(status.reason)
                                 screenRecordUxController.updateState(false)
                             }
-
-                            is Status.Initial -> {
+                            is Starting -> {
                                 /* do nothing */
                             }
                         }
@@ -132,23 +162,37 @@ constructor(
             .launchInTraced("ScreenRecordingServiceInteractor#_status", coroutineScope)
     }
 
-    override fun startRecording(parameters: ScreenRecordingParameters) {
-        require(parameters.displayId != Display.INVALID_DISPLAY) { "Provide a valid displayId" }
-        _status.update { currentStatus ->
-            if (currentStatus is Status.Started) {
+    /** Starts the recording after the [delay]. */
+    fun startRecordingDelayed(
+        parameters: ScreenRecordingParameters,
+        delay: Duration = defaultRecordingRelay,
+    ) {
+        statusUpdates.update { currentStatus ->
+            if (currentStatus is Starting || currentStatus is Started) {
                 currentStatus
             } else {
-                Status.Started(parameters)
+                Starting(untilStarted = delay, parameters = parameters)
+            }
+        }
+    }
+
+    override fun startRecording(parameters: ScreenRecordingParameters) {
+        require(parameters.displayId != Display.INVALID_DISPLAY) { "Provide a valid displayId" }
+        statusUpdates.update { currentStatus ->
+            if (currentStatus is Started) {
+                currentStatus
+            } else {
+                Started(parameters)
             }
         }
     }
 
     override fun stopRecording(@StopReason reason: Int) {
-        _status.update { currentStatus ->
-            if (currentStatus is Status.Stopped) {
+        statusUpdates.update { currentStatus ->
+            if (currentStatus is Stopped) {
                 currentStatus
             } else {
-                Status.Stopped(reason)
+                Stopped(reason)
             }
         }
     }
@@ -166,8 +210,8 @@ constructor(
     private fun updateParameters(
         update: ScreenRecordingParameters.() -> ScreenRecordingParameters
     ) {
-        _status.update { currentStatus ->
-            if (currentStatus is Status.Started) {
+        statusUpdates.update { currentStatus ->
+            if (currentStatus is Started) {
                 currentStatus.copy(parameters = currentStatus.parameters.update())
             } else {
                 currentStatus
@@ -242,11 +286,50 @@ constructor(
     private data class RecordingContext(val status: Status, val service: RecordingService?)
 }
 
+/**
+ * Current status of the recording service: [Starting] (optional for when the start is delayed) ->
+ * [Started] -> [Stopped].
+ */
 sealed interface Status {
 
-    data object Initial : Status
+    companion object {
+        @VisibleForTesting val initial = Stopped(Stopped.STOP_REASON_NOT_STARTED)
+    }
 
+    /** @see Status */
+    data class Starting(val untilStarted: Duration, val parameters: ScreenRecordingParameters) :
+        Status
+
+    /** @see Status */
     data class Started(val parameters: ScreenRecordingParameters) : Status
 
-    data class Stopped(val reason: Int) : Status
+    /** @see Status */
+    data class Stopped(val reason: Int) : Status {
+
+        companion object {
+            const val STOP_REASON_NOT_STARTED = -1
+        }
+    }
+}
+
+/**
+ * Returns a flow that emits a [onTick] value every [intervalDuration] for the [duration] amount of
+ * time and then finishes with [onFinished] value.
+ */
+private fun <T> countDownFlow(
+    duration: Duration,
+    intervalDuration: Duration = startingStatusUpdateInterval,
+    onTick: (millisLeft: Duration) -> T,
+    onFinished: () -> T,
+): Flow<T> = flow {
+    val intervalInMillis = intervalDuration.inWholeMilliseconds
+    var millisLeft = duration.inWholeMilliseconds
+    while (millisLeft > 0 && currentCoroutineContext().isActive) {
+        emit(onTick(millisLeft.milliseconds))
+        val delayDuration = millisLeft.coerceAtMost(intervalInMillis)
+        millisLeft -= delayDuration
+        delay(delayDuration)
+    }
+    emit(onTick(0.milliseconds))
+    emit(onFinished())
 }
