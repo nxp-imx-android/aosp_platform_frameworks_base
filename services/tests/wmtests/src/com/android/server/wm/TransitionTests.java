@@ -80,6 +80,7 @@ import static org.mockito.Mockito.verify;
 import static java.lang.Integer.MAX_VALUE;
 
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -1678,8 +1679,6 @@ public class TransitionTests extends WindowTestsBase {
         // Make sure the unrelated activity is NOT collected.
         final Transition.ChangeInfo activity1ChangeInfo = closeTransition.mChanges.get(activity1);
         assertNull(activity1ChangeInfo);
-        // No need to wait for the activity in transient hide task.
-        assertEquals(WindowContainer.SYNC_STATE_NONE, activity1.mSyncState);
 
         // An active transient launch overrides idle state to avoid clearing power mode before the
         // transition is finished.
@@ -1862,6 +1861,33 @@ public class TransitionTests extends WindowTestsBase {
         assertTrue(controller.isTransientHide(appTask));
         assertTrue(controller.isTransientVisible(appTask));
         assertTrue(controller.isTransientLaunch(recent));
+    }
+
+    @Test
+    public void testRecentsTransientLaunchSyncState() {
+        final ActivityRecord recent = new ActivityBuilder(mAtm)
+                .setTask(mDisplayContent.getDefaultTaskDisplayArea().getRootHomeTask())
+                .setVisible(false).build();
+        final ActivityRecord app = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        final RecentTasks recentTasks = mAtm.getRecentTasks();
+        spyOn(recentTasks);
+        doReturn(true).when(recentTasks).isCallerRecents(anyInt());
+        doReturn(new ComponentName("pkg", "cls")).when(recentTasks).getRecentsComponent();
+        requestTransition(recent, TRANSIT_TO_FRONT);
+        final Transition transition = recent.mTransitionController.getCollectingTransition();
+        transition.mParallelCollectType = Transition.PARALLEL_TYPE_RECENTS;
+
+        assertTrue(mAtm.getActivityStartController().startExistingRecentsIfPossible(
+                recent.intent, null /* options */));
+        assertTrue(transition.hasTransientLaunch());
+        assertThat(transition.mParticipants).contains(recent);
+        assertThat(transition.mParticipants).contains(app.getTask());
+        // No need to wait for the activity in transient hide task.
+        assertEquals(WindowContainer.SYNC_STATE_NONE, app.mSyncState);
+        // The recents transition can play without waiting for the redraw to complete.
+        if (com.android.window.flags.Flags.skipAddRecentsToSyncSet()) {
+            assertEquals(WindowContainer.SYNC_STATE_NONE, recent.mSyncState);
+        }
     }
 
     @Test
