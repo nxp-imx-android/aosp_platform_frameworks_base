@@ -2273,10 +2273,12 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private boolean hasSystemApplicationOverlayAppOp() {
+        final Context viewContext = mView != null && mView.mContext != null
+                ? mView.mContext : mContext;
         return mContext.getSystemService(AppOpsManager.class).checkOpRawNoThrow(
                 AppOpsManager.OPSTR_SYSTEM_APPLICATION_OVERLAY,
-                mView.mContext.getAttributionSource().getUid(),
-                mView.mContext.getPackageName(), null) == AppOpsManager.MODE_ALLOWED;
+                viewContext.getAttributionSource().getUid(),
+                viewContext.getPackageName(), null) == AppOpsManager.MODE_ALLOWED;
     }
 
     private int adjustLayoutInDisplayCutoutMode(WindowManager.LayoutParams attrs) {
