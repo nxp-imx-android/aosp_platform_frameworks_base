@@ -892,7 +892,7 @@ class SupervisionServiceTest {
         injector.awaitServiceThreadIdle()
 
         verify(mockDpmInternal).setApplicationHiddenBySystem(
-            eq("supervisionservice"),
+            eq(SupervisionManager.SUPERVISION_SYSTEM_ENTITY),
             eq(PACKAGE_NAME),
             eq(USER_ID),
             eq(enabled)

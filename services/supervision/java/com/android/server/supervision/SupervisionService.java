@@ -372,7 +372,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
             @UserIdInt int userId, String packageName, boolean hidden) {
         DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
         if (dpmi != null) {
-            dpmi.setApplicationHiddenBySystem("supervisionservice", packageName, userId, hidden);
+            dpmi.setApplicationHiddenBySystem(SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                    packageName, userId, hidden);
         }
     }
 
