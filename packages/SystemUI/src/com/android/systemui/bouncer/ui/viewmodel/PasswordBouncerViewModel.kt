@@ -21,11 +21,14 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.inputmethod.domain.interactor.InputMethodInteractor
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.kotlin.onSubscriberAdded
 import dagger.assisted.Assisted
@@ -246,6 +249,12 @@ constructor(
     /** Notifies that the password text field has gained or lost focus. */
     fun onTextFieldFocusChanged(isFocused: Boolean) {
         isTextFieldFocused.value = isFocused
+    }
+
+    fun shouldResetFocus(transitionState: TransitionState): Boolean {
+        return transitionState.isIdle() &&
+            Overlays.Bouncer in transitionState.currentOverlays &&
+            transitionState.currentScene == Scenes.Lockscreen
     }
 
     @AssistedFactory

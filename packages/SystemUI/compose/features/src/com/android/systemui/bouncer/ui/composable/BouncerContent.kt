@@ -126,6 +126,7 @@ import com.android.systemui.fold.ui.helper.FoldPosture
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.transitions.BOUNCER_INITIAL_TRANSLATION
+import com.android.wm.shell.common.split.SplitLayout
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -207,7 +208,7 @@ fun ContentScope.BouncerContent(
         startAppearAnimation = true
     }
 
-    BouncerContent(
+    BouncerContentLayout(
         layout,
         viewModel,
         dialogFactory,
@@ -243,7 +244,7 @@ fun ContentScope.BouncerContent(
 
 @Composable
 @VisibleForTesting
-fun BouncerContent(
+fun ContentScope.BouncerContentLayout(
     layout: BouncerOverlayLayout,
     viewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
@@ -286,7 +287,7 @@ fun BouncerContent(
  * authentication attempt, including all messaging UI (directives, reasoning, errors, etc.).
  */
 @Composable
-private fun StandardLayout(
+private fun ContentScope.StandardLayout(
     viewModel: BouncerOverlayContentViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -344,7 +345,10 @@ private fun StandardLayout(
  * by double-tapping on the side.
  */
 @Composable
-private fun SplitLayout(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
+private fun ContentScope.SplitLayout(
+    viewModel: BouncerOverlayContentViewModel,
+    modifier: Modifier = Modifier,
+) {
     val authMethod by viewModel.authMethodViewModel.collectAsStateWithLifecycle()
 
     Row(
@@ -432,7 +436,7 @@ private fun SplitLayout(viewModel: BouncerOverlayContentViewModel, modifier: Mod
  * anywhere on the background to flip their positions.
  */
 @Composable
-private fun BesideUserSwitcherLayout(
+private fun ContentScope.BesideUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -592,7 +596,7 @@ private fun BesideUserSwitcherLayout(
 
 /** Arranges the bouncer contents and user switcher contents one on top of the other, vertically. */
 @Composable
-private fun BelowUserSwitcherLayout(
+private fun ContentScope.BelowUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -743,7 +747,10 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
  * For example, this can be the PIN shapes or password text field.
  */
 @Composable
-private fun OutputArea(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
+private fun ContentScope.OutputArea(
+    viewModel: BouncerOverlayContentViewModel,
+    modifier: Modifier = Modifier,
+) {
     val authMethodViewModel: AuthMethodBouncerViewModel? by
         viewModel.authMethodViewModel.collectAsStateWithLifecycle()
     when (val nonNullViewModel = authMethodViewModel) {
