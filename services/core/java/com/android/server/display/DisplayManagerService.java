@@ -1130,13 +1130,15 @@ public final class DisplayManagerService extends SystemService {
         final String traceMessage;
         synchronized (mSyncRoot) {
             final int index = mDisplayStates.indexOfKey(displayId);
+            if (index < 0) {
+                return; // Display no longer exists.
+            }
 
-            final BrightnessPair brightnessPair =
-                    index < 0 ? null : mDisplayBrightnesses.valueAt(index);
-            if (index < 0 || (mDisplayStates.valueAt(index) == state
-                    && brightnessPair.brightness == brightnessState
-                    && brightnessPair.sdrBrightness == sdrBrightnessState)) {
-                return; // Display no longer exists or no change.
+            final BrightnessPair brightnessPair = mDisplayBrightnesses.valueAt(index);
+            if (!Flags.fixSetDisplayStateAfterDeviceChange() && mDisplayStates.valueAt(index)
+                    == state && brightnessPair.brightness == brightnessState
+                    && brightnessPair.sdrBrightness == sdrBrightnessState) {
+                return; // No change.
             }
 
             if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
