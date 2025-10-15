@@ -179,7 +179,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             final TaskViewTaskController controller = bubble.getTaskView().getController();
             final ShellTaskOrganizer taskOrganizer = controller.getTaskOrganizer();
             final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
-                    bubble.getTaskView().getCaptionInsetsOwner());
+                    bubble.getTaskView().getCaptionInsetsOwner(), false /* reparentToTda */);
 
             // Notify the task removal, but block all TaskViewTransitions during removal so we can
             // clear them without triggering
