@@ -2381,10 +2381,8 @@
     <string name="PERSOSUBSTATE_SIM_IMPI_ENTRY" msgid="7043865376145617024">"IMPI-н түгжээг тайлах ПИН"</string>
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"Сүлжээний дэд олонлогийн үйлчилгээ үзүүлэгчийн түгжээг тайлах ПИН"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"Сүлжээний SIM-н түгжээг тайлах хүсэлтийг илгээж байна…"</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS (2917242135129860371) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS (4435641041692795695) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"SIM-н сүлжээний дэд олонлогийн түгжээг тайлах хүсэлтийг илгээж байна…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"SIM-н үйлчилгээ үзүүлэгчийн түгжээг тайлах хүсэлтийг илгээж байна…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"Байгууллагын SIM-н түгжээг тайлах хүсэлтийг илгээж байна…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"PUK-н түгжээг тайлах хүсэлтийг илгээж байна…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"PUK-н түгжээг тайлах хүсэлтийг илгээж байна…"</string>
@@ -2410,18 +2408,15 @@
     <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_PUK_IN_PROGRESS" msgid="2695678959963807782">"PUK-н түгжээг тайлах хүсэлтийг илгээж байна…"</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"PUK-н түгжээг тайлах хүсэлтийг илгээж байна…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"Сүлжээний SIM-н түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR (7136658591279283417) -->
-    <skip />
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR (8344463467085504202) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"SIM-н сүлжээний дэд олонлогийн түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"SIM-н үйлчилгээ үзүүлэгчийн түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"Байгууллагын SIM-н түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"SIM-н түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"RUIM-н 1-р сүлжээний түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"RUIM-н 2-р сүлжээний түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"RUIM Hrpd-н түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"Байгууллагын RUIM-н түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR (1882547895012628428) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"RUIM-н үйлчилгээ үзүүлэгчийн түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"RUIM-н түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"PUK-н түгжээг тайлах амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"PUK-н түгжээг тайлах амжилтгүй боллоо."</string>
@@ -2441,15 +2436,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"Сүлжээний дэд олонлогийн үйлчилгээ үзүүлэгчийн түгжээг тайлах хүсэлт амжилтгүй боллоо."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"Сүлжээний SIM-н түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"Сүлжээний дэд олонлогийн SIM-н түгжээг амжилттай тайллаа."</string>
-    <!-- no translation found for PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS (6233653087159353652) -->
-    <skip />
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"SIM-н үйлчилгээ үзүүлэгчийн түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"Байгууллагын SIM-н түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"SIM-н түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"RUIM-н 1-р сүлжээний түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"RUIM-н 2-р сүлжээний түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"RUIM Hrpd-н түгжээг амжилттай тайллаа."</string>
-    <!-- no translation found for PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS (6724555357287036238) -->
-    <skip />
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"RUIM-н үйлчилгээ үзүүлэгчийн түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"Байгууллагын RUIM-н түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"RUIM-н түгжээг амжилттай тайллаа."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"PUK-н түгжээг амжилттай тайллаа."</string>

@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"一致しました"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"もう一度お試しください"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"もう一度お試しください"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"クリックしてロックを解除"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"いずれかのキーを押してロックを解除"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"すべての機能とデータを利用するにはロック解除"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"顔認証の最大試行回数を超えました"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM がありません"</string>
