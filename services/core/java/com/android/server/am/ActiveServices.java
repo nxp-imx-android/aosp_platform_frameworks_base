@@ -6125,8 +6125,10 @@ public final class ActiveServices {
                             r.definingUid, r.serviceInfo.processName);
                 }
                 if ((r.serviceInfo.flags & ServiceInfo.FLAG_USE_APP_ZYGOTE) != 0) {
+                    boolean isNativeService =
+                            android.os.Flags.nativeAppZygote() && r.mIsNativeIsolated;
                     hostingRecord = HostingRecord.byAppZygote(r.instanceName, r.definingPackageName,
-                            r.definingUid, r.serviceInfo.processName);
+                            r.definingUid, r.serviceInfo.processName, isNativeService);
                 }
             }
         }
