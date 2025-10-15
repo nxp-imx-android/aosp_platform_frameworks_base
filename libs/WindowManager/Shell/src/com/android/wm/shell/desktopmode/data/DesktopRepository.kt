@@ -950,8 +950,7 @@ class DesktopRepository(
             val hasTopTransparentFullscreenTask =
                 getTopTransparentFullscreenTaskData(desk.deskId) != null
             if (
-                DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                    .isTrue && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue
+                DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC.isTrue
             ) {
                 logD(
                     "isAnyDeskActive: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s",
@@ -1196,8 +1195,8 @@ class DesktopRepository(
         boundsBeforeSnapOrMaximizeByTaskId.removeReturnOld(taskId)
 
     /**
-     * Saves the bounds of the given task before snapping or maximizing
-     * if there is no existence for the given taskId.
+     * Saves the bounds of the given task before snapping or maximizing if there is no existence for
+     * the given taskId.
      *
      * This prevents unwanted overwrites.
      */

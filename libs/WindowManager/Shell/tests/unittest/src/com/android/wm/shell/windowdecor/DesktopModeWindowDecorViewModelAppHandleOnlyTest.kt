@@ -50,8 +50,9 @@ import org.mockito.quality.Strictness
  * Tests of [DesktopModeWindowDecorViewModelAppHandleOnlyTest]
  *
  * A subset of tests from [DesktopModeWindowDecorViewModel] for when DesktopMode is not active but
- * we still need to show AppHandle Usage: atest
- * WMShellUnitTests:DesktopModeWindowDecorViewModelAppHandleOnlyTest
+ * we still need to show AppHandle
+ *
+ * Usage: atest WMShellUnitTests:DesktopModeWindowDecorViewModelAppHandleOnlyTest
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -138,7 +139,6 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun testDecorationIsNotCreatedForSystemUIActivities() {
         val task = createTask()
 

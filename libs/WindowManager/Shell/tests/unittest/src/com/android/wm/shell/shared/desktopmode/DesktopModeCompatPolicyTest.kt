@@ -27,7 +27,6 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Process
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableContext
@@ -90,22 +89,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION,
-        Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE,)
-    fun testIsTopActivityExemptFromDesktopWindowing_onlyTransparentActivitiesInStack() {
-        assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
-            createFreeformTask()
-                    .apply {
-                        isActivityStackTransparent = true
-                        isTopActivityNoDisplay = false
-                        numActivities = 1
-                        baseActivity = baseActivityTest
-                    }))
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE)
-    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptWithPlatformSignature_onlyTransparentActivitiesInStack() {
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask()
@@ -123,8 +106,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE)
-    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptWithoutPlatformSignature_onlyTransparentActivitiesInStack() {
         assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask()
@@ -142,7 +123,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptWithPermission_onlyTransparentActivitiesInStack() {
         allowOverlayPermissionForAllUsers(arrayOf(SYSTEM_ALERT_WINDOW))
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
@@ -156,7 +136,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptWithNoPermission_onlyTransparentActivitiesInStack() {
         allowOverlayPermissionForAllUsers(arrayOf())
         assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
@@ -170,7 +149,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptCachedPermissionCheckIsUsed() {
         allowOverlayPermissionForAllUsers(arrayOf())
         assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(

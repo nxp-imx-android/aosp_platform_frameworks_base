@@ -82,7 +82,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_HSUM(Flags::enableDesktopWindowingHsum, true),
     ENABLE_DESKTOP_WINDOWING_IMMERSIVE_HANDLE_HIDING(
             Flags::enableDesktopWindowingImmersiveHandleHiding, true),
-    ENABLE_DESKTOP_WINDOWING_MODALS_POLICY(Flags::enableDesktopWindowingModalsPolicy, true),
     ENABLE_DESKTOP_WINDOWING_MODE(Flags::enableDesktopWindowingMode, true),
     ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES(
             Flags::enableDesktopWindowingMultiInstanceFeatures, true),
@@ -103,7 +102,6 @@ public enum DesktopModeFlags {
     ENABLE_HOLD_TO_DRAG_APP_HANDLE(Flags::enableHoldToDragAppHandle, true),
     ENABLE_INPUT_LAYER_TRANSITION_FIX(Flags::enableInputLayerTransitionFix, true),
     ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true),
-    ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, true),
     ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
     ENABLE_REQUEST_FULLSCREEN_BUGFIX(Flags::enableRequestFullscreenBugfix, true),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),

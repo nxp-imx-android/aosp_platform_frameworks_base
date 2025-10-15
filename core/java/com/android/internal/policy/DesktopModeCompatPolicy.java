@@ -31,7 +31,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
 
@@ -109,10 +108,6 @@ public class DesktopModeCompatPolicy {
             int userId, ActivityInfo info, @WindowConfiguration.ActivityType int topActivityType) {
         final String packageName = baseActivity != null ? baseActivity.getPackageName() : null;
         if (packageName == null) {
-            return false;
-        }
-
-        if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()) {
             return false;
         }
         // If activity is not being displayed, window mode change has no visual affect so leave
@@ -239,14 +234,6 @@ public class DesktopModeCompatPolicy {
 
     // Checks if the app for the given package has the SYSTEM_ALERT_WINDOW permission.
     private boolean hasFullscreenTransparentPermission(@NonNull String packageName, int userId) {
-        if (!DesktopModeFlags.ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS.isTrue()) {
-            // If the ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS flag is disabled, make neutral
-            // condition
-            // dependant on the ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE flag.
-            return !DesktopExperienceFlags.ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE
-                    .isTrue();
-        }
-
         final String cacheKey = userId + "@" + packageName;
         if (mPackageInfoCache.containsKey(cacheKey)) {
             return mPackageInfoCache.get(cacheKey);
@@ -277,14 +264,9 @@ public class DesktopModeCompatPolicy {
 
     // Checks if the app is signed with the platform signature.
     private boolean hasPlatformSignature(@Nullable ActivityInfo info) {
-        if (DesktopExperienceFlags.ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE.isTrue()) {
-            return info != null
-                    && info.applicationInfo != null
-                    && info.applicationInfo.isSignedWithPlatformKey();
-        }
-        // If the ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE flag is disabled, make neutral
-        // condition dependant on the ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS flag.
-        return !DesktopModeFlags.ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS.isTrue();
+        return info != null
+                && info.applicationInfo != null
+                && info.applicationInfo.isSignedWithPlatformKey();
     }
 
     /**

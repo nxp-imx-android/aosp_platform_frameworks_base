@@ -107,8 +107,9 @@ import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
 /**
- * Tests of [DesktopModeWindowDecorViewModel] Usage: atest
- * WMShellUnitTests:DesktopModeWindowDecorViewModelTests
+ * Tests of [DesktopModeWindowDecorViewModel]
+ *
+ * Usage: atest WMShellUnitTests:DesktopModeWindowDecorViewModelTests
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -339,7 +340,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun testDecorationIsNotCreatedForNoDisplayActivities() {
         val task =
             createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
@@ -351,7 +351,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun testDecorationIsNotCreatedForTopTranslucentActivities() {
         val task =
             createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
@@ -364,7 +363,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun testDecorationIsNotCreatedForSystemUIActivities() {
         // Set task as systemUI package
         val systemUIPackageName =
@@ -381,7 +379,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
     fun testDecorationIsNotCreatedForDefaultHomePackage() {
         val task =
             createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
