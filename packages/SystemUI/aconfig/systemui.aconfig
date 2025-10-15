@@ -1997,6 +1997,14 @@ flag {
   }
 }
 
+
+flag {
+    name: "animation_library_dynamic_target_resolution"
+    namespace: "systemui"
+    description: "Enabling new robust animation system for ensuring accurate transition to the optimal target. This allows launch and return animations to intelligently adapt to changes in the underlying UI (e.g., scrolling, rotation, new views)"
+    bug: "412899675"
+}
+
 flag {
   name: "fix_privacy_indicator_both_dot_chip_visible_qs"
   namespace: "systemui"
