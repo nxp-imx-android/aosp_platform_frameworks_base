@@ -437,7 +437,6 @@ public class DeviceIdleControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_CPU_TIME_FOR_TEMP_ALLOWLIST)
     @DisableFlags(Flags.FLAG_STOP_POWER_SAVE_TEMP_WHITELIST_BROADCAST)
     public void testTempAllowlistCountsUptime_flagDisabled() {
         doNothing().when(getContext()).sendBroadcastAsUser(any(), any(), any(), any());
@@ -478,8 +477,7 @@ public class DeviceIdleControllerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_USE_CPU_TIME_FOR_TEMP_ALLOWLIST,
-            Flags.FLAG_STOP_POWER_SAVE_TEMP_WHITELIST_BROADCAST})
+    @EnableFlags(Flags.FLAG_STOP_POWER_SAVE_TEMP_WHITELIST_BROADCAST)
     public void testTempAllowlistCountsUptime() {
         final int testUid = 12345;
         final long durationMs = 4300;

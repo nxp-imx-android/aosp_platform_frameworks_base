@@ -19,16 +19,6 @@ flag {
 }
 
 flag {
-    name: "use_cpu_time_for_temp_allowlist"
-    namespace: "backstage_power"
-    description: "Use CPU time for temporary allowlists"
-    bug: "376561328"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_non_scheduled_exit_from_idle_pending"
     namespace: "backstage_power"
     description: "If the Device Idle state is IDLE_PENDING, allow directly going past the state if IDLE_AFTER_INACTIVE_TIMEOUT is 0."

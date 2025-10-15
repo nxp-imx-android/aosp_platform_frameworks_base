@@ -11454,9 +11454,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
             pw.println("  mFgsStartTempAllowList:");
             final long currentTimeNow = System.currentTimeMillis();
-            final long tempAllowlistCurrentTime =
-                    com.android.server.deviceidle.Flags.useCpuTimeForTempAllowlist()
-                            ? SystemClock.uptimeMillis() : SystemClock.elapsedRealtime();
+            final long tempAllowlistCurrentTime = SystemClock.uptimeMillis();
             mFgsStartTempAllowList.forEach((uid, entry) -> {
                 pw.print("    " + UserHandle.formatUid(uid) + ": ");
                 entry.second.dump(pw);
