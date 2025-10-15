@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
-import android.app.StatusBarManager.CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP
 import android.app.StatusBarManager.DISABLE2_NONE
 import android.app.StatusBarManager.DISABLE_CLOCK
 import android.app.StatusBarManager.DISABLE_NONE
@@ -36,19 +35,16 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.fake
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
-import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.Kosmos
@@ -105,6 +101,8 @@ import com.android.systemui.statusbar.phone.data.repository.fakeDarkIconReposito
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
+import com.android.systemui.statusbar.pipeline.shared.domain.HomeStatusBarHelper.launchSecureCamera
+import com.android.systemui.statusbar.pipeline.shared.domain.HomeStatusBarHelper.transitionKeyguardToGone
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarIconBlockList
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarInteractorShowOperatorName
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
@@ -827,15 +825,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         kosmos.runTest {
             val latest by collectLastValue(underTest.canShowOngoingActivityChips)
 
-            fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.OCCLUDED,
-                testScope = testScope,
-            )
-            kosmos.keyguardInteractor.onCameraLaunchDetected(
-                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
-                isSecureCamera = true,
-            )
+            launchSecureCamera()
 
             assertThat(latest).isFalse()
         }
@@ -898,15 +888,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @EnableChipsModernization
     fun ongoingActivityChips_statusBarNotHidden_secureCamera_noHun_notAllowed() =
         kosmos.runTest {
-            fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.OCCLUDED,
-                testScope = testScope,
-            )
-            kosmos.keyguardInteractor.onCameraLaunchDetected(
-                CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
-                isSecureCamera = true,
-            )
+            launchSecureCamera()
 
             assertThat(underTest.ongoingActivityChips.areChipsAllowed).isFalse()
         }
@@ -1459,29 +1441,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
             val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
 
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-                // Secure camera is an occluding activity
-                kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
-                    true,
-                    taskInfo = null,
-                )
-                kosmos.keyguardInteractor.onCameraLaunchDetected(
-                    CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
-                    isSecureCamera = true,
-                )
-            } else {
-                // Secure camera is an occluding activity
-                fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    from = KeyguardState.LOCKSCREEN,
-                    to = KeyguardState.OCCLUDED,
-                    testScope = testScope,
-                )
-                kosmos.keyguardInteractor.onCameraLaunchDetected(
-                    CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
-                    isSecureCamera = true,
-                )
-            }
+            launchSecureCamera()
 
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
@@ -1763,28 +1723,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     private val testNotifications by lazy {
         listOf(activeNotificationModel(key = "notif1"), activeNotificationModel(key = "notif2"))
-    }
-
-    private suspend fun Kosmos.transitionKeyguardToGone() {
-        if (SceneContainerFlag.isEnabled) {
-            setDeviceEntered()
-        }
-
-        fakeKeyguardTransitionRepository.sendTransitionSteps(
-            from = KeyguardState.LOCKSCREEN,
-            to = KeyguardState.GONE,
-            testScope = testScope,
-        )
-    }
-
-    private fun Kosmos.setDeviceEntered() {
-        fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
-            SuccessFingerprintAuthenticationStatus(0, true)
-        )
-
-        sceneInteractor.changeScene(Scenes.Gone, "test")
-        sceneInteractor.setTransitionState(flowOf(ObservableTransitionState.Idle(Scenes.Gone)))
-        assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
     }
 
     companion object {
