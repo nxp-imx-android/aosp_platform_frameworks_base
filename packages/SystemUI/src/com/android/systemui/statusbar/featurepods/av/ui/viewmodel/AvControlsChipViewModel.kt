@@ -16,12 +16,9 @@
 
 package com.android.systemui.statusbar.featurepods.av.ui.viewmodel
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
-import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.res.R
@@ -41,10 +38,8 @@ import kotlinx.coroutines.flow.map
 /** ViewModel for the VC Privacy Chip */
 class AvControlsChipViewModel
 @AssistedInject
-constructor(
-    @Application val applicationContext: Context,
-    avControlsChipInteractor: AvControlsChipInteractor,
-) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
+constructor(avControlsChipInteractor: AvControlsChipInteractor) :
+    StatusBarPopupChipViewModel, ExclusiveActivatable() {
     companion object {
         val CAMERA_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_camera
         val MICROPHONE_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_microphone
@@ -65,8 +60,7 @@ constructor(
 
     private fun toPopupChipModel(avControlsChipModel: AvControlsChipModel): PopupChipModel {
         val chipId = PopupChipId.AvControlsIndicator
-        val sensorActivityModel = avControlsChipModel.sensorActivityModel
-        return when (sensorActivityModel) {
+        return when (val sensorActivityModel = avControlsChipModel.sensorActivityModel) {
             is SensorActivityModel.Inactive -> PopupChipModel.Hidden(chipId)
             is SensorActivityModel.Active ->
                 PopupChipModel.Shown(
@@ -81,14 +75,17 @@ constructor(
         }
     }
 
-    private fun contentDescription(sensorActivityModel: SensorActivityModel.Active): String? =
+    private fun contentDescription(
+        sensorActivityModel: SensorActivityModel.Active
+    ): ContentDescription =
         when (sensorActivityModel.sensors) {
-            SensorActivityModel.Active.Sensors.CAMERA -> R.string.accessibility_camera_in_use
+            SensorActivityModel.Active.Sensors.CAMERA ->
+                ContentDescription.Resource(R.string.accessibility_camera_in_use)
             SensorActivityModel.Active.Sensors.MICROPHONE ->
-                R.string.accessibility_microphone_in_use
+                ContentDescription.Resource(R.string.accessibility_microphone_in_use)
             SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE ->
-                R.string.accessibility_camera_and_microphone_in_use
-        }.let { ContentDescription.Resource(it).loadContentDescription(applicationContext) }
+                ContentDescription.Resource(R.string.accessibility_camera_and_microphone_in_use)
+        }
 
     private fun icons(sensorActivityModel: SensorActivityModel.Active): List<ChipIcon> =
         when (sensorActivityModel.sensors) {
