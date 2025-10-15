@@ -224,14 +224,6 @@ public class MediaOutputDialog extends SystemUIDialog
     }
 
     @Override
-    public void onConfigurationChanged(Configuration configuration) {
-        super.onConfigurationChanged(configuration);
-        if (mOnDialogEventListener != null) {
-            mOnDialogEventListener.onConfigurationChanged(this, configuration);
-        }
-    }
-
-    @Override
     public void dismiss() {
         // TODO(287191450): remove this once expensive binder calls are removed from refresh().
         // Due to these binder calls on the UI thread, calling refresh() during dismissal causes
@@ -249,6 +241,9 @@ public class MediaOutputDialog extends SystemUIDialog
     @Override
     public void stop() {
         mMediaSwitchingController.stop();
+        if (mOnDialogEventListener != null) {
+            mOnDialogEventListener.onStop(this);
+        }
     }
 
     @VisibleForTesting
@@ -498,12 +493,12 @@ public class MediaOutputDialog extends SystemUIDialog
         }
     }
 
-    /** Callback for configuration changes. */
+    /** Callback for dialog events. */
     public interface OnDialogEventListener {
-        /** Will be called inside onConfigurationChanged. */
-        void onConfigurationChanged(@NonNull Dialog dialog, @NonNull Configuration newConfig);
-
         /** Will be called when the dialog is created. */
         void onCreate(@NonNull Dialog dialog);
+
+        /** Will be called when the dialog is stopping. */
+        void onStop(@NonNull Dialog dialog);
     }
 }
