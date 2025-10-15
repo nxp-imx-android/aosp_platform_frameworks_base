@@ -48,6 +48,7 @@ import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.res.R;
 import com.android.systemui.util.DialogKt;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +77,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
 
     private final Context mContext;
     private final DialogTransitionAnimator mDialogTransitionAnimator;
+    @Nullable
+    private final WindowRootViewBlurInteractor mBlurInteractor;
     private final DialogDelegate<SystemUIDialog> mDelegate;
     @Nullable
     private final DismissReceiver mDismissReceiver;
@@ -106,10 +109,17 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         // TODO(b/219008720): Remove those calls to Dependency.get by introducing a
         // SystemUIDialogFactory and make all other dialogs create a SystemUIDialog to which we set
         // the content and attach listeners.
+        //
+        // When adding WindowRootViewBlurInteractor to Dependency.java, it causes this exception:
+        // Scoped provider was invoked recursively returning different results. Since this is what
+        // we want to deprecate and we only need blur for bottom sheet dialogs, we can make
+        // blurInteractor null here and disable that functionalitiy when constructed not from
+        // Factory.
         this(context, theme, dismissOnDeviceLock,
                 Dependency.get(SystemUIDialogManager.class),
                 Dependency.get(BroadcastDispatcher.class),
-                Dependency.get(DialogTransitionAnimator.class));
+                Dependency.get(DialogTransitionAnimator.class),
+                null /* blurInteractor */);
     }
 
     public static class Factory {
@@ -117,17 +127,20 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         private final SystemUIDialogManager mSystemUIDialogManager;
         private final BroadcastDispatcher mBroadcastDispatcher;
         private final DialogTransitionAnimator mDialogTransitionAnimator;
+        private final WindowRootViewBlurInteractor mBlurInteractor;
 
         @Inject
         public Factory(
                 @Application Context context,
                 SystemUIDialogManager systemUIDialogManager,
                 BroadcastDispatcher broadcastDispatcher,
-                DialogTransitionAnimator dialogTransitionAnimator) {
+                DialogTransitionAnimator dialogTransitionAnimator,
+                WindowRootViewBlurInteractor blurInteractor) {
             mContext = context;
             mSystemUIDialogManager = systemUIDialogManager;
             mBroadcastDispatcher = broadcastDispatcher;
             mDialogTransitionAnimator = dialogTransitionAnimator;
+            mBlurInteractor = blurInteractor;
         }
 
         /**
@@ -190,6 +203,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                     mSystemUIDialogManager,
                     mBroadcastDispatcher,
                     mDialogTransitionAnimator,
+                    mBlurInteractor,
                     dialogDelegate,
                     shouldAcsdDismissDialog);
         }
@@ -201,7 +215,8 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             boolean dismissOnDeviceLock,
             SystemUIDialogManager dialogManager,
             BroadcastDispatcher broadcastDispatcher,
-            DialogTransitionAnimator dialogTransitionAnimator) {
+            DialogTransitionAnimator dialogTransitionAnimator,
+            WindowRootViewBlurInteractor blurInteractor) {
         this(
                 context,
                 theme,
@@ -209,6 +224,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 dialogManager,
                 broadcastDispatcher,
                 dialogTransitionAnimator,
+                blurInteractor,
                 new DialogDelegate<>() {
                 },
                 true /* shouldAcsdDismissDialog */);
@@ -221,6 +237,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             SystemUIDialogManager dialogManager,
             BroadcastDispatcher broadcastDispatcher,
             DialogTransitionAnimator dialogTransitionAnimator,
+            WindowRootViewBlurInteractor blurInteractor,
             Delegate delegate) {
         this(
                 context,
@@ -229,6 +246,7 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
                 dialogManager,
                 broadcastDispatcher,
                 dialogTransitionAnimator,
+                blurInteractor,
                 delegate,
                 true /* shouldAcsdDismissDialog */);
     }
@@ -240,11 +258,13 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             SystemUIDialogManager dialogManager,
             BroadcastDispatcher broadcastDispatcher,
             DialogTransitionAnimator dialogTransitionAnimator,
+            WindowRootViewBlurInteractor blurInteractor,
             DialogDelegate<SystemUIDialog> delegate,
             boolean shouldAcsdDismissDialog) {
         super(context, theme);
         mContext = context;
         mDialogTransitionAnimator = dialogTransitionAnimator;
+        mBlurInteractor = blurInteractor;
         mDelegate = delegate;
 
         applyFlags(this);
@@ -474,6 +494,11 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
      */
     public static void resetElevation(Dialog dialog) {
         dialog.getWindow().setElevation(0);
+    }
+
+    @Nullable
+    WindowRootViewBlurInteractor getBlurInteractor() {
+        return mBlurInteractor;
     }
 
     public static void setShowForAllUsers(Dialog dialog, boolean show) {

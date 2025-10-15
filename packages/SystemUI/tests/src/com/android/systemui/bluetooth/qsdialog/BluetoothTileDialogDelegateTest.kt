@@ -33,6 +33,7 @@ import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.testKosmos
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.TestScope
 import org.junit.Before
@@ -72,6 +73,7 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
     @Mock private lateinit var sysuiDialogFactory: SystemUIDialog.Factory
     @Mock private lateinit var dialogManager: SystemUIDialogManager
     @Mock private lateinit var dialogTransitionAnimator: DialogTransitionAnimator
+    @Mock private lateinit var blurInteractor: WindowRootViewBlurInteractor
 
     private val uiProperties =
         BluetoothDetailsContentViewModel.UiProperties.build(
@@ -110,6 +112,7 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
                 dialogManager,
                 fakeBroadcastDispatcher,
                 dialogTransitionAnimator,
+                blurInteractor,
                 it.getArgument(0),
             )
         }

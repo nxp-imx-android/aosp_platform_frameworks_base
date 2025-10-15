@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
@@ -185,6 +186,8 @@ fun SystemUIDialogFactory.createBottomSheet(
                 contentAlignment = Alignment.BottomCenter,
             ) {
                 val radius = dimensionResource(R.dimen.bottom_sheet_corner_radius)
+                val isBlurSupported by
+                    dialog.blurInteractor!!.isBlurCurrentlySupported.collectAsStateWithLifecycle()
                 val backgroundBlurModifier =
                     if (Flags.blurOnMoreSurfaces()) {
                         val bottomsheetBlurRadius =
@@ -199,14 +202,16 @@ fun SystemUIDialogFactory.createBottomSheet(
                                 setBlurRadius(bottomsheetBlurRadius.roundToPx())
                                 setCornerRadius(cornerRadius.toPx())
                             }
-                            drawIntoCanvas { canvas ->
-                                drawable.setBounds(
-                                    0,
-                                    0,
-                                    size.width.toInt(),
-                                    size.height.toInt()
-                                )
-                                drawable.draw(canvas.nativeCanvas)
+                            if (isBlurSupported) {
+                                drawIntoCanvas { canvas ->
+                                    drawable.setBounds(
+                                        0,
+                                        0,
+                                        size.width.toInt(),
+                                        size.height.toInt()
+                                    )
+                                    drawable.draw(canvas.nativeCanvas)
+                                }
                             }
                         }
                     } else {
@@ -227,7 +232,11 @@ fun SystemUIDialogFactory.createBottomSheet(
                     shape = RoundedCornerShape(topStart = radius, topEnd = radius),
                     color =
                         if (Flags.blurOnMoreSurfaces()) {
-                            LocalAndroidColorScheme.current.surfaceEffect0
+                            if (isBlurSupported) {
+                                LocalAndroidColorScheme.current.surfaceEffect0
+                            } else {
+                                LocalAndroidColorScheme.current.surfaceEffect0Fallback
+                            }
                         } else {
                             MaterialTheme.colorScheme.surfaceContainer
                         },

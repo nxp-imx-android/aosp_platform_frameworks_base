@@ -21,6 +21,7 @@ import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.util.Assert
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import javax.inject.Inject
 
 /** A factory to easily instantiate a [ComponentSystemUIDialog]. */
@@ -31,6 +32,7 @@ constructor(
     private val dialogManager: SystemUIDialogManager,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
+    private val blurInteractor: WindowRootViewBlurInteractor,
 ) {
     /**
      * Create a new [ComponentSystemUIDialog].
@@ -57,6 +59,7 @@ constructor(
             dialogManager,
             broadcastDispatcher,
             dialogTransitionAnimator,
+            blurInteractor,
             dialogDelegate,
         )
     }

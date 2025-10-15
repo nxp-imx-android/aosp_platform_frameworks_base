@@ -39,6 +39,7 @@ import com.android.systemui.util.settings.FakeSettings
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SystemSettings
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -73,7 +74,8 @@ class FontScalingDialogDelegateTest : SysuiTestCase() {
     @Mock private lateinit var dialogManager: SystemUIDialogManager
     @Mock private lateinit var dialogFactory: SystemUIDialog.Factory
     @Mock private lateinit var userTracker: UserTracker
-    @Mock private lateinit var mDialogTransitionAnimator: DialogTransitionAnimator
+    @Mock private lateinit var dialogTransitionAnimator: DialogTransitionAnimator
+    @Mock private lateinit var blurInteractor: WindowRootViewBlurInteractor
 
     @Before
     fun setUp() {
@@ -111,7 +113,8 @@ class FontScalingDialogDelegateTest : SysuiTestCase() {
                 DEFAULT_DISMISS_ON_DEVICE_LOCK,
                 dialogManager,
                 fakeBroadcastDispatcher,
-                mDialogTransitionAnimator,
+                dialogTransitionAnimator,
+                blurInteractor,
                 fontScalingDialogDelegate,
             )
 

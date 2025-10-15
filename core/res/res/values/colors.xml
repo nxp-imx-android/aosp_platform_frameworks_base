@@ -759,6 +759,7 @@
     <color name="surface_effect_1">@color/surface_effect_1_color</color>
     <color name="surface_effect_2">@color/surface_effect_2_color</color>
     <color name="surface_effect_3">@color/surface_effect_3_color</color>
+    <color name="surface_effect_0_fallback">@color/surface_effect_0_color_fallback</color>
 
     <!-- Color for system bars -->
     <color name="navigation_bar_compatible">@android:color/black</color>
