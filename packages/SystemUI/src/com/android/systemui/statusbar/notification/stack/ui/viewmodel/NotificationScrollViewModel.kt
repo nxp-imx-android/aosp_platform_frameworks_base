@@ -169,6 +169,10 @@ constructor(
                     }
                     is Transition -> {
                         state.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings) ||
+                            state.isTransitioning(
+                                from = Scenes.QuickSettings,
+                                to = Scenes.Lockscreen,
+                            ) ||
                             state.fromContent == Scenes.Lockscreen &&
                                 (state.toContent == Overlays.Bouncer ||
                                     state.toContent == Scenes.Gone)
@@ -266,12 +270,12 @@ constructor(
      */
     val interactive: Flow<Boolean> =
         combine(
-            blurFraction,
-            brightnessMirrorShowing,
-            headsUpNotificationInteractor.hasPinnedRows,
-        ) { blurFraction, brightnessMirrorShowing, hasPinnedHun ->
-            (blurFraction != 1f || hasPinnedHun) && !brightnessMirrorShowing
-        }
+                blurFraction,
+                brightnessMirrorShowing,
+                headsUpNotificationInteractor.hasPinnedRows,
+            ) { blurFraction, brightnessMirrorShowing, hasPinnedHun ->
+                (blurFraction != 1f || hasPinnedHun) && !brightnessMirrorShowing
+            }
             .distinctUntilChanged()
             .dumpWhileCollecting("interactive")
 
