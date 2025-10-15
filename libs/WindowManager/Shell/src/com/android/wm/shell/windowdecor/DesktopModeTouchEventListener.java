@@ -241,16 +241,11 @@ public class DesktopModeTouchEventListener
                         getInputMethod(mMotionEvent));
             }
         } else if (id == R.id.minimize_window) {
-            if (DesktopExperienceFlags
-                    .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
-                final int nextFocusedTaskId = mDesktopTasksController
-                        .getNextFocusedTask(decoration.getTaskInfo());
-                final WindowDecorationWrapper nextFocusedWindow =
-                        mWindowDecorationFinder.apply(nextFocusedTaskId);
-                if (nextFocusedWindow != null) {
-                    nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-                }
-            }
+            final int nextFocusedTaskId =
+                    mDesktopTasksController.getNextFocusedTask(decoration.getTaskInfo());
+            final WindowDecorationWrapper nextFocusedWindow =
+                    mWindowDecorationFinder.apply(nextFocusedTaskId);
+            if (nextFocusedWindow != null) nextFocusedWindow.a11yAnnounceNewFocusedWindow();
             mDesktopTasksController.minimizeTask(
                     decoration.getTaskInfo(),
                     MinimizeReason.MINIMIZE_BUTTON);
