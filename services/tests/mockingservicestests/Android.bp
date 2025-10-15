@@ -243,6 +243,7 @@ test_module_config {
         "com.android.server.am.BroadcastQueueTest",
         "com.android.server.am.BroadcastRecordTest",
         "com.android.server.am.BroadcastQueueImplTest",
+        "com.android.server.am.BroadcastControllerTest",
     ],
 }
 
