@@ -848,15 +848,26 @@ public class HeadsUpManagerImpl
     }
 
     private String getEntryMapStr() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("\n mHeadsUpEntryMap: ");
         if (mHeadsUpEntryMap.isEmpty()) {
-            return "";
+            sb.append("(empty)");
+        } else {
+            for (HeadsUpEntry entry : mHeadsUpEntryMap.values()) {
+                sb.append("\n  ").append(entry.mEntry == null ? "null" : entry.mEntry.getKey());
+            }
         }
-        StringBuilder entryMapStr = new StringBuilder();
-        for (HeadsUpEntry entry: mHeadsUpEntryMap.values()) {
-            entryMapStr.append("\n ").append(
-                    entry.mEntry == null ? "null" : entry.mEntry.getKey());
+
+        sb.append("\n mEntriesToRemoveWhenReorderingAllowed: ");
+        if (mEntriesToRemoveWhenReorderingAllowed.isEmpty()) {
+            sb.append("(empty)");
+        } else {
+            for (NotificationEntry entry : mEntriesToRemoveWhenReorderingAllowed) {
+                sb.append("\n  ").append(entry.getKey());
+            }
         }
-        return entryMapStr.toString();
+        return sb.toString();
     }
 
     @Override
