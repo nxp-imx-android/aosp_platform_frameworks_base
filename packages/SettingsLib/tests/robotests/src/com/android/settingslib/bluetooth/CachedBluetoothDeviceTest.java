@@ -53,7 +53,6 @@ import android.view.InputDevice;
 
 import com.android.settingslib.R;
 import com.android.settingslib.Utils;
-import com.android.settingslib.media.flags.Flags;
 import com.android.settingslib.testutils.shadow.ShadowBluetoothAdapter;
 import com.android.settingslib.utils.ThreadUtils;
 import com.android.settingslib.widget.AdaptiveOutlineDrawable;
@@ -148,7 +147,6 @@ public class CachedBluetoothDeviceTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_TV_MEDIA_OUTPUT_DIALOG);
         mSetFlagsRule.enableFlags(FLAG_ENABLE_LE_AUDIO_SHARING);
         mContext = RuntimeEnvironment.application;
         mAudioManager = mContext.getSystemService(AudioManager.class);

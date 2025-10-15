@@ -16,8 +16,6 @@
 
 package com.android.settingslib.bluetooth;
 
-import static com.android.settingslib.media.flags.Flags.enableTvMediaOutputDialog;
-
 import android.annotation.CallbackExecutor;
 import android.annotation.StringRes;
 import android.bluetooth.BluetoothAdapter;
@@ -1780,7 +1778,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 || stringRes == R.string.bluetooth_active_battery_level_untethered_left
                 || stringRes == R.string.bluetooth_active_battery_level_untethered_right
                 || stringRes == R.string.bluetooth_battery_level_untethered;
-        if (isTvSummary && summaryIncludesBatteryLevel && enableTvMediaOutputDialog()) {
+        if (isTvSummary && summaryIncludesBatteryLevel) {
             return getTvBatterySummary(
                     getMinBatteryLevelWithMemberDevices(),
                     leftBattery,

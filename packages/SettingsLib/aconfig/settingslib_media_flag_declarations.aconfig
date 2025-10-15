@@ -2,13 +2,6 @@ package: "com.android.settingslib.media.flags"
 container: "system"
 
 flag {
-    name: "enable_tv_media_output_dialog"
-    namespace: "tv_system_ui"
-    description: "Gates all the changes for the tv specific media output dialog"
-    bug: "303205631"
-}
-
-flag {
     name: "enable_output_switcher_for_system_routing"
     namespace: "media_solutions"
     description: "Enable Output Switcher when no media is playing."
