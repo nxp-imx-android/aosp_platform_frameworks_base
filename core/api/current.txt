@@ -24118,6 +24118,34 @@ package android.media {
     field public static final int VP9Profile3 = 8; // 0x8
     field public static final int VP9Profile3HDR = 8192; // 0x2000
     field public static final int VP9Profile3HDR10Plus = 32768; // 0x8000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel40 = 64; // 0x40
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel41 = 256; // 0x100
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel50 = 1024; // 0x400
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel51 = 4096; // 0x1000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel52 = 16384; // 0x4000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel60 = 65536; // 0x10000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel61 = 262144; // 0x40000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel62 = 1048576; // 0x100000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCHighTierLevel63 = 4194304; // 0x400000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel10 = 1; // 0x1
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel20 = 2; // 0x2
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel21 = 4; // 0x4
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel30 = 8; // 0x8
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel31 = 16; // 0x10
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel40 = 32; // 0x20
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel41 = 128; // 0x80
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel50 = 512; // 0x200
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel51 = 2048; // 0x800
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel52 = 8192; // 0x2000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel60 = 32768; // 0x8000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel61 = 131072; // 0x20000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel62 = 524288; // 0x80000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCMainTierLevel63 = 2097152; // 0x200000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCProfileMain10 = 2; // 0x2
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCProfileMain10HDR10 = 4096; // 0x1000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCProfileMain10HDR10Plus = 8192; // 0x2000
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCProfileMain10Still = 4; // 0x4
+    field @FlaggedApi("android.media.codec.vvc_support") public static final int VVCProfileMain8 = 1; // 0x1
     field public int level;
     field public int profile;
   }
@@ -24787,6 +24815,7 @@ package android.media {
     field public static final String MIMETYPE_VIDEO_SCRAMBLED = "video/scrambled";
     field public static final String MIMETYPE_VIDEO_VP8 = "video/x-vnd.on2.vp8";
     field public static final String MIMETYPE_VIDEO_VP9 = "video/x-vnd.on2.vp9";
+    field @FlaggedApi("android.media.codec.vvc_support") public static final String MIMETYPE_VIDEO_VVC = "video/vvc";
     field public static final int PICTURE_TYPE_B = 3; // 0x3
     field public static final int PICTURE_TYPE_I = 1; // 0x1
     field public static final int PICTURE_TYPE_P = 2; // 0x2
