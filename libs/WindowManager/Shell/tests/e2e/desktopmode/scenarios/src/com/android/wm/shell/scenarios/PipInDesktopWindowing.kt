@@ -71,6 +71,14 @@ abstract class PipInDesktopWindowing(
         wmHelper.StateSyncBuilder().withAppTransitionIdle().withPipShown().waitForAndVerify()
     }
 
+    @Test
+    open fun expandPip() {
+        // verify simpleApp is still in freeform
+        simpleApp.waitForTransitionToFreeform(wmHelper)
+        // expand the PiP and verify it goes to freeform
+        pipApp.expandPipWindowToFreeformApp(wmHelper)
+    }
+
     @After
     fun teardown() {
         pipApp.exit(wmHelper)
