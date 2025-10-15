@@ -28,6 +28,7 @@ import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
+import android.app.admin.DevicePolicyManagerInternal;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
@@ -52,6 +53,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 
 import java.util.Objects;
@@ -75,7 +77,7 @@ public class ComputerControlSessionProcessor {
     private final KeyguardManager mKeyguardManager;
     private final AppOpsManager mAppOpsManager;
     private final PackageManager mPackageManager;
-    private final ComputerControlUserAccessController mUserAccessController;
+    private final DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
 
@@ -102,7 +104,7 @@ public class ComputerControlSessionProcessor {
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mPackageManager = context.getPackageManager();
-        mUserAccessController = new ComputerControlUserAccessController(context);
+        mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
     }
 
     /**
@@ -117,8 +119,6 @@ public class ComputerControlSessionProcessor {
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
         validateParams(attributionSource, params);
-        Set<UserHandle> allowedUsers =
-                mUserAccessController.validateAndGetAllowedUsers(attributionSource);
         startHandlerThreadIfNeeded();
 
         final boolean canCreateWithoutConsent;
@@ -131,7 +131,7 @@ public class ComputerControlSessionProcessor {
         }
 
         if (canCreateWithoutConsent) {
-            mHandler.post(() -> createSession(attributionSource, params, allowedUsers, callback));
+            mHandler.post(() -> createSession(attributionSource, params, callback));
             return;
         }
 
@@ -142,8 +142,7 @@ public class ComputerControlSessionProcessor {
         }
 
         final ResultReceiver resultReceiver =
-                new ConsentResultReceiver(attributionSource, params, allowedUsers, callback)
-                        .prepareForIpc();
+                new ConsentResultReceiver(attributionSource, params, callback).prepareForIpc();
         final Intent intent = new Intent(ComputerControlSession.ACTION_REQUEST_ACCESS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .putExtra(Intent.EXTRA_PACKAGE_NAME, attributionSource.getPackageName())
@@ -160,6 +159,16 @@ public class ComputerControlSessionProcessor {
 
     private void validateParams(AttributionSource attributionSource,
             ComputerControlSessionParams params) {
+        if (Flags.computerControlUserRestriction()) {
+            // TODO: b/445856399 - Support managed profiles.
+            Binder.withCleanCallingIdentity(() -> {
+                if (mDevicePolicyManagerInternal.isUserOrganizationManaged(
+                        UserHandle.getUserId(attributionSource.getUid()))) {
+                    throw new SecurityException(
+                        "Managed profiles are not allowed to use Computer Control.");
+                }
+            });
+        }
         synchronized (mSessions) {
             for (int i = 0; i < mSessions.size(); i++) {
                 ComputerControlSessionImpl session = mSessions.valueAt(i);
@@ -171,20 +180,22 @@ public class ComputerControlSessionProcessor {
             }
         }
 
-        // Ensure all packages the ComputerControl session should be able to launch are:
-        // 1) Applications with a valid launcher Intent
-        // 2) NOT PermissionController
-        for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
-            String packageName = params.getTargetPackageNames().get(i);
+        Binder.withCleanCallingIdentity(() -> {
+            // Ensure all packages the ComputerControl session should be able to launch are:
+            // 1) Applications with a valid launcher Intent
+            // 2) NOT PermissionController
+            for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
+                String packageName = params.getTargetPackageNames().get(i);
 
-            if (packageName == null
-                    || packageName.isEmpty()
-                    || mPackageManager.getPermissionControllerPackageName().equals(packageName)
-                    || mPackageManager.getLaunchIntentForPackage(packageName) == null) {
-                throw new IllegalArgumentException(
-                        "Invalid target package for ComputerControl: " + packageName);
+                if (packageName == null
+                        || packageName.isEmpty()
+                        || mPackageManager.getPermissionControllerPackageName().equals(packageName)
+                        || mPackageManager.getLaunchIntentForPackage(packageName) == null) {
+                    throw new IllegalArgumentException(
+                            "Invalid target package for ComputerControl: " + packageName);
+                }
             }
-        }
+        });
     }
 
     /**
@@ -217,7 +228,6 @@ public class ComputerControlSessionProcessor {
     private void createSession(
             @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params,
-            @NonNull Set<UserHandle> allowedUsers,
             @NonNull IComputerControlSessionCallback callback) {
         if (!callback.asBinder().pingBinder()) {
             Slog.w(TAG, "Binder is dead for ComputerControlSession " + params.getName()
@@ -233,7 +243,7 @@ public class ComputerControlSessionProcessor {
             Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
             session = new ComputerControlSessionImpl(
                     mContext, callback.asBinder(), params, attributionSource, mVirtualDeviceFactory,
-                    allowedUsers, (closedSession) -> {
+                    (closedSession) -> {
                 synchronized (mSessions) {
                     mSessions.remove(closedSession);
                 }
@@ -268,7 +278,9 @@ public class ComputerControlSessionProcessor {
     private boolean checkSessionCreationPreconditionsLocked(
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
-        if (mKeyguardManager.isDeviceLocked()) {
+        boolean isDeviceLocked = Binder.withCleanCallingIdentity(
+            () -> mKeyguardManager.isDeviceLocked());
+        if (isDeviceLocked) {
             dispatchSessionCreationFailed(callback, params,
                     ComputerControlSession.ERROR_DEVICE_LOCKED);
             return false;
@@ -308,26 +320,22 @@ public class ComputerControlSessionProcessor {
 
         private final AttributionSource mAttributionSource;
         private final ComputerControlSessionParams mParams;
-        private final Set<UserHandle> mAllowedUsers;
         private final IComputerControlSessionCallback mCallback;
 
         ConsentResultReceiver(
                 @NonNull AttributionSource attributionSource,
                 @NonNull ComputerControlSessionParams params,
-                @NonNull Set<UserHandle> allowedUsers,
                 @NonNull IComputerControlSessionCallback callback) {
             super(mHandler);
             mAttributionSource = attributionSource;
             mParams = params;
-            mAllowedUsers = allowedUsers;
             mCallback = callback;
         }
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle data) {
             if (resultCode == Activity.RESULT_OK) {
-                mHandler.post(
-                        () -> createSession(mAttributionSource, mParams, mAllowedUsers, mCallback));
+                mHandler.post(() -> createSession(mAttributionSource, mParams, mCallback));
             } else {
                 dispatchSessionCreationFailed(mCallback, mParams,
                         ComputerControlSession.ERROR_PERMISSION_DENIED);

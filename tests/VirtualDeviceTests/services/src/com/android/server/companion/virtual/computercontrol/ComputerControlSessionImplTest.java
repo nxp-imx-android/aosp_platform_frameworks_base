@@ -139,8 +139,6 @@ public class ComputerControlSessionImplTest {
             List.of(TARGET_PACKAGE_1, TARGET_PACKAGE_2);
     private static final String UNDECLARED_TARGET_PACKAGE = "com.android.baz";
     private static final String TARGET_CLASS = "com.android.foo.FooActivity";
-    private static final Set<UserHandle> ALLOWED_USERS =
-            Set.of(UserHandle.of(100), UserHandle.of(200));
 
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -279,6 +277,7 @@ public class ComputerControlSessionImplTest {
 
     @Test
     @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
     public void createSessionWithoutDisplaySurface_appliesCorrectParams() throws Exception {
         createComputerControlSession(mDefaultParams);
 
@@ -290,7 +289,7 @@ public class ComputerControlSessionImplTest {
                 .getDevicePolicy(POLICY_TYPE_RECENTS))
                 .isEqualTo(DEVICE_POLICY_DEFAULT);
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
-                .getAllowedUsers()).isEqualTo(ALLOWED_USERS);
+                .getAllowedUsers()).isEqualTo(Set.of(UserHandle.of(USER_ID)));
 
         verify(mVirtualDevice).createVirtualDisplay(
                 mVirtualDisplayConfigArgumentCaptor.capture(), any(), any());
@@ -669,7 +668,7 @@ public class ComputerControlSessionImplTest {
                 mContext, displayManagerGlobal, mViewConfiguration, globalSessionTimeoutDurationMs,
                 () -> mTransaction, mAppToken, params,
                 new AttributionSource(UserHandle.getUid(USER_ID, 0), "com.package", "tag"),
-                mVirtualDeviceFactory, ALLOWED_USERS, mOnClosedListener);
+                mVirtualDeviceFactory, mOnClosedListener);
         mSession.initialize(mLifecycleCallback, mClientSurface);
     }
 
