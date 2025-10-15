@@ -2377,15 +2377,14 @@ public final class PowerManagerService extends SystemService
 
         if (com.android.server.display.feature.flags.Flags.separateTimeouts()) {
             // The group should sleep if
-            // 1. It is not a default display group (and is display adjacent)
-            // 2. It is a default display group, and at least one display adjacent groups is
-            // interactive
+            // 1. It is a default display group, and either:
+            // 2. at least one display adjacent group is interactive [no longer applicable with
+            // tap to wake connected displays flag].
             // 3. The group is asleep, and no adjacent group exist
-            boolean shouldSleep = (powerGroup.getGroupId() != Display.DEFAULT_DISPLAY_GROUP)
-                    || (isDefaultAdjacentGroupInteractiveLocked())
-                    || (powerGroup.getWakefulnessLocked() == WAKEFULNESS_ASLEEP
+            boolean shouldSleep = (isDefaultAdjacentGroupInteractiveLocked()
+                    && !com.android.server.power.feature.flags.Flags.tapToWakeCd()) || (
+                    powerGroup.getWakefulnessLocked() == WAKEFULNESS_ASLEEP
                             && !doAnyAdjacentGroupsExistLocked());
-
             if (shouldSleep && powerGroup.isDefaultOrAdjacentGroup()) {
                 return sleepPowerGroupLocked(powerGroup, eventTime, reason, uid);
             }
@@ -3877,9 +3876,11 @@ public final class PowerManagerService extends SystemService
      */
     @GuardedBy("mLock")
     private boolean canDozeLocked(PowerGroup powerGroup) {
+        // allow dozing if we have tap to wake flag connected displays compatibility enabled.
         boolean allDefaultAdjacentGroupsNonInteractive =
-                (com.android.server.display.feature.flags.Flags.separateTimeouts())
-                ? !isDefaultAdjacentGroupInteractiveLocked() : true;
+                (!com.android.server.display.feature.flags.Flags.separateTimeouts()
+                        || !isDefaultAdjacentGroupInteractiveLocked())
+                        || com.android.server.power.feature.flags.Flags.tapToWakeCd();
         return powerGroup.supportsSandmanLocked()
                 && powerGroup.getWakefulnessLocked() == WAKEFULNESS_DOZING
                 && allDefaultAdjacentGroupsNonInteractive;
