@@ -795,4 +795,16 @@ public final class PolicyDefinition<V> {
         return "PolicyDefinition{ mPolicyKey= " + mPolicyKey + ", mResolutionMechanism= "
                 + mResolutionMechanism + ", mPolicyFlags= " + mPolicyFlags + " }";
     }
+
+    /**
+     * Add a policy definition for testing purposes. Since we need to test types before a policy
+     * using them is added, allow policy code to be tested earlier.
+     * Do not use outside of unit tests.
+     */
+    public static <T> void addGenericPolicyDefinitionForTesting(
+            String key,
+            PolicyDefinition<T> policy
+    ) {
+        POLICY_DEFINITIONS.put(key, policy);
+    }
 }
