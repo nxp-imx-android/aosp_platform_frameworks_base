@@ -18,6 +18,7 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 
 import android.annotation.NonNull;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.companion.datatransfer.continuity.TaskContinuityManager.HandoffRequestResultCode;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Slog;
@@ -99,6 +100,35 @@ class HandoffRequestCallbackHolder {
                         }
                     });
 
+            clearCallbacks(callbacksToRemove);
+        }
+    }
+
+    /**
+     * Notifies all callbacks of the given status code, and removes them from the list of pending
+     * callbacks.
+     *
+     * @param statusCode The status code of the handoff request.
+     */
+    public void finishAllCallbacks(@HandoffRequestResultCode int statusCode) {
+        synchronized (mCallbacks) {
+            Slog.i(TAG, "Finishing all callbacks with status code " + statusCode);
+            List<IHandoffRequestCallback> callbacksToRemove = new ArrayList<>();
+            mCallbacks.broadcast(
+                    (callback, cookie) -> {
+                        RequestCookie requestCookie = (RequestCookie) cookie;
+                        try {
+                            callback.onHandoffRequestFinished(
+                                    requestCookie.associationId, requestCookie.taskId, statusCode);
+                        } catch (RemoteException e) {
+                            Slog.e(
+                                    TAG,
+                                    "Failed to notify callback of handoff request cancellation",
+                                    e);
+                        }
+
+                        callbacksToRemove.add(callback);
+                    });
             clearCallbacks(callbacksToRemove);
         }
     }

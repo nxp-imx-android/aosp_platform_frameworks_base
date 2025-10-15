@@ -3606,6 +3606,7 @@ package android.companion.datatransfer.continuity {
     field public static final int HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY = 1; // 0x1
     field public static final int HANDOFF_AVAILABILITY_STATUS_UNSUPPORTED_HARDWARE = 2; // 0x2
     field public static final int HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND = 5; // 0x5
+    field public static final int HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED = 7; // 0x7
     field public static final int HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK = 2; // 0x2
     field public static final int HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR = 6; // 0x6
     field public static final int HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION = 3; // 0x3

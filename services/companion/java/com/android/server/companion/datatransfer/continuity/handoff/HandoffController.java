@@ -68,6 +68,12 @@ public class HandoffController extends FeatureController {
     }
 
     @Override
+    public void onDisabled() {
+        Slog.v(getTag(), "Cancelling all outbound handoff requests.");
+        mOutboundHandoffRequestHandler.cancelAllOutboundRequests();
+    }
+
+    @Override
     public String getTag() {
         return "HandoffController";
     }

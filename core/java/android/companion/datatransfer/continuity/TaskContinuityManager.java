@@ -104,6 +104,8 @@ public class TaskContinuityManager {
                 HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION,
                 HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT,
                 HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND,
+                HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED,
+                HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HandoffRequestResultCode {}
@@ -143,6 +145,9 @@ public class TaskContinuityManager {
      * transfer flow.
      */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR = 6;
+
+    /** Indicates a request for handoff failed because handoff is disabled on the current device. */
+    public static final int HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED = 7;
 
     /** @hide */
     public TaskContinuityManager(

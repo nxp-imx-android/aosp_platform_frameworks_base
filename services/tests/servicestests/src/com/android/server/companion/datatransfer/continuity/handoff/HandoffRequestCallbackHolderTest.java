@@ -38,6 +38,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
@@ -110,5 +112,22 @@ public class HandoffRequestCallbackHolderTest {
                 associationId, 100, HANDOFF_REQUEST_RESULT_SUCCESS);
 
         callback.verifyNotInvoked();
+    }
+
+    @Test
+    public void finishAllCallbacks_notifiesAllCallbacks() throws RemoteException {
+        List<FakeHandoffRequestCallback> callbacks =
+                List.of(new FakeHandoffRequestCallback(), new FakeHandoffRequestCallback());
+
+        for (int i = 0; i < callbacks.size(); i++) {
+            mCallbackHolder.registerCallback(i, i, callbacks.get(i));
+        }
+
+        int statusCode = 100;
+        mCallbackHolder.finishAllCallbacks(statusCode);
+
+        for (int i = 0; i < callbacks.size(); i++) {
+            callbacks.get(i).verifyInvoked(i, i, statusCode);
+        }
     }
 }

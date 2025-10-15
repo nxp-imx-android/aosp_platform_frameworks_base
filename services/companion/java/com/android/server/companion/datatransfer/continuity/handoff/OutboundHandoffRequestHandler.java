@@ -20,6 +20,7 @@ import static android.companion.datatransfer.continuity.TaskContinuityManager.HA
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED;
 
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
@@ -113,6 +114,11 @@ public class OutboundHandoffRequestHandler {
                     break;
             }
         }
+    }
+
+    public void cancelAllOutboundRequests() {
+        mHandoffRequestCallbackHolder.finishAllCallbacks(
+                HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED);
     }
 
     public void onHandoffRequestResultMessageReceived(
