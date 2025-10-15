@@ -35,7 +35,6 @@ import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.keyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.keyguardRootViewModel
-import com.android.systemui.keyguard.ui.viewmodel.keyguardSmartspaceViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.collectLastValue
@@ -109,7 +108,6 @@ class ClockSectionTest : SysuiTestCase() {
                     keyguardClockInteractor,
                     keyguardClockViewModel,
                     context,
-                    keyguardSmartspaceViewModel,
                     { keyguardBlueprintInteractor },
                     keyguardRootViewModel,
                     aodBurnInViewModel,

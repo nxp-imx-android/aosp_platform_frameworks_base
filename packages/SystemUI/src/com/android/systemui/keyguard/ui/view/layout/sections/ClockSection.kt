@@ -39,7 +39,6 @@ import com.android.systemui.keyguard.ui.binder.KeyguardClockViewBinder
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
-import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockController
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockFaceLayout
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
@@ -71,7 +70,6 @@ constructor(
     private val clockInteractor: KeyguardClockInteractor,
     protected val keyguardClockViewModel: KeyguardClockViewModel,
     @ShadeDisplayAware private val context: Context,
-    val smartspaceViewModel: KeyguardSmartspaceViewModel,
     val blueprintInteractor: Lazy<KeyguardBlueprintInteractor>,
     private val rootViewModel: KeyguardRootViewModel,
     private val aodBurnInViewModel: AodBurnInViewModel,
