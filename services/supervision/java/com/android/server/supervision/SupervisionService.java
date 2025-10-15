@@ -780,20 +780,14 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return UserHandle.isSameApp(Binder.getCallingUid(), Process.SYSTEM_UID);
     }
 
-    private void updateSupervisionRoleHolders(@UserIdInt int userId) {
-        List<String> roleHolders =
-                mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userId));
-        synchronized (getLockObject()) {
-            SupervisionUserData data = getUserDataLocked(userId);
-            data.supervisionRoleHolders.clear();
-            data.supervisionRoleHolders.addAll(roleHolders);
-            if (Flags.persistentSupervisionSettings()) {
-                mSupervisionSettings.saveUserData();
-            }
-        }
-    }
-
-    private List<String> getRemovedSupervisionRoleHolders(@UserIdInt int userId) {
+    /**
+     * Updates the cache of supervision role holders for a given user and returns the ones that were
+     * removed.
+     *
+     * @param userId The ID of the user for whom to update the role holders.
+     * @return A list of the supervision role holders that were removed.
+     */
+    private List<String> updateSupervisionRoleHolders(@UserIdInt int userId) {
         List<String> newRoleHolders =
                 mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userId));
 
@@ -1050,7 +1044,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                         () -> {
                             maybeApplyUserRestrictionsFor(user);
                             List<String> removedRoleHolders =
-                                    getRemovedSupervisionRoleHolders(user.getIdentifier());
+                                    updateSupervisionRoleHolders(user.getIdentifier());
                             clearSuspendedPackagesFor(user.getIdentifier(), removedRoleHolders);
                         });
             }
