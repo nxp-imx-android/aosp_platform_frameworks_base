@@ -38,6 +38,7 @@ import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import java.io.IOException
 import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineDispatcher
@@ -80,6 +81,9 @@ constructor(
     data class InputStream(val inputStream: java.io.InputStream, val context: Context?) : Source {
         constructor(inputStream: java.io.InputStream) : this(inputStream, null)
     }
+
+    /** Exception thrown when the image is too large to be decoded. */
+    class OversizedImageException(message: String) : IOException(message)
 
     /**
      * Loads passed [Source] on a background thread and returns the [Bitmap].
@@ -255,23 +259,29 @@ constructor(
     ): Drawable? =
         traceSection("ImageLoader#loadDrawable") {
             return try {
-                loadDrawableSync(
-                    toImageDecoderSource(source, defaultContext),
-                    maxWidth,
-                    maxHeight,
-                    allocator,
-                )
-                    ?:
-                    // If we have a resource, retry fallback using the "normal" Resource loading
-                    // system.
-                    // This will come into effect in cases like trying to load
-                    // AnimatedVectorDrawable.
-                    if (source is Res) {
+                try {
+                    ImageDecoder.decodeDrawable(toImageDecoderSource(source, defaultContext)) {
+                        decoder,
+                        info,
+                        _ ->
+                        configureDecoderForMaximumSize(decoder, info.size, maxWidth, maxHeight)
+                        decoder.allocator = allocator
+                    }
+                } catch (e: Exception) {
+                    if (e is OversizedImageException) {
+                        // We don't want fallback if we detected an oversized drawable.
+                        null
+                    } else if (source is Res) {
+                        // If we have a resource, retry fallback using the "normal" Resource loading
+                        // system.
+                        // This will come into effect in cases like trying to load
+                        // AnimatedVectorDrawable.
                         val context = source.context ?: defaultContext
                         ResourcesCompat.getDrawable(context.resources, source.resId, context.theme)
                     } else {
                         null
                     }
+                }
             } catch (e: NotFoundException) {
                 Log.w(TAG, "Couldn't load resource $source", e)
                 null
@@ -435,6 +445,12 @@ constructor(
         const val DEFAULT_MAX_SAFE_BITMAP_SIZE_PX = 4096
 
         /**
+         * If an image is larger than this, we won't even attempt to decode it, as we risk taking up
+         * all of the device memory.
+         */
+        const val DEFAULT_DECODE_HARD_LIMIT_PX = 4096
+
+        /**
          * This constant signals that ImageLoader shouldn't attempt to resize the passed bitmap in a
          * given dimension.
          *
@@ -468,11 +484,27 @@ constructor(
             @Px maxWidth: Int,
             @Px maxHeight: Int,
         ) {
+            val width = imgSize.getWidth()
+            val height = imgSize.getHeight()
+            if (width > DEFAULT_DECODE_HARD_LIMIT_PX || height > DEFAULT_DECODE_HARD_LIMIT_PX) {
+                Log.e(
+                    TAG,
+                    "Image dimensions (${width}x${height}) " +
+                        "exceed the maximum " +
+                        "${DEFAULT_DECODE_HARD_LIMIT_PX}x${DEFAULT_DECODE_HARD_LIMIT_PX}",
+                )
+                // The image is larger than what we can reasonably expect to decode without filling
+                // up the device memory, so let's bail.
+                throw OversizedImageException(
+                    "Image dimensions (${width}x${height}) exceed the maximum allowed size."
+                )
+            }
+
             if (maxWidth == DO_NOT_RESIZE && maxHeight == DO_NOT_RESIZE) {
                 return
             }
 
-            if (imgSize.width <= maxWidth && imgSize.height <= maxHeight) {
+            if (width <= maxWidth && height <= maxHeight) {
                 return
             }
 
@@ -495,8 +527,8 @@ constructor(
             // Use the same scale for both dimensions to keep the aspect ratio.
             val scale = min(wScale, hScale)
             if (scale < 1.0f) {
-                val targetWidth = (imgSize.width * scale).toInt()
-                val targetHeight = (imgSize.height * scale).toInt()
+                val targetWidth = (width * scale).toInt()
+                val targetHeight = (height * scale).toInt()
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Log.d(TAG, "Configured image size to $targetWidth x $targetHeight")
                 }
