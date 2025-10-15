@@ -19,7 +19,6 @@ package com.android.server.utils;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.os.SystemClock;
 import android.util.Log;
 import android.util.Slog;
 
@@ -27,6 +26,9 @@ import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
@@ -134,21 +136,24 @@ public class EventLogger {
     public abstract static class Event {
 
         /** Timestamps formatter. */
-        private static final SimpleDateFormat sFormat =
-                new SimpleDateFormat("MM-dd HH:mm:ss:SSS", Locale.US);
+        private static final DateTimeFormatter sFormatter =
+                DateTimeFormatter.ofPattern("MM-dd HH:mm:ss:SSS", Locale.US);
 
         private final long mTimestamp;
 
         public Event() {
-            mTimestamp = SystemClock.elapsedRealtime();
+            mTimestamp = System.currentTimeMillis();
         }
 
         public String toString() {
-            final long now = System.currentTimeMillis();
-            // Adjust the event time to be relative to the current time
-            final long eventMillis = now - (SystemClock.elapsedRealtime() - mTimestamp);
-            return (new StringBuilder(sFormat.format(new Date(eventMillis))))
-                    .append(" ").append(eventToString()).toString();
+            // Instant represents a point in time (UTC).
+            // ZoneId.systemDefault() always gets the current default time zone.
+            // We combine the instant with the current zone to get the correct local time.
+            final String formattedTimestamp =
+                    sFormatter.withZone(ZoneId.systemDefault()).format(
+                            Instant.ofEpochMilli(mTimestamp));
+
+            return formattedTimestamp + " " + eventToString();
         }
 
         /**
