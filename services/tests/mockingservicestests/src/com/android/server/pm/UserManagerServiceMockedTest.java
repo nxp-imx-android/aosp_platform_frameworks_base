@@ -27,12 +27,10 @@ import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
 import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
 import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER;
-import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_HSU_NOT_ADMIN;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
 import static android.multiuser.Flags.FLAG_USER_FILTER_REFACTORING;
-import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
@@ -672,7 +670,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({FLAG_ALLOW_PRIVATE_PROFILE, FLAG_ENABLE_PRIVATE_SPACE_FEATURES})
     public void testAutoLockPrivateProfile() {
         int mainUser = mUms.getMainUserId();
         assumeTrue(mUms.canAddPrivateProfile(mainUser));
@@ -690,10 +687,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
     public void testAutoLockOnDeviceLockForPrivateProfile() {
         int mainUser = mUms.getMainUserId();
         assumeTrue(mUms.canAddPrivateProfile(mainUser));
@@ -712,10 +705,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
     public void testAutoLockOnDeviceLockForPrivateProfile_keyguardUnlocked() {
         assumeTrue(mUms.canAddPrivateProfile(0));
         UserManagerService mSpiedUms = spy(mUms);
@@ -732,10 +721,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
     public void testAutoLockAfterInactityForPrivateProfile() {
         int mainUser = mUms.getMainUserId();
         assumeTrue(mUms.canAddPrivateProfile(mainUser));
@@ -756,10 +741,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
     public void testSetOrUpdateAutoLockPreference_noPrivateProfile() {
         mUms.setOrUpdateAutoLockPreferenceForPrivateProfile(
                 Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_AFTER_INACTIVITY);
@@ -771,10 +752,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
     public void testSetOrUpdateAutoLockPreference() {
         int mainUser = mUms.getMainUserId();
         assumeTrue(mUms.canAddPrivateProfile(mainUser));
@@ -826,10 +803,6 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @EnableFlags({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-    })
     public void testGetProfileIdsExcludingHidden() {
         assumeTrue(mUms.canAddPrivateProfile(0));
         UserInfo privateProfileUser =
@@ -859,11 +832,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_BLOCK_PRIVATE_SPACE_CREATION,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
+    @RequiresFlagsEnabled({FLAG_BLOCK_PRIVATE_SPACE_CREATION})
     public void testCreatePrivateProfileOnHeadlessSystemUser_shouldAllowCreation() {
         UserManagerService mSpiedUms = spy(mUms);
         assumeTrue(mUms.isHeadlessSystemUserMode());
@@ -875,11 +844,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_BLOCK_PRIVATE_SPACE_CREATION,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
+    @RequiresFlagsEnabled({FLAG_BLOCK_PRIVATE_SPACE_CREATION})
     public void testCreatePrivateProfileOnSecondaryUser_shouldNotAllowCreation() {
         assumeTrue(mUms.canAddMoreUsersOfType(USER_TYPE_FULL_SECONDARY));
         UserInfo user = mUms.createUserWithThrow(generateLongString(), USER_TYPE_FULL_SECONDARY, 0);
@@ -890,11 +855,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_BLOCK_PRIVATE_SPACE_CREATION,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
+    @RequiresFlagsEnabled({FLAG_BLOCK_PRIVATE_SPACE_CREATION})
     public void testCreatePrivateProfileOnAutoDevices_shouldNotAllowCreation() {
         doReturn(true).when(mMockPms).hasSystemFeature(eq(FEATURE_AUTOMOTIVE), anyInt());
         int mainUser = mUms.getMainUserId();
@@ -905,11 +866,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_BLOCK_PRIVATE_SPACE_CREATION,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
+    @RequiresFlagsEnabled({FLAG_BLOCK_PRIVATE_SPACE_CREATION})
     public void testCreatePrivateProfileOnTV_shouldNotAllowCreation() {
         doReturn(true).when(mMockPms).hasSystemFeature(eq(FEATURE_LEANBACK), anyInt());
         int mainUser = mUms.getMainUserId();
@@ -920,11 +877,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_BLOCK_PRIVATE_SPACE_CREATION,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
+    @RequiresFlagsEnabled({FLAG_BLOCK_PRIVATE_SPACE_CREATION})
     public void testCreatePrivateProfileOnEmbedded_shouldNotAllowCreation() {
         doReturn(true).when(mMockPms).hasSystemFeature(eq(FEATURE_EMBEDDED), anyInt());
         int mainUser = mUms.getMainUserId();
@@ -935,11 +888,7 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({
-        FLAG_ALLOW_PRIVATE_PROFILE,
-        FLAG_BLOCK_PRIVATE_SPACE_CREATION,
-        FLAG_ENABLE_PRIVATE_SPACE_FEATURES
-    })
+    @RequiresFlagsEnabled({FLAG_BLOCK_PRIVATE_SPACE_CREATION})
     public void testCreatePrivateProfileOnWatch_shouldNotAllowCreation() {
         doReturn(true).when(mMockPms).hasSystemFeature(eq(FEATURE_WATCH), anyInt());
         int mainUser = mUms.getMainUserId();
