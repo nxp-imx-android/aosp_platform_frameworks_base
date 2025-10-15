@@ -271,7 +271,6 @@ public final class CameraExtensionCharacteristics {
         private final Object mLock = new Object();
         private final int PROXY_SERVICE_DELAY_MS = 2000;
         private ExtensionConnectionManager mConnectionManager = new ExtensionConnectionManager();
-        private boolean mPermissionForFallbackEnabled = false;
         private boolean mIsFallbackEnabled = false;
 
         // Singleton, don't allow construction
@@ -433,20 +432,6 @@ public final class CameraExtensionCharacteristics {
                     releaseProxyConnectionLocked(ctx, extension);
                 }
 
-                if (ret && useFallback && mIsFallbackEnabled) {
-                    try {
-                        InitializeSessionHandler cb = new InitializeSessionHandler(ctx);
-                        initializeSession(cb, extension);
-                        ret = mPermissionForFallbackEnabled;
-                    } catch (RemoteException e) {
-                        Log.e(TAG, "Failed to initialize extension. Extension service does not"
-                                + " respond!");
-                        ret = false;
-                    } finally {
-                        releaseSession(extension);
-                    }
-                }
-
                 return ret;
             }
         }
@@ -522,7 +507,6 @@ public final class CameraExtensionCharacteristics {
                     try {
                         mConnectionManager.getProxy(extension).releaseSession();
                         mConnectionManager.setSessionInitialized(false);
-                        mPermissionForFallbackEnabled = false; // Reset permission status
                     } catch (RemoteException e) {
                         Log.e(TAG, "Failed to release session! Extension service does"
                                 + " not respond!");
@@ -568,52 +552,6 @@ public final class CameraExtensionCharacteristics {
                 } else {
                     return null;
                 }
-            }
-        }
-
-        private class InitializeSessionHandler extends IInitializeSessionCallback.Stub {
-            private Context mContext;
-
-            public InitializeSessionHandler(Context context) {
-                mContext = context;
-            }
-
-            @Override
-            public void onSuccess() {
-                // Verify that the camera permission is granted if using
-                // the fallback implementation for an extension
-                String[] callingUidPackages = mContext.getPackageManager()
-                        .getPackagesForUid(Binder.getCallingUid());
-                String fallbackPackageName = mContext.getResources()
-                        .getString(FALLBACK_PACKAGE_NAME);
-
-                if (!fallbackPackageName.isEmpty()
-                        && Arrays.stream(callingUidPackages)
-                        .anyMatch(fallbackPackageName::equals)) {
-                    String[] cameraPermissions = {
-                        android.Manifest.permission.SYSTEM_CAMERA,
-                        android.Manifest.permission.CAMERA
-                    };
-
-                    boolean allPermissionsGranted = true;
-                    for (String permission : cameraPermissions) {
-                        int permissionResult = mContext.checkPermission(permission,
-                                Binder.getCallingPid(), Binder.getCallingUid());
-                        if (permissionResult != PackageManager.PERMISSION_GRANTED) {
-                            Log.w(TAG, permission + " permission not granted for "
-                                    + fallbackPackageName + ", permission check result: "
-                                    + permissionResult);
-                            allPermissionsGranted = false;
-                        }
-                    }
-
-                    mPermissionForFallbackEnabled = allPermissionsGranted;
-                }
-            }
-
-            @Override
-            public void onFailure() {
-                Log.e(TAG, "Failed to initialize proxy service session!");
             }
         }
 
