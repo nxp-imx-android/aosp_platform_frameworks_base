@@ -186,6 +186,7 @@ public class RavenwoodSystemServer {
                     return switch (method.getName()) {
                         case "getUserRestrictionSources" -> Collections.emptyList();
                         case "isHeadlessSystemUserMode" -> false;
+                        case "isUserUnlockingOrUnlocked" -> true;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };
                 });
