@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"ઍપ્લિકેશન કે તમારી સંસ્થા દ્વારા સ્ક્રીનશૉટ લેવાની મંજૂરી નથી"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"તમારા IT ઍડમિન દ્વારા સ્ક્રીનશૉટ લેવાની સુવિધા બ્લૉક કરવામાં આવી છે"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"ફેરફાર કરો"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"સ્ક્રીનશૉટમાં ફેરફાર કરો"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"શેર કરો"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"સ્ક્રીનશૉટ શેર કરો"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"વધુ કૅપ્ચર કરો"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"સ્ક્રીનશૉટ છોડી દો"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ઑફિસની પ્રોફાઇલનો મેસેજ છોડી દો"</string>
@@ -1025,6 +1027,8 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ઍપની સૂચિ ખોલો"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"સેટિંગ ખોલો"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ડિજિટલ આસિસ્ટંટ ખોલો"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"લૉક સ્ક્રીન"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"નોંધ લો"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"એકસાથે એકથી વધુ કાર્યો કરવા"</string>

@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"La app o tu organización no permiten las capturas de pantalla"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Tu administrador de TI bloquea las capturas de pantalla"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Editar"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"Editar captura de pantalla"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"Compartir"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"Compartir captura"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Capturar más"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Descartar captura de pantalla"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Descartar mensaje del perfil de trabajo"</string>
@@ -159,8 +161,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pausar"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Silenciar"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Activar sonido"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Tu administrador de TI bloqueó las capturas de pantalla"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Tomar una captura de la pantalla completa"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Grabar toda la pantalla"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Tomar captura de pantalla del área seleccionada"</string>
@@ -1025,6 +1026,8 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Abrir lista de apps"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Abrir configuración"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Abrir asistente digital"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Bloquear la pantalla"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Crear una nota"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Tareas múltiples"</string>
@@ -1716,8 +1719,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Desliza desde la parte superior izquierda para abrir las notificaciones"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Desliza el dedo desde la parte superior derecha para abrir la Configuración rápida"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Atrás"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Accesibilidad"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Anterior"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Siguiente"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navegar a la página siguiente"</string>

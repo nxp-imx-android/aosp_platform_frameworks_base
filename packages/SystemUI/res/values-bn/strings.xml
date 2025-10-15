@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"এই অ্যাপ বা আপনার প্রতিষ্ঠান স্ক্রিনশট নেওয়ার অনুমতি দেয়নি"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"আপনার আইটি অ্যাডমিন স্ক্রিনশট নেওয়ার সুবিধা ব্লক করেছেন"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"এডিট করুন"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"স্ক্রিনশট এডিট করুন"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"শেয়ার করুন"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"স্ক্রিনশট শেয়ার করুন"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"আরও বেশি ক্যাপচার করুন"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"স্ক্রিনশট বাতিল করুন"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"অফিস প্রোফাইল সংক্রান্ত মেসেজ বাতিল করুন"</string>
@@ -1025,6 +1027,8 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"অ্যাপের তালিকা খুলুন"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"সেটিংস খুলুন"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ডিজিটাল অ্যাসিস্ট্যান্ট খুলুন"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"লক স্ক্রিন"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"একটি নোট লিখুন"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"মাল্টিটাস্কিং"</string>

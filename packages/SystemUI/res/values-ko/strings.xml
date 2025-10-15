@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"앱이나 조직에서 스크린샷 촬영을 허용하지 않습니다."</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"IT 관리자가 스크린샷 촬영을 허용하지 않습니다."</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"수정"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"스크린샷 수정"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"공유"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"스크린샷 공유"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"더 캡처하기"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"스크린샷 닫기"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"직장 프로필 메시지 닫기"</string>
@@ -1025,6 +1027,8 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"앱 목록 열기"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"설정 열기"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"디지털 어시스턴트 열기"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"화면 잠금"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"메모 작성"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"멀티태스킹"</string>

@@ -88,9 +88,11 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Hindi pinahihintulutan ng app o ng iyong organisasyon ang pagkuha ng mga screenshot"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Na-block ng iyong IT admin ang pagkuha ng mga screenshot"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"I-edit"</string>
-    <string name="screenshot_edit_description" msgid="3333092254706788906">"I-edit ang screenshot"</string>
+    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
+    <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"Ibahagi"</string>
-    <string name="screenshot_share_description" msgid="2861628935812656612">"Ibahagi ang screenshot"</string>
+    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
+    <skip />
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Mag-capture pa"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"I-dismiss ang screenshot"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"I-dismiss ang mensahe sa profile sa trabaho"</string>
@@ -159,8 +161,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"I-pause"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"I-mute"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"I-unmute"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Na-block ng iyong IT admin ang screen capture"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Kunan ng screenshot ang buong screen"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"I-record ang buong screen"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Kunan ng screenshot ang piniling bahagi"</string>
@@ -1025,6 +1026,8 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Buksan ang listahan ng mga app"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Buksan ang mga setting"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Buksan ang digital na assistant"</string>
+    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"I-lock ang screen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Magtala"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Pag-multitask"</string>
@@ -1716,8 +1719,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Mag-swipe mula sa kaliwang bahagi sa itaas para buksan ang mga notification"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Mag-swipe mula sa kanang bahagi sa itaas para buksan ang Mga Mabilisang Setting"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Bumalik"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Accessibility"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Nakaraan"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Susunod"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"mag-navigate sa susunod na page"</string>
