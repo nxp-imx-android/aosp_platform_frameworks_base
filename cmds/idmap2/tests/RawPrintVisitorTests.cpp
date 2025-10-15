@@ -66,7 +66,7 @@ TEST(RawPrintVisitorTests, CreateRawPrintVisitor) {
   (*idmap)->accept(&visitor);
 
   ASSERT_CONTAINS_REGEX(ADDRESS "504d4449  magic\n", stream.str());
-  ASSERT_CONTAINS_REGEX(ADDRESS "0000000b  version\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "0000000c  version\n", stream.str());
   ASSERT_CONTAINS_REGEX(
       StringPrintf(ADDRESS "%s  target crc\n", android::idmap2::TestConstants::TARGET_CRC_STRING),
       stream.str());
@@ -76,12 +76,15 @@ TEST(RawPrintVisitorTests, CreateRawPrintVisitor) {
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  fulfilled policies: public\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  enforce overlayable\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000000  constraints count\n", stream.str());
-  ASSERT_CONTAINS_REGEX(ADDRESS "00000004  target entry count", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000001  target entry section count", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000000  target inline entry count", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000000  target inline entry value count", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000000  config count", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000004  overlay entry count", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "0000000a  string pool index offset", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000000  flag name index\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "      00  flag negated\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000004  entry count\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f020000  target id: integer/int1", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f010000  overlay id: integer/int1", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f03000e  target id: string/str1", stream.str());
@@ -116,7 +119,7 @@ TEST(RawPrintVisitorTests, CreateRawPrintVisitorWithoutAccessToApks) {
   (*idmap)->accept(&visitor);
 
   ASSERT_CONTAINS_REGEX(ADDRESS "504d4449  magic\n", stream.str());
-  ASSERT_CONTAINS_REGEX(ADDRESS "0000000b  version\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "0000000c  version\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00001234  target crc\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00005678  overlay crc\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000011  fulfilled policies: public|signature\n", stream.str());
@@ -132,17 +135,23 @@ TEST(RawPrintVisitorTests, CreateRawPrintVisitorWithoutAccessToApks) {
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  constraint value\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  constraint type\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000002  constraint value\n", stream.str());
-  ASSERT_CONTAINS_REGEX(ADDRESS "00000003  target entry count\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000002  target entry section count\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  target inline entry count\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  target inline entry value count", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  config count", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000003  overlay entry count\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000000  string pool index offset\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000000  flag name index\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "      00  flag negated\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000003  entry count\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f020000  target id\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f020000  overlay id\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f030000  target id\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f030000  overlay id\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f030002  target id\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000001  flag name index\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "      00  flag negated\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "00000001  entry count\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f030001  overlay id\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "7f040000  target id\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "0000000e  config: land-xxhdpi-v7 size\n", stream.str());
