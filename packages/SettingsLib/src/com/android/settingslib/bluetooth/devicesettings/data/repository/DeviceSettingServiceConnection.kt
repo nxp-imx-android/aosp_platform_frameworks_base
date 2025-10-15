@@ -20,6 +20,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Bundle
 import android.os.DeadObjectException
 import android.os.IBinder
 import android.os.IInterface
@@ -365,7 +366,17 @@ class DeviceSettingServiceConnection(
                             launch { send(settings) }
                         }
                     }
-                val deviceInfo = deviceInfo { setBluetoothAddress(cachedDevice.address) }
+            val deviceInfo = deviceInfo {
+                setBluetoothAddress(cachedDevice.address)
+                setExtras(
+                    Bundle().apply {
+                        putLong(
+                            BluetoothUtils.CONNECTION_FAILURE_TIME_KEY,
+                            cachedDevice.connectionFailureTimeMillis
+                        )
+                    }
+                )
+            }
                 service.registerDeviceSettingsListener(deviceInfo, listener)
                 awaitClose { service.unregisterDeviceSettingsListener(deviceInfo, listener) }
             }
