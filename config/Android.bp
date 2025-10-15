@@ -30,10 +30,19 @@ license {
 }
 
 prebuilt_etc {
-    name: "preloaded-classes",
+    name: "preloaded-classes-gsi",
     src: "preloaded-classes",
     filename: "preloaded-classes",
     no_full_install: true,
+}
+
+prebuilt_etc {
+    name: "preloaded-classes",
+    src: "preloaded-classes",
+    enabled: select(soong_config_variable("frameworks_config", "use_default_preloaded_classes"), {
+        any @ value: value,
+        default: true,
+    }),
 }
 
 filegroup {
