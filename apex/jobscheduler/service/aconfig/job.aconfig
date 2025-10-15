@@ -91,16 +91,6 @@ flag {
 }
 
 flag {
-    name: "fix_reporting_active_jobs"
-    namespace: "backstage_power"
-    description: "Correctly report the active jobs to idle controller"
-    bug: "425761099"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "allow_cmp_exemption_for_restricted_bucket"
     namespace: "backstage_power"
     description: "Allow CMP exemption for apps in Restricted bucket due to timeout reason"

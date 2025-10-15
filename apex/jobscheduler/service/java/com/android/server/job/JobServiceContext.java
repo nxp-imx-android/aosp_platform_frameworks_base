@@ -1819,16 +1819,9 @@ public final class JobServiceContext implements ServiceConnection {
         if (completedJob.isUserVisibleJob()) {
             mService.informObserversOfUserVisibleJobChange(this, completedJob, false);
         }
-
-        if (Flags.fixReportingActiveJobs()) {
-            mJobConcurrencyManager.onJobCompletedLocked(this, completedJob, workType);
-            mCompletedListener.onJobCompletedLocked(completedJob,
-                    reschedulingStopReason, reschedulingInternalStopReason, reschedule);
-        } else {
-            mCompletedListener.onJobCompletedLocked(completedJob,
-                    reschedulingStopReason, reschedulingInternalStopReason, reschedule);
-            mJobConcurrencyManager.onJobCompletedLocked(this, completedJob, workType);
-        }
+        mJobConcurrencyManager.onJobCompletedLocked(this, completedJob, workType);
+        mCompletedListener.onJobCompletedLocked(completedJob,
+                reschedulingStopReason, reschedulingInternalStopReason, reschedule);
     }
 
     private void traceJobStarted(JobStatus job, int procState) {
