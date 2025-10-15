@@ -609,6 +609,13 @@ public final class ApplicationExitInfo implements Parcelable {
      */
     public static final int SUBREASON_ANR_TYPE_SYSTEM_SERVER_WATCHDOG_TIMEOUT = 48;
 
+    /**
+     * The process was killed because it had enqueued too many broadcasts.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT = 49;
+
     // If there is any OEM code which involves additional app kill reasons, it should
     // be categorized in {@link #REASON_OTHER}, with subreason code starting from 1000.
 
@@ -827,6 +834,7 @@ public final class ApplicationExitInfo implements Parcelable {
         SUBREASON_ANR_TYPE_JOB_SERVICE_STOP,
         SUBREASON_ANR_TYPE_START_FOREGROUND_SERVICE,
         SUBREASON_ANR_TYPE_SYSTEM_SERVER_WATCHDOG_TIMEOUT,
+        SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface SubReason {
@@ -1644,6 +1652,8 @@ public final class ApplicationExitInfo implements Parcelable {
                 return "START FOREGROUND SERVICE ANR";
             case SUBREASON_ANR_TYPE_SYSTEM_SERVER_WATCHDOG_TIMEOUT:
                 return "SYSTEM SERVER WATCHDOG TIMEOUT ANR";
+            case SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT:
+                return "EXCESSIVE_ENQUEUED_BROADCASTS_COUNT";
             case SUBREASON_UNKNOWN:
             default:
                 return "UNKNOWN";
