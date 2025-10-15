@@ -220,9 +220,9 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         this.aodColor = aodColor
         lockscreenPaint.color = lockscreenColor
 
-        if (dozeFraction < 1f) {
-            textAnimator.setTextStyle(TextAnimator.Style(color = lockscreenColor))
-        }
+        textAnimator.setTextStyle(
+            TextAnimator.Style(color = if (dozeFraction < 0.5f) lockscreenColor else aodColor)
+        )
         invalidate()
     }
 
@@ -235,8 +235,9 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
         updateTextBounds()
 
+        val isDozing = dozeFraction > 0.5f
         textAnimator.setTextStyle(
-            TextAnimator.Style(fVar = fontVariations.lockscreen),
+            TextAnimator.Style(fVar = fontVariations.getStandard(isDozing)),
             TextAnimator.Animation(
                 animate = isAnimated && isAnimationEnabled,
                 duration = AXIS_CHANGE_ANIMATION_DURATION,
@@ -384,6 +385,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
     fun animateDoze(isDozing: Boolean, isAnimated: Boolean) {
         if (!this::textAnimator.isInitialized) return
         logger.animateDoze(isDozing, isAnimated)
+        val isAnimated = isAnimated && isAnimationEnabled
         onAnimateDoze(
             isDozing,
             TextAnimator.Style(
@@ -392,7 +394,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
                 textSize = if (isDozing) aodFontSizePx else lockscreenPaint.textSize,
             ),
             TextAnimator.Animation(
-                animate = isAnimated && isAnimationEnabled,
+                animate = isAnimated,
                 duration = aodStyle.transitionDuration,
                 interpolator = aodDozingInterpolator,
             ),
@@ -667,20 +669,26 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
     }
 
     /** Called without animation, can be used to set the initial state of animator */
-    protected open fun setInterpolatorPaint() {
+    protected fun setInterpolatorPaint() {
         if (!this::textAnimator.isInitialized) {
             return
         }
 
+        val isDozing = dozeFraction > 0.5f
+        setInterpolatorPaint(
+            isDozing,
+            TextAnimator.Style(
+                fVar = fontVariations.getStandard(isDozing),
+                color = if (isDozing) aodColor else lockscreenColor,
+                textSize = if (isDozing) aodFontSizePx else lockscreenPaint.textSize,
+            ),
+        )
+    }
+
+    protected open fun setInterpolatorPaint(isDozing: Boolean, textStyle: TextAnimator.Style) {
         textAnimator.textInterpolator.targetPaint.set(lockscreenPaint)
         textAnimator.textInterpolator.onTargetPaintModified()
-        textAnimator.setTextStyle(
-            TextAnimator.Style(
-                fVar = fontVariations.lockscreen,
-                textSize = lockscreenPaint.textSize,
-                color = lockscreenColor,
-            )
-        )
+        textAnimator.setTextStyle(textStyle)
     }
 
     /** Updates both the lockscreen text bounds and animation text bounds */
