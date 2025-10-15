@@ -10645,6 +10645,21 @@ public class CarrierConfigManager {
             "unthrottle_data_retry_when_tac_changes_bool";
 
     /**
+     * Indicates if the carrier supports Customized Ringing Signal (CRS).
+     * The Customized Ringing Signal (CRS) is an operator-specific feature that allows a
+     * subscriber to customize the media played to the called party during the establishment
+     * of an incoming call. When the MT call is received, the device will present the CRS
+     * media instead of its standard ringtone. This CRS media can consist of audio, video,
+     * still images, or any combination thereof.
+     *
+     * If true, telephony will handle incoming calls with CRS media as specified
+     * by the vendor IMS stack.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_CRS)
+    public static final String KEY_SUPPORTS_CUSTOMIZED_RINGING_SIGNAL_BOOL =
+            "supports_customized_ringing_signal_bool";
+
+    /**
      * A list of premium capabilities the carrier supports. Applications can prompt users to
      * purchase these premium capabilities from their carrier for a performance boost.
      * Valid values are any of {@link TelephonyManager}'s {@code PREMIUM_CAPABILITY_*} constants.
@@ -11837,6 +11852,7 @@ public class CarrierConfigManager {
         sDefaults.putString(KEY_CARRIER_PROVISIONING_APP_STRING, "");
         sDefaults.putBoolean(KEY_DISPLAY_NO_DATA_NOTIFICATION_ON_PERMANENT_FAILURE_BOOL, false);
         sDefaults.putBoolean(KEY_UNTHROTTLE_DATA_RETRY_WHEN_TAC_CHANGES_BOOL, false);
+        sDefaults.putBoolean(KEY_SUPPORTS_CUSTOMIZED_RINGING_SIGNAL_BOOL, false);
         sDefaults.putBoolean(KEY_VONR_SETTING_VISIBILITY_BOOL, true);
         sDefaults.putBoolean(KEY_VONR_ENABLED_BOOL, false);
         sDefaults.putBoolean(KEY_VONR_ON_BY_DEFAULT_BOOL, true);

@@ -17294,6 +17294,8 @@ package android.telephony.ims {
     field public static final String EXTRA_CNAP = "cnap";
     field public static final String EXTRA_CODEC = "Codec";
     field public static final String EXTRA_CONFERENCE = "android.telephony.ims.extra.CONFERENCE";
+    field @FlaggedApi("android.telecom.flags.is_using_crs") public static final String EXTRA_CRS_AUDIO_MODE = "android.telephony.ims.extra.CRS_AUDIO_MODE";
+    field @FlaggedApi("android.telecom.flags.is_using_crs") public static final String EXTRA_CRS_MEDIA_TYPE = "android.telephony.ims.extra.CRS_MEDIA_TYPE";
     field public static final String EXTRA_DIALSTRING = "dialstring";
     field public static final String EXTRA_DISPLAY_TEXT = "DisplayText";
     field public static final String EXTRA_EMERGENCY_CALL = "e_call";
