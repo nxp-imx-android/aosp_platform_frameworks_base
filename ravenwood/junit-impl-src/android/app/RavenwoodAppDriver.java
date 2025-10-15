@@ -153,7 +153,9 @@ public final class RavenwoodAppDriver {
         RavenwoodSystemServer.init(mSystemContextImpl);
 
         // Register a stub settings provider that always return nothing
-        var mockSettings = RavenwoodProxyHelper.newProxy(IContentProvider.class,
+        var mockSettings = RavenwoodProxyHelper.newProxy(
+                IContentProvider.class,
+                IContentProvider.descriptor,
                 (proxy, method, args) -> switch (method.getName()) {
                     case "call" -> Bundle.EMPTY;
                     default -> sNotImplementedHandler.invoke(proxy, method, args);
