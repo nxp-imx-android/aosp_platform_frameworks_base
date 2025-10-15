@@ -656,12 +656,12 @@ public class HeadsUpManagerImpl
             mHeadsUpEntryMap.remove(key);
             onEntryRemoved(finalHeadsUpEntry, reason);
             if (NotificationThrottleHun.isEnabled()) {
-                finalHeadsUpEntry.cancelAutoRemovalCallbacks("removeEntry");
+                finalHeadsUpEntry.cancelAutoRemovalCallbacks(reason +" => removeEntry");
             } else {
                 finalHeadsUpEntry.reset();
             }
         };
-        mAvalancheController.delete(headsUpEntry, runnable, "removeEntry");
+        mAvalancheController.delete(headsUpEntry, runnable, reason + " => removeEntry");
     }
 
     /**
