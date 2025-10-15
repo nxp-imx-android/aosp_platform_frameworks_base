@@ -18,7 +18,10 @@ package com.android.systemui.statusbar.pipeline.dagger
 
 import android.net.wifi.WifiManager
 import com.android.systemui.CoreStartable
+import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.toColdConflatedFlow
@@ -27,8 +30,10 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
+import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepository
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepositoryImpl
+import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModelImpl
 import com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepository
@@ -86,6 +91,7 @@ import dagger.multibindings.IntoMap
 import java.util.function.Supplier
 import javax.inject.Named
 import javax.inject.Provider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalKairosApi::class)
@@ -115,11 +121,6 @@ abstract class StatusBarPipelineModule {
     abstract fun connectivityRepository(impl: ConnectivityRepositoryImpl): ConnectivityRepository
 
     @Binds abstract fun batteryRepository(impl: BatteryRepositoryImpl): BatteryRepository
-
-    @Binds
-    abstract fun systemStatusEventAnimationRepository(
-        impl: SystemStatusEventAnimationRepositoryImpl
-    ): SystemStatusEventAnimationRepository
 
     @Binds
     abstract fun realDeviceBasedSatelliteRepository(
@@ -315,6 +316,28 @@ abstract class StatusBarPipelineModule {
         @BatteryTableLog
         fun provideBatteryTableLog(factory: TableLogBufferFactory): TableLogBuffer {
             return factory.create("BatteryTableLog", 100)
+        }
+
+        @Provides
+        @SysUISingleton
+        @Default
+        fun systemStatusEventAnimationRepository(
+            @Default scheduler: SystemStatusAnimationScheduler,
+            factory: SystemStatusEventAnimationRepositoryImpl.Factory,
+        ): SystemStatusEventAnimationRepository {
+            return factory.create(scheduler)
+        }
+
+        @Provides
+        @SysUISingleton
+        @Default
+        fun systemStatusEventAnimationInteractor(
+            factory: SystemStatusEventAnimationInteractor.Factory,
+            @Default repo: SystemStatusEventAnimationRepository,
+            configurationInteractor: ConfigurationInteractor,
+            @Application scope: CoroutineScope,
+        ): SystemStatusEventAnimationInteractor {
+            return factory.create(repo, configurationInteractor, scope)
         }
 
         const val FIRST_MOBILE_SUB_SHOWING_NETWORK_TYPE_ICON =

@@ -134,7 +134,7 @@ constructor(
     private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val iconController: StatusBarIconController,
     private val ongoingCallController: OngoingCallController,
-    private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
+    @DisplayAware private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     private val mediaHierarchyManager: MediaHierarchyManager,
     @Named(POPUP) private val mediaHost: MediaHost,
     private val mediaViewModelFactory: MediaViewModel.Factory,

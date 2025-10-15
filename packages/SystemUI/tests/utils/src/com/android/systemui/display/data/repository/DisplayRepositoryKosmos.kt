@@ -41,6 +41,8 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
+import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
+import com.android.systemui.statusbar.events.systemStatusAnimationScheduler
 import com.android.systemui.statusbar.gesture.SwipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
@@ -88,6 +90,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     statusBarContentInsetsProvider: () -> StatusBarContentInsetsProvider = {
         this.mockStatusBarContentInsetsProvider
     },
+    systemStatusAnimationScheduler: () -> SystemStatusAnimationScheduler = {
+        this.systemStatusAnimationScheduler
+    },
     darkIconDispatcher: () -> DarkIconDispatcher = { this.fakeDarkIconDispatcher },
     sysUiDarkIconDispatcher: () -> SysuiDarkIconDispatcher = { this.fakeDarkIconDispatcher },
     systemBarUtilsState: () -> SystemBarUtilsState = { this.systemBarUtilsState },
@@ -121,6 +126,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarContentInsetsProvider: StatusBarContentInsetsProvider
             get() = statusBarContentInsetsProvider()
+
+        override val systemStatusAnimationScheduler: SystemStatusAnimationScheduler
+            get() = systemStatusAnimationScheduler()
 
         override val systemBarUtilsState: SystemBarUtilsState
             get() = systemBarUtilsState()

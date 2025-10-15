@@ -35,6 +35,7 @@ import com.android.systemui.Flags.fixPrivacyIndicatorBothDotChipVisibleQs
 import com.android.systemui.ScreenDecorationsThread
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.plugins.statusbar.StatusBarStateController
@@ -129,7 +130,7 @@ constructor(
     private val stateController: StatusBarStateController,
     @Assisted private val configurationController: ConfigurationController,
     @Assisted private val contentInsetsProvider: StatusBarContentInsetsProvider,
-    private val animationScheduler: SystemStatusAnimationScheduler,
+    @Assisted private val animationScheduler: SystemStatusAnimationScheduler,
     private val shadeInteractor: ShadeInteractor,
     avControlsChipInteractor: AvControlsChipInteractor?,
     @ScreenDecorationsThread val uiExecutor: DelayableExecutor,
@@ -723,6 +724,7 @@ constructor(
             configurationController: ConfigurationController,
             contentInsetsProvider: StatusBarContentInsetsProvider,
             displayId: Int,
+            animationScheduler: SystemStatusAnimationScheduler,
         ): PrivacyDotViewControllerImpl
     }
 }
@@ -799,12 +801,14 @@ object PrivacyDotViewControllerModule {
         @Application scope: CoroutineScope,
         configurationController: ConfigurationController,
         perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+        @Default animationScheduler: SystemStatusAnimationScheduler,
     ): PrivacyDotViewController {
         return factory.create(
             scope,
             configurationController,
             perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarContentInsetsProvider,
             Display.DEFAULT_DISPLAY,
+            animationScheduler,
         )
     }
 }

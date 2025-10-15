@@ -26,6 +26,7 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.UsesFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display
 import android.view.View
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
@@ -824,6 +825,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
             SystemStatusAnimationSchedulerImpl(
                 systemEventCoordinator,
                 chipAnimationController,
+                Display.DEFAULT_DISPLAY,
                 statusBarWindowControllerStore,
                 dumpManager,
                 systemClock,
