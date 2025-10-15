@@ -174,9 +174,11 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
      * The preference can be removed by calling [removePreference] or [removePreferenceRecursively].
      */
     fun addSubsectionPreference(preference: BannerMessagePreference) {
-        subsectionCategory?.addPreference(preference)
-        updateCollapsedItemCount()
-        updateVisibilities()
+        if (subsectionCategory?.addPreference(preference) == true) {
+            maybeCreateExpandCollapsePreference()
+            updateCollapsedItemCount()
+            updateVisibilities()
+        }
     }
 
     override fun removePreferenceRecursively(key: CharSequence): Boolean {
