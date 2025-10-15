@@ -50,7 +50,8 @@ abstract class EnableDisplayMirroringSwitch : TestScenarioBase() {
         Assume.assumeTrue("isTablet", tapl.isTablet)
         // Ensure the mirroring is disabled.
         Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 0)
-        connectedDisplayRule.setupTestDisplay()
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
     }
 
     @Test

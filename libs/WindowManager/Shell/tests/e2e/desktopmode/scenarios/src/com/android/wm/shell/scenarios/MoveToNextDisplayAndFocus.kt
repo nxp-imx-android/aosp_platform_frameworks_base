@@ -60,7 +60,8 @@ abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
 
     @Before
     fun setup() {
-        connectedDisplayRule.setupTestDisplay()
+        val displayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
         testAppInMainDisplay.launchViaIntent(wmHelper)
     }
 

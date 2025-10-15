@@ -73,6 +73,7 @@ abstract class DragMoveWindowToNextDisplay {
     fun moveToNextDisplay() {
         testApp.enterDesktopMode(wmHelper, device)
         val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
 
         val captionBounds =
             checkNotNull(testApp.getCaptionForTheApp(wmHelper, device)?.visibleBounds)
