@@ -40,6 +40,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.MotionTestRule
 import platform.test.motion.RecordedMotion
+import platform.test.motion.golden.feature
 import platform.test.motion.view.DrawableFeatureCaptures
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
@@ -218,9 +219,9 @@ class TransitionAnimatorTest(
 
         return motionRule.recordMotion(
             AnimatorRuleRecordingSpec(backgroundLayer, motionControl, sampleIntervalMs) {
-                feature(DrawableFeatureCaptures.bounds, "bounds")
-                feature(DrawableFeatureCaptures.cornerRadii, "corner_radii")
-                feature(DrawableFeatureCaptures.alpha, "alpha")
+                feature("bounds", DrawableFeatureCaptures.bounds)
+                feature("corner_radii", DrawableFeatureCaptures.cornerRadii)
+                feature("alpha", DrawableFeatureCaptures.alpha)
             }
         )
     }
