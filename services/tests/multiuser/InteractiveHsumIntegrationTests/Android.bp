@@ -28,4 +28,7 @@ android_test {
         "flag-junit",
         "truth",
     ],
+    host_required: [
+        "MultiUserTestsTradefedLibrary",
+    ],
 }

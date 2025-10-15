@@ -4,6 +4,8 @@
     <option name="test-suite-tag" value="apct" />
     <option name="test-suite-tag" value="apct-instrumentation" />
 
+    <object type="module_controller" class="android.libraries.multiuser.tradefed.InteractiveHsumModuleController"/>
+
     <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
         <option name="test-file-name" value="InteractiveHsumIntegrationTests.apk" />
         <option name="cleanup-apks" value="true" />
