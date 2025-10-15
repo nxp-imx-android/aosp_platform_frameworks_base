@@ -34,6 +34,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.Status.Started
 import com.android.systemui.screenrecord.data.repository.Status.Starting
 import com.android.systemui.screenrecord.data.repository.Status.Stopped
@@ -79,7 +80,7 @@ constructor(
     @Background coroutineScope: CoroutineScope,
     private val userRepository: UserRepository,
     private val screenRecordUxController: ScreenRecordUxController,
-) : ScreenRecordingStartStopRepository {
+) : ScreenRecordingStartStopRepository, ScreenRecordRepository {
     private val serviceCallback = ServiceCallback()
     private val isServiceBound = MutableStateFlow(false)
     private val service: Flow<RecordingService?> =
@@ -127,6 +128,16 @@ constructor(
                 started = SharingStarted.Eagerly,
                 initialValue = Status.initial,
             )
+
+    @Deprecated(message = "Use status")
+    override val screenRecordState: Flow<ScreenRecordModel> =
+        status.map {
+            when (it) {
+                is Starting -> ScreenRecordModel.Starting(it.untilStarted.inWholeMilliseconds)
+                is Started -> ScreenRecordModel.Recording
+                is Stopped -> ScreenRecordModel.DoingNothing
+            }
+        }
 
     init {
         combine(status.onEach { isServiceBound.value = it is Started }, service) {

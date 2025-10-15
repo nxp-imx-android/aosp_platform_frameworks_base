@@ -141,7 +141,9 @@ constructor(
 
     suspend fun onPrimaryButtonTapped() {
         if (screenRecordingServiceRepository.status.value.isRecording) {
-            screenRecordingServiceRepository.stopRecording(StopReason.STOP_HOST_APP)
+            withContext(bgContext) {
+                screenRecordingServiceRepository.stopRecording(StopReason.STOP_HOST_APP)
+            }
         } else {
             startRecording()
         }

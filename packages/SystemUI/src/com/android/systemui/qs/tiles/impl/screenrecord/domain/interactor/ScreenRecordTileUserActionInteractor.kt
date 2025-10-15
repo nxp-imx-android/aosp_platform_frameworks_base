@@ -88,7 +88,9 @@ constructor(
                                 }
                             }
                             is ScreenRecordModel.Recording -> {
-                                screenRecordRepository.stopRecording(StopReason.STOP_QS_TILE)
+                                withContext(backgroundContext) {
+                                    screenRecordRepository.stopRecording(StopReason.STOP_QS_TILE)
+                                }
                             }
                             is ScreenRecordModel.DoingNothing ->
                                 withContext(mainContext) {
