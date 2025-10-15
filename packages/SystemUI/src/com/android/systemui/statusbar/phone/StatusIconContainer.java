@@ -250,9 +250,10 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
     }
 
     /**
-     * Add a name of an icon slot to be ignored. It will not show up nor be measured
-     * @param slotName name of the icon as it exists in
-     * frameworks/base/core/res/res/values/config.xml
+     * Adds a name of an icon slot to be ignored. The icon will not be shown or measured.
+     *
+     * @param slotName The name of the icon as it exists in {@code
+     *     frameworks/base/core/res/res/values/config.xml}.
      */
     public void addIgnoredSlot(String slotName) {
         boolean added = addIgnoredSlotInternal(slotName);
@@ -262,8 +263,9 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
     }
 
     /**
-     * Add a list of slots to be ignored
-     * @param slots names of the icons to ignore
+     * Adds a list of slots to be ignored.
+     *
+     * @param slots The names of the icons to ignore.
      */
     public void addIgnoredSlots(List<String> slots) {
         boolean willAddAny = false;
@@ -276,11 +278,6 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
         }
     }
 
-    /**
-     *
-     * @param slotName
-     * @return
-     */
     private boolean addIgnoredSlotInternal(String slotName) {
         if (mIgnoredSlots.contains(slotName)) {
             return false;
@@ -290,9 +287,10 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
     }
 
     /**
-     * Remove a slot from the list of ignored icon slots. It will then be shown when set to visible
-     * by the {@link StatusBarIconController}.
-     * @param slotName name of the icon slot to remove from the ignored list
+     * Removes a slot from the list of ignored icon slots. The icon will then be shown when set to
+     * visible by the {@link StatusBarIconController}.
+     *
+     * @param slotName The name of the icon slot to remove from the ignored list.
      */
     public void removeIgnoredSlot(String slotName) {
         boolean removed = mIgnoredSlots.remove(slotName);
@@ -302,9 +300,10 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
     }
 
     /**
-     * Remove a list of slots from the list of ignored icon slots.
-     * It will then be shown when set to visible by the {@link StatusBarIconController}.
-     * @param slots name of the icon slots to remove from the ignored list
+     * Removes a list of slots from the list of ignored icon slots. The icons will then be shown
+     * when set to visible by the {@link StatusBarIconController}.
+     *
+     * @param slots The names of the icon slots to remove from the ignored list.
      */
     public void removeIgnoredSlots(List<String> slots) {
         boolean removedAny = false;
@@ -318,7 +317,10 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
     }
 
     /**
-     * Layout is happening from end -> start
+     * Calculates the X translation for each icon view.
+     *
+     * <p>This is done by iterating through the children from right to left, giving each icon view a
+     * position, and then deciding if it should be shown as an icon, a dot, or hidden.
      */
     private void calculateIconTranslations() {
         mLayoutStates.clear();
@@ -442,6 +444,7 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
         return child.getWidth() + child.getPaddingStart() + child.getPaddingEnd();
     }
 
+    /** A {@link ViewState} that also stores the icon's visibility state. */
     public static class StatusIconState extends ViewState {
 
         public StatusIconState() {
