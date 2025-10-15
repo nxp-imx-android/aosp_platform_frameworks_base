@@ -56,7 +56,7 @@ public class ListPolicyMetadata<T> extends PolicyMetadata<List<T>> {
         return mElementMetadata;
     }
 
-    public boolean getEmptyListAllowed() {
+    public boolean isEmptyListAllowed() {
         return mEmptyListAllowed;
     }
 }
