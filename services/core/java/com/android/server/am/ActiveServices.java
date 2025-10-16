@@ -7505,7 +7505,7 @@ public final class ActiveServices {
             }
         }
 
-        try (var unused = mAm.mProcessStateController.startBatchSession(
+        try (var unused = mAm.mProcessStateController.startServiceBatchSession(
                 OOM_ADJ_REASON_STOP_SERVICE)) {
             // Clean up any connections this application has to other services.
             for (int i = psr.numberOfConnections() - 1; i >= 0; i--) {
