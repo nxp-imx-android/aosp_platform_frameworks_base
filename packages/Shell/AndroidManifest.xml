@@ -219,6 +219,11 @@
     <!-- Permission required for processes that don't own the focused window to switch
          touch mode state -->
     <uses-permission android:name="android.permission.MODIFY_TOUCH_MODE_STATE" />
+    <!-- Permission required for CTS tests -->
+    <uses-permission android:name="android.permission.COPY_ACCOUNTS"
+        android:featureFlag="android.permission.flags.device_policy_management_role_split_create_managed_profile_enabled" />
+    <uses-permission android:name="android.permission.REMOVE_ACCOUNTS"
+        android:featureFlag="android.permission.flags.device_policy_management_role_split_create_managed_profile_enabled" />
     <!-- Permission required to test onPermissionsChangedListener -->
     <uses-permission android:name="android.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS" />
     <uses-permission android:name="android.permission.SET_KEYBOARD_LAYOUT" />
