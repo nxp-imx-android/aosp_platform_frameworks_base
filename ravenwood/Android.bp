@@ -159,8 +159,8 @@ java_library {
         "ow2-asm-util",
     ],
     libs: [
-        "framework-configinfrastructure.ravenwood",
         "framework-minus-apex.ravenwood",
+        "framework-updatable.ravenwood",
         "hoststubgen-helper-runtime",
         "junit",
         "ravenwood-framework",
@@ -268,17 +268,9 @@ sh_test_host {
         ":services.core.ravenwood-stats{hoststubgen_services.core_dump.txt}",
         ":services.core.ravenwood-stats{hoststubgen_services.core_keep_all.txt}",
 
-        ":framework-configinfrastructure.ravenwood-stats{framework-configinfrastructure_apis.csv}",
-        ":framework-configinfrastructure.ravenwood-stats{framework-configinfrastructure_dump.txt}",
-        ":framework-configinfrastructure.ravenwood-stats{framework-configinfrastructure_keep_all.txt}",
-
-        ":framework-statsd.ravenwood-stats{framework-statsd_apis.csv}",
-        ":framework-statsd.ravenwood-stats{framework-statsd_dump.txt}",
-        ":framework-statsd.ravenwood-stats{framework-statsd_keep_all.txt}",
-
-        ":framework-graphics.ravenwood-stats{framework-graphics_apis.csv}",
-        ":framework-graphics.ravenwood-stats{framework-graphics_dump.txt}",
-        ":framework-graphics.ravenwood-stats{framework-graphics_keep_all.txt}",
+        ":framework-updatable.ravenwood-stats{hoststubgen_framework-updatable_apis.csv}",
+        ":framework-updatable.ravenwood-stats{hoststubgen_framework-updatable_dump.txt}",
+        ":framework-updatable.ravenwood-stats{hoststubgen_framework-updatable_keep_all.txt}",
     ],
 }
 
@@ -589,12 +581,9 @@ android_ravenwood_libgroup {
         "android.test.mock.ravenwood",
         "hoststubgen-helper-runtime",
         "services.core.ravenwood-jarjar",
-        "core-icu4j-for-host.ravenwood",
+        "framework-updatable.ravenwood",
         "icu4j-icudata-jarjar",
         "icu4j-icutzdata-jarjar",
-        "framework-configinfrastructure.ravenwood",
-        "framework-statsd.ravenwood",
-        "framework-graphics.ravenwood",
         "junit",
         "truth",
         "flag-junit",
