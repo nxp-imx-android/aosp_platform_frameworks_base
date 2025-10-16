@@ -67,6 +67,7 @@ abstract class MoveToNextDisplay {
     @Test
     open fun moveToNextDisplay() {
         val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
         testApp.enterDesktopMode(wmHelper, device)
 
         testApp.moveToNextDisplayViaKeyboard(wmHelper, connectedDisplayId)
