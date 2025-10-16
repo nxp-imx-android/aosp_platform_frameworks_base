@@ -562,14 +562,27 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
+// The libraries listed in ravenwood-runtime.* should be in sync with
+// texts/ravenwood-classpath.txt.
+// ravenwood-classpath.txt determines the order of the jar files in the classpath.
+
+android_ravenwood_libgroup {
+    name: "ravenwood-runtime.framework-minus-apex",
+    libs: [
+        "framework-minus-apex.ravenwood",
+    ],
+    // Install it along with "ravenwood-runtime".
+    install_name: "ravenwood-runtime",
+}
+
 android_ravenwood_libgroup {
     name: "ravenwood-runtime",
     data: [":ravenwood-data"],
     fonts: [":ravenwood-fonts"],
+    subruntimes: [
+        "ravenwood-runtime.framework-minus-apex",
+    ],
     libs: [
-        // The libraries listed here should be in sync with texts/ravenwood-classpath.txt.
-        // ravenwood-classpath.txt determines the order of the jar files in the classpath.
-        "framework-minus-apex.ravenwood",
         "kxml2-android",
         "json-prebuilt",
         "ext-ravenwood",
