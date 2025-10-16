@@ -30,9 +30,7 @@ import android.graphics.PixelFormat
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
-import android.os.Bundle
 import android.view.Display
-import android.view.Display.DEFAULT_DISPLAY
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_OUTSIDE
@@ -43,32 +41,23 @@ import android.view.ViewGroup
 import android.view.WindowInsets.Type.systemBars
 import android.view.WindowManager.LayoutParams
 import android.view.WindowlessWindowManager
-import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.Space
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.SurfaceSyncGroup
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.view.ViewCompat
-import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK
 import androidx.core.view.isGone
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
-import com.android.wm.shell.common.split.SplitScreenUtils
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
-import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_DESKTOP_VIEW
-import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_FULLSCREEN
-import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_SPLIT_SCREEN
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_APP
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOWING_APP_TO_WEB_OPEN_IN_BROWSER
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
-import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON
 import com.android.wm.shell.shared.split.SplitScreenConstants
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
@@ -82,7 +71,6 @@ import com.android.wm.shell.windowdecor.common.calculateMenuPosition
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
-import com.android.wm.shell.windowdecor.extension.isPinned
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -608,20 +596,9 @@ private constructor(
         val appNameView = appInfoPill.requireViewById<MarqueedTextView>(R.id.application_name)
 
         // Windowing Pill.
-        private val windowingPill = rootView.requireViewById<View>(R.id.windowing_pill)
-        private val fullscreenBtn =
-            windowingPill.requireViewById<ImageButton>(R.id.fullscreen_button)
-        private val splitscreenBtn =
-            windowingPill.requireViewById<ImageButton>(R.id.split_screen_button)
-        private val splitscreenBtnSpace =
-            windowingPill.requireViewById<Space>(R.id.split_screen_button_space)
-        private val floatingBtn = windowingPill.requireViewById<ImageButton>(R.id.floating_button)
-        private val floatingBtnSpace =
-            windowingPill.requireViewById<Space>(R.id.floating_button_space)
-
-        private val desktopBtn = windowingPill.requireViewById<ImageButton>(R.id.desktop_button)
-        private val desktopBtnSpace =
-            windowingPill.requireViewById<Space>(R.id.desktop_button_space)
+        @VisibleForTesting
+        val windowingPillView: WindowingPillView =
+            rootView.requireViewById<WindowingPillView>(R.id.windowing_pill)
 
         // More Actions Pill.
         private val moreActionsPill = rootView.requireViewById<View>(R.id.more_actions_pill)
@@ -651,10 +628,6 @@ private constructor(
 
         private val menuButtons =
             listOf(
-                fullscreenBtn,
-                splitscreenBtn,
-                desktopBtn,
-                floatingBtn,
                 newWindowBtn,
                 changeAspectRatioBtn,
                 restartBtn,
@@ -677,6 +650,12 @@ private constructor(
         var onHandleMenuClicked: (() -> Unit)? = null
 
         init {
+            windowingPillView.initialize(
+                windowDecorationActions,
+                desktopModeUiEventLogger,
+                shouldShowDesktopModeButton,
+                onPillItemClicked = { onHandleMenuClicked?.invoke() },
+            )
             menuButtons.forEach { it.setOnClickListener(this) }
 
             rootView.setOnTouchListener { _, event ->
@@ -686,105 +665,10 @@ private constructor(
                 }
                 return@setOnTouchListener true
             }
-
-            desktopBtn.accessibilityDelegate =
-                object : View.AccessibilityDelegate() {
-                    override fun performAccessibilityAction(
-                        host: View,
-                        action: Int,
-                        args: Bundle?,
-                    ): Boolean {
-                        if (action == AccessibilityAction.ACTION_CLICK.id) {
-                            desktopModeUiEventLogger.log(
-                                taskInfo,
-                                A11Y_APP_HANDLE_MENU_DESKTOP_VIEW,
-                            )
-                        }
-                        return super.performAccessibilityAction(host, action, args)
-                    }
-                }
-
-            fullscreenBtn.accessibilityDelegate =
-                object : View.AccessibilityDelegate() {
-                    override fun performAccessibilityAction(
-                        host: View,
-                        action: Int,
-                        args: Bundle?,
-                    ): Boolean {
-                        if (action == AccessibilityAction.ACTION_CLICK.id) {
-                            desktopModeUiEventLogger.log(taskInfo, A11Y_APP_HANDLE_MENU_FULLSCREEN)
-                        }
-                        return super.performAccessibilityAction(host, action, args)
-                    }
-                }
-
-            splitscreenBtn.accessibilityDelegate =
-                object : View.AccessibilityDelegate() {
-                    override fun performAccessibilityAction(
-                        host: View,
-                        action: Int,
-                        args: Bundle?,
-                    ): Boolean {
-                        if (action == AccessibilityAction.ACTION_CLICK.id) {
-                            desktopModeUiEventLogger.log(
-                                taskInfo,
-                                A11Y_APP_HANDLE_MENU_SPLIT_SCREEN,
-                            )
-                        }
-                        return super.performAccessibilityAction(host, action, args)
-                    }
-                }
-
-            with(context) {
-                // Update a11y announcement out to say "double tap to enter Fullscreen"
-                ViewCompat.replaceAccessibilityAction(
-                    fullscreenBtn,
-                    ACTION_CLICK,
-                    getString(
-                        R.string.app_handle_menu_accessibility_announce,
-                        getString(R.string.fullscreen_text),
-                    ),
-                    null,
-                )
-
-                // Update a11y announcement out to say "double tap to enter Desktop View"
-                ViewCompat.replaceAccessibilityAction(
-                    desktopBtn,
-                    ACTION_CLICK,
-                    getString(
-                        R.string.app_handle_menu_accessibility_announce,
-                        getString(R.string.desktop_text),
-                    ),
-                    null,
-                )
-
-                // Update a11y announcement to say "double tap to enter Split Screen"
-                ViewCompat.replaceAccessibilityAction(
-                    splitscreenBtn,
-                    ACTION_CLICK,
-                    getString(
-                        R.string.app_handle_menu_accessibility_announce,
-                        getString(R.string.split_screen_text),
-                    ),
-                    null,
-                )
-            }
         }
 
         override fun onClick(v: View) {
             when (v.id) {
-                R.id.fullscreen_button -> {
-                    windowDecorationActions.onToFullscreen(taskInfo.taskId)
-                }
-                R.id.split_screen_button -> {
-                    windowDecorationActions.onToSplitScreen(taskInfo.taskId)
-                }
-                R.id.desktop_button -> {
-                    windowDecorationActions.onToDesktop(taskInfo.taskId, APP_HANDLE_MENU_BUTTON)
-                }
-                R.id.floating_button -> {
-                    windowDecorationActions.onToFloat(taskInfo.taskId)
-                }
                 R.id.new_window_button -> {
                     windowDecorationActions.onNewWindow(taskInfo.taskId)
                 }
@@ -817,7 +701,7 @@ private constructor(
 
             bindAppInfoPill(style)
             if (shouldShowWindowingPill) {
-                bindWindowingPill(style)
+                windowingPillView.bind(taskInfo)
             }
             moreActionsPill.isGone = !shouldShowMoreActionsPill
             if (shouldShowMoreActionsPill) {
@@ -880,21 +764,6 @@ private constructor(
             return MenuStyle(
                 backgroundColor = colorScheme.surfaceBright.toArgb(),
                 textColor = colorScheme.onSurface.toArgb(),
-                windowingButtonColor =
-                    ColorStateList(
-                        arrayOf(
-                            intArrayOf(android.R.attr.state_pressed),
-                            intArrayOf(android.R.attr.state_focused),
-                            intArrayOf(android.R.attr.state_selected),
-                            intArrayOf(),
-                        ),
-                        intArrayOf(
-                            colorScheme.onSurface.toArgb(),
-                            colorScheme.onSurface.toArgb(),
-                            colorScheme.primary.toArgb(),
-                            colorScheme.onSurface.toArgb(),
-                        ),
-                    ),
             )
         }
 
@@ -916,89 +785,9 @@ private constructor(
             appNameView.startMarquee()
         }
 
-        private fun bindWindowingPill(style: MenuStyle) {
-            windowingPill.background.setTint(style.backgroundColor)
-
-            if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen() || taskInfo.isFreeform) {
-                floatingBtn.visibility = View.GONE
-                floatingBtnSpace.visibility = View.GONE
-            }
-
-            if (
-                !DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue &&
-                    taskInfo.displayId != DEFAULT_DISPLAY
-            ) {
-                splitscreenBtn.visibility = View.GONE
-                splitscreenBtnSpace.visibility = View.GONE
-            }
-
-            fullscreenBtn.isSelected = taskInfo.isFullscreen
-            fullscreenBtn.isEnabled = !taskInfo.isFullscreen
-            fullscreenBtn.imageTintList = style.windowingButtonColor
-            splitscreenBtn.isSelected = taskInfo.isMultiWindow
-            splitscreenBtn.isEnabled = !taskInfo.isMultiWindow
-            splitscreenBtn.imageTintList = style.windowingButtonColor
-            floatingBtn.isSelected = taskInfo.isPinned
-            floatingBtn.isEnabled = !taskInfo.isPinned
-            floatingBtn.imageTintList = style.windowingButtonColor
-            desktopBtn.isGone = !shouldShowDesktopModeButton
-            desktopBtnSpace.isGone = !shouldShowDesktopModeButton
-            desktopBtn.isSelected = taskInfo.isFreeform
-            desktopBtn.isEnabled = !taskInfo.isFreeform
-            desktopBtn.imageTintList = style.windowingButtonColor
-
-            fullscreenBtn.apply {
-                background =
-                    createBackgroundDrawable(
-                        color = style.textColor,
-                        cornerRadius = iconButtonRippleRadius,
-                        drawableInsets = iconButtonDrawableInsetStart,
-                    )
-            }
-
-            splitscreenBtn.apply {
-                background =
-                    createBackgroundDrawable(
-                        color = style.textColor,
-                        cornerRadius = iconButtonRippleRadius,
-                        drawableInsets = iconButtonDrawableInsetsBase,
-                    )
-            }
-            updateSplitScreenButtonOrientation(taskInfo.configuration)
-
-            floatingBtn.apply {
-                background =
-                    createBackgroundDrawable(
-                        color = style.textColor,
-                        cornerRadius = iconButtonRippleRadius,
-                        drawableInsets = iconButtonDrawableInsetsBase,
-                    )
-            }
-
-            desktopBtn.apply {
-                background =
-                    createBackgroundDrawable(
-                        color = style.textColor,
-                        cornerRadius = iconButtonRippleRadius,
-                        drawableInsets = iconButtonDrawableInsetEnd,
-                    )
-            }
-        }
-
         /** Update the split screen button (horizontal vs. vertical split) orientation. */
         fun updateSplitScreenButtonOrientation(configuration: Configuration) {
-            splitscreenBtn.rotation =
-                if (
-                    SplitScreenUtils.isLeftRightSplit(
-                        SplitScreenUtils.allowLeftRightSplitInPortrait(context.resources),
-                        configuration,
-                        taskInfo.displayId,
-                    )
-                ) {
-                    0f
-                } else {
-                    90f
-                }
+            windowingPillView.updateSplitScreenButtonOrientation(configuration)
         }
 
         private fun bindMoreActionsPill(style: MenuStyle) {
@@ -1094,7 +883,6 @@ private constructor(
         private data class MenuStyle(
             @ColorInt val backgroundColor: Int,
             @ColorInt val textColor: Int,
-            val windowingButtonColor: ColorStateList,
         )
     }
 
