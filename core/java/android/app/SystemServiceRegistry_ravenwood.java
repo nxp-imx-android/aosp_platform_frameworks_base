@@ -169,12 +169,12 @@ public class SystemServiceRegistry_ravenwood {
                 return new UserManager(ctx, service);
             }});
 
-        registerService(Context.AUTOFILL_MANAGER_SERVICE, AutofillManager.class,
+        registerService(Context.AUTOFILL_SERVICE, AutofillManager.class,
                 new CachedServiceFetcher<AutofillManager>() {
             @Override
             public AutofillManager createService(ContextImpl ctx) throws ServiceNotFoundException {
                 // Get the services without throwing as this is an optional feature
-                IBinder b = ServiceManager.getService(Context.AUTOFILL_MANAGER_SERVICE);
+                IBinder b = ServiceManager.getService(Context.AUTOFILL_SERVICE);
                 IAutoFillManager service = IAutoFillManager.Stub.asInterface(b);
                 return new AutofillManager(ctx.getOuterContext(), service);
             }});

@@ -199,7 +199,7 @@ import sun.misc.Cleaner;
  *
  * <p>It is safe to call <code>AutofillManager</code> methods from any thread.
  */
-@SystemService(Context.AUTOFILL_MANAGER_SERVICE)
+@SystemService(Context.AUTOFILL_SERVICE)
 @RequiresFeature(PackageManager.FEATURE_AUTOFILL)
 public final class AutofillManager {
 

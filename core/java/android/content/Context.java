@@ -5780,12 +5780,13 @@ public abstract class Context {
     public static final String VOICE_INTERACTION_MANAGER_SERVICE = "voiceinteraction";
 
     /**
-     * Official published name of the (internal) autofill service.
+     * Use with {@link #getSystemService(String)} to retrieve an
+     *      {@link android.view.autofill.AutofillManager}.
      *
-     * @hide
      * @see #getSystemService(String)
      */
-    public static final String AUTOFILL_MANAGER_SERVICE = "autofill";
+    @FlaggedApi(android.service.autofill.Flags.FLAG_PUBLIC_AUTOFILL_SERVICE_NAME)
+    public static final String AUTOFILL_SERVICE = "autofill";
 
     /**
      * Official published name of the (internal) text to speech manager service.
