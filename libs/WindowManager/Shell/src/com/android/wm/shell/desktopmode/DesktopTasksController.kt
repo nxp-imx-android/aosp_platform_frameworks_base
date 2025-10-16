@@ -2640,19 +2640,17 @@ class DesktopTasksController(
         val displayLayout = displayController.getDisplayLayout(displayId) ?: return
         val bounds = calculateDefaultDesktopTaskBounds(displayLayout)
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
-        if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue) {
-            val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
-            cascadeWindow(
-                context,
-                recentTasksController,
-                repository,
-                shellTaskOrganizer,
-                bounds,
-                displayLayout,
-                deskId,
-                stableBounds,
-            )
-        }
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        cascadeWindow(
+            context,
+            recentTasksController,
+            repository,
+            shellTaskOrganizer,
+            bounds,
+            displayLayout,
+            deskId,
+            stableBounds,
+        )
         val ops =
             ActivityOptions.fromBundle(options).apply {
                 launchWindowingMode = WINDOWING_MODE_FREEFORM
@@ -4972,7 +4970,7 @@ class DesktopTasksController(
             displayLayout.getStableBoundsForDesktopMode(stableBounds)
             hasLayoutGravityApplied = applyLayoutGravityIfNeeded(taskInfo, bounds, stableBounds)
         }
-        if (DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue && !hasLayoutGravityApplied) {
+        if (!hasLayoutGravityApplied) {
             cascadeWindow(
                 context,
                 recentTasksController,

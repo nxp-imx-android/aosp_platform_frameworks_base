@@ -251,13 +251,6 @@ flag {
 }
 
 flag {
-    name: "enable_cascading_windows"
-    namespace: "lse_desktop_experience"
-    description: "Whether to apply cascading effect for placing multiple windows when first launched"
-    bug: "325240051"
-}
-
-flag {
     name: "enable_close_lid_interaction"
     namespace: "lse_desktop_experience"
     description: "Enables new interaction that occurs when device lid is closed."
