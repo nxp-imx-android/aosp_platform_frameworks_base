@@ -16,6 +16,8 @@
 
 package android.processor.devicepolicy
 
+import android.processor.devicepolicy.protos.FullyQualifiedClassName
+import android.processor.devicepolicy.protos.FullyQualifiedFieldName
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import com.sun.source.tree.LiteralTree
@@ -233,13 +235,66 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
         }
     }
 
+    private fun getFullyQualifiedClassName(element: Element): FullyQualifiedClassName {
+        if (element !is TypeElement) {
+            throw IllegalArgumentException("Element $element is not a type element")
+        }
+
+        val packageName =
+            processingEnv
+                .elementUtils
+                .getPackageOf(element)
+                .qualifiedName
+                .toString()
+        val className =
+            element
+                .qualifiedName
+                .toString()
+                .removePrefix("$packageName.")
+
+        return FullyQualifiedClassName.newBuilder()
+            .setClassName(className)
+            .setPackageName(packageName)
+            .build()
+    }
+
+    protected fun getFullyQualifiedFieldName(element: Element): FullyQualifiedFieldName {
+        val fieldName = element.simpleName.toString()
+        val className = getFullyQualifiedClassName(element.enclosingElement)
+
+        return FullyQualifiedFieldName.newBuilder()
+            .setFieldName(fieldName)
+            .setClassName(className.className)
+            .setPackageName(className.packageName)
+            .build()
+    }
+
+    private fun classTypeMirrorToName(type: TypeMirror): FullyQualifiedClassName {
+        val element = processingEnv.typeUtils.asElement(type)
+
+        val packageName =
+            processingEnv
+                .elementUtils
+                .getPackageOf(element)
+                .qualifiedName
+                .toString()
+        val className =
+            type
+                .toString()
+                .removePrefix("$packageName.")
+
+        return FullyQualifiedClassName.newBuilder()
+            .setClassName(className)
+            .setPackageName(packageName)
+            .build()
+    }
+
     private fun loadPolicyDefinition(
         element: Element, definition: PolicyDefinition, typeSpecificMetadata: TypeSpecificPolicyMetadata
     ): PolicyMetadata? {
-        val enclosingType = (element.enclosingElement as TypeElement).getQualifiedName()
+        val identifier = getFullyQualifiedFieldName(element)
 
-        val name = "$enclosingType.$element"
-        val type = policyType(element).toString()
+        val type = classTypeMirrorToName(policyType(element))
         val documentation =
             processingEnv.elementUtils
                 .getDocComment(element)
@@ -257,7 +312,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
 
         val builder = PolicyMetadata
             .newBuilder()
-            .setName(name)
+            .setIdentifier(identifier)
             .setType(type)
             .setDocumentation(documentation)
             .setTypeSpecificMetadata(typeSpecificMetadata)

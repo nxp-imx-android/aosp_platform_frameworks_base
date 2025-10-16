@@ -16,6 +16,12 @@
 
 package android.app.admin.metadata;
 
+import static android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY;
+import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
+import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
+import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY;
+import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY;
+
 import android.app.admin.PolicyIdentifier;
 import java.lang.String;
 import java.util.ArrayList;
@@ -32,7 +38,7 @@ public class Policies {
     public static List<PolicyMetadata<?>> loadPolicyMetadata() {
         List<PolicyMetadata<?>> policies = new ArrayList<PolicyMetadata<?>>();
         policies.add(new BooleanPolicyMetadata(
-            /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY,
+            /* id= */ SIMPLE_BOOLEAN_POLICY,
             /* allowedScopes= */ Set.of(
                 1,
                 2
@@ -42,7 +48,7 @@ public class Policies {
             /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
         ));
         policies.add(new EnumPolicyMetadata(
-            /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY,
+            /* id= */ SIMPLE_ENUM_POLICY,
             /* allowedScopes= */ Set.of(
                 2,
                 3
@@ -57,7 +63,7 @@ public class Policies {
             )
         ));
         policies.add(new IntegerPolicyMetadata(
-            /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY,
+            /* id= */ SIMPLE_INTEGER_POLICY,
             /* allowedScopes= */ Set.of(
                 1
             ),
@@ -66,7 +72,7 @@ public class Policies {
             /* requiredCrossUserPermission= */ null
         ));
         policies.add(new StringPolicyMetadata(
-            /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY,
+            /* id= */ SIMPLE_STRING_POLICY,
             /* allowedScopes= */ Set.of(
                 1
             ),
@@ -76,9 +82,9 @@ public class Policies {
             /* emptyStringAllowed= */ false
         ));
         policies.add(new ListPolicyMetadata<String>(
-            /* id= */ android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY,
+            /* id= */ SIMPLE_STRING_LIST_POLICY,
             /* elementMetadata= */ new StringPolicyMetadata(
-                /* id= */ new PolicyIdentifier<String>(android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY.getId() + "#elements"),
+                /* id= */ new PolicyIdentifier<String>(SIMPLE_STRING_LIST_POLICY.getId() + "#elements"),
                 /* allowedScopes= */ Set.of(
                     1
                 ),

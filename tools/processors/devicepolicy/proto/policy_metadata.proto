@@ -5,10 +5,32 @@ package android.processor.devicepolicy;
 option java_package = "android.processor.devicepolicy.protos";
 option java_multiple_files = true;
 
+// Fully qualified name for a class with package and class name split out.
+// The split is critical when inner classes are involved, for example `className` can be
+// 'Outer.Inner'. We don't want to rely on heuristics for the split since we have all the
+// information available.
+message FullyQualifiedClassName {
+    string class_name = 1;
+    string package_name = 2;
+}
+
+// Fully qualified name for a field in a class. Like `FullyQualifiedClassName`, each component is
+// listed individually.
+message FullyQualifiedFieldName {
+    string field_name = 1;
+    string class_name = 2;
+    string package_name = 3;
+}
+
 message PolicyMetadata {
-    string name = 1;
-    string type = 2;
+    // `identifier` is the field that contains the PolicyIdentifier for the policy.
+    FullyQualifiedFieldName identifier = 1;
+    // The type parameter of PolicyIdentifier. For example for PolicyIdentifier<String> this would
+    // be {class_name: "String", package_name: "java.lang"}.
+    FullyQualifiedClassName type = 2;
+    // The documentation for the policy, extracted from JavaDoc.
     string documentation = 3;
+    // Additional type-specific policy metadata.
     TypeSpecificPolicyMetadata type_specific_metadata = 4;
 
     // LINT.IfChange(policy_scope)
@@ -49,7 +71,7 @@ message TypeSpecificPolicyMetadata {
         string documentation = 3;
 
         message EnumValue {
-            string name = 1;
+            FullyQualifiedFieldName field_name = 1;
             int32 int_value = 2;
             string documentation = 3;
         }

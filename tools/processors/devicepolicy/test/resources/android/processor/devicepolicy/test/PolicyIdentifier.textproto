@@ -1,6 +1,13 @@
 policy_metadata {
-  name: "android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY"
-  type: "java.lang.Boolean"
+  identifier {
+    field_name: "SIMPLE_BOOLEAN_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Boolean"
+    package_name: "java.lang"
+  }
   documentation: "Test policy 1\nSecond line"
   type_specific_metadata {
     boolean_metadata {
@@ -13,8 +20,15 @@ policy_metadata {
   required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
 }
 policy_metadata {
-  name: "android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY"
-  type: "java.lang.Integer"
+  identifier {
+    field_name: "SIMPLE_ENUM_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
   documentation: "Test policy 2"
   type_specific_metadata {
     enum_metadata {
@@ -22,16 +36,28 @@ policy_metadata {
       int_def_name: "android.app.admin.PolicyIdentifier.SimpleEnumPolicyEnum"
       documentation: "Enum for {@link SIMPLE_ENUM_POLICY}\n\n@hide"
       values {
-        name: "ENUM_ENTRY_1"
+        field_name {
+          field_name: "ENUM_ENTRY_1"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
         documentation: "First entry"
       }
       values {
-        name: "ENUM_ENTRY_2"
+        field_name {
+          field_name: "ENUM_ENTRY_2"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
         int_value: 1
         documentation: "Second entry"
       }
       values {
-        name: "ENUM_ENTRY_3"
+        field_name {
+          field_name: "ENUM_ENTRY_3"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
         int_value: 2
         documentation: "Third entry"
       }
@@ -44,8 +70,15 @@ policy_metadata {
   required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
 }
 policy_metadata {
-  name: "android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY"
-  type: "java.lang.Integer"
+  identifier {
+    field_name: "SIMPLE_INTEGER_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
   documentation: "Test policy 3"
   type_specific_metadata {
     integer_metadata {
@@ -55,8 +88,15 @@ policy_metadata {
   affected_resource: RESOURCE_DEVICE_WIDE
 }
 policy_metadata {
-  name: "android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY"
-  type: "java.lang.String"
+  identifier {
+    field_name: "SIMPLE_STRING_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "String"
+    package_name: "java.lang"
+  }
   documentation: "Test policy 4"
   type_specific_metadata {
     string_metadata {
@@ -66,8 +106,15 @@ policy_metadata {
   affected_resource: RESOURCE_DEVICE_WIDE
 }
 policy_metadata {
-  name: "android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY"
-  type: "java.util.List<java.lang.String>"
+  identifier {
+    field_name: "SIMPLE_STRING_LIST_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "List<java.lang.String>"
+    package_name: "java.util"
+  }
   documentation: "Test policy 5"
   type_specific_metadata {
     list_of_string_metadata {
