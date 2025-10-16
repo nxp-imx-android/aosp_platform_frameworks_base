@@ -1025,6 +1025,7 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
                 CONTENT_CHANGE_TYPE_CHECKED,
                 CONTENT_CHANGE_TYPE_EXPANDED,
                 CONTENT_CHANGE_TYPE_SUPPLEMENTAL_DESCRIPTION,
+                CONTENT_CHANGE_TYPE_SORT_DIRECTION
             })
     public @interface ContentChangeTypes {}
 
