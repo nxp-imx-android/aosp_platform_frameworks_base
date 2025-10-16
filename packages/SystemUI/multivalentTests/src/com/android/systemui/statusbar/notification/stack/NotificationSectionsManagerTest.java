@@ -67,6 +67,8 @@ public class NotificationSectionsManagerTest extends SysuiTestCase {
     @Mock private SectionHeaderController mRecsHeaderController;
     @Mock private SectionHeaderController mPromoHeaderController;
 
+    @Mock private SectionHeaderController mHighlightsHeaderController;
+
     private NotificationSectionsManager mSectionsManager;
 
     @Before
@@ -84,7 +86,8 @@ public class NotificationSectionsManagerTest extends SysuiTestCase {
                         mNewsHeaderController,
                         mSocialHeaderController,
                         mRecsHeaderController,
-                        mPromoHeaderController
+                        mPromoHeaderController,
+                        mHighlightsHeaderController
                 );
         // Required in order for the header inflation to work properly
         when(mNssl.generateLayoutParams(any(AttributeSet.class)))

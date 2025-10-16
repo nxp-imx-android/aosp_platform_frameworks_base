@@ -22,6 +22,7 @@ import com.android.systemui.statusbar.notification.collection.coordinator.dagger
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator
+import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
@@ -69,6 +70,7 @@ constructor(
     bundleCoordinator: BundleCoordinator,
     summarizationCoordinator: SummarizationCoordinator,
     automaticPromotionCoordinator: AutomaticPromotionCoordinator,
+    highlightsCoordinator: HighlightsCoordinator,
 ) : NotifCoordinators {
 
     private val mCoreCoordinators: MutableList<CoreCoordinator> = ArrayList()
@@ -115,6 +117,10 @@ constructor(
             mCoordinators.add(summarizationCoordinator)
         }
         mCoordinators.add(statsLoggerCoordinator)
+        if (NmHighlights.isEnabled) {
+            mCoordinators.add(highlightsCoordinator)
+        }
+
         // Manually add Ordered Sections
         if (NotificationMinimalism.isEnabled) {
             mOrderedSections.add(lockScreenMinimalismCoordinator.topOngoingSectioner) // Top Ongoing
@@ -124,6 +130,9 @@ constructor(
             mOrderedSections.add(lockScreenMinimalismCoordinator.topUnseenSectioner) // Top Unseen
         }
         mOrderedSections.add(colorizedFgsCoordinator.sectioner) // ForegroundService
+        if (NmHighlights.isEnabled) {
+            mOrderedSections.add(highlightsCoordinator.highlightsSectioner) // Highlights
+        }
         mOrderedSections.add(conversationCoordinator.priorityPeopleSectioner) // Priority People
         mOrderedSections.add(conversationCoordinator.peopleAlertingSectioner) // People Alerting
         mOrderedSections.add(rankingCoordinator.alertingSectioner) // Alerting

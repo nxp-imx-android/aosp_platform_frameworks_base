@@ -24,6 +24,7 @@ import static android.app.Notification.FLAG_NO_CLEAR;
 import static android.app.Notification.FLAG_ONGOING_EVENT;
 import static android.app.Notification.VISIBILITY_PRIVATE;
 import static android.app.Notification.VISIBILITY_PUBLIC;
+import static android.app.NotificationManager.IMPORTANCE_MAX;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
 
 import android.annotation.FlaggedApi;
@@ -145,7 +146,12 @@ public class GroupHelper {
             getNotificationShadeSections(AUTOGROUP_AT_COUNT_DEFAULT,
                 AUTOGROUP_BUNDLES_AT_COUNT_DEFAULT);
 
-    private static List<NotificationSectioner> NOTIFICATION_BUNDLE_SECTIONS;
+    /**
+     * The list of sections where autogrouping is always applied, so that notifications don't
+     * become exempt from classification just because they are posted in a group that contains
+     * non-classified notifications.
+     */
+    private static List<NotificationSectioner> NOTIFICATION_NAS_SECTIONS;
 
     private static List<NotificationSectioner> getNotificationShadeSections(int autogroupAtCount,
             int autogroupBundlesAtCount) {
@@ -169,7 +175,13 @@ public class GroupHelper {
                                 && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)
         ));
 
-        NOTIFICATION_BUNDLE_SECTIONS = new ArrayList<>(sectionsList);
+        if (android.app.Flags.nmHighlights()) {
+            sectionsList.add(new NotificationSectioner("HighlightsSection", 0,
+                    autogroupBundlesAtCount, (record) ->
+                    record.getProposedImportance() == IMPORTANCE_MAX));
+        }
+
+        NOTIFICATION_NAS_SECTIONS = new ArrayList<>(sectionsList);
 
         if (Flags.notificationForceGroupConversations()) {
             // add priority people section
@@ -575,7 +587,7 @@ public class GroupHelper {
                 // If bundled and the section did not change, do not un-autogroup
                 final NotificationSectioner sectioner = getSection(record);
                 if (sectioner != null
-                        && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)
+                        && NOTIFICATION_NAS_SECTIONS.contains(sectioner)
                         && fullAggregateGroupKey.equals(
                             FullyQualifiedGroupKey.forRecord(record, sectioner))) {
                     if (DEBUG) {
@@ -786,7 +798,7 @@ public class GroupHelper {
 
     private static boolean isInBundleSection(final NotificationRecord record) {
         final NotificationSectioner sectioner = getSection(record);
-        return (sectioner != null && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner));
+        return (sectioner != null && NOTIFICATION_NAS_SECTIONS.contains(sectioner));
     }
 
     /**
@@ -1013,7 +1025,7 @@ public class GroupHelper {
                         && (r.mOriginalFlags & FLAG_GROUP_SUMMARY) == 0
                         && summaryGroupKey.equals(oldGroupKey)) {
                     final NotificationSectioner sectioner = getSection(r);
-                    if (sectioner == null || NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)) {
+                    if (sectioner == null || NOTIFICATION_NAS_SECTIONS.contains(sectioner)) {
                         if (DEBUG) {
                             Slog.i(TAG, "onGroupSummaryAdded skip bundled child: " + r);
                         }
@@ -1148,7 +1160,7 @@ public class GroupHelper {
             if (isChildOfValidAppGroup(record) || isNotAppGroupPrevInvalidSection(record)) {
                 // Check if section changes to a bundle section
                 NotificationSectioner sectioner = getSection(record);
-                if (sectioner != null && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)) {
+                if (sectioner != null && NOTIFICATION_NAS_SECTIONS.contains(sectioner)) {
                     FullyQualifiedGroupKey newFullAggregateGroupKey =
                             new FullyQualifiedGroupKey(userId, pkgName, sectioner);
                     if (DEBUG) {
@@ -1972,7 +1984,7 @@ public class GroupHelper {
             if (!Flags.notificationForceGroupConversations()) {
                 if (record.isConversation()) {
                     // Bundled conversations are groupable
-                    if (!NOTIFICATION_BUNDLE_SECTIONS.contains(this)) {
+                    if (!NOTIFICATION_NAS_SECTIONS.contains(this)) {
                         return false;
                     }
                 }
