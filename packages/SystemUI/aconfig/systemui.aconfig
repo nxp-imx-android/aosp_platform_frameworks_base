@@ -558,6 +558,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_chronometer_width_reset"
+    namespace: "systemui"
+    description: "Bugfix flag to reset status bar chip chronometer width in more circumstances"
+    bug: "450956553"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_assistant_icon"
     namespace: "systemui"
     description: "Feature flag for the assistant icon in desktop status bar"
