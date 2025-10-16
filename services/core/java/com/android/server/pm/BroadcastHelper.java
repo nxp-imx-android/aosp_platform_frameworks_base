@@ -460,10 +460,8 @@ public final class BroadcastHelper {
         if (reason != null) {
             extras.putString(Intent.EXTRA_REASON, reason);
         }
-        if (android.content.pm.Flags.includeBroadcastDebugReason()) {
-            bOptions = bOptions == null ? BroadcastOptions.makeBasic() : bOptions;
-            bOptions.setDebugReason(broadcastDebugReason);
-        }
+        bOptions = bOptions == null ? BroadcastOptions.makeBasic() : bOptions;
+        bOptions.setDebugReason(broadcastDebugReason);
         // If this is not reporting a change of the overall package, then only send it
         // to registered receivers.  We don't want to launch a swath of apps for every
         // little component state change.
