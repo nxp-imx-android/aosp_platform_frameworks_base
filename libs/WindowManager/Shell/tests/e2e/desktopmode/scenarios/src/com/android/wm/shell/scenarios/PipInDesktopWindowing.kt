@@ -79,6 +79,17 @@ abstract class PipInDesktopWindowing(
         pipApp.expandPipWindowToFreeformApp(wmHelper)
     }
 
+    @Test
+    open fun dragCornerToResizePip() {
+        pipAppDesktopMode.cornerResize(
+            wmHelper,
+            device,
+            DesktopModeAppHelper.Corners.LEFT_TOP,
+            -200,
+            -200
+        )
+    }
+
     @After
     fun teardown() {
         pipApp.exit(wmHelper)
