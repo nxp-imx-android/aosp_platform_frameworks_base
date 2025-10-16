@@ -17,6 +17,11 @@
 package com.android.server.companion.datatransfer.continuity.settings;
 
 import android.annotation.NonNull;
+import android.companion.datatransfer.continuity.TaskContinuityManager;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import java.util.Objects;
 
@@ -24,9 +29,13 @@ import java.util.Objects;
 public class HandoffSettingsManager {
 
     private final HandoffPreferenceStore mHandoffPreferenceStore;
+    private final HandoffPolicyManager mHandoffPolicyManager;
 
-    public HandoffSettingsManager(@NonNull HandoffPreferenceStore handoffPreferenceStore) {
+    public HandoffSettingsManager(
+            @NonNull HandoffPreferenceStore handoffPreferenceStore,
+            @NonNull HandoffPolicyManager handoffPolicyManager) {
         mHandoffPreferenceStore = Objects.requireNonNull(handoffPreferenceStore);
+        mHandoffPolicyManager = handoffPolicyManager;
     }
 
     /**
@@ -36,6 +45,10 @@ public class HandoffSettingsManager {
      * @return True if handoff is active for the user, false otherwise.
      */
     public boolean isHandoffActiveForUser(int userId) {
+        if (getHandoffAvailabilityForUser(userId)
+                != TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_AVAILABLE) {
+            return false;
+        }
         return mHandoffPreferenceStore.isHandoffEnabledForUser(userId);
     }
 
@@ -48,5 +61,13 @@ public class HandoffSettingsManager {
      */
     public void setHandoffEnabledForUser(int userId, boolean enabled) {
         mHandoffPreferenceStore.setHandoffEnabledForUser(userId, enabled);
+    }
+
+    private int getHandoffAvailabilityForUser(int userId) {
+        if (!mHandoffPolicyManager.isHandoffAllowedForUser(userId)) {
+            return TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY;
+        }
+
+        return TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_AVAILABLE;
     }
 }

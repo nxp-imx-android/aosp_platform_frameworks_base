@@ -27,6 +27,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Mock;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -34,17 +35,21 @@ public class HandoffSettingsManagerTest {
     private static final int USER_ID = 1;
 
     @Mock private HandoffPreferenceStore mHandoffPreferenceStore;
+    @Mock private HandoffPolicyManager mHandoffPolicyManager;
 
     private HandoffSettingsManager mHandoffSettingsManager;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mHandoffSettingsManager = new HandoffSettingsManager(mHandoffPreferenceStore);
+
+        mHandoffSettingsManager =
+                new HandoffSettingsManager(mHandoffPreferenceStore, mHandoffPolicyManager);
     }
 
     @Test
-    public void isHandoffActiveForUser_returnsFromPreferenceStore() {
+    public void isHandoffActiveForUser_enabledByPolicy_callsPreferenceStore() {
+        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(true);
         when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(true);
         assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isTrue();
         verify(mHandoffPreferenceStore).isHandoffEnabledForUser(USER_ID);
@@ -54,5 +59,20 @@ public class HandoffSettingsManagerTest {
     public void setHandoffEnabledForUser_callsPreferenceStore() {
         mHandoffSettingsManager.setHandoffEnabledForUser(USER_ID, false);
         verify(mHandoffPreferenceStore).setHandoffEnabledForUser(USER_ID, false);
+    }
+
+    @Test
+    public void isHandoffActiveForUser_disabledByPolicy_returnsFalseByDefault() {
+        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(false);
+        when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(true);
+        assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isFalse();
+    }
+
+    @Test
+    public void setHandoffEnabledForUser_disabledByPolicy_doesNotActivateHandoff() {
+        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(false);
+        when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(false);
+        mHandoffSettingsManager.setHandoffEnabledForUser(USER_ID, true);
+        assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isFalse();
     }
 }
