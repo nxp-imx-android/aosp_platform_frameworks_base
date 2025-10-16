@@ -219,7 +219,11 @@ private constructor(
 
         startSideContainer = mView.requireViewById(R.id.status_bar_start_side_content)
         startSideContainer.setOnHoverListener(
-            statusOverlayHoverListenerFactory.createDarkAwareListener(startSideContainer)
+            statusOverlayHoverListenerFactory.createDarkAwareListener(
+                startSideContainer,
+                topHoverMargin = 6,
+                bottomHoverMargin = 6,
+            )
         )
         if (statusBarTapToExpandShadeEnabled()) {
             startSideContainer.setOnTouchListener(
