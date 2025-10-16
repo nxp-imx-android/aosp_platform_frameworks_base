@@ -106,3 +106,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "connectivity_service_modify_qdisc_clsact"
+  namespace: "android_core_networking"
+  is_exported: true
+  description: "Flag for moving the modify qdisc clsact logic in Netd to the Connectivity service"
+  bug: "430428527"
+}
