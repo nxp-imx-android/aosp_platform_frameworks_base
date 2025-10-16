@@ -510,6 +510,20 @@ public class GraphicsEnvironment {
                     return ANGLE_GL_DRIVER_CHOICE_NATIVE;
                 }
             }
+
+            final String[] globalDenylist =
+                    context.getResources().getStringArray(R.array.config_angleGlobalDenyList);
+            if (DEBUG) {
+                Log.v(TAG, "ANGLE global denylist: " + Arrays.toString(globalDenylist));
+            }
+            for (final String deniedPackage : globalDenylist) {
+                if (deniedPackage.equals(packageName)) {
+                    Log.v(TAG,
+                            packageName + " is listed in global ANGLE denylist, disabling ANGLE");
+                    return ANGLE_GL_DRIVER_CHOICE_NATIVE;
+                }
+            }
+
             if (android.provider.flags.Flags.angleDynamicDenylist()) {
                 final List<String> dynamicDenylist = getGlobalSettingsString(
                         contentResolver, bundle, Settings.Global.ANGLE_DYNAMIC_DENYLIST);
