@@ -31,6 +31,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RenderNode;
+import android.graphics.Xfermode;
 import android.graphics.drawable.Drawable;
 import android.util.ArraySet;
 import android.util.Log;
@@ -146,6 +147,13 @@ public final class BackgroundBlurDrawable extends Drawable {
     @Override
     public int getAlpha() {
         return mAlpha;
+    }
+
+    /**
+     * Set the {@link Xfermode} for the drawable.
+     */
+    public void setXfermode(@Nullable Xfermode xfermode) {
+        mPaint.setXfermode(xfermode);
     }
 
     /**
@@ -304,7 +312,7 @@ public final class BackgroundBlurDrawable extends Drawable {
         @UiThread
         void onBlurDrawableUpdated(BackgroundBlurDrawable drawable) {
             final boolean shouldBeDrawn =
-                    drawable.mAlpha != 0 && drawable.mBlurRadius > 0 && drawable.mVisible;
+                    drawable.mAlpha > 0 && drawable.mBlurRadius > 0 && drawable.mVisible;
             final boolean isDrawn = mDrawables.contains(drawable);
             if (shouldBeDrawn) {
                 mHasUiUpdates = true;
@@ -466,7 +474,6 @@ public final class BackgroundBlurDrawable extends Drawable {
                 mViewRoot.dispatchBlurRegions(blurRegionsArray, frameNumber);
             }
         }
-
     }
 
     /**
