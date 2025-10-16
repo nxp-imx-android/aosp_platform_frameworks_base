@@ -251,10 +251,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         AccessibilitySecurityPolicy.AccessibilityUserManager,
         SystemActionPerformer.SystemActionsChangedListener,
         SystemActionPerformer.DisplayUpdateCallBack, ProxyManager.SystemSupport {
-
-    private static final boolean DEBUG = false;
-
     private static final String LOG_TAG = "AccessibilityManagerService";
+
+    private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
     // TODO: This is arbitrary. When there is time implement this by watching
     //       when that accessibility services are bound.

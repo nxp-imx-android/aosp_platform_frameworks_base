@@ -39,7 +39,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
-import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
@@ -79,7 +78,7 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
 
     // To enable these logs, run: 'adb shell setprop log.tag.MouseKeysInterceptor DEBUG'
     // (requires restart)
-    private static final boolean DEBUG = Log.isLoggable(LOG_TAG, Log.DEBUG);
+    private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
     private static final int MESSAGE_MOVE_MOUSE_POINTER = 1;
     private static final int MESSAGE_SCROLL_MOUSE_POINTER = 2;

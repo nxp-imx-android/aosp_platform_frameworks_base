@@ -130,8 +130,8 @@ import java.util.Set;
 abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServiceConnection.Stub
         implements ServiceConnection, IBinder.DeathRecipient, KeyEventDispatcher.KeyEventFilter,
         FingerprintGestureDispatcher.FingerprintGestureClient {
-    private static final boolean DEBUG = false;
     private static final String LOG_TAG = "AbstractAccessibilityServiceConnection";
+    private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
     private static final String TRACE_SVC_CONN = LOG_TAG + ".IAccessibilityServiceConnection";
     private static final String TRACE_SVC_CLIENT = LOG_TAG + ".IAccessibilityServiceClient";
     private static final String TRACE_WM = "WindowManagerInternal";
