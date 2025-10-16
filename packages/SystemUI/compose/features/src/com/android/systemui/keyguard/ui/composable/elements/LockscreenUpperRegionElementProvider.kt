@@ -32,13 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.PropertyTransformationBuilder
 import com.android.compose.animation.scene.TransitionBuilder
-import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenUpperRegionViewModel
@@ -85,7 +83,7 @@ constructor(
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
             val viewModel = rememberViewModel("LockscreenUpperRegion") { viewModelFactory.create() }
-            val layoutType = getLayoutType()
+            val layoutType = getLayoutType(viewModel.shadeMode)
             val layout =
                 remember(viewModel, layoutType) {
                     when (layoutType) {
@@ -394,15 +392,11 @@ constructor(
             NARROW,
         }
 
-        @Composable
-        fun getLayoutType(): LayoutType {
-            with(LocalWindowSizeClass.current) {
-                val isWindowLarge =
-                    isAtLeastBreakpoint(
-                        WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND,
-                        WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
-                    )
-                return if (isWindowLarge) LayoutType.WIDE else LayoutType.NARROW
+        fun getLayoutType(shadeMode: ShadeMode): LayoutType {
+            return when (shadeMode) {
+                ShadeMode.Single -> LayoutType.NARROW
+                ShadeMode.Split,
+                ShadeMode.Dual -> LayoutType.WIDE
             }
         }
     }

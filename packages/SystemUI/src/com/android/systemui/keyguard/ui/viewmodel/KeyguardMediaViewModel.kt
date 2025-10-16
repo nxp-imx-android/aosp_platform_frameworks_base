@@ -24,6 +24,8 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarou
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
@@ -33,6 +35,7 @@ constructor(
     val mediaViewModelFactory: MediaViewModel.Factory,
     private val mediaCarouselInteractor: MediaCarouselInteractor,
     private val keyguardInteractor: KeyguardInteractor,
+    shadeModeInteractor: ShadeModeInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("KeyguardMediaViewModel.hydrator")
@@ -43,6 +46,9 @@ constructor(
             traceName = "isMediaActive",
             source = mediaCarouselInteractor.hasActiveMedia,
         )
+
+    val shadeMode: ShadeMode by
+        hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
 
     val isDozing: Boolean by
         hydrator.hydratedStateOf(traceName = "isDozing", source = keyguardInteractor.isDozing)
