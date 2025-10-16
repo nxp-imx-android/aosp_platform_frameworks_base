@@ -1424,12 +1424,7 @@ class Task extends TaskFragment {
 
     /** Returns the user id associated with the current task. */
     int getUserId() {
-        if (!isLeafTask()) return mCurrentUser;
-        if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()
-                && showForAllUsers()) {
-            return mCurrentUser;
-        }
-        return mUserId;
+        return isLeafTask() ? mUserId : mCurrentUser;
     }
 
     /**
