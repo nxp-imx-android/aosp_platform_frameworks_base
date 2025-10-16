@@ -62,7 +62,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @AppModeFull
 @AppModeNonSdkSandbox
@@ -173,7 +172,7 @@ public class BroadcastHelperTest {
 
         ArgumentCaptor<Intent> captor = ArgumentCaptor.forClass(Intent.class);
         verify(mMockActivityManagerInternal).broadcastIntentWithCallback(captor.capture(), eq(null),
-                eq(null), anyInt(), eq(null), eq(null), eq(null));
+                eq(null), anyInt(), eq(null), eq(null), any(Bundle.class));
         Intent intent = captor.getValue();
         assertNotNull(intent);
         assertNull(intent.getPackage());
