@@ -19,7 +19,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.media.projection.MediaProjectionConfig
+import android.os.Build
 import android.os.Bundle
+import android.view.Display
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.permission.MediaProjectionPermissionUtils.getConnectedDisplays
 import com.android.systemui.mediaprojection.permission.MediaProjectionPermissionUtils.getSingleAppDisabledText
@@ -80,43 +82,50 @@ class SystemCastPermissionDialogDelegate(
                     mediaProjectionConfig,
                     overrideDisableSingleAppOption,
                 )
+
+            val displayManager = context.getSystemService(DisplayManager::class.java)
+            val connectedDisplays: List<Display> = getConnectedDisplays(displayManager)
+
             val options =
                 mutableListOf(
                     ScreenShareOption(
                         mode = ENTIRE_SCREEN,
                         spinnerText =
-                            R.string
-                                .media_projection_entry_cast_permission_dialog_option_text_entire_screen,
+                            if (connectedDisplays.isEmpty()) {
+                                R.string
+                                    .media_projection_entry_cast_permission_dialog_option_text_entire_screen
+                            } else {
+                                R.string
+                                    .media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display
+                            },
                         warningText =
                             R.string
                                 .media_projection_entry_cast_permission_dialog_warning_entire_screen,
                         startButtonText =
                             R.string
                                 .media_projection_entry_cast_permission_dialog_continue_entire_screen,
+                        displayName = Build.MODEL,
                     )
                 )
-            if (
-                com.android.media.projection.flags.Flags
-                    .mediaProjectionConnectedDisplayScreenSharing()
-            ) {
-                val displayManager = context.getSystemService(DisplayManager::class.java)
-                options +=
-                    getConnectedDisplays(displayManager).map {
-                        ScreenShareOption(
-                            ENTIRE_SCREEN,
+
+            // New entries will be added only if the flag is enabled and there are displays to add
+            options +=
+                getConnectedDisplays(displayManager).map {
+                    ScreenShareOption(
+                        ENTIRE_SCREEN_EXTERNAL,
+                        R.string
+                            .media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display,
+                        warningText =
                             R.string
-                                .media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display,
-                            warningText =
-                                R.string
-                                    .media_projection_entry_app_permission_dialog_warning_entire_screen,
-                            startButtonText =
-                                R.string
-                                    .media_projection_entry_app_permission_dialog_continue_entire_screen,
-                            displayId = it.displayId,
-                            displayName = it.name,
-                        )
-                    }
-            }
+                                .media_projection_entry_app_permission_dialog_warning_entire_screen,
+                        startButtonText =
+                            R.string
+                                .media_projection_entry_app_permission_dialog_continue_entire_screen,
+                        displayId = it.displayId,
+                        displayName = it.name,
+                    )
+                }
+
             val singleAppOption =
                 ScreenShareOption(
                     mode = SINGLE_APP,

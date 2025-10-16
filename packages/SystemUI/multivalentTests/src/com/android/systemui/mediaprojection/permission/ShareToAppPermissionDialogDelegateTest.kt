@@ -233,7 +233,7 @@ class ShareToAppPermissionDialogDelegateTest : SysuiTestCase() {
                     .map { spinner.adapter.getDropDownView(it, null, spinner) }
                     .mapNotNull { it.findViewById<TextView>(android.R.id.text1)?.text }
 
-            // check that the first option is single app and enabled
+            // check that the list contains the connected display (type EXTERNAL)
             assertThat(optionsText).contains(context.getString(resIdDisplay, "Connected Display"))
         }
     }
