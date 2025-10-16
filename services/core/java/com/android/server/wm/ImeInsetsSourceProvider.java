@@ -216,13 +216,11 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         boolean initiallyVisible = super.isInitiallyVisible(target);
         // parent initiallyVisible is true, if it is client visible.
         if (initiallyVisible && mServerVisible) {
-            WindowContainer<?> imeParentWindow = mDisplayContent.getImeParentWindow();
+            final WindowContainer<?> imeParent = mDisplayContent.getImeParent();
             // If the IME is attached to an app window, only consider it initially visible
             // if the parent is visible and wasn't part of a transition.
-            initiallyVisible =
-                    imeParentWindow != null && !imeParentWindow.inTransition()
-                            && imeParentWindow.isVisible()
-                            && imeParentWindow.isVisibleRequested();
+            initiallyVisible = imeParent != null && !imeParent.inTransition()
+                    && imeParent.isVisible() && imeParent.isVisibleRequested();
         } else {
             initiallyVisible = false;
         }

@@ -388,18 +388,18 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setWindowToken(activity).build();
         startingWin.setHasSurface(true);
         assertTrue(startingWin.canBeImeLayeringTarget());
-        final WindowContainer imeSurfaceParentWindow = mock(WindowContainer.class);
-        final SurfaceControl imeSurfaceParent = mock(SurfaceControl.class);
-        doReturn(imeSurfaceParent).when(imeSurfaceParentWindow).getSurfaceControl();
-        doReturn(imeSurfaceParentWindow).when(mDisplayContent).computeImeParent();
+        final WindowContainer imeParent = mock(WindowContainer.class);
+        final SurfaceControl imeParentSurface = mock(SurfaceControl.class);
+        doReturn(imeParentSurface).when(imeParent).getSurfaceControl();
+        doReturn(imeParent).when(mDisplayContent).computeImeParent();
         spyOn(imeContainer);
 
         mDisplayContent.setImeInputTarget(startingWin);
         mDisplayContent.onConfigurationChanged(new Configuration());
         verify(mDisplayContent).updateImeParent();
 
-        // Force reassign the relative layer when the IME surface parent is changed.
-        verify(imeContainer).assignRelativeLayer(any(), eq(imeSurfaceParent), anyInt(), eq(true));
+        // Force reassign the relative layer when the IME parent is changed.
+        verify(imeContainer).assignRelativeLayer(any(), eq(imeParentSurface), anyInt(), eq(true));
     }
 
     @SetupWindows(addWindows = W_INPUT_METHOD)
@@ -454,10 +454,10 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setWindowToken(activity).build();
         startingWin.setHasSurface(true);
         assertTrue(startingWin.canBeImeLayeringTarget());
-        final WindowContainer imeSurfaceParentWindow = mock(WindowContainer.class);
-        final SurfaceControl imeSurfaceParent = mock(SurfaceControl.class);
-        doReturn(imeSurfaceParent).when(imeSurfaceParentWindow).getSurfaceControl();
-        doReturn(imeSurfaceParentWindow).when(mDisplayContent).computeImeParent();
+        final WindowContainer imeParent = mock(WindowContainer.class);
+        final SurfaceControl imeParentSurface = mock(SurfaceControl.class);
+        doReturn(imeParentSurface).when(imeParent).getSurfaceControl();
+        doReturn(imeParent).when(mDisplayContent).computeImeParent();
 
         // Main precondition for this test: organize the ImeContainer.
         final IDisplayAreaOrganizer mockImeOrganizer = mock(IDisplayAreaOrganizer.class);
@@ -466,8 +466,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
         mDisplayContent.updateImeParent();
 
-        assertNull("Don't reparent the surface of an organized ImeContainer.",
-                mDisplayContent.mInputMethodSurfaceParent);
+        assertNull("Don't reparent an organized ImeContainer.", mDisplayContent.getImeParent());
 
         // Clean up organizer.
         imeContainer.setOrganizer(null);
@@ -689,8 +688,8 @@ public class DisplayContentTests extends WindowTestsBase {
                 appWin.matchesDisplayAreaBounds());
 
         assertNotEquals("IME shouldn't be attached to app",
-                mDisplayContent.computeImeParent().getSurfaceControl(),
-                mDisplayContent.getImeLayeringTarget().mActivityRecord.getSurfaceControl());
+                mDisplayContent.getImeLayeringTarget().mActivityRecord.getSurfaceControl(),
+                mDisplayContent.computeImeParent().getSurfaceControl());
         assertEquals("IME should be attached to display",
                 mDisplayContent.getImeContainer().getParent().getSurfaceControl(),
                 mDisplayContent.computeImeParent().getSurfaceControl());
@@ -2901,29 +2900,29 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
-    public void testImeChildWindowFocusWhenImeParentWindowChanges() {
+    public void testImeChildWindowFocusWhenImeParentChanges() {
         final var imeChildWin = newWindowBuilder("imeChildWin", TYPE_APPLICATION_ATTACHED_DIALOG)
                 .setParent(mImeWindow).build();
-        doTestImeWindowFocusWhenImeParentWindowChanged(imeChildWin);
+        doTestImeWindowFocusWhenImeParentChanged(imeChildWin);
     }
 
     @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
-    public void testImeDialogWindowFocusWhenImeParentWindowChanges() {
+    public void testImeDialogWindowFocusWhenImeParentChanges() {
         final var imeDialogWin = newWindowBuilder("imeDialogWin", TYPE_INPUT_METHOD_DIALOG)
                 .build();
-        doTestImeWindowFocusWhenImeParentWindowChanged(imeDialogWin);
+        doTestImeWindowFocusWhenImeParentChanged(imeDialogWin);
     }
 
     @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
-    public void testImeWindowFocusWhenImeParentWindowChanges() {
+    public void testImeWindowFocusWhenImeParentChanges() {
         // Verify focusable, non-child IME windows.
         final var otherImeWin = newWindowBuilder("otherImeWin", TYPE_INPUT_METHOD).build();
-        doTestImeWindowFocusWhenImeParentWindowChanged(otherImeWin);
+        doTestImeWindowFocusWhenImeParentChanged(otherImeWin);
     }
 
-    private void doTestImeWindowFocusWhenImeParentWindowChanged(@NonNull WindowState window) {
+    private void doTestImeWindowFocusWhenImeParentChanged(@NonNull WindowState window) {
         makeWindowVisibleAndDrawn(window, mImeWindow);
         assertTrue("Window canReceiveKeys", window.canReceiveKeys());
         mDisplayContent.setInputMethodWindowLocked(mImeWindow);
@@ -2934,9 +2933,9 @@ public class DisplayContentTests extends WindowTestsBase {
         mDisplayContent.updateImeInputAndControlTarget(imeAppTarget);
         final var imeProvider = mDisplayContent.getInsetsStateController().getImeSourceProvider();
         imeProvider.setImeShowing(true);
-        final var imeParentWindow = mDisplayContent.getImeParentWindow();
-        assertNotNull("IME parent window is not null", imeParentWindow);
-        assertTrue("IME parent window is visible", imeParentWindow.isVisibleRequested());
+        final var imeParent = mDisplayContent.getImeParent();
+        assertNotNull("IME parent is not null", imeParent);
+        assertTrue("IME parent is visible", imeParent.isVisibleRequested());
         assertTrue("IME is visible", imeProvider.isImeShowing());
         assertEquals("Window is the focused one", window, mDisplayContent.findFocusedWindow());
 
@@ -2946,22 +2945,21 @@ public class DisplayContentTests extends WindowTestsBase {
         makeWindowVisibleAndDrawn(nextImeAppTarget);
         // Change layering target but keep input target (and thus imeParent) the same.
         mDisplayContent.setImeLayeringTarget(nextImeAppTarget);
-        // IME parent window is not visible, occluded by new layering target.
-        imeParentWindow.setVisibleRequested(false);
-        assertEquals("IME parent window did not change", imeParentWindow,
-                mDisplayContent.getImeParentWindow());
-        assertFalse("IME parent window is not visible", imeParentWindow.isVisibleRequested());
+        // IME parent is not visible, occluded by new layering target.
+        imeParent.setVisibleRequested(false);
+        assertEquals("IME parent did not change", imeParent, mDisplayContent.getImeParent());
+        assertFalse("IME parent is not visible", imeParent.isVisibleRequested());
         assertTrue("IME is visible", imeProvider.isImeShowing());
-        assertNotEquals("Window is not the focused one when imeParent is not visible", window,
-                mDisplayContent.findFocusedWindow());
+        assertNotEquals("Window is not the focused one when imeParent is not visible",
+                window, mDisplayContent.findFocusedWindow());
 
         // Verify window can be focused if the IME is not visible.
         mDisplayContent.updateImeInputAndControlTarget(nextImeAppTarget);
         imeProvider.setImeShowing(false);
-        final var nextImeParentWindow = mDisplayContent.getImeParentWindow();
-        assertNotNull("Next IME parent window is not null", nextImeParentWindow);
-        assertNotEquals("IME parent window changed", imeParentWindow, nextImeParentWindow);
-        assertTrue("Next IME parent window is visible", nextImeParentWindow.isVisibleRequested());
+        final var nextImeParent = mDisplayContent.getImeParent();
+        assertNotNull("Next IME parent is not null", nextImeParent);
+        assertNotEquals("IME parent changed", imeParent, nextImeParent);
+        assertTrue("Next IME parent is visible", nextImeParent.isVisibleRequested());
         assertFalse("IME is not visible", imeProvider.isImeShowing());
         if (window.isChildWindow()) {
             assertNotEquals("Child window is not the focused on when the IME is not visible",

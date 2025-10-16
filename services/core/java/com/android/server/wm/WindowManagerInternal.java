@@ -1033,19 +1033,19 @@ public abstract class WindowManagerInternal {
         @NonNull
         public final String mImeControlTargetName;
 
-        /** The surface parent of the IME container. */
+        /** The name of the {@link DisplayContent#mImeParent}. */
         @NonNull
-        public final String mImeSurfaceParentName;
+        public final String mImeParentName;
 
         public ImeTargetInfo(@NonNull String focusedWindowName, @NonNull String requestWindowName,
                 @NonNull String imeLayeringTargetName, @NonNull String imeInputTargetName,
-                @NonNull String imeControlTargetName, @NonNull String imeSurfaceParentName) {
+                @NonNull String imeControlTargetName, @NonNull String imeParentName) {
             mFocusedWindowName = focusedWindowName;
             mRequestWindowName = requestWindowName;
             mImeLayeringTargetName = imeLayeringTargetName;
             mImeInputTargetName = imeInputTargetName;
             mImeControlTargetName = imeControlTargetName;
-            mImeSurfaceParentName = imeSurfaceParentName;
+            mImeParentName = imeParentName;
         }
     }
 
