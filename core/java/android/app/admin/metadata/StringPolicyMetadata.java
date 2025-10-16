@@ -49,7 +49,7 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
         mEmptyStringAllowed = emptyStringAllowed;
     }
 
-    public boolean getValidateIsNotEmpty() {
+    public boolean isEmptyStringAllowed() {
         return mEmptyStringAllowed;
     }
 }
