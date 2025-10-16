@@ -495,7 +495,6 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH,
             Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
     public void testPreserveOrientationAndAspectRatioFromRecentsTaskRelaunch() {
         setupDesktopModeLaunchParamsModifier();
