@@ -15,7 +15,6 @@
  */
 package android.platform.test.ravenwood;
 
-import android.annotation.NonNull;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -34,20 +33,48 @@ public class RavenwoodProxyHelper {
     private RavenwoodProxyHelper() {
     }
 
+    private static String getAidlDescriptor(Class<?> clazz) {
+        try {
+            // Use reflection to get the DESCRIPTOR field from the Stub class
+            Class<?> stubClass = Class.forName(clazz.getName() + "$Stub");
+            return (String) stubClass.getField("DESCRIPTOR").get(null);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(
+                    "Error getting descriptor for " + clazz.getName(), e);
+        }
+    }
+
     /**
-     * Creates a new Proxy object for a type, which also logs all called method names.
+     * Creates a new Proxy object for a IInterface type, which also logs all called method names.
+     */
+    public static <T extends IInterface> T newProxy(Class<T> clazz, InvocationHandler ih) {
+        return newProxy(clazz, getAidlDescriptor(clazz), ih);
+    }
+
+    /**
+     * Creates a new Proxy object for a IInterface type, which also logs all called method names.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T newProxy(Class<T> clazz, InvocationHandler ih) {
-        return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz},
-                new LoggingInvocationWrapper<>(ih));
+    public static <T extends IInterface> T newProxy(
+            Class<T> clazz, String descriptor, InvocationHandler ih) {
+        var handler = new IInterfaceInvocationWrapper(ih);
+        T proxy = (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, handler);
+        handler.setBinder(new Binder() {
+            @Override
+            public IInterface queryLocalInterface(String desc) {
+                if (descriptor.equals(desc)) {
+                    return proxy;
+                }
+                throw new RuntimeException("Unknown descriptor: " + desc);
+            }
+        });
+        return proxy;
     }
 
     /**
      * InvocationHandler that always returns the default value.
      */
-    public static final InvocationHandler sDefaultHandler =
-            new DefaultReturningInvocationHandler();
+    public static final InvocationHandler sDefaultHandler = new DefaultReturningInvocationHandler();
 
     /**
      * InvocationHandler that always throws {@link RavenwoodUnsupportedApiException}.
@@ -58,10 +85,37 @@ public class RavenwoodProxyHelper {
     };
 
     /**
+     * Wraps another {@link InvocationHandler}, which implements {@link IInterface#asBinder()}
+     * for the proxy.
+     */
+    private static class IInterfaceInvocationWrapper implements InvocationHandler {
+
+        private final LoggingInvocationWrapper mInner;
+        private IBinder mBinder;
+
+        private IInterfaceInvocationWrapper(InvocationHandler inner) {
+            mInner = new LoggingInvocationWrapper(inner);
+        }
+
+        private void setBinder(IBinder binder) {
+            mBinder = binder;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getDeclaringClass() == IInterface.class
+                    && method.getName().equals("asBinder")) {
+                return mBinder;
+            }
+            return mInner.invoke(proxy, method, args);
+        }
+    }
+
+    /**
      * Wraps another {@link InvocationHandler}, and prints the method information
      * in every call.
      */
-    private static class LoggingInvocationWrapper<I> implements InvocationHandler {
+    private static class LoggingInvocationWrapper implements InvocationHandler {
         private final InvocationHandler mInner;
 
         private LoggingInvocationWrapper(InvocationHandler inner) {
@@ -108,44 +162,6 @@ public class RavenwoodProxyHelper {
                 return (double) 0;
             }
             return null;
-        }
-    }
-
-    /**
-     * Helper class for implementing an IXxx system server binder object.
-     */
-    public static class BinderHelper<IClass extends IInterface> {
-        private final IClass mProxy;
-        private final String mStubDescriptor;
-
-        BinderHelper(@NonNull Class<IClass> interfaceClass, @NonNull InvocationHandler handler) {
-            mProxy = RavenwoodProxyHelper.newProxy(interfaceClass, handler);
-            try {
-                // Use reflection to get the DESCRIPTOR field from the Stub class
-                Class<?> stubClass = Class.forName(interfaceClass.getName() + "$Stub");
-                mStubDescriptor = (String) stubClass.getField("DESCRIPTOR").get(null);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException(
-                        "Error getting descriptor for " + interfaceClass.getName(), e);
-            }
-        }
-
-        @NonNull
-        public IClass getObject() {
-            return mProxy;
-        }
-
-        @NonNull
-        public IBinder getIBinder() {
-            return new Binder() {
-                @Override
-                public IInterface queryLocalInterface(String descriptor) {
-                    if (mStubDescriptor.equals(descriptor)) {
-                        return mProxy;
-                    }
-                    throw new RuntimeException("Unknown descriptor: " + descriptor);
-                }
-            };
         }
     }
 }

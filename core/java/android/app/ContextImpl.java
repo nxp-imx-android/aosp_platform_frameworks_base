@@ -3972,7 +3972,7 @@ class ContextImpl extends Context {
     // ----------------------------------------------------------------------
 
     @RavenwoodKeepPartialClass
-    private static final class ApplicationContentResolver extends ContentResolver {
+    static final class ApplicationContentResolver extends ContentResolver {
         @UnsupportedAppUsage
         private final ActivityThread mMainThread;
 

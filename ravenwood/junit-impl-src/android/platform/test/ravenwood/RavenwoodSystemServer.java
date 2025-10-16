@@ -17,6 +17,7 @@
 package android.platform.test.ravenwood;
 
 import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.isExperimentalApiEnabled;
+import static android.platform.test.ravenwood.RavenwoodProxyHelper.newProxy;
 import static android.platform.test.ravenwood.RavenwoodProxyHelper.sDefaultHandler;
 import static android.platform.test.ravenwood.RavenwoodProxyHelper.sNotImplementedHandler;
 
@@ -29,7 +30,6 @@ import android.hardware.input.IInputManager;
 import android.os.IUserManager;
 import android.os.ServiceManager;
 import android.os.SystemClock;
-import android.platform.test.ravenwood.RavenwoodProxyHelper.BinderHelper;
 import android.ravenwood.example.BlueManager;
 import android.ravenwood.example.RedManager;
 import android.util.ArrayMap;
@@ -124,28 +124,28 @@ public class RavenwoodSystemServer {
             return;
         }
         ServiceManager.addService(Context.USER_SERVICE,
-                IUserManager_ravenwood.sIBinder.getIBinder());
+                IUserManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.ACTIVITY_TASK_SERVICE,
-                IActivityTaskManager_ravenwood.sIBinder.getIBinder());
+                IActivityTaskManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.WINDOW_SERVICE,
-                IWindowManager_ravenwood.sIBinder.getIBinder());
+                IWindowManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.DISPLAY_SERVICE,
-                IDisplayManager_ravenwood.sIBinder.getIBinder());
+                IDisplayManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.INPUT_SERVICE,
-                IInputManager_ravenwood.sIBinder.getIBinder());
+                IInputManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.INPUT_METHOD_SERVICE,
-                IInputMethodManager_ravenwood.sIBinder.getIBinder());
+                IInputMethodManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.AUTOFILL_MANAGER_SERVICE,
-                IAutoFillManager_ravenwood.sIBinder.getIBinder());
+                IAutoFillManager_ravenwood.sIBinder.asBinder());
 
         WindowManagerGlobal.setWindowManagerServiceForSystemProcess(
-                IWindowManager_ravenwood.sIBinder.getObject());
+                IWindowManager_ravenwood.sIBinder);
     }
 
     public static void reset() {
@@ -181,11 +181,12 @@ public class RavenwoodSystemServer {
     public static class IUserManager_ravenwood {
         private static final String TAG = "IUserManager_ravenwood";
 
-        public static final BinderHelper<IUserManager> sIBinder =
-                new BinderHelper<>(IUserManager.class, (proxy, method, args) -> {
+        public static final IUserManager sIBinder =
+                newProxy(IUserManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getUserRestrictionSources" -> Collections.emptyList();
                         case "isHeadlessSystemUserMode" -> false;
+                        case "isUserUnlockingOrUnlocked" -> true;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };
                 });
@@ -197,8 +198,8 @@ public class RavenwoodSystemServer {
     public static class IDisplayManager_ravenwood {
         private static final String TAG = "IDisplayManager_ravenwood";
 
-        public static final BinderHelper<IDisplayManager> sIBinder =
-                new BinderHelper<>(IDisplayManager.class, (proxy, method, args) -> {
+        public static final IDisplayManager sIBinder =
+                newProxy(IDisplayManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getDisplayInfo" -> new DisplayInfo();
                         case "getDisplayIds" -> new int[]{Display.DEFAULT_DISPLAY};
@@ -225,8 +226,8 @@ public class RavenwoodSystemServer {
                     .build();
         }
 
-        public static final BinderHelper<IInputManager> sIBinder =
-                new BinderHelper<>(IInputManager.class, (proxy, method, args) -> {
+        public static final IInputManager sIBinder =
+                newProxy(IInputManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getInputDeviceIds" -> new int[]{KeyCharacterMap.VIRTUAL_KEYBOARD};
                         case "getInputDevice" -> getDefaultInputDevice(); // TODO Cache it?
@@ -245,10 +246,10 @@ public class RavenwoodSystemServer {
     public static class IWindowManager_ravenwood {
         private static final String TAG = "IWindowManager_ravenwood";
 
-        public static final BinderHelper<IWindowManager> sIBinder =
-                new BinderHelper<>(IWindowManager.class, (proxy, method, args) -> {
+        public static final IWindowManager sIBinder =
+                newProxy(IWindowManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
-                        case "openSession" -> IWindowSession_ravenwood.sIBinder.getObject();
+                        case "openSession" -> IWindowSession_ravenwood.sIBinder;
                         case "getWindowInsets",
                              "hasNavigationBar",
                              "setInTouchModeOnAllDisplays",
@@ -265,8 +266,8 @@ public class RavenwoodSystemServer {
     public static class IWindowSession_ravenwood {
         private static final String TAG = "IWindowSession_ravenwood";
 
-        public static final BinderHelper<IWindowSession> sIBinder =
-                new BinderHelper<>(IWindowSession.class, (proxy, method, args) -> {
+        public static final IWindowSession sIBinder =
+                newProxy(IWindowSession.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "addToDisplayAsUser",
                              "onRectangleOnScreenRequested",
@@ -287,18 +288,18 @@ public class RavenwoodSystemServer {
     public static class IActivityTaskManager_ravenwood {
         private static final String TAG = "IActivityTaskManager_ravenwood";
 
-        public static final BinderHelper<IActivityClientController> sACC =
-                new BinderHelper<>(IActivityClientController.class, (proxy, method, args) -> {
+        public static final IActivityClientController sACC =
+                newProxy(IActivityClientController.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "finishActivity", "setTaskDescription" -> true;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };
                 });
 
-        public static final BinderHelper<IActivityTaskManager> sIBinder =
-                new BinderHelper<>(IActivityTaskManager.class, (proxy, method, args) -> {
+        public static final IActivityTaskManager sIBinder =
+                newProxy(IActivityTaskManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
-                        case "getActivityClientController" -> sACC.getObject();
+                        case "getActivityClientController" -> sACC;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };
                 });
@@ -310,8 +311,8 @@ public class RavenwoodSystemServer {
     public static class IInputMethodManager_ravenwood {
         private static final String TAG = "IInputMethodManager_ravenwood";
 
-        public static final BinderHelper<IInputMethodManager> sIBinder =
-                new BinderHelper<>(IInputMethodManager.class, (proxy, method, args) -> {
+        public static final IInputMethodManager sIBinder =
+                newProxy(IInputMethodManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "addClient",
                              "getImeTrackerService",
@@ -328,7 +329,7 @@ public class RavenwoodSystemServer {
     public static class IAutoFillManager_ravenwood {
         private static final String TAG = "IAutoFillManager_ravenwood";
 
-        public static final BinderHelper<IAutoFillManager> sIBinder =
-                new BinderHelper<>(IAutoFillManager.class, sNotImplementedHandler);
+        public static final IAutoFillManager sIBinder =
+                newProxy(IAutoFillManager.class, sNotImplementedHandler);
     }
 }
