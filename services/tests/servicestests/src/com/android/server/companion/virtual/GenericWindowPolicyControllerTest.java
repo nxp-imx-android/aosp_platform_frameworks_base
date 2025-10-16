@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.WindowConfiguration;
 import android.companion.virtual.IVirtualDeviceIntentInterceptor;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.Context;
@@ -48,6 +49,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -66,9 +68,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Presubmit
@@ -80,6 +82,7 @@ public class GenericWindowPolicyControllerTest {
     private static final int TEST_UID = 1234567;
     private static final String DISPLAY_CATEGORY = "com.display.category";
     private static final String NONBLOCKED_APP_PACKAGE_NAME = "com.someapp";
+    private static final String ANOTHER_NONBLOCKED_APP_PACKAGE_NAME = "com.anotherapp";
     private static final String BLOCKED_PACKAGE_NAME = "com.blockedapp";
     private static final int FLAG_CANNOT_DISPLAY_ON_REMOTE_DEVICES = 0x00000;
     private static final String TEST_SITE = "http://test";
@@ -89,12 +92,15 @@ public class GenericWindowPolicyControllerTest {
             BLOCKED_PACKAGE_NAME);
     private static final ComponentName NONBLOCKED_COMPONENT = new ComponentName(
             NONBLOCKED_APP_PACKAGE_NAME, NONBLOCKED_APP_PACKAGE_NAME);
+    private static final ComponentName ANOTHER_NONBLOCKED_COMPONENT = new ComponentName(
+            ANOTHER_NONBLOCKED_APP_PACKAGE_NAME, ANOTHER_NONBLOCKED_APP_PACKAGE_NAME);
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock
     private GenericWindowPolicyController.ActivityListener mActivityListener;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -117,7 +123,7 @@ public class GenericWindowPolicyControllerTest {
 
         assertThat(gwpc.containsUid(TEST_UID)).isFalse();
 
-        gwpc.onRunningAppsChanged(new ArraySet<>(Arrays.asList(
+        gwpc.onRunningAppsChanged(new ArraySet<>(List.of(
                 new Pair<>(TEST_UID, NONBLOCKED_APP_PACKAGE_NAME))));
         assertThat(gwpc.containsUid(TEST_UID)).isTrue();
 
@@ -135,7 +141,7 @@ public class GenericWindowPolicyControllerTest {
     public void isEnteringPipAllowed_dpcSupportsPinned_allowed() {
         GenericWindowPolicyController gwpc = createGwpc();
         gwpc.setSupportedWindowingModes(new HashSet<>(
-                Arrays.asList(WindowConfiguration.WINDOWING_MODE_FULLSCREEN,
+                List.of(WindowConfiguration.WINDOWING_MODE_FULLSCREEN,
                         WindowConfiguration.WINDOWING_MODE_PINNED)));
         assertThat(gwpc.isEnteringPipAllowed(TEST_UID)).isTrue();
     }
@@ -538,7 +544,7 @@ public class GenericWindowPolicyControllerTest {
 
     @Test
     public void onRunningAppsChanged_listenerNotified() {
-        ArraySet<Pair<Integer, String>> runningUidPackagePairs = new ArraySet<>(Arrays.asList(
+        ArraySet<Pair<Integer, String>> runningUidPackagePairs = new ArraySet<>(List.of(
                 new Pair<>(TEST_UID, NONBLOCKED_APP_PACKAGE_NAME)));
         GenericWindowPolicyController gwpc = createGwpc();
         gwpc.onRunningAppsChanged(runningUidPackagePairs);
@@ -630,7 +636,7 @@ public class GenericWindowPolicyControllerTest {
     }
 
     @Test
-    public void onTopActivitychanged_null_noCallback() {
+    public void onTopActivityChanged_null_noCallback() {
         GenericWindowPolicyController gwpc = createGwpc();
 
         gwpc.onTopActivityChanged(null, 0, 0);
@@ -639,7 +645,7 @@ public class GenericWindowPolicyControllerTest {
     }
 
     @Test
-    public void onTopActivitychanged_activityListenerCallbackObserved() {
+    public void onTopActivityChanged_activityListenerCallbackObserved() {
         int userId = 1000;
         GenericWindowPolicyController gwpc = createGwpc();
 
@@ -650,35 +656,43 @@ public class GenericWindowPolicyControllerTest {
 
     @Test
     public void keepActivityOnWindowFlagsChanged_noChange() {
+        final int userId = 2;
         GenericWindowPolicyController gwpc = createGwpc();
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
                 /* displayOnRemoteDevices */ true,
                 /* targetDisplayCategory */ null);
+        gwpc.onTopActivityChanged(NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(userId));
 
         assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, 0, 0)).isTrue();
 
         verify(mActivityListener, after(TIMEOUT_MILLIS).never())
-                .onSecureWindowShown(eq(DISPLAY_ID), eq(activityInfo));
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
         verify(mActivityListener, never()).onSecureWindowHidden(eq(DISPLAY_ID));
         verify(mActivityListener, never())
                 .onActivityLaunchBlocked(eq(DISPLAY_ID), eq(activityInfo), any());
     }
 
     @Test
-    public void keepActivityOnWindowFlagsChanged_flagSecure_isAllowedAfterTM() {
+    public void keepActivityOnWindowFlagsChanged_flagSecure_isAllowedAndCallbackInvoked() {
+        final int userId = 2;
         GenericWindowPolicyController gwpc = createGwpc();
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
                 /* displayOnRemoteDevices */ true,
                 /* targetDisplayCategory */ null);
+        gwpc.onTopActivityChanged(NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(userId));
 
         assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, FLAG_SECURE, 0)).isTrue();
 
         verify(mActivityListener, timeout(TIMEOUT_MILLIS))
-                .onSecureWindowShown(eq(DISPLAY_ID), eq(activityInfo));
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
         verify(mActivityListener, after(TIMEOUT_MILLIS).never())
                 .onActivityLaunchBlocked(eq(DISPLAY_ID), eq(activityInfo), any());
 
@@ -688,7 +702,7 @@ public class GenericWindowPolicyControllerTest {
     }
 
     @Test
-    public void keepActivityOnWindowFlagsChanged_systemFlagHideNonSystemOverlayWindows_isAllowedAfterTM() {
+    public void keepActivityOnWindowFlagsChanged_systemFlagHideNonSystemOverlayWindows_isAllowed() {
         GenericWindowPolicyController gwpc = createGwpc();
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -700,10 +714,175 @@ public class GenericWindowPolicyControllerTest {
                 SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS)).isTrue();
 
         verify(mActivityListener, after(TIMEOUT_MILLIS).never())
-                .onSecureWindowShown(eq(DISPLAY_ID), eq(activityInfo));
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
         verify(mActivityListener, never()).onSecureWindowHidden(eq(DISPLAY_ID));
         verify(mActivityListener, never())
                 .onActivityLaunchBlocked(eq(DISPLAY_ID), eq(activityInfo), any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_GWPC_SECURE_WINDOW_STATE_TRACKING)
+    public void topActivityChanged_secureWindowStateOnTopChanged_secureWindowCallbacksInvoked() {
+        final int userId = 2;
+        GenericWindowPolicyController gwpc = createGwpc();
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        // Set a top activity.
+        gwpc.onTopActivityChanged(NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(userId));
+        // Top activity now has secure window.
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, FLAG_SECURE, 0)).isTrue();
+        // Verify that onSecureWindowShown is invoked.
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
+
+        // Top activity now has changed (which doesn't have a secure window).
+        gwpc.onTopActivityChanged(ANOTHER_NONBLOCKED_COMPONENT, 0, userId);
+
+        // Verify that onSecureWindowHidden is invoked (as the top activity now doesn't have a
+        // secure window anymore).
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(ANOTHER_NONBLOCKED_COMPONENT), eq(userId));
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS)).onSecureWindowHidden(eq(DISPLAY_ID));
+
+        // Top activity has again changed (which does have a secure window).
+        gwpc.onTopActivityChanged(NONBLOCKED_COMPONENT, TEST_UID, userId);
+
+        // Verify that onSecureWindowShown is invoked (as the top activity now has a secure window).
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_GWPC_SECURE_WINDOW_STATE_TRACKING)
+    public void topActivityChanged_secureWindowStateOnTopSame_secureWindowCallbacksNotInvoked() {
+        final int userId = 2;
+        GenericWindowPolicyController gwpc = createGwpc();
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        // Set a top activity.
+        gwpc.onTopActivityChanged(NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(userId));
+        // Top activity now has secure window.
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, FLAG_SECURE, 0)).isTrue();
+        // Verify that onSecureWindowShown is invoked.
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
+
+        // Another activity now has secure window.
+        ActivityInfo anotherActivityInfo = getActivityInfo(
+                ANOTHER_NONBLOCKED_APP_PACKAGE_NAME,
+                ANOTHER_NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(anotherActivityInfo, FLAG_SECURE, 0))
+                .isTrue();
+        // Verify that onSecureWindowShown is not invoked (as the top activity secure window
+        // state did not change).
+        verify(mActivityListener, after(TIMEOUT_MILLIS).never())
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(ANOTHER_NONBLOCKED_COMPONENT), eq(0));
+
+        // Make this the top activity.
+        gwpc.onTopActivityChanged(ANOTHER_NONBLOCKED_COMPONENT, 0, userId);
+
+        // Verify that onSecureWindowShown is still not invoked (as the top activity secure window
+        // state is still the same, even though the top activity changed).
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(ANOTHER_NONBLOCKED_COMPONENT), eq(userId));
+        verify(mActivityListener, after(TIMEOUT_MILLIS).never())
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(ANOTHER_NONBLOCKED_COMPONENT), eq(0));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_GWPC_SECURE_WINDOW_STATE_TRACKING)
+    public void windowFlagsChangedOnBottomActivity_secureWindowNotOnTop_secureWindowCallbacksNotInvoked() {
+        final int userId = 2;
+        GenericWindowPolicyController gwpc = createGwpc();
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        // Set a top activity.
+        gwpc.onTopActivityChanged(NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(userId));
+
+        // Set a new top activity.
+        gwpc.onTopActivityChanged(ANOTHER_NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(ANOTHER_NONBLOCKED_COMPONENT), eq(userId));
+
+        // Previous activity (which is not on top anymore) now has secure window.
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, FLAG_SECURE, 0)).isTrue();
+
+        // Verify that onSecureWindowShown is never invoked (as the top activity never had a
+        // secure window).
+        verify(mActivityListener, after(TIMEOUT_MILLIS).never())
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
+
+        // Previous activity (which is not on top anymore) now doesn't have secure window.
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, 0, 0)).isTrue();
+
+        // Verify that onSecureWindowHidden is never invoked (as the top activity secure window
+        // state never changed).
+        verify(mActivityListener, after(TIMEOUT_MILLIS).never())
+                .onSecureWindowHidden(eq(DISPLAY_ID));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_GWPC_SECURE_WINDOW_STATE_TRACKING)
+    public void windowFlagsChangedOnBottomActivity_secureWindowOnTop_secureWindowCallbacksNotInvoked() {
+        final int userId = 2;
+        GenericWindowPolicyController gwpc = createGwpc();
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        // Set a top activity.
+        gwpc.onTopActivityChanged(NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(userId));
+
+        // Set a new top activity.
+        gwpc.onTopActivityChanged(ANOTHER_NONBLOCKED_COMPONENT, 0, userId);
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onTopActivityChanged(eq(DISPLAY_ID), eq(ANOTHER_NONBLOCKED_COMPONENT), eq(userId));
+        ActivityInfo topActivityInfo = getActivityInfo(
+                ANOTHER_NONBLOCKED_APP_PACKAGE_NAME,
+                ANOTHER_NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        // Top activity now has secure window.
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(topActivityInfo, FLAG_SECURE, 0)).isTrue();
+        // Verify that onSecureWindowShown is invoked (as the top activity now has a secure window).
+        verify(mActivityListener, timeout(TIMEOUT_MILLIS))
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(ANOTHER_NONBLOCKED_COMPONENT), eq(0));
+
+        // Previous activity (which is not on top anymore) now has secure window.
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, FLAG_SECURE, 0)).isTrue();
+
+        // Verify that onSecureWindowShown is never invoked (as the top activity secure window
+        // state never changed).
+        verify(mActivityListener, after(TIMEOUT_MILLIS).never())
+                .onSecureWindowShown(eq(DISPLAY_ID), eq(NONBLOCKED_COMPONENT), eq(0));
+
+        // Previous activity (which is not on top anymore) now doesn't have secure window.
+        assertThat(gwpc.keepActivityOnWindowFlagsChanged(activityInfo, 0, 0)).isTrue();
+
+        // Verify that onSecureWindowHidden is never invoked (as the top activity secure window
+        // state never changed).
+        verify(mActivityListener, after(TIMEOUT_MILLIS).never())
+                .onSecureWindowHidden(eq(DISPLAY_ID));
     }
 
     @Test
@@ -861,34 +1040,6 @@ public class GenericWindowPolicyControllerTest {
         return gwpc;
     }
 
-    private Set<UserHandle> getCurrentUserId() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        return new ArraySet<>(Arrays.asList(context.getUser()));
-    }
-
-    private ActivityInfo getActivityInfo(
-            String packageName, String name, boolean displayOnRemoteDevices,
-            String requiredDisplayCategory) {
-        return getActivityInfo(packageName, name, displayOnRemoteDevices, requiredDisplayCategory,
-                0);
-    }
-
-    private ActivityInfo getActivityInfo(
-            String packageName, String name, boolean displayOnRemoteDevices,
-            String requiredDisplayCategory, int uid) {
-        ApplicationInfo applicationInfo = new ApplicationInfo();
-        applicationInfo.uid = uid;
-
-        ActivityInfo activityInfo = new ActivityInfo();
-        activityInfo.packageName = packageName;
-        activityInfo.name = name;
-        activityInfo.flags = displayOnRemoteDevices
-                ? FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES : FLAG_CANNOT_DISPLAY_ON_REMOTE_DEVICES;
-        activityInfo.applicationInfo = applicationInfo;
-        activityInfo.requiredDisplayCategory = requiredDisplayCategory;
-        return activityInfo;
-    }
-
     private void assertActivityCanBeLaunched(GenericWindowPolicyController gwpc,
             ActivityInfo activityInfo) {
         assertActivityCanBeLaunched(gwpc, DISPLAY_ID, false,
@@ -935,5 +1086,33 @@ public class GenericWindowPolicyControllerTest {
         verify(mActivityListener, after(TIMEOUT_MILLIS).never())
                 .onActivityLaunchBlocked(eq(fromDisplay), eq(activityInfo), any());
         verify(mActivityListener, never()).shouldInterceptIntent(any(Intent.class));
+    }
+
+    private static Set<UserHandle> getCurrentUserId() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        return new ArraySet<>(List.of(context.getUser()));
+    }
+
+    private static ActivityInfo getActivityInfo(
+            String packageName, String name, boolean displayOnRemoteDevices,
+            String requiredDisplayCategory) {
+        return getActivityInfo(packageName, name, displayOnRemoteDevices, requiredDisplayCategory,
+                0);
+    }
+
+    private static ActivityInfo getActivityInfo(
+            String packageName, String name, boolean displayOnRemoteDevices,
+            String requiredDisplayCategory, int uid) {
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.uid = uid;
+
+        ActivityInfo activityInfo = new ActivityInfo();
+        activityInfo.packageName = packageName;
+        activityInfo.name = name;
+        activityInfo.flags = displayOnRemoteDevices
+                ? FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES : FLAG_CANNOT_DISPLAY_ON_REMOTE_DEVICES;
+        activityInfo.applicationInfo = applicationInfo;
+        activityInfo.requiredDisplayCategory = requiredDisplayCategory;
+        return activityInfo;
     }
 }
