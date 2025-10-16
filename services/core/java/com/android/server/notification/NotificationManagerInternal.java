@@ -19,11 +19,14 @@ package com.android.server.notification;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
+import android.service.notification.Adjustment;
+import android.annotation.NonNull;
 import android.app.backup.BackupRestoreEventLogger;
 import android.service.notification.DeviceEffectsApplier;
 
 import com.android.internal.annotations.Keep;
 
+import java.util.List;
 import java.util.Set;
 
 @Keep
@@ -89,4 +92,13 @@ public interface NotificationManagerInternal {
      * @param displayId display ID
      */
     void onDisplayRemoveSystemDecorations(int displayId);
+
+    /**
+     * Requests that the active {@link android.service.notification.NotificationAssistantService}
+     * apply the given list of {@link Adjustment} to notifications. This does not guarantee that
+     * the adjustments will be applied, but rather requests that the service applies them.
+     *
+     * @param adjustments the requested adjustments
+     */
+    void requestSystemAdjustments(@NonNull List<Adjustment> adjustments);
 }
