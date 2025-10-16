@@ -52,13 +52,6 @@ flag {
 }
 
 flag {
-    name: "disable_non_resizable_app_snap_resizing"
-    namespace: "lse_desktop_experience"
-    description: "Stops non-resizable app desktop windows from being snap resized"
-    bug: "325240072"
-}
-
-flag {
     name: "disable_restore_non_fullscreen_bounds_on_configuration_change"
     namespace: "lse_desktop_experience"
     description: "Disable restoring bounds to mLastNonFullscreenBounds on configuration change."
