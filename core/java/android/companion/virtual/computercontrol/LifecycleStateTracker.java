@@ -77,6 +77,15 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
         }
     }
 
+    /**
+     * Get the current lifecycle state.
+     *
+     * @return the current lifecycle state, or null if the tracker is in an "uninitialized" state.
+     */
+    public LifecycleState getCurrentState() {
+        return mState;
+    }
+
     private void notifyAllCallbacks() {
         if (!mIsNotifyingCallbacks.compareAndSet(false, true)) {
             throw new IllegalStateException(

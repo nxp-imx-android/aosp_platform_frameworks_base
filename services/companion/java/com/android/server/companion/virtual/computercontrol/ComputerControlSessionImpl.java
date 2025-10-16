@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
@@ -50,6 +51,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.ResolveInfo;
+import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
@@ -62,6 +64,7 @@ import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
+import android.media.ImageReader;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -181,9 +184,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ViewConfiguration mViewConfiguration;
     private final long mGlobalSessionTimeoutDurationMs;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
-
-    // Keeps track of the current lifecycle state. Thread safe.
-    private final SessionLifecycle mLifecycle = new SessionLifecycle();
+    private final ImageReader mBlockedStateImageReader;
 
     @GuardedBy("mAllowlistedPackages")
     private final Set<String> mAllowlistedPackages = new ArraySet<>();
@@ -194,16 +195,23 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {
-                    // TODO: b/441475896 - Lock activity policy; Unblock input and display surface.
+                    reconfigureActivityPolicy(/* unlockPolicy= */ false);
+
+                    mVirtualDisplay.setSurface(mClientSurface);
                 }
 
                 @Override
                 public void onBlocked(@ComputerControlSession.SessionCloseReason int reason) {
                     cancelOngoingKeyGestures();
                     cancelOngoingTouchGestures();
-                    // In the short term, we don't do anything special when entering the blocked
-                    // state. The state exists to notify the client through the callback.
-                    // TODO: b/441475896 - Block input and display surface; Unlock activity policy.
+
+                    if (Flags.computerControlBlockInputAndScreenshots()) {
+                        // Prevent the client from being able to see the display by disconnecting
+                        // the client surface from the display.
+                        mVirtualDisplay.setSurface(mBlockedStateImageReader.getSurface());
+
+                        reconfigureActivityPolicy(/* unlockPolicy= */ true);
+                    }
                 }
 
                 @Override
@@ -212,6 +220,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 }
             };
 
+    // Keeps track of the current lifecycle state. Thread safe.
+    private final SessionLifecycle mLifecycle = new SessionLifecycle(mStateTransitions);
+
     private final Object mNotificationLock = new Object();
     @GuardedBy("mNotificationLock")
     private NotificationInfo mNotificationInfo = null;
@@ -219,6 +230,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
+    @Nullable
     private Surface mClientSurface;
 
     ComputerControlSessionImpl(Context context, IBinder appToken,
@@ -297,13 +309,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .setFlags(displayFlags)
                 .build();
 
+        mBlockedStateImageReader = ImageReader.newInstance(displayWidth, displayHeight,
+                PixelFormat.RGBA_8888, /* maxImages= */ 1);
+
         try {
             mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
                     virtualDeviceParams);
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
             mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
-
-            applyActivityPolicy();
 
             // Create the display with a clean identity so it can be trusted. The virtual display's
             // token must not be leaked to the client.
@@ -376,8 +389,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
             mAppToken.linkToDeath(this, 0);
             startSessionCloseGlobalTimeout();
-
-            mLifecycle.initializeLifecycle(mStateTransitions);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -411,8 +422,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalStateException("Client surface is already initialized");
         }
         mClientSurface = clientSurface;
-        mVirtualDisplay.setSurface(mClientSurface);
-        mLifecycle.setRemoteCallback(callback);
+
+        mLifecycle.initializeWithRemoteCallback(callback);
     }
 
     @Override
@@ -451,6 +462,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     public void tap(@IntRange(from = 0) int x, @IntRange(from = 0) int y) throws RemoteException {
+        if (shouldDisallowInteractions("tap")) {
+            return;
+        }
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
         mVirtualTouchscreen.sendTouchEvent(createTouchEvent(x, y, VirtualTouchEvent.ACTION_UP));
@@ -460,6 +474,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public void swipe(
             @IntRange(from = 0) int fromX, @IntRange(from = 0) int fromY,
             @IntRange(from = 0) int toX, @IntRange(from = 0) int  toY) throws RemoteException {
+        if (shouldDisallowInteractions("swipe")) {
+            return;
+        }
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(fromX, fromY, VirtualTouchEvent.ACTION_DOWN));
@@ -469,6 +486,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public void longPress(@IntRange(from = 0) int x, @IntRange(from = 0) int y)
             throws RemoteException {
+        if (shouldDisallowInteractions("longPress")) {
+            return;
+        }
         cancelOngoingTouchGestures();
         mVirtualTouchscreen.sendTouchEvent(
                 createTouchEvent(x, y, VirtualTouchEvent.ACTION_DOWN));
@@ -482,6 +502,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public void performAction(@ComputerControlSession.Action int actionCode)
             throws RemoteException {
+        if (shouldDisallowInteractions("performAction")) {
+            return;
+        }
         if (actionCode == ComputerControlSession.ACTION_GO_BACK) {
             mVirtualDpad.sendKeyEvent(
                     createKeyEvent(KeyEvent.KEYCODE_BACK, VirtualKeyEvent.ACTION_DOWN));
@@ -512,6 +535,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @SuppressLint("WrongConstant")
     @Override
     public void insertText(@NonNull String text, boolean replaceExisting, boolean commit) {
+        if (shouldDisallowInteractions("insertText")) {
+            return;
+        }
         cancelOngoingKeyGestures();
         if (android.companion.virtualdevice.flags.Flags.computerControlTyping()) {
             IRemoteComputerControlInputConnection ic = getInputConnection(mVirtualDisplayId);
@@ -622,12 +648,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mOnClosedListener.accept(this);
     }
 
-    private void applyActivityPolicy() throws RemoteException {
+    private void reconfigureActivityPolicy(boolean unlockPolicy) {
         List<String> exemptedPackageNames = new ArrayList<>();
         if (Flags.computerControlActivityPolicyStrict()) {
-            mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
-            exemptedPackageNames.addAll(mAllowlistedPackages);
+            if (unlockPolicy) {
+                mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_DEFAULT);
+            } else {
+                mVirtualDevice.setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
+                exemptedPackageNames.addAll(mAllowlistedPackages);
+            }
         } else {
             // This legacy policy allows all apps other than PermissionController to be automated.
             String permissionControllerPackage =
@@ -809,9 +838,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     + mParams.getName());
             final var changedState = mLifecycle.updateLifecycleState(
                     (config) -> config.mBlockedActivityVisible = true);
-            if (Flags.computerControlBlockedState()
-                    && !(changedState instanceof LifecycleState.Blocked)) {
-                return;
+            if (Flags.computerControlBlockedState()) {
+                if (!(changedState instanceof LifecycleState.Blocked)) {
+                    return;
+                }
+                if (Flags.computerControlBlockInputAndScreenshots()) {
+                    try {
+                        intentSender.sendIntent(mContext, 0, null, null, null);
+                    } catch (IntentSender.SendIntentException e) {
+                        Slog.e(TAG, "Failed to start blocked activity's intent, closing session.",
+                                e);
+                        close(CLOSE_REASON_CALLER_INITIATED);
+                    }
+                    // Early return to avoid showing the blocked activity dialog.
+                    return;
+                }
             }
             Intent intent = new Intent()
                     .setComponent(CUSTOM_BLOCKED_APP_ACTIVITY)
@@ -860,5 +901,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public int hashCode() {
             return Objects.hash(mNotificationId, mNotificationTag);
         }
+    }
+
+    private boolean shouldDisallowInteractions(String callsite) {
+        // TODO: b/452428736 - Find a long term solution for blocking agent interactions.
+        if (Flags.computerControlBlockedState() && Flags.computerControlBlockInputAndScreenshots()
+                && !(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+            Slog.w(TAG, "Computer control interaction blocked since session is not active: "
+                    + callsite);
+            return true;
+        }
+        return false;
     }
 }
