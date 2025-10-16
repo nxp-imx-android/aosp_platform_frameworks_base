@@ -21,8 +21,8 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.LogBuffer
-import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.LogcatEchoTracker
+import com.android.systemui.log.impl.LogBufferFactoryImpl
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -40,7 +40,7 @@ class MediaTttLoggerUtilsTest : SysuiTestCase() {
     @Before
     fun setUp() {
         buffer =
-            LogBufferFactory(DumpManager(), mock(LogcatEchoTracker::class.java))
+            LogBufferFactoryImpl(DumpManager(), mock(LogcatEchoTracker::class.java))
                 .create("buffer", 10)
     }
 

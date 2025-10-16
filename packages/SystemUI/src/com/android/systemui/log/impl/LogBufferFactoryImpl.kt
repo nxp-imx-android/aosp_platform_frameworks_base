@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,31 @@
  * limitations under the License.
  */
 
-package com.android.systemui.log
+package com.android.systemui.log.impl
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.log.LogBuffer.Companion.DEFAULT_LOGBUFFER_TRACK_NAME
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.LogBufferHelper.Companion.adjustMaxSize
+import com.android.systemui.log.LogcatEchoTracker
 import com.android.systemui.log.echo.LogcatEchoTrackerAlways
 import javax.inject.Inject
 
 @SysUISingleton
-class LogBufferFactory
+class LogBufferFactoryImpl
 @Inject
 constructor(
     private val dumpManager: DumpManager,
     private val logcatEchoTracker: LogcatEchoTracker,
-) {
-    @JvmOverloads
-    fun create(
+) : LogBufferFactory {
+
+    override fun create(
         name: String,
         maxSize: Int,
-        systrace: Boolean = true,
-        alwaysLogToLogcat: Boolean = false,
-        systraceTrackName: String = DEFAULT_LOGBUFFER_TRACK_NAME,
+        systrace: Boolean,
+        alwaysLogToLogcat: Boolean,
+        systraceTrackName: String,
     ): LogBuffer {
         val echoTracker = if (alwaysLogToLogcat) LogcatEchoTrackerAlways else logcatEchoTracker
         val buffer =

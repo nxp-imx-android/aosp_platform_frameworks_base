@@ -24,6 +24,7 @@ import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.LogcatEchoTracker
 import com.android.systemui.log.echo.LogcatEchoTrackerDebug
 import com.android.systemui.log.echo.LogcatEchoTrackerProd
+import com.android.systemui.log.impl.LogBufferFactoryImpl
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockMessageBuffers
@@ -40,6 +41,9 @@ import dagger.multibindings.IntoMap
 /** Dagger module for providing instances of [LogBuffer]. */
 @Module
 abstract class LogModule {
+
+    @Binds abstract fun bindLogBufferFactory(impl: LogBufferFactoryImpl): LogBufferFactory
+
     /** Registers the clear log buffers ADB command. */
     @Binds
     @IntoMap
