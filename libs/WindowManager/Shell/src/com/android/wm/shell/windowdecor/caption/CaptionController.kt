@@ -33,7 +33,7 @@ import com.android.app.tracing.traceSection
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
-import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.windowdecor.HandleMenuController
 import com.android.wm.shell.windowdecor.ManageWindowsMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenuController
@@ -46,6 +46,7 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.extension.identityHashCode
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -60,7 +61,7 @@ abstract class CaptionController<T>(
     protected var taskInfo: RunningTaskInfo,
     private val windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
     protected val taskOrganizer: ShellTaskOrganizer,
-    @field:ShellMainThread protected val mainScope: CoroutineScope,
+    @field:ShellBackgroundThread protected val bgScope: CoroutineScope,
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
         SurfaceControl.Builder()
     },
@@ -300,8 +301,12 @@ abstract class CaptionController<T>(
         val layers = arrayOf<SurfaceControl?>(captionSurface)
         clearExcludeLayerJob()
         setExcludeLayerJob =
-            mainScope.launch {
-                taskOrganizer.setExcludeLayersFromTaskSnapshot(taskInfo.token, layers)
+            bgScope.launch {
+                synchronized(taskOrganizer) {
+                    layers[0]?.isValid?.let {
+                        taskOrganizer.setExcludeLayersFromTaskSnapshot(taskInfo.token, layers)
+                    }
+                }
             }
     }
 
@@ -407,9 +412,9 @@ abstract class CaptionController<T>(
 
             val viewHost = captionViewHost ?: return false
             clearExcludeLayerJob()
-            windowDecorViewHostSupplier.release(viewHost, t)
+            synchronized(taskOrganizer) { windowDecorViewHostSupplier.release(viewHost, t) }
             captionViewHost = null
-            mainScope.launch { taskOrganizer.clearExcludeLayersFromTaskSnapshot(taskInfo.token) }
+            bgScope.launch { taskOrganizer.clearExcludeLayersFromTaskSnapshot(taskInfo.token) }
             return true
         }
 
