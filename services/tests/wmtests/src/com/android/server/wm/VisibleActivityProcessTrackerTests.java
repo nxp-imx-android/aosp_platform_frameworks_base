@@ -51,8 +51,7 @@ import org.junit.runner.RunWith;
 @RunWith(WindowTestRunner.class)
 public class VisibleActivityProcessTrackerTests extends WindowTestsBase {
 
-    private static final boolean VISIBLE = true;
-    private static final boolean INVISIBLE = false;
+    enum Visibility { VISIBLE, INVISIBLE, REQUESTED }
     private static final boolean PINNED = true;
     private static final boolean UNPINNED = false;
 
@@ -111,7 +110,7 @@ public class VisibleActivityProcessTrackerTests extends WindowTestsBase {
     @EnableFlags(Flags.FLAG_BAL_CHECK_UNPINNED_ACTIVITIES)
     public void hasVisibleNotPinnedActivity_whenProcessHasOnlyInvisibleActivities_returnsFalse() {
         WindowProcessController wpc = createWindowProcessController();
-        addActivity(wpc, INVISIBLE, UNPINNED);
+        addActivity(wpc, Visibility.INVISIBLE, UNPINNED);
         assertThat(mTracker.hasVisibleActivity(wpc.mUid)).isFalse();
         assertThat(mTracker.hasVisibleNotPinnedActivity(wpc.mUid)).isFalse();
     }
@@ -120,7 +119,7 @@ public class VisibleActivityProcessTrackerTests extends WindowTestsBase {
     @EnableFlags(Flags.FLAG_BAL_CHECK_UNPINNED_ACTIVITIES)
     public void hasVisibleNotPinnedActivity_whenProcessHasOnlyPinnedActivities_returnsFalse() {
         WindowProcessController wpc = createWindowProcessController();
-        addActivity(wpc, VISIBLE, PINNED);
+        addActivity(wpc, Visibility.VISIBLE, PINNED);
         assertThat(mTracker.hasVisibleActivity(wpc.mUid)).isTrue();
         assertThat(mTracker.hasVisibleNotPinnedActivity(wpc.mUid)).isFalse();
     }
@@ -129,7 +128,16 @@ public class VisibleActivityProcessTrackerTests extends WindowTestsBase {
     @EnableFlags(Flags.FLAG_BAL_CHECK_UNPINNED_ACTIVITIES)
     public void hasVisibleNotPinnedActivity_whenProcessHasUnpinnedVisibleActivity_returnsTrue() {
         WindowProcessController wpc = createWindowProcessController();
-        addActivity(wpc, VISIBLE, UNPINNED);
+        addActivity(wpc, Visibility.VISIBLE, UNPINNED);
+        assertThat(mTracker.hasVisibleActivity(wpc.mUid)).isTrue();
+        assertThat(mTracker.hasVisibleNotPinnedActivity(wpc.mUid)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_BAL_CHECK_UNPINNED_ACTIVITIES)
+    public void hasVisibleNotPinnedActivity_whenProcessHasUnpinnedVisReqActivity_returnsTrue() {
+        WindowProcessController wpc = createWindowProcessController();
+        addActivity(wpc, Visibility.REQUESTED, UNPINNED);
         assertThat(mTracker.hasVisibleActivity(wpc.mUid)).isTrue();
         assertThat(mTracker.hasVisibleNotPinnedActivity(wpc.mUid)).isTrue();
     }
@@ -145,13 +153,25 @@ public class VisibleActivityProcessTrackerTests extends WindowTestsBase {
         return mWpc;
     }
 
-    private static ActivityRecord addActivity(WindowProcessController wpc, boolean visible,
+    private static ActivityRecord addActivity(WindowProcessController wpc, Visibility visible,
             boolean pinned) {
         ActivityRecord ar = mock(ActivityRecord.class);
         Task task = mock(Task.class);
         doReturn(task).when(ar).getTask();
-        doReturn(visible).when(ar).isVisible();
-        doReturn(visible).when(ar).isVisibleRequested();
+        switch (visible) {
+            case VISIBLE:
+                doReturn(true).when(ar).isVisible();
+                doReturn(true).when(ar).isVisibleRequested();
+                break;
+            case INVISIBLE:
+                doReturn(false).when(ar).isVisible();
+                doReturn(false).when(ar).isVisibleRequested();
+                break;
+            case REQUESTED:
+                doReturn(false).when(ar).isVisible();
+                doReturn(true).when(ar).isVisibleRequested();
+                break;
+        }
         doReturn(pinned).when(ar).inPinnedWindowingMode();
         when(ar.toString()).thenReturn("ar visible=" + visible + ", pinned=" + pinned);
         wpc.addActivityIfNeeded(ar);

@@ -891,13 +891,16 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     }
 
     /**
-     * Check if any Activity is visible and not pinned.
+     * Check if any Activity is visible (or visibility requested) and not pinned.
      */
     boolean hasVisibleNotPinnedActivity() {
         if (!hasVisibleActivities()) return false;
         for (int i = mActivities.size() - 1; i >= 0; --i) {
             final ActivityRecord activityRecord = mActivities.get(i);
-            if (activityRecord.isVisible() && !activityRecord.inPinnedWindowingMode()) return true;
+            if ((activityRecord.isVisible() || activityRecord.isVisibleRequested())
+                    && !activityRecord.inPinnedWindowingMode()) {
+                return true;
+            }
         }
         return false;
     }
