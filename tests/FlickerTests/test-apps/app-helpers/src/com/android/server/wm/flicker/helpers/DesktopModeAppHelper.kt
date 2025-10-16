@@ -694,7 +694,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     ) {
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_EQUALS, META_META_ON)
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        waitForTransitionToFreeform(wmHelper)
     }
 
     fun enterSplitScreenFromAppHandleMenu(
@@ -728,7 +728,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
                 ?.find { it.resourceName.endsWith(FULL_SCREEN_BUTTON) }
 
         fullScreenModeButton?.click()
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        waitForTransitionToFullscreen(wmHelper)
     }
 
     fun exitDesktopModeToSplitScreenWithAppHeader(wmHelper: WindowManagerStateHelper) {
