@@ -10118,6 +10118,14 @@ package android.app.usage {
 
 }
 
+package android.app.voiceinteraction {
+
+  @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public class VoiceInteractionManager {
+    method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestAssistStructureIntent();
+  }
+
+}
+
 package android.app.wallpaper {
 
   public final class WallpaperDescription implements android.os.Parcelable {

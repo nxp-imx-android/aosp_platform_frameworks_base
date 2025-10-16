@@ -2311,7 +2311,6 @@ public class VoiceInteractionManagerService extends SystemService {
             }
         }
 
-
         @Override
         public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) return;
