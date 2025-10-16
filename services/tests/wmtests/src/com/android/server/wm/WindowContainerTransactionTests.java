@@ -89,12 +89,9 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertTrue(rootTask.hasChild());
         assertTrue(task.hasChild());
         assertTrue(activity.finishing);
-
-        if (Flags.polishCloseWallpaperIncludesOpenChange()) {
-            // Simulate idle to destroy mFinishingActivities
-            mSupervisor.processStoppingAndFinishingActivities(null /* launchedActivity */,
-                    false /* processPausingActivities */, "test");
-        }
+        // Simulate idle to destroy mFinishingActivities
+        mSupervisor.processStoppingAndFinishingActivities(null /* launchedActivity */,
+                false /* processPausingActivities */, "test");
         activity.destroyed("testRemoveContainer");
         // Assert that the container was removed after the activity is destroyed.
         assertNull(task.getParent());
@@ -121,12 +118,9 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertTrue(rootTask.hasChild());
         assertTrue(task.hasChild());
         assertTrue(activity.finishing);
-
-        if (Flags.polishCloseWallpaperIncludesOpenChange()) {
-            // Simulate idle to destroy mFinishingActivities.
-            mSupervisor.processStoppingAndFinishingActivities(null /* launchedActivity */,
-                    false /* processPausingActivities */, "test");
-        }
+        // Simulate idle to destroy mFinishingActivities.
+        mSupervisor.processStoppingAndFinishingActivities(null /* launchedActivity */,
+                false /* processPausingActivities */, "test");
         activity.destroyed("testRemoveRootTask");
         // Assert that the container was removed after the activity is destroyed.
         assertNull(task.getParent());

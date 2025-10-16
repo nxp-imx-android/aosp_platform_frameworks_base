@@ -386,11 +386,9 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         // This is to avoid incorrectly occluding other layers when a transition only contains a
         // single "close" change, for example. With only one change, there are no other layers
         // within the transition to interact with, so a background is unnecessary.
-        final boolean allowBackground =
-                !com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange()
-                        || (info.getChanges().size() > 1
+        final boolean allowBackground = info.getChanges().size() > 1
                         && (wallpaperTransit != WALLPAPER_TRANSITION_INTRA_OPEN
-                        && wallpaperTransit != WALLPAPER_TRANSITION_INTRA_CLOSE));
+                        && wallpaperTransit != WALLPAPER_TRANSITION_INTRA_CLOSE);
 
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             final TransitionInfo.Change change = info.getChanges().get(i);

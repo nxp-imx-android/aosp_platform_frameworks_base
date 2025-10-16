@@ -286,8 +286,7 @@ public class TransitionUtil {
                 return zSplitLine + numChanges - order;
             }
         } else if (mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK) {
-            if (isOpening || (change.hasFlags(FLAG_IS_WALLPAPER)
-                    && com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange())) {
+            if (isOpening || change.hasFlags(FLAG_IS_WALLPAPER)) {
                 // put on bottom and leave visible
                 return zSplitLine - order;
             } else {
