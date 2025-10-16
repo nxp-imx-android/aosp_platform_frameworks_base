@@ -1560,8 +1560,7 @@ public final class JobStatus {
         if (actualBucket == NEVER_INDEX) {
             isBucketEligibleForExemption = false;
         } else if (actualBucket == RESTRICTED_INDEX
-                && (!Flags.allowCmpExemptionForRestrictedBucket()
-                        || standbyBucketMainReason != REASON_MAIN_TIMEOUT)) {
+                && standbyBucketMainReason != REASON_MAIN_TIMEOUT) {
             isBucketEligibleForExemption = false;
         } else {
             isBucketEligibleForExemption = true;

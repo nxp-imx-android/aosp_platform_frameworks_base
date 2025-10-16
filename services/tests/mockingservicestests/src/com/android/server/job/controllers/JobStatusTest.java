@@ -486,31 +486,7 @@ public class JobStatusTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
     @EnableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
-    public void testMediaBackupExemption_priority_restrictedBucketDisabled_policyUpdateEnabled() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
-        final JobInfo.Builder jobBuilder = new JobInfo.Builder(42, TEST_JOB_COMPONENT);
-
-        // DEFAULT job priority.
-        assertEffectiveBucketForMediaExemption(createJobStatus(jobBuilder.build()), false, false);
-        // LOW priority.
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_LOW).build()), false,
-                false);
-        // MIN priority.
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_MIN).build()), false,
-                false);
-        // HIGH priority.
-        assertEffectiveBucketForMediaExemption(
-                createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_HIGH).build()), true,
-                false);
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET,
-            Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY})
     public void testMediaBackupExemption_priority() {
         when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0)))
                 .thenReturn(TEST_PACKAGE);
@@ -529,43 +505,6 @@ public class JobStatusTest {
                 createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_HIGH).build()), true);
     }
 
-    @DisableFlags({Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET,
-            Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY})
-    @Test
-    public void testMediaBackupExemptionGranted_restrictedBucketDisabled_policyUpdateDisabled() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
-        final JobInfo imageUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(imageUriJob), true, false);
-
-        final JobInfo videoUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(videoUriJob), true, false);
-
-        final JobInfo bothUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
-                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(bothUriJob), true, false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
-    @EnableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
-    public void testMediaBackupExemptionGranted_restrictedBucketDisabled_policyUpdateEnabled() {
-        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
-        final JobInfo job = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
-                .setPriority(JobInfo.PRIORITY_HIGH)
-                .build();
-        assertEffectiveBucketForMediaExemption(createJobStatus(job), true, false);
-    }
-
-    @EnableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
     @DisableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
     @Test
     public void testMediaBackupExemptionGranted_restrictedBucketEnabled_policyUpdateDisabled() {
@@ -591,8 +530,7 @@ public class JobStatusTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET,
-            Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY})
+    @EnableFlags(Flags.FLAG_UPDATE_MEDIA_BACKUP_EXEMPTION_POLICY)
     public void testMediaBackupExemptionGranted_policyUpdateEnabled() {
         when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
         final JobInfo job = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
