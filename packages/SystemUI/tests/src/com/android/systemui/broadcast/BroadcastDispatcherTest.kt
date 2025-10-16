@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -323,47 +324,59 @@ class BroadcastDispatcherTest : SysuiTestCase() {
         assertSame(broadcastReceiver, argumentCaptor.value.receiver)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustContainActions() {
         val testFilter = IntentFilter()
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustNotContainDataScheme() {
         val testFilter = IntentFilter(TEST_ACTION).apply { addDataScheme(TEST_SCHEME) }
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustNotContainDataAuthority() {
         val testFilter =
             IntentFilter(TEST_ACTION).apply {
                 addDataAuthority(mock(IntentFilter.AuthorityEntry::class.java))
             }
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustNotContainDataPath() {
         val testFilter =
             IntentFilter(TEST_ACTION).apply {
                 addDataPath(TEST_PATH, PatternMatcher.PATTERN_LITERAL)
             }
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustNotContainDataType() {
         val testFilter = IntentFilter(TEST_ACTION).apply { addDataType(TEST_TYPE) }
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun testFilterMustNotSetPriority() {
         val testFilter =
             IntentFilter(TEST_ACTION).apply { priority = IntentFilter.SYSTEM_HIGH_PRIORITY }
-        broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        assertThrows(IllegalArgumentException::class.java) {
+            broadcastDispatcher.registerReceiver(broadcastReceiver, testFilter)
+        }
     }
 
     @Test
@@ -421,36 +434,37 @@ class BroadcastDispatcherTest : SysuiTestCase() {
     }
 
     @Test
-    fun testBroadcastFlow() = runTest(UnconfinedTestDispatcher()) {
-        val flow =
-            broadcastDispatcher.broadcastFlow(intentFilter, user1) { intent, receiver ->
-                intent to receiver
-            }
+    fun testBroadcastFlow() =
+        runTest(UnconfinedTestDispatcher()) {
+            val flow =
+                broadcastDispatcher.broadcastFlow(intentFilter, user1) { intent, receiver ->
+                    intent to receiver
+                }
 
-        // Collect the values into collectedValues.
-        val collectedValues = mutableListOf<Pair<Intent, BroadcastReceiver>>()
-        val job = launch { flow.collect { collectedValues.add(it) } }
+            // Collect the values into collectedValues.
+            val collectedValues = mutableListOf<Pair<Intent, BroadcastReceiver>>()
+            val job = launch { flow.collect { collectedValues.add(it) } }
 
-        testableLooper.processAllMessages()
-        verify(mockUBRUser1).registerReceiver(capture(argumentCaptor), eq(DEFAULT_FLAG))
-        val receiver = argumentCaptor.value.receiver
+            testableLooper.processAllMessages()
+            verify(mockUBRUser1).registerReceiver(capture(argumentCaptor), eq(DEFAULT_FLAG))
+            val receiver = argumentCaptor.value.receiver
 
-        // Simulate fake broadcasted intents.
-        val fakeIntents = listOf<Intent>(mock(), mock(), mock())
-        fakeIntents.forEach { receiver.onReceive(mockContext, it) }
+            // Simulate fake broadcasted intents.
+            val fakeIntents = listOf<Intent>(mock(), mock(), mock())
+            fakeIntents.forEach { receiver.onReceive(mockContext, it) }
 
-        // The intents should have been collected.
-        advanceUntilIdle()
+            // The intents should have been collected.
+            advanceUntilIdle()
 
-        val expectedValues = fakeIntents.map { it to receiver }
-        assertThat(collectedValues).containsExactlyElementsIn(expectedValues)
+            val expectedValues = fakeIntents.map { it to receiver }
+            assertThat(collectedValues).containsExactlyElementsIn(expectedValues)
 
-        // Stop the collection.
-        job.cancel()
+            // Stop the collection.
+            job.cancel()
 
-        testableLooper.processAllMessages()
-        verify(mockUBRUser1).unregisterReceiver(receiver)
-    }
+            testableLooper.processAllMessages()
+            verify(mockUBRUser1).unregisterReceiver(receiver)
+        }
 
     private fun setUserMock(mockContext: Context, user: UserHandle) {
         `when`(mockContext.user).thenReturn(user)
