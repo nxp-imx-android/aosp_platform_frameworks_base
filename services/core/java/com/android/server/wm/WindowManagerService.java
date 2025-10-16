@@ -5881,6 +5881,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     public void systemReady() {
         mSystemReady = true;
+        mAnimatorScale.onSystemReady();
         mPolicy.systemReady();
         mRoot.forAllDisplayPolicies(DisplayPolicy::systemReady);
         mSnapshotController.systemReady();
