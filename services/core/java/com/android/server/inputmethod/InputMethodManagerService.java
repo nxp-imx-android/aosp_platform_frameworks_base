@@ -1990,6 +1990,16 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return InputBindResult.NO_IME;
         }
 
+        // If configured, we want to avoid starting up the IME if it is not supposed to be showing
+        if (shouldPreventImeStartupLocked(selectedMethodId, startInputFlags,
+                unverifiedTargetSdkVersion, userId)) {
+            ProtoLog.v(IMMS_DEBUG, "Avoiding IME startup and unbinding current input method.");
+            bindingController.invalidateAutofillSession();
+            bindingController.unbindCurrentMethod();
+            unbindCurrentClientLocked(UnbindReason.DISCONNECT_IME, userId);
+            return InputBindResult.NO_EDITOR;
+        }
+
         if (userData.mCurClient != cs) {
             prepareClientSwitchLocked(cs, userId);
         }
@@ -2019,15 +2029,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final boolean connectionIsActive = userData.mCurInputConnection != null;
         if (connectionIsActive != connectionWasActive) {
             mInputManagerInternal.notifyInputMethodConnectionActive(connectionIsActive);
-        }
-
-        // If configured, we want to avoid starting up the IME if it is not supposed to be showing
-        if (shouldPreventImeStartupLocked(selectedMethodId, startInputFlags,
-                unverifiedTargetSdkVersion, userId)) {
-            ProtoLog.v(IMMS_DEBUG, "Avoiding IME startup and unbinding current input method.");
-            bindingController.invalidateAutofillSession();
-            bindingController.unbindCurrentMethod();
-            return InputBindResult.NO_EDITOR;
         }
 
         // Check if the input method is changing.

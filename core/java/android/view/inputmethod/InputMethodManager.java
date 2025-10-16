@@ -3947,11 +3947,19 @@ public final class InputMethodManager {
                 if (view == null) {
                     return;
                 }
+                // Use the same state as the main startInput call.
+                final int startInputFlags = getStartInputFlags(view, 0 /* startInputFlags */);
+                int softInputMode = 0;
+                int windowFlags = 0;
+                final var viewRootImpl = view.getViewRootImpl();
+                if (viewRootImpl != null) {
+                    softInputMode = viewRootImpl.mWindowAttributes.softInputMode;
+                    windowFlags = viewRootImpl.mWindowAttributes.flags;
+                }
                 // Call into IMMS only once after the binding was cleared (e.g., after pm clear)
                 mFocusRequestedAfterImeSessionReset = true;
-                startInputOnWindowFocusGainInternal(StartInputReason.CHECK_FOCUS,
-                        view /* focusedView */, 0 /* startInputFlags */, 0 /* softInputMode */,
-                        0 /* windowFlags */);
+                startInputOnWindowFocusGainInternal(StartInputReason.CHECK_FOCUS, view,
+                        startInputFlags, softInputMode, windowFlags);
             }
         }
     }
@@ -5217,6 +5225,17 @@ public final class InputMethodManager {
     @GuardedBy("mH")
     private int getBindSequenceLocked() {
         return mCurBindState != null ? mCurBindState.mBindSequence : -1;
+    }
+
+    /**
+     * A test API for CTS to check whether an IME is bound to this client.
+     *
+     * @hide
+     */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
+    public boolean isImeBoundForTesting() {
+        return mCurBindState != null;
     }
 
     /**
