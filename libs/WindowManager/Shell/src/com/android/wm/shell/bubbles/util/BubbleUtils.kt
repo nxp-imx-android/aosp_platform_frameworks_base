@@ -50,7 +50,7 @@ object BubbleUtils {
                 wct.reparent(token, rootToken, true /* onTop */)
                 wct.setBounds(rootToken, bounds)
                 wct.setAlwaysOnTop(rootToken, true /* alwaysOnTop */)
-            } else {
+            } else if (reparentToTda) {
                 wct.reparent(token, null, true /* onTop */)
             }
         } else {
@@ -130,10 +130,12 @@ object BubbleUtils {
      * Returns a [WindowContainerTransaction] that includes the necessary operations of exiting
      * Bubble.
      */
+    @JvmOverloads
     @JvmStatic
     fun getExitBubbleTransaction(
         token: WindowContainerToken,
         captionInsetsOwner: Binder?,
+        reparentToTda: Boolean = BubbleAnythingFlagHelper.enableRootTaskForBubble(),
     ): WindowContainerTransaction {
         return getBubbleTransaction(
             token,
@@ -142,7 +144,7 @@ object BubbleUtils {
             toBubble = false,
             // Everything will be reset, so doesn't matter for exit.
             isAppBubble = true,
-            reparentToTda = false,
+            reparentToTda,
             captionInsetsOwner,
         )
     }
