@@ -18,6 +18,8 @@ package android.security.net.config;
 
 import android.compat.annotation.UnsupportedAppUsage;
 
+import com.android.org.conscrypt.ConscryptNetworkSecurityPolicy;
+
 import java.net.Socket;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -148,6 +150,13 @@ public class RootTrustManager extends X509ExtendedTrustManager {
         NetworkSecurityConfig config = mConfig.getConfigForHostname(hostname);
         return config.getTrustManager().checkServerTrusted(
                 certs, ocspData, tlsSctData, authType, hostname);
+    }
+
+    /**
+     * This interface is used by Conscrypt, do not modify without modifying those callers.
+     */
+    public ConscryptNetworkSecurityPolicy getNetworkSecurityPolicy() {
+        return new ConscryptNetworkSecurityPolicy(new ConfigNetworkSecurityPolicy(mConfig));
     }
 
     @Override
