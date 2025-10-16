@@ -73,6 +73,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 import platform.test.desktop.DesktopMouseTestRule
+import platform.test.desktop.LogicalDisplayPointPx
 import platform.test.desktop.ShadeDisplayGoesAroundTestRule
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
@@ -189,14 +190,18 @@ class ConnectedDisplayCujSmokeTests {
 
         // Ensure a cursor moves between displays.
         desktopMouseRule.move(
-            externalDisplayId,
-            device.getDisplayWidth(externalDisplayId) / 2,
-            device.getDisplayHeight(externalDisplayId) / 2,
+            LogicalDisplayPointPx(
+                externalDisplayId,
+                device.getDisplayWidth(externalDisplayId) / 2,
+                device.getDisplayHeight(externalDisplayId) / 2,
+            )
         )
         desktopMouseRule.move(
-            DEFAULT_DISPLAY,
-            device.getDisplayWidth(DEFAULT_DISPLAY) / 2,
-            device.getDisplayHeight(DEFAULT_DISPLAY) / 2,
+            LogicalDisplayPointPx(
+                DEFAULT_DISPLAY,
+                device.getDisplayWidth(DEFAULT_DISPLAY) / 2,
+                device.getDisplayHeight(DEFAULT_DISPLAY) / 2,
+            )
         )
     }
 
@@ -455,14 +460,18 @@ class ConnectedDisplayCujSmokeTests {
                     OPEN_MENU_BUTTON_RES_ID
                 ).visibleBounds
             )
-        desktopMouseRule.move(DEFAULT_DISPLAY, captionBounds.centerX(), captionBounds.centerY())
+        desktopMouseRule.move(
+            LogicalDisplayPointPx(DEFAULT_DISPLAY, captionBounds.centerX(), captionBounds.centerY())
+        )
 
         // Drag the window to the external display.
         desktopMouseRule.startDrag()
         desktopMouseRule.move(
-            externalDisplayId,
-            device.getDisplayWidth(externalDisplayId) / 2,
-            device.getDisplayHeight(externalDisplayId) / 2,
+            LogicalDisplayPointPx(
+                externalDisplayId,
+                device.getDisplayWidth(externalDisplayId) / 2,
+                device.getDisplayHeight(externalDisplayId) / 2,
+            )
         )
         desktopMouseRule.stopDrag()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()

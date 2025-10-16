@@ -37,6 +37,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import platform.test.desktop.DesktopMouseTestRule
+import platform.test.desktop.LogicalDisplayPointPx
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
 
@@ -78,7 +79,7 @@ abstract class DragAndKeepFocus() : TestScenarioBase() {
         val dragCoords = Point(captionBounds.centerX(), captionBounds.centerY())
 
         // Move cursor to designated drag point
-        desktopMouseRule.move(DEFAULT_DISPLAY, dragCoords.x, dragCoords.y)
+        desktopMouseRule.move(LogicalDisplayPointPx(DEFAULT_DISPLAY, dragCoords.x, dragCoords.y))
 
         // Start drag and move
         desktopMouseRule.startDrag()
@@ -88,9 +89,11 @@ abstract class DragAndKeepFocus() : TestScenarioBase() {
             ).getDisplayInfo(it)
         }
         desktopMouseRule.move(
-            connectedDisplayRule.addedDisplays.first(),
-            displayInfo.appWidth / 2,
-            displayInfo.appHeight / 2,
+            LogicalDisplayPointPx(
+                connectedDisplayRule.addedDisplays.first(),
+                displayInfo.appWidth / 2,
+                displayInfo.appHeight / 2,
+            )
         )
         desktopMouseRule.stopDrag()
         wmHelper.StateSyncBuilder()
