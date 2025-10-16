@@ -24,6 +24,7 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -49,6 +50,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -284,9 +286,11 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      */
     @Nullable
     public Image getScreenshot() {
-        synchronized (mLifecycle) {
-            if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
-                return null;
+        if (Flags.computerControlBlockInputAndScreenshots()) {
+            synchronized (mLifecycle) {
+                if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+                    return null;
+                }
             }
         }
         synchronized (mImageReaderLock) {
@@ -505,10 +509,19 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     /**
-     * Returns all windows on the display associated with the {@link ComputerControlSession}.
+     * Returns A11y information for all windows on the display associated with the
+     * {@link ComputerControlSession}, or an empty list if no information is currently available.
      */
     @NonNull
     public List<AccessibilityWindowInfo> getAccessibilityWindows() {
+        // TODO: b/452703212: Implement this inside system_server instead of the client.
+        if (Flags.computerControlBlockInputAndScreenshots()) {
+            synchronized (mLifecycle) {
+                if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+                    return Collections.emptyList();
+                }
+            }
+        }
         return mAccessibilityProxy.getWindows();
     }
 
@@ -649,10 +662,6 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
          * @param reason the reason that the session initially entered the blocked
          *               state.
          */
-        // TODO: b/441475896: Block interactions and screenshots for
-        //  BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH. Until then, a dialog indicating the blockage
-        //  will show up in the session, and the agent must dismiss it by interacting with the
-        //  session to exit the blocked state.
         void onBlocked(@SessionBlockReason int reason);
 
         /**
