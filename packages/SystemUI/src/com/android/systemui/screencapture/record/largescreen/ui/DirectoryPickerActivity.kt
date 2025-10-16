@@ -40,16 +40,15 @@ constructor(private val interactor: LargeScreenCaptureParametersInteractor) : Co
         directoryPickerLauncher =
             registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
                 if (uri != null) {
-                    val uriString: String = uri.toString()
                     try {
                         val takeFlags: Int =
                             Intent.FLAG_GRANT_READ_URI_PERMISSION or
                                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                         contentResolver.takePersistableUriPermission(uri, takeFlags)
 
-                        lifecycleScope.launch { interactor.setCustomSaveLocation(uriString) }
+                        lifecycleScope.launch { interactor.setCustomSaveLocation(uri) }
                     } catch (e: SecurityException) {
-                        Log.e(TAG, "Failed to take persistable URI permission for $uriString", e)
+                        Log.e(TAG, "Failed to take persistable URI permission for $uri", e)
                     }
                 }
                 finish()

@@ -103,15 +103,19 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 enabled = true,
             )
 
+            // TODO (b/444278100) - Implement UI provided by designer, this is a placeholder
             if (viewModel.customSaveLocationSupported) {
-                // TODO (b/444278100) - Implement UI provided by designer, this is a placeholder
                 DropdownMenuItem(
                     text = { Text("Save Location: ${viewModel.customSaveLocationUriString}") },
                     onClick = { /* TODO (b/444278100) - Add selectable options based off UI design */
                     },
                 )
 
-                // TODO (b/444278100) - Implement UI provided by designer, this is a placeholder
+                DropdownMenuItem(
+                    text = { Text("Default folder?: ${!viewModel.isCustomSaveLocationActive}") },
+                    onClick = { /* TODO: Remove, this is for testing purposes */ },
+                )
+
                 DropdownMenuItem(
                     text = { Text("Set Custom Save Location (Test)") },
                     onClick = {

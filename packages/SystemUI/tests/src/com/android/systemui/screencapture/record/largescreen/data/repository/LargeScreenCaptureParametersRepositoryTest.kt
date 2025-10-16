@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.data.repository
 
 import android.content.pm.UserInfo
+import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -49,49 +50,144 @@ class LargeScreenCaptureParametersRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    fun updateCustomSaveLocation_flowEmitsUpdatedValue() =
+    fun isCustomSaveLocationActive_initialValueIsFalse() =
         kosmos.runTest {
-            val latestValue by collectLastValue(underTest.customSaveLocationUriString)
-            val testUri = "content://media/external/downloads/123"
+            val initialValue by collectLastValue(underTest.isCustomSaveLocationActive)
+            assertThat(initialValue).isFalse()
+        }
 
-            assertThat(latestValue).isEmpty()
+    @Test
+    fun updateCustomSaveLocation_updatesUriandActivates() =
+        kosmos.runTest {
+            val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
+
+            val testUri =
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+
+            assertThat(latestUriValue).isEmpty()
 
             underTest.updateCustomSaveLocationUriString(testUri)
 
-            assertThat(latestValue).isEqualTo(testUri)
+            assertThat(latestUriValue).isEqualTo(testUri.toString())
+            assertThat(latestActiveValue).isTrue()
         }
 
     @Test
-    fun updateCustomSaveLocation_clearsValue_whenEmptyStringIsPassed() =
+    fun updateCustomSaveLocation_keepsInitialUriAndInactivates_whenNullUriIsPassed() =
         kosmos.runTest {
-            val latestValue by collectLastValue(underTest.customSaveLocationUriString)
-            val initialUri = "content://media/external/downloads/456"
+            val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
+
+            val initialUri =
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
 
             underTest.updateCustomSaveLocationUriString(initialUri)
-            assertThat(latestValue).isEqualTo(initialUri)
+            assertThat(latestUriValue).isEqualTo(initialUri.toString())
+            assertThat(latestActiveValue).isTrue()
 
-            underTest.updateCustomSaveLocationUriString("")
+            underTest.updateCustomSaveLocationUriString(null)
 
-            assertThat(latestValue).isEmpty()
+            assertThat(latestUriValue).isEqualTo(initialUri.toString())
+            assertThat(latestActiveValue).isFalse()
         }
 
     @Test
-    fun customSaveLocationUriString_isScopedPerUser() =
+    fun updateCustomSaveLocation_keepsInitialUriAndInactivates_whenDefaultFolderIsPassed() =
         kosmos.runTest {
-            val latestValue by collectLastValue(underTest.customSaveLocationUriString)
+            val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
+
+            val initialUri =
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+
+            underTest.updateCustomSaveLocationUriString(initialUri)
+            assertThat(latestUriValue).isEqualTo(initialUri.toString())
+            assertThat(latestActiveValue).isTrue()
+
+            val defaultUri =
+                Uri.parse(
+                    "content://com.android.externalstorage.documents/tree/primary%3APictures%2FScreenshots"
+                )
+
+            underTest.updateCustomSaveLocationUriString(defaultUri)
+
+            assertThat(latestUriValue).isEqualTo(initialUri.toString())
+            assertThat(latestActiveValue).isFalse()
+        }
+
+    @Test
+    fun updateCustomSaveLocation_doesNothing_whenInitiallyNullUriIsPassed() =
+        kosmos.runTest {
+            val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
+
+            underTest.updateCustomSaveLocationUriString(null)
+
+            assertThat(latestUriValue).isEmpty()
+            assertThat(latestActiveValue).isFalse()
+        }
+
+    @Test
+    fun updateCustomSaveLocation_doesNothing_whenInitiallyDefaultFolderIsPassed() =
+        kosmos.runTest {
+            val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
+
+            val defaultUri =
+                Uri.parse(
+                    "content://com.android.externalstorage.documents/tree/primary%3APictures%2FScreenshots"
+                )
+
+            underTest.updateCustomSaveLocationUriString(defaultUri)
+
+            assertThat(latestUriValue).isEmpty()
+            assertThat(latestActiveValue).isFalse()
+        }
+
+    @Test
+    fun updateIsCustomSaveLocationActive_setsActiveValueFalse() =
+        kosmos.runTest {
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
+
+            underTest.updateIsCustomSaveLocationActive(false)
+
+            assertThat(latestActiveValue).isFalse()
+        }
+
+    @Test
+    fun updateIsCustomSaveLocationActive_setsActiveValueTrue() =
+        kosmos.runTest {
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
+
+            underTest.updateIsCustomSaveLocationActive(true)
+
+            assertThat(latestActiveValue).isTrue()
+        }
+
+    @Test
+    fun customSaveLocationValues_areScopedPerUser() =
+        kosmos.runTest {
+            val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)
+            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
 
             fakeUserRepository.setSelectedUserInfo(PRIMARY_USER)
-            assertThat(latestValue).isEmpty()
+            assertThat(latestUriValue).isEmpty()
+            assertThat(latestActiveValue).isFalse()
             underTest.updateCustomSaveLocationUriString(PRIMARY_USER_URI)
-            assertThat(latestValue).isEqualTo(PRIMARY_USER_URI)
+            assertThat(latestUriValue).isEqualTo(PRIMARY_USER_URI.toString())
+            assertThat(latestActiveValue).isTrue()
 
             fakeUserRepository.setSelectedUserInfo(ANOTHER_USER)
-            assertThat(latestValue).isEmpty()
+            assertThat(latestUriValue).isEmpty()
+            assertThat(latestActiveValue).isFalse()
             underTest.updateCustomSaveLocationUriString(ANOTHER_USER_URI)
-            assertThat(latestValue).isEqualTo(ANOTHER_USER_URI)
+            assertThat(latestUriValue).isEqualTo(ANOTHER_USER_URI.toString())
+            assertThat(latestActiveValue).isTrue()
 
             fakeUserRepository.setSelectedUserInfo(PRIMARY_USER)
-            assertThat(latestValue).isEqualTo(PRIMARY_USER_URI)
+            assertThat(latestUriValue).isEqualTo(PRIMARY_USER_URI.toString())
+            assertThat(latestActiveValue).isTrue()
         }
 
     companion object {
@@ -100,7 +196,9 @@ class LargeScreenCaptureParametersRepositoryTest : SysuiTestCase() {
 
         private val ANOTHER_USER = UserInfo(/* id= */ 1, /* name= */ "another user", /* flags= */ 0)
 
-        private const val PRIMARY_USER_URI = "content://primary_user_uri"
-        private const val ANOTHER_USER_URI = "content://another_user_uri"
+        private val PRIMARY_USER_URI =
+            Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AUser1")
+        private val ANOTHER_USER_URI =
+            Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AUser2")
     }
 }

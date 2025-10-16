@@ -67,6 +67,11 @@ constructor(
             initialValue = ""
         )
 
+    val isCustomSaveLocationActive: Boolean by
+        largeScreenCaptureParametersInteractor.isCustomSaveLocationActive.hydratedStateOf(
+            initialValue = false
+        )
+
     val toolbarOpacity: Float by toolbarOpacitySource.hydratedStateOf()
 
     fun setToolbarBounds(bounds: Rect) {
