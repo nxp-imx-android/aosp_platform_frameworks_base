@@ -18,9 +18,11 @@ package com.android.systemui.statusbar.phone.ui
 
 import android.graphics.drawable.ColorDrawable
 import android.os.UserHandle
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.statusbar.StatusBarIcon
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.phone.StatusBarIconHolder
@@ -35,6 +37,8 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
@@ -439,6 +443,20 @@ class StatusBarIconControllerImplTest : SysuiTestCase() {
         assertThat(iconHolder?.icon?.contentDescription).isEqualTo("description")
         assertThat(iconHolder?.icon?.shape).isEqualTo(StatusBarIcon.Shape.FIXED_SPACE)
         assertThat(iconHolder?.icon?.preloadedIcon).isEqualTo(drawable)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_SHADE_HEADER_WRONG_DND_ICON_SIZE)
+    fun testReloadIconGroupLayoutParams_reloadsAllIconLayoutParams() {
+        val slotName = "slot"
+        underTest.setIcon(slotName, /* resourceId= */ 123, "description")
+        val slotName2 = "slot2"
+        underTest.setIcon(slotName2, /* resourceId= */ 456, "description2")
+
+        underTest.reloadIconGroupLayoutParams(iconGroup)
+
+        verify(iconGroup).reloadIconLayoutParams(eq(0), any<StatusBarIconHolder>())
+        verify(iconGroup).reloadIconLayoutParams(eq(1), any<StatusBarIconHolder>())
     }
 
     private fun createExternalIcon(): StatusBarIcon {
