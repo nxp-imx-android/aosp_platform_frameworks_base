@@ -206,6 +206,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.jvm.optionals.getOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * A callback to be invoked when a transition is started via |Transitions.startTransition| with the
@@ -1352,7 +1353,12 @@ class DesktopTasksController(
         return DEFAULT_DISPLAY
     }
 
-    /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
+    /**
+     * Moves task to desktop mode if task is running, else launches it in desktop mode.
+     *
+     * Be aware this method blocks the calling thread.
+     */
+    // TODO: b/406890311 - Add a non-blocking version for cases that don't need to be blocking
     @JvmOverloads
     fun moveTaskToDefaultDeskAndActivate(
         taskId: Int,
@@ -1360,13 +1366,14 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
-    ): Boolean {
+        targetTransition: IBinder? = null,
+    ): Boolean = runBlocking {
         val task =
             shellTaskOrganizer.getRunningTaskInfo(taskId)
                 ?: recentTasksController?.findTaskInBackground(taskId)
         if (task == null) {
             logW("moveTaskToDefaultDeskAndActivate taskId=%d not found", taskId)
-            return false
+            return@runBlocking false
         }
         val displayId = getDisplayIdForTaskOrDefault(task)
         val userId = task.userId
@@ -1377,14 +1384,14 @@ class DesktopTasksController(
                 transitionSource != DesktopModeTransitionSource.OVERVIEW_TASK_MENU
         ) {
             logW("moveTaskToDefaultDeskAndActivate display=$displayId does not support desk")
-            return false
+            return@runBlocking false
         }
         if (
             !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
                 !DesktopExperienceFlags.ENABLE_DEFAULT_DESK_WITHOUT_WARMUP_MIGRATION.isTrue
         ) {
-            val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return false
-            return moveTaskToDesk(
+            val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return@runBlocking false
+            return@runBlocking moveTaskToDesk(
                 taskId = taskId,
                 deskId = deskId,
                 userId = userId,
@@ -1392,24 +1399,25 @@ class DesktopTasksController(
                 transitionSource = transitionSource,
                 remoteTransition = remoteTransition,
                 callback = callback,
+                targetTransition = targetTransition,
             )
         }
-        mainScope.launch {
-            try {
-                moveTaskToDesk(
-                    taskId = taskId,
-                    deskId = getOrCreateDefaultDeskIdSuspending(displayId, userId),
-                    userId = userId,
-                    wct = wct,
-                    transitionSource = transitionSource,
-                    remoteTransition = remoteTransition,
-                    callback = callback,
-                )
-            } catch (t: Throwable) {
-                logE("Failed to move task to default desk: %s", t.message)
-            }
+
+        try {
+            moveTaskToDesk(
+                taskId = taskId,
+                deskId = getOrCreateDefaultDeskIdSuspending(displayId, userId),
+                userId = userId,
+                wct = wct,
+                transitionSource = transitionSource,
+                remoteTransition = remoteTransition,
+                callback = callback,
+                targetTransition = targetTransition,
+            )
+        } catch (t: Throwable) {
+            logE("Failed to move task to default desk: %s", t.message)
         }
-        return true
+        return@runBlocking true
     }
 
     /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
@@ -1421,6 +1429,7 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
+        targetTransition: IBinder? = null,
     ): Boolean {
         logV("moveTaskToDesk taskId=%d deskId=%d source=%s", taskId, deskId, transitionSource)
         val runningTask = shellTaskOrganizer.getRunningTaskInfo(taskId)
@@ -1432,6 +1441,7 @@ class DesktopTasksController(
                 transitionSource = transitionSource,
                 remoteTransition = remoteTransition,
                 callback = callback,
+                targetTransition = targetTransition,
             )
         }
         val backgroundTask = recentTasksController?.findTaskInBackground(taskId)
@@ -1444,6 +1454,7 @@ class DesktopTasksController(
                 transitionSource = transitionSource,
                 remoteTransition = remoteTransition,
                 callback = callback,
+                targetTransition = targetTransition,
             )
         }
         logW("moveTaskToDesk taskId=%d not found", taskId)
@@ -1458,6 +1469,7 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
+        targetTransition: IBinder? = null,
     ): Boolean {
         val repository = userRepositories.getProfile(userId)
         val targetDisplayId = repository.getDisplayForDesk(deskId)
@@ -1496,7 +1508,10 @@ class DesktopTasksController(
         )
 
         val transition: IBinder
-        if (remoteTransition != null) {
+        if (targetTransition != null) {
+            transition = targetTransition
+            invokeCallbackToOverview(transition, callback)
+        } else if (remoteTransition != null) {
             val transitionType = transitionType(remoteTransition)
             val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
             transition = transitions.startTransition(transitionType, wct, remoteTransitionHandler)
@@ -1525,6 +1540,7 @@ class DesktopTasksController(
         transitionSource: DesktopModeTransitionSource,
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
+        targetTransition: IBinder? = null,
     ): Boolean {
         val userId = task.userId
         val repository = userRepositories.getProfile(userId)
@@ -1548,7 +1564,10 @@ class DesktopTasksController(
             addDeskActivationWithMovingTaskChanges(deskId, wct, task, transitionSource)
 
         val transition: IBinder
-        if (remoteTransition != null) {
+        if (targetTransition != null) {
+            transition = targetTransition
+            invokeCallbackToOverview(transition, callback)
+        } else if (remoteTransition != null) {
             val transitionType = transitionType(remoteTransition)
             val remoteTransitionHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
             transition = transitions.startTransition(transitionType, wct, remoteTransitionHandler)

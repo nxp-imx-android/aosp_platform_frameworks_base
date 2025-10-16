@@ -217,7 +217,6 @@ import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.AdditionalMatchers.not
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.isA
 import org.mockito.ArgumentMatchers.isNull
@@ -2234,6 +2233,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 eq(ADB_COMMAND),
                 eq(null),
                 eq(null),
+                eq(null),
             )
 
         clearInvocations(desksOrganizer)
@@ -2251,6 +2251,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 eq(OVERVIEW_TASK_MENU),
                 eq(null),
                 eq(null),
+                eq(null),
             )
     }
 
@@ -2264,7 +2265,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFullscreenTask()
         spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = UNKNOWN)
         verify(spyController, times(0))
-            .moveTaskToDesk(anyInt(), anyInt(), anyInt(), any(), eq(UNKNOWN), eq(null), eq(null))
+            .moveTaskToDesk(
+                anyInt(),
+                anyInt(),
+                anyInt(),
+                any(),
+                eq(UNKNOWN),
+                eq(null),
+                eq(null),
+                eq(null),
+            )
 
         spyController.moveTaskToDefaultDeskAndActivate(
             task.taskId,
@@ -2277,6 +2287,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 anyInt(),
                 any(),
                 eq(KEYBOARD_SHORTCUT),
+                eq(null),
                 eq(null),
                 eq(null),
             )
@@ -2292,13 +2303,23 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 anyInt(),
                 any(),
                 eq(APP_HANDLE_MENU_BUTTON),
+                any(),
                 eq(null),
                 eq(null),
             )
 
         spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = TASK_DRAG)
         verify(spyController, times(0))
-            .moveTaskToDesk(anyInt(), anyInt(), anyInt(), any(), eq(TASK_DRAG), eq(null), eq(null))
+            .moveTaskToDesk(
+                anyInt(),
+                anyInt(),
+                anyInt(),
+                any(),
+                eq(TASK_DRAG),
+                eq(null),
+                eq(null),
+                eq(null),
+            )
     }
 
     @Test

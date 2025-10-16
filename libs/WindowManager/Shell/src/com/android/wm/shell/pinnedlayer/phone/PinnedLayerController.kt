@@ -18,9 +18,11 @@ package com.android.wm.shell.pinnedlayer.phone
 
 import android.app.ActivityManager
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED
+import android.app.ActivityManager.AppTask.WINDOWING_LAYER_UNDEFINED
 import android.app.TaskInfo
 import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
 import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.IBinder
@@ -35,6 +37,9 @@ import android.window.TransitionRequestInfo
 import android.window.TransitionRequestInfo.WindowingLayerChange
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.desktopmode.NormalAppLayerHandler
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.Companion.getLayerPinnedWct
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.Companion.getLayerUnpinnedWct
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -44,8 +49,11 @@ import com.android.wm.shell.transition.Transitions
  * [Transitions] on the Shell request. It's responsible for managing PINNED layer that has PiP
  * policies like single window and always-on-top.
  */
-class PinnedLayerController(shellInit: ShellInit, private val transitions: Transitions) :
-    Transitions.TransitionHandler, Transitions.TransitionObserver {
+class PinnedLayerController(
+    shellInit: ShellInit,
+    private val transitions: Transitions,
+    private val normalAppLayerHandler: Lazy<NormalAppLayerHandler>,
+) : Transitions.TransitionHandler, Transitions.TransitionObserver {
 
     // Stores ids of pinned TaskInfo.
     private val pinnedTasks = mutableSetOf<Int>()
@@ -83,12 +91,19 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
 
         // Unpinning can occur as a side-effect of another action, check if a task (not necessary
         // the pinned one) is eligible to be unpinned.
+        val isSwitchingToAnotherLayer =
+            windowingLayerChange != null &&
+                !windowingLayerChange.isLayerPinningRequest() &&
+                windowingLayerChange.windowingLayer > WINDOWING_LAYER_UNDEFINED
         val isUnpinningNeeded =
-            containsActivePinningTransition(transition) || request.isClosingPinnedRequest()
+            containsActivePinningTransition(transition) ||
+                request.isClosingPinnedRequest() ||
+                isSwitchingToAnotherLayer
         val candidateTaskForUnpin =
             when {
+                // TODO(b/452912851): Simplify to easier match unpinning and candidate task.
                 triggerTask.token != currentPinnedTask?.token -> currentPinnedTask
-                request.isClosingPinnedRequest() -> triggerTask
+                request.isClosingPinnedRequest() || isSwitchingToAnotherLayer -> triggerTask
                 else -> null
             }
         if (isUnpinningNeeded && candidateTaskForUnpin != null) {
@@ -97,7 +112,13 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
                 candidateTaskForUnpin,
                 wct,
                 isMinimizing = request.type != TRANSIT_CLOSE,
+                isSwitchingToAnotherLayer = isSwitchingToAnotherLayer,
             )
+        }
+
+        // TODO(b/449681882): not quite what we need, normal layer should be self sufficient.
+        normalAppLayerHandler.value.handleRequest(transition, request)?.let { normalLayerWct ->
+            wct.merge(normalLayerWct, /* transfer= */ true)
         }
 
         return wct.takeUnless { activeTransitions[transition].isNullOrEmpty() }
@@ -174,10 +195,18 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
         task: TaskInfo,
         wct: WindowContainerTransaction,
         isMinimizing: Boolean = false,
+        isSwitchingToAnotherLayer: Boolean = false,
     ) {
         val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
         transitions += ActiveTransition.Unpin(task)
-        wct.merge(getLayerUnpinnedWct(task.token, isMinimizing), /* transfer= */ true)
+
+        val unpinWct =
+            if (isSwitchingToAnotherLayer) {
+                getRemovedFromLayerWct(task.token)
+            } else {
+                getLayerUnpinnedWct(task.token, isMinimizing = isMinimizing)
+            }
+        wct.merge(unpinWct, /* transfer= */ true)
     }
 
     fun isPinningRequest(request: TransitionRequestInfo): Boolean =
@@ -371,6 +400,7 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
             bounds: Rect? = null,
         ): WindowContainerTransaction {
             return WindowContainerTransaction()
+                .setWindowingMode(windowContainerToken, WINDOWING_MODE_FREEFORM)
                 .reparent(windowContainerToken, null, true)
                 .apply { if (bounds != null) setBounds(windowContainerToken, bounds) }
                 .setAlwaysOnTop(windowContainerToken, true)
@@ -400,6 +430,24 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
                         removeTask(windowContainerToken)
                     }
                 }
+        }
+
+        /**
+         * Populates a [WindowContainerTransaction] that removes all pin related properties from the
+         * target window container. The difference with [getLayerUnpinnedWct] is current method
+         * cleans up properties set with [getLayerPinnedWct].
+         *
+         * @param windowContainerToken a window token that clean operations target.
+         * @return [WindowContainerTransaction] that holds clean hierarchy operations.
+         * @see [getLayerUnpinnedWct]
+         */
+        @JvmStatic
+        fun getRemovedFromLayerWct(
+            windowContainerToken: WindowContainerToken
+        ): WindowContainerTransaction {
+            return WindowContainerTransaction()
+                .setAlwaysOnTop(windowContainerToken, false)
+                .setDisablePip(windowContainerToken, false)
         }
     }
 }

@@ -1070,7 +1070,6 @@ public abstract class WMShellBaseModule {
         return desktopTasksController.map(DesktopTasksController::asDesktopMode);
     }
 
-
     @BindsOptionalOf
     @DynamicOverride
     abstract DesktopTasksController optionalDesktopTasksController();

@@ -923,7 +923,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 wct,
                 source,
                 /* remoteTransition= */ null,
-                /* moveToDesktopCallback= */ null)) {
+                /* moveToDesktopCallback= */ null,
+                /* targetTransition= */ null)) {
             mLatencyTracker.onActionCancel(
                     LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU);
         }
