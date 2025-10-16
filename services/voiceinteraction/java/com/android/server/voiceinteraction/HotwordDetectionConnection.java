@@ -90,8 +90,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * A class that provides the communication with the {@link HotwordDetectionService} and
- * {@link VisualQueryDetectionService}.
+ * A class that provides the communication with the {@link HotwordDetectionService} and {@link
+ * VisualQueryDetectionService}.
  */
 final class HotwordDetectionConnection {
     private static final String TAG = "HotwordDetectionConnection";
@@ -99,21 +99,17 @@ final class HotwordDetectionConnection {
 
     /**
      * Implementors of the HotwordDetectionService must not augment the phrase IDs which are
-     * supplied via HotwordDetectionService
-     * #onDetect(AlwaysOnHotwordDetector.EventPayload, long, HotwordDetectionService.Callback).
+     * supplied via HotwordDetectionService #onDetect(AlwaysOnHotwordDetector.EventPayload, long,
+     * HotwordDetectionService.Callback).
      *
-     * <p>The HotwordDetectedResult#getHotwordPhraseId() must match one of the phrase IDs
-     * from the AlwaysOnHotwordDetector.EventPayload#getKeyphraseRecognitionExtras() list.
-     * </p>
+     * <p>The HotwordDetectedResult#getHotwordPhraseId() must match one of the phrase IDs from the
+     * AlwaysOnHotwordDetector.EventPayload#getKeyphraseRecognitionExtras() list.
      *
-     * <p>This behavior change is made to ensure the HotwordDetectionService honors what
-     * it receives from the android.hardware.soundtrigger.SoundTriggerModule, and it
-     * cannot signal to the client application a phrase which was not originally detected.
-     * </p>
+     * <p>This behavior change is made to ensure the HotwordDetectionService honors what it receives
+     * from the android.hardware.soundtrigger.SoundTriggerModule, and it cannot signal to the client
+     * application a phrase which was not originally detected.
      */
-    @ChangeId
-    @Disabled
-    public static final long ENFORCE_HOTWORD_PHRASE_ID = 215066299L;
+    @ChangeId @Disabled public static final long ENFORCE_HOTWORD_PHRASE_ID = 215066299L;
 
     private static final String KEY_RESTART_PERIOD_IN_SECONDS = "restart_period_in_seconds";
     private static final long RESET_DEBUG_HOTWORD_LOGGING_TIMEOUT_MILLIS = 60 * 60 * 1000; // 1 hour
@@ -122,14 +118,10 @@ final class HotwordDetectionConnection {
     private static final boolean SYSPROP_VISUAL_QUERY_SERVICE_ENABLED =
             SystemProperties.getBoolean("ro.hotword.visual_query_service_enabled", false);
 
-    /**
-     * Indicates the {@link HotwordDetectionService} is created.
-     */
+    /** Indicates the {@link HotwordDetectionService} is created. */
     private static final int DETECTION_SERVICE_TYPE_HOTWORD = 1;
 
-    /**
-     * Indicates the {@link VisualQueryDetectionService} is created.
-     */
+    /** Indicates the {@link VisualQueryDetectionService} is created. */
     private static final int DETECTION_SERVICE_TYPE_VISUAL_QUERY = 2;
 
     // TODO: This may need to be a Handler(looper)
@@ -140,9 +132,10 @@ final class HotwordDetectionConnection {
     @NonNull private final ServiceConnectionFactory mHotwordDetectionServiceConnectionFactory;
     @NonNull private final ServiceConnectionFactory mVisualQueryDetectionServiceConnectionFactory;
     private int mDetectorType;
+
     /**
-     * Time after which each HotwordDetectionService process is stopped and replaced by a new one.
-     * 0 indicates no restarts.
+     * Time after which each HotwordDetectionService process is stopped and replaced by a new one. 0
+     * indicates no restarts.
      */
     private final int mReStartPeriodSeconds;
 
@@ -154,7 +147,7 @@ final class HotwordDetectionConnection {
     final Context mContext;
     final AccessibilitySettingsListener mAccessibilitySettingsListener;
     volatile HotwordDetectionServiceIdentity mIdentity;
-    //TODO: Consider rename this to SandboxedDetectionIdentity
+    // TODO: Consider rename this to SandboxedDetectionIdentity
     private Instant mLastRestartInstant;
 
     private ScheduledFuture<?> mDebugHotwordLoggingTimeoutFuture = null;
@@ -163,13 +156,17 @@ final class HotwordDetectionConnection {
     @GuardedBy("mLock")
     @Nullable
     private final Identity mVoiceInteractorIdentity;
+
     private int mRestartCount = 0;
     @NonNull private ServiceConnection mRemoteHotwordDetectionService;
     @NonNull private ServiceConnection mRemoteVisualQueryDetectionService;
+
     @GuardedBy("mLock")
-    @Nullable private IBinder mAudioFlinger;
+    @Nullable
+    private IBinder mAudioFlinger;
 
     @Nullable private IHotwordRecognitionStatusCallback mHotwordRecognitionCallback;
+
     @GuardedBy("mLock")
     private boolean mDebugHotwordLogging = false;
 
@@ -177,12 +174,11 @@ final class HotwordDetectionConnection {
 
     /**
      * For multiple detectors feature, we only support one AlwaysOnHotwordDetector and one
-     * SoftwareHotwordDetector at the same time. We use SparseArray with detector type as the key
-     * to record the detectors.
+     * SoftwareHotwordDetector at the same time. We use SparseArray with detector type as the key to
+     * record the detectors.
      */
     @GuardedBy("mLock")
-    private final SparseArray<DetectorSession> mDetectorSessions =
-            new SparseArray<>();
+    private final SparseArray<DetectorSession> mDetectorSessions = new SparseArray<>();
 
     /** Listens to changes to voice activation op. */
     private final AppOpsManager.OnOpChangedListener mOnOpChangedListener =
@@ -193,14 +189,17 @@ final class HotwordDetectionConnection {
                         AppOpsManager appOpsManager =
                                 mContext.getSystemService(AppOpsManager.class);
                         synchronized (mLock) {
-                            int checkOp = appOpsManager.unsafeCheckOpNoThrow(
-                                    AppOpsManager.OPSTR_RECEIVE_SANDBOX_TRIGGER_AUDIO,
-                                    mVoiceInteractorIdentity.uid,
-                                    mVoiceInteractorIdentity.packageName);
+                            int checkOp =
+                                    appOpsManager.unsafeCheckOpNoThrow(
+                                            AppOpsManager.OPSTR_RECEIVE_SANDBOX_TRIGGER_AUDIO,
+                                            mVoiceInteractorIdentity.uid,
+                                            mVoiceInteractorIdentity.packageName);
                             // Voice activation app op disabled, safely shutdown hotword detection.
                             if (checkOp == AppOpsManager.MODE_ERRORED) {
-                                Slog.i(TAG, "Shutdown hotword detection service on voice "
-                                        + "activation op disabled.");
+                                Slog.i(
+                                        TAG,
+                                        "Shutdown hotword detection service on voice "
+                                                + "activation op disabled.");
                                 safelyShutdownHotwordDetectionOnVoiceActivationDisabledLocked();
                             }
                         }
@@ -208,13 +207,14 @@ final class HotwordDetectionConnection {
                 }
             };
 
-    /** Listen to changes of {@link Settings.Secure.VISUAL_QUERY_ACCESSIBILITY_DETECTION_ENABLED}.
+    /**
+     * Listen to changes of {@link Settings.Secure.VISUAL_QUERY_ACCESSIBILITY_DETECTION_ENABLED}.
      *
-     * This is registered to the {@link VoiceInteractionManagerServiceImpl} where all settings
+     * <p>This is registered to the {@link VoiceInteractionManagerServiceImpl} where all settings
      * listeners are centralized and notified.
      */
-    private final class AccessibilitySettingsListener extends
-            IVoiceInteractionAccessibilitySettingsListener.Stub {
+    private final class AccessibilitySettingsListener
+            extends IVoiceInteractionAccessibilitySettingsListener.Stub {
         @Override
         public void onAccessibilityDetectionChanged(boolean enable) {
             synchronized (mLock) {
@@ -229,11 +229,16 @@ final class HotwordDetectionConnection {
         }
     }
 
-
-    HotwordDetectionConnection(Object lock, Context context, int voiceInteractionServiceUid,
-            Identity voiceInteractorIdentity, ComponentName hotwordDetectionServiceName,
-            ComponentName visualQueryDetectionServiceName, int userId,
-            boolean bindInstantServiceAllowed, int detectorType,
+    HotwordDetectionConnection(
+            Object lock,
+            Context context,
+            int voiceInteractionServiceUid,
+            Identity voiceInteractorIdentity,
+            ComponentName hotwordDetectionServiceName,
+            ComponentName visualQueryDetectionServiceName,
+            int userId,
+            boolean bindInstantServiceAllowed,
+            int detectorType,
             DetectorRemoteExceptionListener listener) {
         mLock = lock;
         mContext = context;
@@ -244,8 +249,9 @@ final class HotwordDetectionConnection {
         mUserId = userId;
         mDetectorType = detectorType;
         mRemoteExceptionListener = listener;
-        mReStartPeriodSeconds = DeviceConfig.getInt(DeviceConfig.NAMESPACE_VOICE_INTERACTION,
-                KEY_RESTART_PERIOD_IN_SECONDS, 0);
+        mReStartPeriodSeconds =
+                DeviceConfig.getInt(
+                        DeviceConfig.NAMESPACE_VOICE_INTERACTION, KEY_RESTART_PERIOD_IN_SECONDS, 0);
         mAccessibilitySettingsListener = new AccessibilitySettingsListener();
 
         final Intent hotwordDetectionServiceIntent =
@@ -259,19 +265,24 @@ final class HotwordDetectionConnection {
         initAudioFlinger();
 
         mHotwordDetectionServiceConnectionFactory =
-                new ServiceConnectionFactory(hotwordDetectionServiceIntent,
-                        bindInstantServiceAllowed, DETECTION_SERVICE_TYPE_HOTWORD);
+                new ServiceConnectionFactory(
+                        hotwordDetectionServiceIntent,
+                        bindInstantServiceAllowed,
+                        DETECTION_SERVICE_TYPE_HOTWORD);
 
         mVisualQueryDetectionServiceConnectionFactory =
-                new ServiceConnectionFactory(visualQueryDetectionServiceIntent,
-                        bindInstantServiceAllowed, DETECTION_SERVICE_TYPE_VISUAL_QUERY);
-
+                new ServiceConnectionFactory(
+                        visualQueryDetectionServiceIntent,
+                        bindInstantServiceAllowed,
+                        DETECTION_SERVICE_TYPE_VISUAL_QUERY);
 
         mLastRestartInstant = Instant.now();
 
         AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
-        appOpsManager.startWatchingMode(AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
-                mVoiceInteractorIdentity.packageName, mOnOpChangedListener);
+        appOpsManager.startWatchingMode(
+                AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
+                mVoiceInteractorIdentity.packageName,
+                mOnOpChangedListener);
 
         if (mReStartPeriodSeconds <= 0) {
             mCancellationTaskFuture = null;
@@ -279,17 +290,25 @@ final class HotwordDetectionConnection {
             mScheduledExecutorService.setRemoveOnCancelPolicy(true);
             // TODO: we need to be smarter here, e.g. schedule it a bit more often,
             //  but wait until the current session is closed.
-            mCancellationTaskFuture = mScheduledExecutorService.scheduleAtFixedRate(() -> {
-                Slog.v(TAG, "Time to restart the process, TTL has passed");
-                synchronized (mLock) {
-                    restartProcessLocked();
-                    if (mDetectorType != HotwordDetector.DETECTOR_TYPE_VISUAL_QUERY_DETECTOR) {
-                        HotwordMetricsLogger.writeServiceRestartEvent(mDetectorType,
-                                HOTWORD_DETECTION_SERVICE_RESTARTED__REASON__SCHEDULE,
-                                mVoiceInteractionServiceUid);
-                    }
-                }
-            }, mReStartPeriodSeconds, mReStartPeriodSeconds, TimeUnit.SECONDS);
+            mCancellationTaskFuture =
+                    mScheduledExecutorService.scheduleAtFixedRate(
+                            () -> {
+                                Slog.v(TAG, "Time to restart the process, TTL has passed");
+                                synchronized (mLock) {
+                                    restartProcessLocked();
+                                    if (mDetectorType
+                                            != HotwordDetector
+                                                    .DETECTOR_TYPE_VISUAL_QUERY_DETECTOR) {
+                                        HotwordMetricsLogger.writeServiceRestartEvent(
+                                                mDetectorType,
+                                                HOTWORD_DETECTION_SERVICE_RESTARTED__REASON__SCHEDULE,
+                                                mVoiceInteractionServiceUid);
+                                    }
+                                }
+                            },
+                            mReStartPeriodSeconds,
+                            mReStartPeriodSeconds,
+                            TimeUnit.SECONDS);
         }
     }
 
@@ -308,8 +327,10 @@ final class HotwordDetectionConnection {
         try {
             audioFlinger.linkToDeath(mAudioServerDeathRecipient, /* flags= */ 0);
         } catch (RemoteException e) {
-            Slog.w(TAG, "Audio server died before we registered a DeathRecipient; "
-                    + "retrying init.", e);
+            Slog.w(
+                    TAG,
+                    "Audio server died before we registered a DeathRecipient; " + "retrying init.",
+                    e);
             initAudioFlinger();
             return;
         }
@@ -332,7 +353,8 @@ final class HotwordDetectionConnection {
             // conditions with audio reading in the service.
             restartProcessLocked();
             if (mDetectorType != HotwordDetector.DETECTOR_TYPE_VISUAL_QUERY_DETECTOR) {
-                HotwordMetricsLogger.writeServiceRestartEvent(mDetectorType,
+                HotwordMetricsLogger.writeServiceRestartEvent(
+                        mDetectorType,
                         HOTWORD_DETECTION_SERVICE_RESTARTED__REASON__AUDIO_SERVICE_DIED,
                         mVoiceInteractionServiceUid);
             }
@@ -344,9 +366,10 @@ final class HotwordDetectionConnection {
         Slog.v(TAG, "cancelLocked");
         clearDebugHotwordLoggingTimeoutLocked();
         mRemoteExceptionListener = null;
-        runForEachDetectorSessionLocked((session) -> {
-            session.destroyLocked();
-        });
+        runForEachDetectorSessionLocked(
+                (session) -> {
+                    session.destroyLocked();
+                });
         mDetectorSessions.clear();
         mDebugHotwordLogging = false;
         unbindVisualQueryDetectionService();
@@ -386,7 +409,7 @@ final class HotwordDetectionConnection {
     private void resetDetectionProcessIdentityIfEmptyLocked() {
         if (mRemoteHotwordDetectionService == null && mRemoteVisualQueryDetectionService == null) {
             LocalServices.getService(PermissionManagerServiceInternal.class)
-                .setHotwordDetectionServiceProvider(null);
+                    .setHotwordDetectionServiceProvider(null);
             if (mIdentity != null) {
                 removeServiceUidForAudioPolicy(mIdentity.getIsolatedUid());
             }
@@ -395,8 +418,8 @@ final class HotwordDetectionConnection {
     }
 
     @SuppressWarnings("GuardedBy")
-    void updateStateLocked(PersistableBundle options, SharedMemory sharedMemory,
-            @NonNull IBinder token) {
+    void updateStateLocked(
+            PersistableBundle options, SharedMemory sharedMemory, @NonNull IBinder token) {
         final DetectorSession session = getDetectorSessionByTokenLocked(token);
         if (session == null) {
             Slog.v(TAG, "Not found the detector by token");
@@ -405,12 +428,9 @@ final class HotwordDetectionConnection {
         session.updateStateLocked(options, sharedMemory, mLastRestartInstant);
     }
 
-    /**
-     * This method is only used by SoftwareHotwordDetector.
-     */
+    /** This method is only used by SoftwareHotwordDetector. */
     void startListeningFromMicLocked(
-            AudioFormat audioFormat,
-            IMicrophoneHotwordDetectionVoiceInteractionCallback callback) {
+            AudioFormat audioFormat, IMicrophoneHotwordDetectionVoiceInteractionCallback callback) {
         if (DEBUG) {
             Slog.d(TAG, "startListeningFromMicLocked");
         }
@@ -433,9 +453,7 @@ final class HotwordDetectionConnection {
         session.setVisualQueryDetectionAttentionListenerLocked(listener);
     }
 
-    /**
-     * This method is only used by VisualQueryDetector.
-     */
+    /** This method is only used by VisualQueryDetector. */
     boolean startPerceivingLocked(IVisualQueryDetectionVoiceInteractionCallback callback) {
         if (DEBUG) {
             Slog.d(TAG, "startPerceivingLocked");
@@ -447,9 +465,7 @@ final class HotwordDetectionConnection {
         return session.startPerceivingLocked(callback);
     }
 
-    /**
-     * This method is only used by VisaulQueryDetector.
-     */
+    /** This method is only used by VisaulQueryDetector. */
     boolean stopPerceivingLocked() {
         if (DEBUG) {
             Slog.d(TAG, "stopPerceivingLocked");
@@ -497,9 +513,7 @@ final class HotwordDetectionConnection {
                 audioStream, audioFormat, options, callback);
     }
 
-    /**
-     * This method is only used by SoftwareHotwordDetector.
-     */
+    /** This method is only used by SoftwareHotwordDetector. */
     void stopListeningFromMicLocked() {
         if (DEBUG) {
             Slog.d(TAG, "stopListeningFromMicLocked");
@@ -521,7 +535,8 @@ final class HotwordDetectionConnection {
         detectFromDspSource(event, callback);
     }
 
-    private void detectFromDspSource(SoundTrigger.KeyphraseRecognitionEvent recognitionEvent,
+    private void detectFromDspSource(
+            SoundTrigger.KeyphraseRecognitionEvent recognitionEvent,
             IHotwordRecognitionStatusCallback externalCallback) {
         if (DEBUG) {
             Slog.d(TAG, "detectFromDspSource");
@@ -551,21 +566,27 @@ final class HotwordDetectionConnection {
         Slog.v(TAG, "setDebugHotwordLoggingLocked: " + logging);
         clearDebugHotwordLoggingTimeoutLocked();
         mDebugHotwordLogging = logging;
-        runForEachDetectorSessionLocked((session) -> {
-            session.setDebugHotwordLoggingLocked(logging);
-        });
+        runForEachDetectorSessionLocked(
+                (session) -> {
+                    session.setDebugHotwordLoggingLocked(logging);
+                });
 
         if (logging) {
             // Reset mDebugHotwordLogging to false after one hour
-            mDebugHotwordLoggingTimeoutFuture = mScheduledExecutorService.schedule(() -> {
-                Slog.v(TAG, "Timeout to reset mDebugHotwordLogging to false");
-                synchronized (mLock) {
-                    mDebugHotwordLogging = false;
-                    runForEachDetectorSessionLocked((session) -> {
-                        session.setDebugHotwordLoggingLocked(false);
-                    });
-                }
-            }, RESET_DEBUG_HOTWORD_LOGGING_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            mDebugHotwordLoggingTimeoutFuture =
+                    mScheduledExecutorService.schedule(
+                            () -> {
+                                Slog.v(TAG, "Timeout to reset mDebugHotwordLogging to false");
+                                synchronized (mLock) {
+                                    mDebugHotwordLogging = false;
+                                    runForEachDetectorSessionLocked(
+                                            (session) -> {
+                                                session.setDebugHotwordLoggingLocked(false);
+                                            });
+                                }
+                            },
+                            RESET_DEBUG_HOTWORD_LOGGING_TIMEOUT_MILLIS,
+                            TimeUnit.MILLISECONDS);
         }
     }
 
@@ -604,13 +625,15 @@ final class HotwordDetectionConnection {
         }
 
         Slog.v(TAG, "Started the new process, dispatching processRestarted to detector");
-        runForEachDetectorSessionLocked((session) -> {
-            HotwordDetectionConnection.ServiceConnection newRemoteService =
-                    (session instanceof VisualQueryDetectorSession)
-                            ? mRemoteVisualQueryDetectionService : mRemoteHotwordDetectionService;
-            session.updateRemoteSandboxedDetectionServiceLocked(newRemoteService);
-            session.informRestartProcessLocked();
-        });
+        runForEachDetectorSessionLocked(
+                (session) -> {
+                    HotwordDetectionConnection.ServiceConnection newRemoteService =
+                            (session instanceof VisualQueryDetectorSession)
+                                    ? mRemoteVisualQueryDetectionService
+                                    : mRemoteHotwordDetectionService;
+                    session.updateRemoteSandboxedDetectionServiceLocked(newRemoteService);
+                    session.informRestartProcessLocked();
+                });
         if (DEBUG) {
             Slog.i(TAG, "processRestarted is dispatched done, unbinding from the old process");
         }
@@ -636,7 +659,7 @@ final class HotwordDetectionConnection {
     /**
      * Shutdowns down hotword detection service, swallowing exceptions.
      *
-     * Called when voice activation app-op has been disabled.
+     * <p>Called when voice activation app-op has been disabled.
      */
     @SuppressWarnings("GuardedBy")
     void safelyShutdownHotwordDetectionOnVoiceActivationDisabledLocked() {
@@ -644,19 +667,21 @@ final class HotwordDetectionConnection {
         try {
             clearDebugHotwordLoggingTimeoutLocked();
             mRemoteExceptionListener = null;
-            runForEachDetectorSessionLocked((session) -> {
-                if (!(session instanceof VisualQueryDetectorSession)) {
-                    // Inform all detector sessions that they got destroyed due to voice activation
-                    // op being disabled.
-                    session.reportErrorLocked(
-                            new HotwordDetectionServiceFailure(
-                                    HotwordDetectionServiceFailure
-                                            .ERROR_CODE_SHUTDOWN_HDS_ON_VOICE_ACTIVATION_OP_DISABLED,
-                                    "Shutdown hotword detection service on voice "
-                                            + "activation op disabled!"));
-                    session.destroyLocked();
-                }
-            });
+            runForEachDetectorSessionLocked(
+                    (session) -> {
+                        if (!(session instanceof VisualQueryDetectorSession)) {
+                            // Inform all detector sessions that they got destroyed due to voice
+                            // activation
+                            // op being disabled.
+                            session.reportErrorLocked(
+                                    new HotwordDetectionServiceFailure(
+                                            HotwordDetectionServiceFailure
+                                                    .ERROR_CODE_SHUTDOWN_HDS_ON_VOICE_ACTIVATION_OP_DISABLED,
+                                            "Shutdown hotword detection service on voice "
+                                                    + "activation op disabled!"));
+                            session.destroyLocked();
+                        }
+                    });
 
             // Remove hotword detection sessions.
             mDetectorSessions.delete(HotwordDetector.DETECTOR_TYPE_TRUSTED_HOTWORD_DSP);
@@ -672,11 +697,13 @@ final class HotwordDetectionConnection {
                 mAudioFlinger = null;
             }
         } catch (Exception e) {
-            Slog.e(TAG, "Swallowing error while shutting down hotword detection."
-                    + "Error message: " + e.getMessage());
+            Slog.e(
+                    TAG,
+                    "Swallowing error while shutting down hotword detection."
+                            + "Error message: "
+                            + e.getMessage());
         }
     }
-
 
     static final class SoundTriggerCallback extends IRecognitionStatusCallback.Stub {
         private final HotwordDetectionConnection mHotwordDetectionConnection;
@@ -684,8 +711,11 @@ final class HotwordDetectionConnection {
         private final Identity mVoiceInteractorIdentity;
         private final Context mContext;
 
-        SoundTriggerCallback(Context context, IHotwordRecognitionStatusCallback callback,
-                HotwordDetectionConnection connection, Identity voiceInteractorIdentity) {
+        SoundTriggerCallback(
+                Context context,
+                IHotwordRecognitionStatusCallback callback,
+                HotwordDetectionConnection connection,
+                Identity voiceInteractorIdentity) {
             mContext = context;
             mHotwordDetectionConnection = connection;
             mExternalCallback = callback;
@@ -710,15 +740,19 @@ final class HotwordDetectionConnection {
                 // We have to attribute ops here, since we configure all st clients as trusted to
                 // enable a partial exemption.
                 // TODO (b/292012931) remove once trusted uniformly required.
-                int result = mContext.getSystemService(AppOpsManager.class)
-                        .noteOpNoThrow(AppOpsManager.OP_RECORD_AUDIO_HOTWORD,
-                            mVoiceInteractorIdentity.uid, mVoiceInteractorIdentity.packageName,
-                            mVoiceInteractorIdentity.attributionTag,
-                            "Non-HDS keyphrase recognition to VoiceInteractionService");
+                int result =
+                        mContext.getSystemService(AppOpsManager.class)
+                                .noteOpNoThrow(
+                                        AppOpsManager.OP_RECORD_AUDIO_HOTWORD,
+                                        mVoiceInteractorIdentity.uid,
+                                        mVoiceInteractorIdentity.packageName,
+                                        mVoiceInteractorIdentity.attributionTag,
+                                        "Non-HDS keyphrase recognition to VoiceInteractionService");
 
                 if (result != AppOpsManager.MODE_ALLOWED) {
-                    Slog.w(TAG, "onKeyphraseDetected suppressed, permission check returned: "
-                            + result);
+                    Slog.w(
+                            TAG,
+                            "onKeyphraseDetected suppressed, permission check returned: " + result);
                     mExternalCallback.onRecognitionPaused();
                 } else {
                     HotwordMetricsLogger.writeKeyphraseTriggerEvent(
@@ -732,37 +766,39 @@ final class HotwordDetectionConnection {
 
         @Override
         public void onGenericSoundTriggerDetected(
-                SoundTrigger.GenericRecognitionEvent recognitionEvent)
-                throws RemoteException {
+                SoundTrigger.GenericRecognitionEvent recognitionEvent) throws RemoteException {
             mExternalCallback.onGenericSoundTriggerDetected(recognitionEvent);
         }
 
         @Override
         public void onPreempted() throws RemoteException {
-            mExternalCallback.onSoundTriggerFailure(new SoundTriggerFailure(
-                        SoundTriggerFailure.ERROR_CODE_UNEXPECTED_PREEMPTION,
-                        "Unexpected startRecognition on already started ST session"));
+            mExternalCallback.onSoundTriggerFailure(
+                    new SoundTriggerFailure(
+                            SoundTriggerFailure.ERROR_CODE_UNEXPECTED_PREEMPTION,
+                            "Unexpected startRecognition on already started ST session"));
         }
 
         @Override
         public void onModuleDied() throws RemoteException {
-            mExternalCallback.onSoundTriggerFailure(new SoundTriggerFailure(
-                        SoundTriggerFailure.ERROR_CODE_MODULE_DIED,
-                        "STHAL died"));
+            mExternalCallback.onSoundTriggerFailure(
+                    new SoundTriggerFailure(
+                            SoundTriggerFailure.ERROR_CODE_MODULE_DIED, "STHAL died"));
         }
 
         @Override
         public void onResumeFailed(int status) throws RemoteException {
-            mExternalCallback.onSoundTriggerFailure(new SoundTriggerFailure(
-                        SoundTriggerFailure.ERROR_CODE_RECOGNITION_RESUME_FAILED,
-                        "STService recognition resume failed with: " + status));
+            mExternalCallback.onSoundTriggerFailure(
+                    new SoundTriggerFailure(
+                            SoundTriggerFailure.ERROR_CODE_RECOGNITION_RESUME_FAILED,
+                            "STService recognition resume failed with: " + status));
         }
 
         @Override
         public void onPauseFailed(int status) throws RemoteException {
-            mExternalCallback.onSoundTriggerFailure(new SoundTriggerFailure(
-                        SoundTriggerFailure.ERROR_CODE_RECOGNITION_RESUME_FAILED,
-                        "STService recognition pause failed with: " + status));
+            mExternalCallback.onSoundTriggerFailure(
+                    new SoundTriggerFailure(
+                            SoundTriggerFailure.ERROR_CODE_RECOGNITION_RESUME_FAILED,
+                            "STService recognition pause failed with: " + status));
         }
 
         @Override
@@ -778,23 +814,35 @@ final class HotwordDetectionConnection {
 
     public void dump(String prefix, PrintWriter pw) {
         synchronized (mLock) {
-            pw.print(prefix); pw.print("mReStartPeriodSeconds="); pw.println(mReStartPeriodSeconds);
-            pw.print(prefix); pw.print("bound for HotwordDetectionService=");
-            pw.println(mRemoteHotwordDetectionService != null
-                    && mRemoteHotwordDetectionService.isBound());
-            pw.print(prefix); pw.print("bound for VisualQueryDetectionService=");
-            pw.println(mRemoteVisualQueryDetectionService != null
-                    && mRemoteHotwordDetectionService != null
-                    && mRemoteHotwordDetectionService.isBound());
-            pw.print(prefix); pw.print("mRestartCount=");
+            pw.print(prefix);
+            pw.print("mReStartPeriodSeconds=");
+            pw.println(mReStartPeriodSeconds);
+            pw.print(prefix);
+            pw.print("bound for HotwordDetectionService=");
+            pw.println(
+                    mRemoteHotwordDetectionService != null
+                            && mRemoteHotwordDetectionService.isBound());
+            pw.print(prefix);
+            pw.print("bound for VisualQueryDetectionService=");
+            pw.println(
+                    mRemoteVisualQueryDetectionService != null
+                            && mRemoteHotwordDetectionService != null
+                            && mRemoteHotwordDetectionService.isBound());
+            pw.print(prefix);
+            pw.print("mRestartCount=");
             pw.println(mRestartCount);
-            pw.print(prefix); pw.print("mLastRestartInstant="); pw.println(mLastRestartInstant);
-            pw.print(prefix); pw.println("DetectorSession(s):");
-            pw.print(prefix); pw.print("Num of DetectorSession(s)=");
+            pw.print(prefix);
+            pw.print("mLastRestartInstant=");
+            pw.println(mLastRestartInstant);
+            pw.print(prefix);
+            pw.println("DetectorSession(s):");
+            pw.print(prefix);
+            pw.print("Num of DetectorSession(s)=");
             pw.println(mDetectorSessions.size());
-            runForEachDetectorSessionLocked((session) -> {
-                session.dumpLocked(prefix, pw);
-            });
+            runForEachDetectorSessionLocked(
+                    (session) -> {
+                        session.dumpLocked(prefix, pw);
+                    });
         }
     }
 
@@ -803,7 +851,9 @@ final class HotwordDetectionConnection {
         private final int mBindingFlags;
         private final int mDetectionServiceType;
 
-        ServiceConnectionFactory(@NonNull Intent intent, boolean bindInstantServiceAllowed,
+        ServiceConnectionFactory(
+                @NonNull Intent intent,
+                boolean bindInstantServiceAllowed,
                 int detectionServiceType) {
             mIntent = intent;
             mDetectionServiceType = detectionServiceType;
@@ -818,9 +868,14 @@ final class HotwordDetectionConnection {
 
         ServiceConnection createLocked() {
             ServiceConnection connection =
-                    new ServiceConnection(mContext, mIntent, mBindingFlags, mUserId,
+                    new ServiceConnection(
+                            mContext,
+                            mIntent,
+                            mBindingFlags,
+                            mUserId,
                             ISandboxedDetectionService.Stub::asInterface,
-                            mRestartCount % MAX_ISOLATED_PROCESS_NUMBER, mDetectionServiceType);
+                            mRestartCount % MAX_ISOLATED_PROCESS_NUMBER,
+                            mDetectionServiceType);
             connection.connect();
 
             updateAudioFlinger(connection, mAudioFlinger);
@@ -851,10 +906,14 @@ final class HotwordDetectionConnection {
         private boolean mIsLoggedFirstConnect = false;
         private final int mDetectionServiceType;
 
-        ServiceConnection(@NonNull Context context,
-                @NonNull Intent serviceIntent, int bindingFlags, int userId,
+        ServiceConnection(
+                @NonNull Context context,
+                @NonNull Intent serviceIntent,
+                int bindingFlags,
+                int userId,
                 @Nullable Function<IBinder, ISandboxedDetectionService> binderAsInterface,
-                int instanceNumber, int detectionServiceType) {
+                int instanceNumber,
+                int detectionServiceType) {
             super(context, serviceIntent, bindingFlags, userId, binderAsInterface);
             this.mIntent = serviceIntent;
             this.mBindingFlags = bindingFlags;
@@ -863,8 +922,8 @@ final class HotwordDetectionConnection {
         }
 
         @Override // from ServiceConnector.Impl
-        protected void onServiceConnectionStatusChanged(ISandboxedDetectionService service,
-                boolean connected) {
+        protected void onServiceConnectionStatusChanged(
+                ISandboxedDetectionService service, boolean connected) {
             if (DEBUG) {
                 Slog.d(TAG, "onServiceConnectionStatusChanged connected = " + connected);
             }
@@ -877,14 +936,16 @@ final class HotwordDetectionConnection {
 
                 if (!connected) {
                     if (mDetectionServiceType != DETECTION_SERVICE_TYPE_VISUAL_QUERY) {
-                        HotwordMetricsLogger.writeDetectorEvent(mDetectorType,
+                        HotwordMetricsLogger.writeDetectorEvent(
+                                mDetectorType,
                                 HOTWORD_DETECTOR_EVENTS__EVENT__ON_DISCONNECTED,
                                 mVoiceInteractionServiceUid);
                     }
                 } else if (!mIsLoggedFirstConnect) {
                     mIsLoggedFirstConnect = true;
                     if (mDetectionServiceType != DETECTION_SERVICE_TYPE_VISUAL_QUERY) {
-                        HotwordMetricsLogger.writeDetectorEvent(mDetectorType,
+                        HotwordMetricsLogger.writeDetectorEvent(
+                                mDetectorType,
                                 HOTWORD_DETECTOR_EVENTS__EVENT__ON_CONNECTED,
                                 mVoiceInteractionServiceUid);
                     }
@@ -912,7 +973,7 @@ final class HotwordDetectionConnection {
                     return;
                 }
             }
-            //TODO(b265535257): report error to either service only.
+            // TODO(b265535257): report error to either service only.
             synchronized (HotwordDetectionConnection.this.mLock) {
                 runForEachDetectorSessionLocked(this::reportBinderDiedLocked);
             }
@@ -930,24 +991,30 @@ final class HotwordDetectionConnection {
                 @NonNull android.content.ServiceConnection serviceConnection) {
             try {
                 if (mDetectionServiceType != DETECTION_SERVICE_TYPE_VISUAL_QUERY) {
-                    HotwordMetricsLogger.writeDetectorEvent(mDetectorType,
+                    HotwordMetricsLogger.writeDetectorEvent(
+                            mDetectorType,
                             HOTWORD_DETECTOR_EVENTS__EVENT__REQUEST_BIND_SERVICE,
                             mVoiceInteractionServiceUid);
                 }
-                boolean bindResult = mContext.bindIsolatedService(
-                        mIntent,
-                        Context.BIND_AUTO_CREATE | Context.BIND_FOREGROUND_SERVICE | mBindingFlags,
-                        "hotword_detector_" + mInstanceNumber,
-                        mExecutor,
-                        serviceConnection);
+                boolean bindResult =
+                        mContext.bindIsolatedService(
+                                mIntent,
+                                Context.BIND_AUTO_CREATE
+                                        | Context.BIND_FOREGROUND_SERVICE
+                                        | mBindingFlags,
+                                "hotword_detector_" + mInstanceNumber,
+                                mExecutor,
+                                serviceConnection);
                 if (!bindResult) {
-                    Slog.w(TAG,
+                    Slog.w(
+                            TAG,
                             "bindService failure mDetectionServiceType = " + mDetectionServiceType);
                     synchronized (HotwordDetectionConnection.this.mLock) {
                         runForEachDetectorSessionLocked(this::reportBindServiceFailureLocked);
                     }
                     if (mDetectionServiceType != DETECTION_SERVICE_TYPE_VISUAL_QUERY) {
-                        HotwordMetricsLogger.writeDetectorEvent(mDetectorType,
+                        HotwordMetricsLogger.writeDetectorEvent(
+                                mDetectorType,
                                 HOTWORD_DETECTOR_EVENTS__EVENT__REQUEST_BIND_SERVICE_FAIL,
                                 mVoiceInteractionServiceUid);
                     }
@@ -955,7 +1022,8 @@ final class HotwordDetectionConnection {
                 return bindResult;
             } catch (IllegalArgumentException e) {
                 if (mDetectionServiceType != DETECTION_SERVICE_TYPE_VISUAL_QUERY) {
-                    HotwordMetricsLogger.writeDetectorEvent(mDetectorType,
+                    HotwordMetricsLogger.writeDetectorEvent(
+                            mDetectorType,
                             HOTWORD_DETECTOR_EVENTS__EVENT__REQUEST_BIND_SERVICE_FAIL,
                             mVoiceInteractionServiceUid);
                 }
@@ -977,17 +1045,19 @@ final class HotwordDetectionConnection {
         }
 
         private void reportBinderDiedLocked(DetectorSession detectorSession) {
-            if (mDetectionServiceType == DETECTION_SERVICE_TYPE_HOTWORD && (
-                    detectorSession instanceof DspTrustedHotwordDetectorSession
+            if (mDetectionServiceType == DETECTION_SERVICE_TYPE_HOTWORD
+                    && (detectorSession instanceof DspTrustedHotwordDetectorSession
                             || detectorSession instanceof SoftwareTrustedHotwordDetectorSession)) {
-                detectorSession.reportErrorLocked(new HotwordDetectionServiceFailure(
-                        HotwordDetectionServiceFailure.ERROR_CODE_BINDING_DIED,
-                        "Detection service is dead."));
+                detectorSession.reportErrorLocked(
+                        new HotwordDetectionServiceFailure(
+                                HotwordDetectionServiceFailure.ERROR_CODE_BINDING_DIED,
+                                "Detection service is dead."));
             } else if (mDetectionServiceType == DETECTION_SERVICE_TYPE_VISUAL_QUERY
                     && detectorSession instanceof VisualQueryDetectorSession) {
-                detectorSession.reportErrorLocked(new VisualQueryDetectionServiceFailure(
-                        VisualQueryDetectionServiceFailure.ERROR_CODE_BINDING_DIED,
-                        "Detection service is dead."));
+                detectorSession.reportErrorLocked(
+                        new VisualQueryDetectionServiceFailure(
+                                VisualQueryDetectionServiceFailure.ERROR_CODE_BINDING_DIED,
+                                "Detection service is dead."));
             } else {
                 detectorSession.reportErrorLocked(
                         "Detection service is dead with unknown detection service type.");
@@ -995,17 +1065,19 @@ final class HotwordDetectionConnection {
         }
 
         private void reportBindServiceFailureLocked(DetectorSession detectorSession) {
-            if (mDetectionServiceType == DETECTION_SERVICE_TYPE_HOTWORD && (
-                    detectorSession instanceof DspTrustedHotwordDetectorSession
+            if (mDetectionServiceType == DETECTION_SERVICE_TYPE_HOTWORD
+                    && (detectorSession instanceof DspTrustedHotwordDetectorSession
                             || detectorSession instanceof SoftwareTrustedHotwordDetectorSession)) {
-                detectorSession.reportErrorLocked(new HotwordDetectionServiceFailure(
-                        HotwordDetectionServiceFailure.ERROR_CODE_BIND_FAILURE,
-                        "Bind detection service failure."));
+                detectorSession.reportErrorLocked(
+                        new HotwordDetectionServiceFailure(
+                                HotwordDetectionServiceFailure.ERROR_CODE_BIND_FAILURE,
+                                "Bind detection service failure."));
             } else if (mDetectionServiceType == DETECTION_SERVICE_TYPE_VISUAL_QUERY
                     && detectorSession instanceof VisualQueryDetectorSession) {
-                detectorSession.reportErrorLocked(new VisualQueryDetectionServiceFailure(
-                        VisualQueryDetectionServiceFailure.ERROR_CODE_BIND_FAILURE,
-                        "Bind detection service failure."));
+                detectorSession.reportErrorLocked(
+                        new VisualQueryDetectionServiceFailure(
+                                VisualQueryDetectionServiceFailure.ERROR_CODE_BIND_FAILURE,
+                                "Bind detection service failure."));
             } else {
                 detectorSession.reportErrorLocked(
                         "Bind detection service failure with unknown detection service type.");
@@ -1033,30 +1105,55 @@ final class HotwordDetectionConnection {
                 mRemoteHotwordDetectionService =
                         mHotwordDetectionServiceConnectionFactory.createLocked();
             }
-            session = new DspTrustedHotwordDetectorSession(mRemoteHotwordDetectionService,
-                    mLock, mContext, token, callback, mVoiceInteractionServiceUid,
-                    mVoiceInteractorIdentity, mScheduledExecutorService, mDebugHotwordLogging,
-                    mRemoteExceptionListener, mUserId);
+            session =
+                    new DspTrustedHotwordDetectorSession(
+                            mRemoteHotwordDetectionService,
+                            mLock,
+                            mContext,
+                            token,
+                            callback,
+                            mVoiceInteractionServiceUid,
+                            mVoiceInteractorIdentity,
+                            mScheduledExecutorService,
+                            mDebugHotwordLogging,
+                            mRemoteExceptionListener,
+                            mUserId);
         } else if (detectorType == HotwordDetector.DETECTOR_TYPE_VISUAL_QUERY_DETECTOR) {
             if (mRemoteVisualQueryDetectionService == null) {
                 mRemoteVisualQueryDetectionService =
                         mVisualQueryDetectionServiceConnectionFactory.createLocked();
             }
-            session = new VisualQueryDetectorSession(
-                    mRemoteVisualQueryDetectionService, mLock, mContext, token, callback,
-                    mVoiceInteractionServiceUid, mVoiceInteractorIdentity,
-                    mScheduledExecutorService, mDebugHotwordLogging, mRemoteExceptionListener,
-                    mUserId);
+            session =
+                    new VisualQueryDetectorSession(
+                            mRemoteVisualQueryDetectionService,
+                            mLock,
+                            mContext,
+                            token,
+                            callback,
+                            mVoiceInteractionServiceUid,
+                            mVoiceInteractorIdentity,
+                            mScheduledExecutorService,
+                            mDebugHotwordLogging,
+                            mRemoteExceptionListener,
+                            mUserId);
         } else {
             if (mRemoteHotwordDetectionService == null) {
                 mRemoteHotwordDetectionService =
                         mHotwordDetectionServiceConnectionFactory.createLocked();
             }
-            session = new SoftwareTrustedHotwordDetectorSession(
-                    mRemoteHotwordDetectionService, mLock, mContext, token, callback,
-                    mVoiceInteractionServiceUid, mVoiceInteractorIdentity,
-                    mScheduledExecutorService, mDebugHotwordLogging,
-                    mRemoteExceptionListener, mUserId);
+            session =
+                    new SoftwareTrustedHotwordDetectorSession(
+                            mRemoteHotwordDetectionService,
+                            mLock,
+                            mContext,
+                            token,
+                            callback,
+                            mVoiceInteractionServiceUid,
+                            mVoiceInteractorIdentity,
+                            mScheduledExecutorService,
+                            mDebugHotwordLogging,
+                            mRemoteExceptionListener,
+                            mUserId);
         }
         mHotwordRecognitionCallback = callback;
         mDetectorSessions.put(detectorType, session);
@@ -1080,9 +1177,10 @@ final class HotwordDetectionConnection {
         }
         // Handle case where all hotword detector sessions are destroyed with only the visual
         // detector session left
-        boolean allHotwordDetectionServiceSessionsRemoved = mDetectorSessions.size() == 0
-                || (mDetectorSessions.size() == 1 && mDetectorSessions.get(0)
-                instanceof VisualQueryDetectorSession);
+        boolean allHotwordDetectionServiceSessionsRemoved =
+                mDetectorSessions.size() == 0
+                        || (mDetectorSessions.size() == 1
+                                && mDetectorSessions.get(0) instanceof VisualQueryDetectorSession);
         if (allHotwordDetectionServiceSessionsRemoved) {
             unbindHotwordDetectionService();
         }
@@ -1104,8 +1202,8 @@ final class HotwordDetectionConnection {
 
     @SuppressWarnings("GuardedBy")
     private DspTrustedHotwordDetectorSession getDspTrustedHotwordDetectorSessionLocked() {
-        final DetectorSession session = mDetectorSessions.get(
-                HotwordDetector.DETECTOR_TYPE_TRUSTED_HOTWORD_DSP);
+        final DetectorSession session =
+                mDetectorSessions.get(HotwordDetector.DETECTOR_TYPE_TRUSTED_HOTWORD_DSP);
         if (session == null || session.isDestroyed()) {
             Slog.v(TAG, "Not found the Dsp detector");
             return null;
@@ -1115,8 +1213,8 @@ final class HotwordDetectionConnection {
 
     @SuppressWarnings("GuardedBy")
     private SoftwareTrustedHotwordDetectorSession getSoftwareTrustedHotwordDetectorSessionLocked() {
-        final DetectorSession session = mDetectorSessions.get(
-                HotwordDetector.DETECTOR_TYPE_TRUSTED_HOTWORD_SOFTWARE);
+        final DetectorSession session =
+                mDetectorSessions.get(HotwordDetector.DETECTOR_TYPE_TRUSTED_HOTWORD_SOFTWARE);
         if (session == null || session.isDestroyed()) {
             Slog.v(TAG, "Not found the software detector");
             return null;
@@ -1126,16 +1224,16 @@ final class HotwordDetectionConnection {
 
     @SuppressWarnings("GuardedBy")
     private VisualQueryDetectorSession getVisualQueryDetectorSessionLocked() {
-        final DetectorSession session = mDetectorSessions.get(
-                HotwordDetector.DETECTOR_TYPE_VISUAL_QUERY_DETECTOR);
+        final DetectorSession session =
+                mDetectorSessions.get(HotwordDetector.DETECTOR_TYPE_VISUAL_QUERY_DETECTOR);
         if (session == null || session.isDestroyed()) {
             Slog.v(TAG, "Not found the visual query detector");
             return null;
         }
         return (VisualQueryDetectorSession) session;
     }
-    private void runForEachDetectorSessionLocked(
-            @NonNull Consumer<DetectorSession> action) {
+
+    private void runForEachDetectorSessionLocked(@NonNull Consumer<DetectorSession> action) {
         for (int i = 0; i < mDetectorSessions.size(); i++) {
             DetectorSession session = mDetectorSessions.valueAt(i);
             action.accept(session);
@@ -1148,55 +1246,69 @@ final class HotwordDetectionConnection {
     }
 
     private static void updateContentCaptureManager(ServiceConnection connection) {
-        IBinder b = ServiceManager
-                .getService(Context.CONTENT_CAPTURE_MANAGER_SERVICE);
+        IBinder b = ServiceManager.getService(Context.CONTENT_CAPTURE_MANAGER_SERVICE);
         IContentCaptureManager binderService = IContentCaptureManager.Stub.asInterface(b);
         connection.run(
-                service -> service.updateContentCaptureManager(binderService,
-                        new ContentCaptureOptions(null)));
+                service ->
+                        service.updateContentCaptureManager(
+                                binderService, new ContentCaptureOptions(null)));
     }
 
     private static void updateSpeechService(ServiceConnection connection) {
         IBinder b = ServiceManager.getService(Context.SPEECH_RECOGNITION_SERVICE);
         IRecognitionServiceManager binderService = IRecognitionServiceManager.Stub.asInterface(b);
-        connection.run(service -> {
-            service.updateRecognitionServiceManager(binderService);
-        });
+        connection.run(
+                service -> {
+                    service.updateRecognitionServiceManager(binderService);
+                });
     }
 
     private void updateServiceIdentity(ServiceConnection connection) {
-        connection.run(service -> service.ping(new ISandboxedDetectionService.IPingMe.Stub() {
-            @Override
-            public void onPing() throws RemoteException {
-                // TODO: Exit if the service has been unbound already (though there's a very low
-                // chance this happens).
-                Slog.d(TAG, "updating hotword UID " + Binder.getCallingUid());
-                // TODO: Have the provider point to the current state stored in
-                // VoiceInteractionManagerServiceImpl.
-                final int uid = Binder.getCallingUid();
-                LocalServices.getService(PermissionManagerServiceInternal.class)
-                        .setHotwordDetectionServiceProvider(() -> uid);
-                mIdentity = new HotwordDetectionServiceIdentity(uid, mVoiceInteractionServiceUid);
-                addServiceUidForAudioPolicy(uid, mVoiceInteractionServiceUid);
-            }
-        }));
+        connection.run(
+                service ->
+                        service.ping(
+                                new ISandboxedDetectionService.IPingMe.Stub() {
+                                    @Override
+                                    public void onPing() throws RemoteException {
+                                        // TODO: Exit if the service has been unbound already
+                                        // (though there's a very low
+                                        // chance this happens).
+                                        Slog.d(
+                                                TAG,
+                                                "updating hotword UID " + Binder.getCallingUid());
+                                        // TODO: Have the provider point to the current state stored
+                                        // in
+                                        // VoiceInteractionManagerServiceImpl.
+                                        final int uid = Binder.getCallingUid();
+                                        LocalServices.getService(
+                                                        PermissionManagerServiceInternal.class)
+                                                .setHotwordDetectionServiceProvider(() -> uid);
+                                        mIdentity =
+                                                new HotwordDetectionServiceIdentity(
+                                                        uid, mVoiceInteractionServiceUid);
+                                        addServiceUidForAudioPolicy(
+                                                uid, mVoiceInteractionServiceUid);
+                                    }
+                                }));
     }
 
     private void updateStorageService(ServiceConnection connection) {
-        connection.run(service -> {
-            service.registerRemoteStorageService(new IDetectorSessionStorageService.Stub() {
-                @Override
-                public void openFile(String filename, AndroidFuture future)
-                        throws RemoteException {
-                    Slog.v(TAG, "BinderCallback#onFileOpen");
-                    try {
-                        mHotwordRecognitionCallback.onOpenFile(filename, future);
-                    } catch (RemoteException e) {
-                        e.rethrowFromSystemServer();
-                    }
-                }
-            });
-        });
+        connection.run(
+                service -> {
+                    service.registerRemoteStorageService(
+                            new IDetectorSessionStorageService.Stub() {
+                                @Override
+                                public void openFile(String filename, AndroidFuture future)
+                                        throws RemoteException {
+                                    Slog.v(TAG, "BinderCallback#onFileOpen");
+                                    try {
+                                        mHotwordRecognitionCallback.onOpenFile(filename, future);
+                                    } catch (RemoteException e) {
+                                        e.rethrowFromSystemServer();
+                                    }
+                                }
+                            });
+                });
     }
 
     private void addServiceUidForAudioPolicy(int isolatedUid, int owningUid) {
