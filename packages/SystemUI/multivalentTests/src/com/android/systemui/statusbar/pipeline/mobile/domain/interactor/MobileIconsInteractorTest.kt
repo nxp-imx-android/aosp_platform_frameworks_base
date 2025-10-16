@@ -35,7 +35,6 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
@@ -942,7 +941,7 @@ abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun isStackable_tracksNumberOfSubscriptions() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isStackable)
@@ -959,7 +958,7 @@ abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
 
     /** Regression test for b/431929674 */
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun isStackable_removeAllSubscriptions() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isStackable)
@@ -972,7 +971,7 @@ abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun isStackable_checksForTerrestrialConnections() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isStackable)
@@ -991,7 +990,7 @@ abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun isStackable_checksForNumberOfBars() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isStackable)

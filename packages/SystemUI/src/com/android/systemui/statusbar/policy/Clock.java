@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.policy;
 
 import android.annotation.NonNull;
-import android.app.StatusBarManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,7 +41,6 @@ import android.text.style.RelativeSizeSpan;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
-import android.view.View;
 import android.widget.TextView;
 
 import com.android.settingslib.Utils;
@@ -56,8 +54,6 @@ import com.android.systemui.plugins.DarkIconDispatcher.DarkReceiver;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
-import com.android.systemui.statusbar.CommandQueue;
-import com.android.systemui.statusbar.core.StatusBarRootModernization;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
@@ -74,7 +70,6 @@ import java.util.TimeZone;
 public class Clock extends TextView implements
         DemoModeCommandReceiver,
         Tunable,
-        CommandQueue.Callbacks,
         DarkReceiver {
 
     public static final String CLOCK_SECONDS = "clock_seconds";
@@ -86,7 +81,6 @@ public class Clock extends TextView implements
     private static final String VISIBILITY = "visibility";
 
     private final UserTracker mUserTracker;
-    private final CommandQueue mCommandQueue;
     private int mCurrentUserId;
 
     private boolean mClockVisibleByPolicy = true;
@@ -133,7 +127,6 @@ public class Clock extends TextView implements
 
     public Clock(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        mCommandQueue = Dependency.get(CommandQueue.class);
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.Clock,
@@ -210,7 +203,6 @@ public class Clock extends TextView implements
                     Dependency.get(Dependency.TIME_TICK_HANDLER), UserHandle.ALL);
             Dependency.get(TunerService.class).addTunable(this, CLOCK_SECONDS,
                     StatusBarIconController.ICON_HIDE_LIST);
-            mCommandQueue.addCallback(this);
             mUserTracker.addCallback(mUserChangedCallback, mContext.getMainExecutor());
             mCurrentUserId = mUserTracker.getUserId();
         }
@@ -222,9 +214,6 @@ public class Clock extends TextView implements
 
         // Make sure we update to the current time
         updateClock();
-        if (!StatusBarRootModernization.isEnabled()) {
-            updateClockVisibility();
-        }
         updateShowSeconds();
     }
 
@@ -243,7 +232,6 @@ public class Clock extends TextView implements
             mBroadcastDispatcher.unregisterReceiver(mIntentReceiver);
             mAttached = false;
             Dependency.get(TunerService.class).removeTunable(this);
-            mCommandQueue.removeCallback(this);
             mUserTracker.removeCallback(mUserChangedCallback);
         }
     }
@@ -284,41 +272,8 @@ public class Clock extends TextView implements
         }
     };
 
-    @Override
-    public void setVisibility(int visibility) {
-        if (!StatusBarRootModernization.isEnabled()) {
-            if (visibility == View.VISIBLE && !shouldBeVisible()) {
-                return;
-            }
-        }
-
-        super.setVisibility(visibility);
-    }
-
-    private void setClockVisibleByUser(boolean visible) {
-        StatusBarRootModernization.assertInLegacyMode();
-
-        mClockVisibleByUser = visible;
-        updateClockVisibility();
-    }
-
-    private void setClockVisibilityByPolicy(boolean visible) {
-        StatusBarRootModernization.assertInLegacyMode();
-
-        mClockVisibleByPolicy = visible;
-        updateClockVisibility();
-    }
-
     private boolean shouldBeVisible() {
         return mClockVisibleByPolicy && mClockVisibleByUser;
-    }
-
-    private void updateClockVisibility() {
-        StatusBarRootModernization.assertInLegacyMode();
-
-        boolean visible = shouldBeVisible();
-        int visibility = visible ? View.VISIBLE : View.GONE;
-        super.setVisibility(visibility);
     }
 
     final void updateClock() {
@@ -339,29 +294,6 @@ public class Clock extends TextView implements
         if (CLOCK_SECONDS.equals(key)) {
             mShowSeconds = TunerService.parseIntegerSwitch(newValue, false);
             updateShowSeconds();
-        } else if (!StatusBarRootModernization.isEnabled()) {
-            if (StatusBarIconController.ICON_HIDE_LIST.equals(key)) {
-                setClockVisibleByUser(
-                        !StatusBarIconController
-                                .getIconHideList(getContext(), newValue)
-                                .contains("clock"));
-                updateClockVisibility();
-            }
-        }
-    }
-
-    @Override
-    public void disable(int displayId, int state1, int state2, boolean animate) {
-        if (StatusBarRootModernization.isEnabled()) {
-            return;
-        }
-
-        if (displayId != getDisplay().getDisplayId()) {
-            return;
-        }
-        boolean clockVisibleByPolicy = (state1 & StatusBarManager.DISABLE_CLOCK) == 0;
-        if (clockVisibleByPolicy != mClockVisibleByPolicy) {
-            setClockVisibilityByPolicy(clockVisibleByPolicy);
         }
     }
 

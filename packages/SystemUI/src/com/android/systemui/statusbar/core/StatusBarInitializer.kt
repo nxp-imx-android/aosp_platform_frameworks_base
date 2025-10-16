@@ -15,11 +15,9 @@
  */
 package com.android.systemui.statusbar.core
 
-import android.app.Fragment
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
-import com.android.systemui.fragments.FragmentHostManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewUpdatedListener
 import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
@@ -27,14 +25,12 @@ import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRep
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions
 import com.android.systemui.statusbar.phone.PhoneStatusBarView
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
-import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import javax.inject.Provider
 
 /**
  * Responsible for creating the status bar window and initializing the root components of that
@@ -43,13 +39,6 @@ import javax.inject.Provider
 interface StatusBarInitializer : CoreStartable {
 
     var statusBarViewUpdatedListener: OnStatusBarViewUpdatedListener?
-
-    /**
-     * Creates the status bar window and root views, and initializes the component.
-     *
-     * TODO(b/277764509): Initialize the status bar via [CoreStartable#start].
-     */
-    fun initializeStatusBar()
 
     /** Called when the status bar associated with this instance is being destroyed. */
     fun stop()
@@ -80,7 +69,6 @@ interface StatusBarInitializer : CoreStartable {
         fun create(
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-            collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
             statusBarRootFactory: StatusBarRootFactory,
             componentFactory: HomeStatusBarComponent.Factory,
         ): StatusBarInitializer
@@ -92,7 +80,6 @@ class StatusBarInitializerImpl
 constructor(
     @Assisted private val statusBarWindowController: StatusBarWindowController,
     @Assisted private val statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-    @Assisted private val collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
     @Assisted private val statusBarRootFactory: StatusBarRootFactory,
     @Assisted private val componentFactory: HomeStatusBarComponent.Factory,
     private val lifecycleListeners: Set<@JvmSuppressWildcards StatusBarViewLifecycleListener>,
@@ -115,24 +102,8 @@ constructor(
             }
         }
 
+    /** Stand up the [PhoneStatusBarView] in a compose root */
     override fun start() {
-        doStart()
-    }
-
-    override fun initializeStatusBar() {
-        StatusBarRootModernization.assertInLegacyMode()
-        doStart()
-    }
-
-    private fun doStart() {
-        if (StatusBarRootModernization.isEnabled) doComposeStart() else doLegacyStart()
-    }
-
-    /**
-     * Stand up the [PhoneStatusBarView] in a compose root. There will be no
-     * [CollapsedStatusBarFragment] in this mode
-     */
-    private fun doComposeStart() {
         initialized = true
         val statusBarRoot =
             statusBarRootFactory.create(statusBarWindowController.backgroundView as ViewGroup) { cv
@@ -164,42 +135,6 @@ constructor(
         windowBackgroundView.addView(statusBarRoot)
     }
 
-    private fun doLegacyStart() {
-        initialized = true
-        statusBarWindowController.fragmentHostManager
-            .addTagListener(
-                CollapsedStatusBarFragment.TAG,
-                object : FragmentHostManager.FragmentListener {
-                    override fun onFragmentViewCreated(tag: String, fragment: Fragment) {
-                        val statusBarFragment = fragment as CollapsedStatusBarFragment
-                        if (statusBarFragment.homeStatusBarComponent == null) {
-                            return
-                        }
-                        component = fragment.homeStatusBarComponent
-                        statusBarViewUpdatedListener?.onStatusBarViewUpdated(
-                            component!!.phoneStatusBarViewController,
-                            component!!.phoneStatusBarTransitions,
-                        )
-                        lifecycleListeners.forEach { listener ->
-                            listener.onStatusBarViewInitialized(component!!)
-                        }
-                    }
-
-                    override fun onFragmentViewDestroyed(tag: String?, fragment: Fragment?) {
-                        // nop
-                    }
-                },
-            )
-            .fragmentManager
-            .beginTransaction()
-            .replace(
-                R.id.status_bar_container,
-                collapsedStatusBarFragmentProvider.get(),
-                CollapsedStatusBarFragment.TAG,
-            )
-            .commit()
-    }
-
     override fun stop() {
         StatusBarConnectedDisplays.unsafeAssertInNewMode()
         val component = this.component ?: return
@@ -211,7 +146,6 @@ constructor(
         override fun create(
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-            collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
             statusBarRootFactory: StatusBarRootFactory,
             componentFactory: HomeStatusBarComponent.Factory,
         ): StatusBarInitializerImpl

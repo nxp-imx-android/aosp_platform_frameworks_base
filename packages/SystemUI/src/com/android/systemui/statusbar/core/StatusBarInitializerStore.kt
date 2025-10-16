@@ -63,7 +63,6 @@ constructor(
         return factory.create(
             statusBarWindowController,
             statusBarModePerDisplayRepository,
-            displaySubComponent.statusBarFragmentProvider,
             displaySubComponent.statusBarRootFactory,
             displaySubComponent.homeStatusBarComponentFactory,
         )

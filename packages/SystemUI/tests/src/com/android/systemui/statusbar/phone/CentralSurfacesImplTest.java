@@ -185,7 +185,6 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
-import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment;
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent;
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory;
 import com.android.systemui.statusbar.policy.BatteryController;
@@ -230,8 +229,6 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.inject.Provider;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -312,7 +309,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock private AutoHideController mAutoHideController;
     @Mock private StatusBarWindowController mStatusBarWindowController;
     @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
-    @Mock private Provider<CollapsedStatusBarFragment> mCollapsedStatusBarFragmentProvider;
     @Mock private StatusBarWindowStateController mStatusBarWindowStateController;
     @Mock private SystemUIDisplaySubcomponent mSystemUIDisplaySubcomponent;
     @Mock
@@ -543,7 +539,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 new StatusBarInitializerImpl(
                         mStatusBarWindowController,
                         mStatusBarModePerDisplayRepository,
-                        mCollapsedStatusBarFragmentProvider,
                         mock(StatusBarRootFactory.class),
                         mock(HomeStatusBarComponent.Factory.class),
                         emptySet()),

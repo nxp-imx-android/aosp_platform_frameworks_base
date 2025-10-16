@@ -17,17 +17,14 @@
 package com.android.systemui.statusbar.core
 
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
-import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import com.android.systemui.statusbar.window.StatusBarWindowController
-import javax.inject.Provider
 
 class FakeStatusBarInitializerFactory : StatusBarInitializer.Factory {
     override fun create(
         statusBarWindowController: StatusBarWindowController,
         statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
-        collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
         statusBarRootFactory: StatusBarRootFactory,
         componentFactory: HomeStatusBarComponent.Factory,
     ): StatusBarInitializer = FakeStatusBarInitializer()
