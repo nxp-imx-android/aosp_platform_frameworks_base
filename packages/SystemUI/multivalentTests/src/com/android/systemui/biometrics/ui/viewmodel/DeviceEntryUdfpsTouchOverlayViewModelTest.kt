@@ -23,6 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
@@ -136,12 +137,28 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         }
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @EnableSceneContainer
     @Test
-    fun shouldHandleTouchesTrue_duringSecureLockDeviceBiometricAuth() =
+    fun shouldHandleTouchesTrue_duringSecureLockDeviceBiometricAuth_enableSceneContainer() =
         kosmos.runTest {
             val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
 
             deviceEntryIconViewModelVisible(false, kosmos.testScope)
+            fakeDeviceEntryIconViewModelTransition.setDeviceEntryParentViewAlpha(0f)
+
+            fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+            fakeSecureLockDeviceRepository.onSuccessfulPrimaryAuth()
+
+            assertThat(shouldHandleTouches).isTrue()
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @DisableSceneContainer
+    @Test
+    fun shouldHandleTouchesTrue_duringSecureLockDeviceBiometricAuth_disableSceneContainer() =
+        kosmos.runTest {
+            val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
+
             fakeDeviceEntryIconViewModelTransition.setDeviceEntryParentViewAlpha(0f)
 
             fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
