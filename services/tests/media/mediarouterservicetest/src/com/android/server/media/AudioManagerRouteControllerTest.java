@@ -258,7 +258,7 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PREFERRED_DEVICE_FIXES)
+    @EnableFlags(Flags.FLAG_ENABLE_REMOVE_PREFERRED_DEVICE_FIXES)
     public void onAudioDevicesAdded_withNonSinkDevice_doesNotRemovePreferredDevice() {
         setUpControllerUnderTest(/* useMockBluetoothDeviceRoutesManager= */ false);
         addAvailableAudioDeviceInfo(
@@ -288,7 +288,7 @@ public class AudioManagerRouteControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_PREFERRED_DEVICE_FIXES)
+    @EnableFlags(Flags.FLAG_ENABLE_REMOVE_PREFERRED_DEVICE_FIXES)
     public void onAudioDevicesAdded_whenNoPreferredDeviceSet_doesNotRemovePreferredDevice() {
         setUpControllerUnderTest(false);
 
