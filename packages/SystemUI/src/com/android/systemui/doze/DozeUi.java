@@ -18,6 +18,9 @@ package com.android.systemui.doze;
 
 import static com.android.systemui.doze.DozeMachine.State.DOZE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_PAUSED;
+import static com.android.systemui.doze.DozeMachine.State.DOZE_SUSPEND_TRIGGERS;
+import static com.android.systemui.doze.DozeMachine.State.FINISH;
+import static com.android.systemui.Flags.dozeTimeTickInvalidStateCheck;
 
 import android.app.AlarmManager;
 import android.content.Context;
@@ -27,6 +30,7 @@ import android.text.format.Formatter;
 import android.util.Log;
 
 import androidx.annotation.AnyThread;
+import androidx.annotation.VisibleForTesting;
 
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -37,6 +41,7 @@ import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.wakelock.WakeLock;
 
 import java.util.Calendar;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -51,6 +56,7 @@ public class DozeUi implements DozeMachine.Part {
     private final Handler mHandler;
     private final WakeLock mWakeLock;
     private DozeMachine mMachine;
+    private DozeMachine.State mState = null;
     private final AlarmTimeout mTimeTicker;
     private final boolean mCanAnimateTransition;
     private final DozeParameters mDozeParameters;
@@ -59,6 +65,8 @@ public class DozeUi implements DozeMachine.Part {
     private volatile long mLastTimeTickElapsed = 0;
     // If time tick is scheduled and there's not a pending runnable to cancel:
     private volatile boolean mTimeTickScheduled;
+    private final Set<DozeMachine.State> invalidTimeTickStates =
+            Set.of(DOZE, DOZE_AOD_PAUSED, DOZE_SUSPEND_TRIGGERS, FINISH);
     private final Runnable mCancelTimeTickerRunnable =  new Runnable() {
         @Override
         public void run() {
@@ -126,6 +134,7 @@ public class DozeUi implements DozeMachine.Part {
 
     @Override
     public void transitionTo(DozeMachine.State oldState, DozeMachine.State newState) {
+        mState = newState;
         switch (newState) {
             case DOZE_AOD:
             case DOZE_AOD_DOCKED:
@@ -180,10 +189,16 @@ public class DozeUi implements DozeMachine.Part {
         }
     }
 
-    private void scheduleTimeTick() {
+    @VisibleForTesting
+    void scheduleTimeTick() {
         if (mTimeTickScheduled) {
             return;
         }
+        if (dozeTimeTickInvalidStateCheck() && invalidTimeTickStates.contains(mState)) {
+            mDozeLog.traceTimeTickIgnored(mState);
+            return;
+        }
+
         mTimeTickScheduled = true;
 
         long time = System.currentTimeMillis();
