@@ -195,6 +195,7 @@ android_app {
         "power_flags",
         "display_flags",
         "android.os.profiling.anomaly.flags-aconfig",
+        "com.android.media.flags.mediasession-aconfig",
     ],
 }
 

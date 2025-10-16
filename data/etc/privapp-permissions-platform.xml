@@ -548,6 +548,8 @@ applications that come with the platform
         <permission name="android.permission.MEDIA_CONTENT_CONTROL"/>
         <permission name="android.permission.MODIFY_AUDIO_ROUTING"/>
         <permission name="android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED"/>
+        <!-- Permission required for CTS test - MediaSessionTest -->
+        <permission name="android.permission.OVERRIDE_MEDIA_SESSION_OWNER"/>
         <!-- Permission required for CTS test - CallAudioInterceptionTest -->
         <permission name="android.permission.CALL_AUDIO_INTERCEPTION"/>
         <!-- Permission required for CTS test - CtsAttributionSourceTestCases -->

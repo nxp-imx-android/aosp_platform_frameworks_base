@@ -718,6 +718,10 @@
     <uses-permission android:name="android.permission.MEDIA_ROUTING_CONTROL" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_ROUTING" />
 
+    <!-- Permission required for CTS test - MediaSessionTest -->
+    <uses-permission android:name="android.permission.OVERRIDE_MEDIA_SESSION_OWNER"
+        android:featureFlag="com.android.media.mediasession.flags.override_media_session_owner" />
+
     <!-- Permission required for CTS test - SoundDoseHelperTest -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED" />
 

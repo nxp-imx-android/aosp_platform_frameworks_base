@@ -245,6 +245,7 @@ package android {
     field public static final String NFC = "android.permission.NFC";
     field public static final String NFC_PREFERRED_PAYMENT_INFO = "android.permission.NFC_PREFERRED_PAYMENT_INFO";
     field public static final String NFC_TRANSACTION_EVENT = "android.permission.NFC_TRANSACTION_EVENT";
+    field @FlaggedApi("com.android.media.mediasession.flags.override_media_session_owner") public static final String OVERRIDE_MEDIA_SESSION_OWNER = "android.permission.OVERRIDE_MEDIA_SESSION_OWNER";
     field public static final String OVERRIDE_WIFI_CONFIG = "android.permission.OVERRIDE_WIFI_CONFIG";
     field public static final String PACKAGE_USAGE_STATS = "android.permission.PACKAGE_USAGE_STATS";
     field @Deprecated public static final String PERSISTENT_ACTIVITY = "android.permission.PERSISTENT_ACTIVITY";
@@ -28097,6 +28098,7 @@ package android.media.session {
   public final class MediaSession {
     ctor public MediaSession(@NonNull android.content.Context, @NonNull String);
     ctor public MediaSession(@NonNull android.content.Context, @NonNull String, @Nullable android.os.Bundle);
+    ctor @FlaggedApi("com.android.media.mediasession.flags.override_media_session_owner") @RequiresPermission(android.Manifest.permission.OVERRIDE_MEDIA_SESSION_OWNER) public MediaSession(@NonNull android.content.Context, @NonNull String, @Nullable android.os.Bundle, @NonNull String);
     method @NonNull public android.media.session.MediaController getController();
     method @NonNull public android.media.session.MediaSessionManager.RemoteUserInfo getCurrentControllerInfo();
     method @NonNull public android.media.session.MediaSession.Token getSessionToken();
@@ -28166,16 +28168,21 @@ package android.media.session {
   public final class MediaSessionManager {
     method public void addOnActiveSessionsChangedListener(@NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener, @Nullable android.content.ComponentName);
     method public void addOnActiveSessionsChangedListener(@NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener, @Nullable android.content.ComponentName, @Nullable android.os.Handler);
+    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public void addOnActiveSessionsForPackageChangedListener(@NonNull java.util.concurrent.Executor, @NonNull String, @NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
+    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public void addOnActiveSessionsForPackageChangedListener(@NonNull java.util.concurrent.Executor, @NonNull String, @Nullable android.content.ComponentName, @NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
     method public void addOnMediaKeyEventSessionChangedListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.session.MediaSessionManager.OnMediaKeyEventSessionChangedListener);
     method @Deprecated @FlaggedApi("com.android.media.mediasession.flags.deprecate_platform_mediasession2_apis") public void addOnSession2TokensChangedListener(@NonNull android.media.session.MediaSessionManager.OnSession2TokensChangedListener);
     method @Deprecated @FlaggedApi("com.android.media.mediasession.flags.deprecate_platform_mediasession2_apis") public void addOnSession2TokensChangedListener(@NonNull android.media.session.MediaSessionManager.OnSession2TokensChangedListener, @NonNull android.os.Handler);
     method @NonNull public java.util.List<android.media.session.MediaController> getActiveSessions(@Nullable android.content.ComponentName);
+    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @NonNull @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public java.util.List<android.media.session.MediaSession.Token> getActiveSessionsForPackage(@NonNull String);
+    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @NonNull @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public java.util.List<android.media.session.MediaSession.Token> getActiveSessionsForPackage(@NonNull String, @Nullable android.content.ComponentName);
     method @Nullable public android.media.session.MediaSession.Token getMediaKeyEventSession();
     method @NonNull public String getMediaKeyEventSessionPackageName();
     method @Deprecated @FlaggedApi("com.android.media.mediasession.flags.deprecate_platform_mediasession2_apis") @NonNull public java.util.List<android.media.Session2Token> getSession2Tokens();
     method public boolean isTrustedForMediaControl(@NonNull android.media.session.MediaSessionManager.RemoteUserInfo);
     method @Deprecated public void notifySession2Created(@NonNull android.media.Session2Token);
     method public void removeOnActiveSessionsChangedListener(@NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
+    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") public void removeOnActiveSessionsForPackageChangedListener(@NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
     method public void removeOnMediaKeyEventSessionChangedListener(@NonNull android.media.session.MediaSessionManager.OnMediaKeyEventSessionChangedListener);
     method @Deprecated @FlaggedApi("com.android.media.mediasession.flags.deprecate_platform_mediasession2_apis") public void removeOnSession2TokensChangedListener(@NonNull android.media.session.MediaSessionManager.OnSession2TokensChangedListener);
   }
