@@ -734,6 +734,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-pip-PipInDesktopWindowingTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.pip.PipInDesktopWindowingTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
