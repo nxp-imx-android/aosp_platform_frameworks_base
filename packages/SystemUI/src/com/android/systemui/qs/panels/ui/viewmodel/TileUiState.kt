@@ -26,6 +26,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.state.ToggleableState
 import com.android.systemui.plugins.qs.QSTile
+import com.android.systemui.qs.tileimpl.QSTileImpl.DrawableIconWithRes
 import com.android.systemui.qs.tileimpl.SubtitleArrayMapping
 import com.android.systemui.res.R
 import java.util.function.Supplier
@@ -146,7 +147,9 @@ fun QSTile.State.toUiState(resources: Resources): TileUiState {
 
 fun QSTile.State.toIconProvider(): IconProvider {
     return when {
-        icon != null -> IconProvider.ConstantIcon(icon)
+        // Provide a copy of the icon if it's preloaded as a DrawableIconWithRes to avoid the same
+        // drawable being used in both QS and QQS, which can lead to weird behaviors
+        icon != null -> IconProvider.ConstantIcon((icon as? DrawableIconWithRes)?.copy() ?: icon)
         iconSupplier != null -> IconProvider.IconSupplier(iconSupplier)
         else -> IconProvider.Empty
     }
