@@ -26,7 +26,7 @@ import com.android.internal.content.PackageMonitor;
  * @hide
  */
 final class ContextComponentMonitor extends PackageMonitor {
-    private static final String TAG = "PersonalContext";
+    private static final String TAG = "ContextComponentMonitor";
     private final ContextComponentManager mComponentManager;
 
     ContextComponentMonitor(ContextComponentManager componentManager) {

@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
 
@@ -64,7 +65,7 @@ class ContextComponentManager {
     public static final String ACTION_RENDERER_SERVICE =
             "android.service.personalcontext.RendererService";
 
-    private static final String TAG = "PersonalContext";
+    private static final String TAG = "ContextComponentManager";
 
     private final Context mContext;
 
@@ -229,7 +230,7 @@ class ContextComponentManager {
         for (Component component : components) {
             fout.write("  " + component.toString() + "\n");
         }
-        fout.write(String.format("  (%s configured components)\n", components.size()));
+        fout.write(TextUtils.formatSimple("  (%s configured components)\n", components.size()));
         fout.write("\n");
     }
 }
