@@ -643,11 +643,6 @@ public class DisplayModeDirector {
     }
 
     @VisibleForTesting
-    void injectHasArrSupport(SparseBooleanArray hasArrSupport) {
-        mHasArrSupport = hasArrSupport;
-    }
-
-    @VisibleForTesting
     void injectSupportedModesByDisplay(SparseArray<Display.Mode[]> supportedModesByDisplay) {
         mSupportedModesByDisplay = supportedModesByDisplay;
     }
@@ -1199,14 +1194,12 @@ public class DisplayModeDirector {
             // used to predict if we're going to be doing frequent refresh rate switching, and if
             // so, enable the brightness observer. The logic here is more complicated and fragile
             // than necessary, and we should improve it. See b/156304339 for more info.
-            if (!isVrrSupportedLocked(displayId)) {
-                Vote peakVote = peakRefreshRate == 0f
-                        ? null
-                        : Vote.forPhysicalRefreshRates(0f,
-                                Math.max(minRefreshRate, peakRefreshRate));
-                mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_PEAK_REFRESH_RATE,
-                        peakVote);
-            }
+            Vote peakVote = peakRefreshRate == 0f
+                    ? null
+                    : Vote.forPhysicalRefreshRates(0f,
+                            Math.max(minRefreshRate, peakRefreshRate));
+            mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_PEAK_REFRESH_RATE,
+                    peakVote);
             Vote peakRenderVote = peakRefreshRate == 0f
                     ? null
                     : Vote.forRenderFrameRates(0f, Math.max(minRefreshRate, peakRefreshRate));
