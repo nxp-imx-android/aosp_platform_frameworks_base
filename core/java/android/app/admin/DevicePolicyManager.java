@@ -15686,7 +15686,7 @@ public class DevicePolicyManager {
     /**
      * @hide
      * Force update user setup completed status for the given {@code userId}.
-     * @throws {@link SecurityException} if the caller has no
+     * @throws SecurityException if the caller has no
      *         {@code android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS}.
      */
     @TestApi

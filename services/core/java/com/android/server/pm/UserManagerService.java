@@ -9198,7 +9198,7 @@ public class UserManagerService extends IUserManager.Stub {
      * @param restriction restrictions to check
      * @param userId id of the user
      *
-     * @throws {@link android.os.UserManager.CheckedUserOperationException} if user has any of the
+     * @throws android.os.UserManager.CheckedUserOperationException if user has any of the
      *      specified restrictions
      */
     private void enforceUserRestriction(String restriction, @UserIdInt int userId, String message)
