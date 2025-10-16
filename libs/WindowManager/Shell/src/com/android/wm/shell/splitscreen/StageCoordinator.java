@@ -3146,7 +3146,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         final RunningTaskInfo triggerTask = request.getTriggerTask();
         if (triggerTask == null) {
             boolean splitDisplayRotationAllowed = !enableNonDefaultDisplaySplit()
-                    || mSplitRootTaskInfo.displayId == DEFAULT_DISPLAY;
+                    || (mSplitRootTaskInfo != null &&
+                    mSplitRootTaskInfo.displayId == DEFAULT_DISPLAY);
             if (isSplitActive() && splitDisplayRotationAllowed) {
                 ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "handleRequest: transition=%d display rotation",
                         request.getDebugId());
