@@ -192,11 +192,7 @@ class AppHeaderController(
                 .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
     private val dimensions =
-        if (DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue) {
-            LargeAppHeaderDimensions(decorWindowContext.resources)
-        } else {
-            DefaultAppHeaderDimensions(decorWindowContext.resources)
-        }
+        LargeAppHeaderDimensions(decorWindowContext.resources)
 
     private var isMaximizeMenuHovered = false
     private var isAppHeaderMaximizeButtonHovered = false

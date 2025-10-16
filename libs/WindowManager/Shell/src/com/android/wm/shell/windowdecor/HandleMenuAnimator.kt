@@ -129,10 +129,7 @@ class HandleMenuAnimator(
      * surface.
      */
     fun animateCaptionHeaderExpandToOpen(headerView: View) {
-        if (
-            DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue &&
-                DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue
-        ) {
+        if (DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue) {
             setupHeaderAnimator(headerView, true /* expand */)
         } else {
             prepareMenuForAnimation()
@@ -233,10 +230,7 @@ class HandleMenuAnimator(
      * @param after runs after animation finishes.
      */
     fun animateCollapseIntoHeaderClose(headerView: View, after: () -> Unit) {
-        if (
-            DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue &&
-                DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue
-        ) {
+        if (DesktopExperienceFlags.ENABLE_DRAWING_APP_HANDLE.isTrue) {
             setupHeaderAnimator(headerView, false /* expand */)
         } else {
             appInfoPillCollapse()

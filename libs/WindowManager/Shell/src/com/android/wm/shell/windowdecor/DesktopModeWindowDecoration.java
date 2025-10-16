@@ -1040,9 +1040,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         return Unit.INSTANCE;
                     },
                     mDesktopModeUiEventLogger,
-                    /* dimensions = */ DesktopExperienceFlags.ENABLE_TALL_APP_HEADERS.isTrue()
-                            ? new LargeAppHeaderDimensions(mDecorWindowContext.getResources())
-                            : new DefaultAppHeaderDimensions(mDecorWindowContext.getResources())
+                    /* dimensions= */ new LargeAppHeaderDimensions(
+                            mDecorWindowContext.getResources())
                     );
         }
         throw new IllegalArgumentException("Unexpected layout resource id");

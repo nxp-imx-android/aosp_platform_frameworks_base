@@ -1194,28 +1194,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_TALL_APP_HEADERS)
-    public void updateRelayoutParams_header_hasDisplayCutout_ignoreCutoutInCaptionHeight() {
-        // Have cutout be larger than desktop header so it would affect the size if used
-        final int desktopHeaderHeight = mContext.getResources().getDimensionPixelSize(
-                R.dimen.desktop_view_default_header_height);
-        final int cutoutHeight = desktopHeaderHeight + 100;
-        final DisplayCutout cutout = createDisplayCutout(cutoutHeight);
-        when(mDefaultDisplay.getCutout()).thenReturn(cutout);
-
-        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
-        createWindowDecoration(taskInfo, /* relayout= */ true);
-
-        ArgumentCaptor<WindowManager.LayoutParams> captor = ArgumentCaptor.forClass(
-                WindowManager.LayoutParams.class);
-        verify(mMockWindowDecorViewHost).updateView(any(), captor.capture(), any(), any(), any());
-        WindowManager.LayoutParams lp = captor.getValue();
-        assertThat(lp.height).isEqualTo(desktopHeaderHeight);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TALL_APP_HEADERS)
     public void updateRelayoutParams_largeHeader_hasDisplayCutout_ignoreCutoutInCaptionHeight() {
         // Have cutout be larger than desktop header so it would affect the size if used
         final int desktopHeaderHeight = mContext.getResources().getDimensionPixelSize(
