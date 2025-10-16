@@ -16,34 +16,40 @@
 
 package com.android.systemui.qs.tiles.impl.cell.domain.interactor
 
+import android.annotation.StringRes
 import android.content.Context
 import android.os.UserHandle
+import android.text.Html
 import com.android.settingslib.graph.SignalDrawable
 import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.qs.flags.QsSplitInternetTile
-import com.android.systemui.qs.pipeline.shared.QSPipelineFlagsRepository
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
+import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MobileDataTileDataInteractor
 @Inject
 constructor(
     @Application private val context: Context,
     private val mobileIconsInteractor: MobileIconsInteractor,
-    private val qsPipelineFlagsRepository: QSPipelineFlagsRepository,
+    mobileContextProvider: MobileContextProvider,
 ) : QSTileDataInteractor<MobileDataTileModel> {
     private val mobileDataLabel: String =
         context.getString(R.string.quick_settings_cellular_detail_title)
@@ -52,6 +58,96 @@ constructor(
         user: UserHandle,
         triggers: Flow<DataUpdateTrigger>,
     ): Flow<MobileDataTileModel> = tileData()
+
+    private val mobileDataContentName: Flow<CharSequence?> =
+        mobileIconsInteractor.activeDataIconInteractor.flatMapLatest {
+            if (it == null) {
+                flowOf(null)
+            } else {
+                combine(it.isRoaming, it.networkTypeIconGroup) { isRoaming, networkTypeIconGroup ->
+                    val mobileContext =
+                        mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
+                    val cd = loadString(networkTypeIconGroup.contentDescription, mobileContext)
+                    if (isRoaming) {
+                        val roaming = mobileContext.getString(R.string.data_connection_roaming)
+                        if (cd != null) {
+                            mobileContext.getString(R.string.mobile_data_text_format, roaming, cd)
+                        } else {
+                            roaming
+                        }
+                    } else {
+                        cd
+                    }
+                }
+            }
+        }
+
+    private val mobileDescriptionFlow: Flow<CharSequence?> =
+        mobileIconsInteractor.activeDataIconInteractor.flatMapLatest { it ->
+            it?.isDataConnected?.flatMapLatest { isConnected ->
+                if (!isConnected) {
+                    flowOf(null)
+                } else {
+                    combine(it.networkName, it.signalLevelIcon, mobileDataContentName) {
+                            networkNameModel,
+                            signalIcon,
+                            dataContentDescription ->
+                            Triple(networkNameModel, signalIcon, dataContentDescription)
+                        }
+                        .mapLatestConflated { (networkNameModel, signalIcon, dataContentDescription)
+                            ->
+                            when (signalIcon) {
+                                is SignalIconModel.Cellular -> {
+                                    mobileDataContentConcat(
+                                        networkNameModel.name,
+                                        dataContentDescription,
+                                    )
+                                }
+
+                                is SignalIconModel.Satellite -> {
+                                    val satelliteDescription =
+                                        signalIcon.icon.contentDescription?.loadContentDescription(
+                                            context
+                                        )
+                                    if (satelliteDescription.isNullOrBlank()) {
+                                        null
+                                    } else {
+                                        satelliteDescription
+                                    }
+                                }
+                            }
+                        }
+                }
+            } ?: flowOf(null)
+        }
+
+    private fun mobileDataContentConcat(
+        networkName: String?,
+        dataContentDescription: CharSequence?,
+    ): CharSequence {
+        if (dataContentDescription == null) {
+            return networkName ?: ""
+        }
+        if (networkName == null) {
+            return Html.fromHtml(dataContentDescription.toString(), 0)
+        }
+
+        return Html.fromHtml(
+            context.getString(
+                R.string.mobile_carrier_text_format,
+                networkName,
+                dataContentDescription,
+            ),
+            0,
+        )
+    }
+
+    private fun loadString(@StringRes resId: Int, context: Context): CharSequence? =
+        if (resId != 0) {
+            context.getString(resId)
+        } else {
+            null
+        }
 
     fun tileData(): Flow<MobileDataTileModel> =
         mobileIconsInteractor.activeDataIconInteractor.flatMapLatest {
@@ -70,8 +166,10 @@ constructor(
                         )
                     )
                 } else {
-                    combine(it.isDataEnabled, it.signalLevelIcon) { isDataEnabled, signalLevelIcon
-                        ->
+                    combine(it.isDataEnabled, it.signalLevelIcon, mobileDescriptionFlow) {
+                        isDataEnabled,
+                        signalLevelIcon,
+                        description ->
                         val icon =
                             if (isDataEnabled) {
                                 when (signalLevelIcon) {
@@ -106,6 +204,7 @@ constructor(
                             isSimActive = true,
                             isEnabled = isDataEnabled,
                             icon = icon,
+                            secondaryLabel = description,
                         )
                     }
                 }

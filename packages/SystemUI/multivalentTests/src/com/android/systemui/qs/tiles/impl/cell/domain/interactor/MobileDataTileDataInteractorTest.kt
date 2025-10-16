@@ -37,10 +37,10 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.qs.flags.QsSplitInternetTile
-import com.android.systemui.qs.pipeline.shared.pipelineFlagsRepository
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
@@ -52,18 +52,19 @@ import com.android.systemui.statusbar.policy.data.repository.userSetupRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.CarrierConfigTracker
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-@OptIn(ExperimentalCoroutinesApi::class)
 class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
@@ -80,7 +81,6 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
     private val mobileConnectionsRepository = kosmos.mobileConnectionsRepository
     private val userSetupRepo = kosmos.userSetupRepository
     private val featureFlags = kosmos.featureFlagsClassic
-    private val pipelineFlagsRepository = kosmos.pipelineFlagsRepository
     private val carrierConfigTracker: CarrierConfigTracker = mock()
 
     // Real MobileIconsInteractor, fed by fakes
@@ -96,8 +96,12 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
             featureFlags,
         )
 
+    private val mobileContextProvider: MobileContextProvider = mock {
+        on { getMobileContextForSub(anyInt(), any()) } doReturn context
+    }
+
     private var underTest: MobileDataTileDataInteractor =
-        MobileDataTileDataInteractor(context, mobileIconsInteractor, pipelineFlagsRepository)
+        MobileDataTileDataInteractor(context, mobileIconsInteractor, mobileContextProvider)
 
     @Before
     fun setUp() {
