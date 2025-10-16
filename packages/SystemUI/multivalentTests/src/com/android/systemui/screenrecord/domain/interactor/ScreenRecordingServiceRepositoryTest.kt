@@ -247,7 +247,7 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testSavingRecording_emitsValues() =
         kosmos.runTest {
-            val recordingStatus: List<ScreenRecording> by collectValues(underTest.screenRecording)
+            val recordingStatus: List<ScreenRecording> by collectValues(underTest.screenRecordings)
             underTest.startRecording()
             underTest.stopRecording(StopReason.STOP_HOST_APP)
 

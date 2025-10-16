@@ -37,7 +37,7 @@ class ScreenRecordingServiceInteractor
 constructor(private val repository: ScreenRecordingServiceRepository) {
 
     val status: StateFlow<ScreenRecordingStatus> = repository.status
-    val screenRecordings: Flow<ScreenRecording> = repository.screenRecording
+    val screenRecordings: Flow<ScreenRecording> = repository.screenRecordings
 
     /** Starts the recording after the [delay]. */
     fun startRecordingDelayed(

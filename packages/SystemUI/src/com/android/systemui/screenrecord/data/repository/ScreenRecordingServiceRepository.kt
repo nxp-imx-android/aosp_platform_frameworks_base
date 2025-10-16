@@ -146,7 +146,7 @@ constructor(
         }
 
     private val _screenRecording = MutableStateFlow<ScreenRecording?>(null)
-    val screenRecording: Flow<ScreenRecording> = _screenRecording.filterNotNull()
+    val screenRecordings: Flow<ScreenRecording> = _screenRecording.filterNotNull()
 
     init {
         combine(
