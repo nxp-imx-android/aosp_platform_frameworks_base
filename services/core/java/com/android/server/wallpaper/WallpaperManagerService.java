@@ -22,7 +22,6 @@ import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static android.app.Flags.alwaysRebindUserSetWallpaper;
 import static android.app.Flags.notifyKeyguardEvents;
-import static android.app.Flags.updateRecentsFromSystem;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -367,13 +366,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
 
                     // If this was the system wallpaper, rebind...
                     wallpaper.mBindSource = BindSource.SET_STATIC;
-                    if (updateRecentsFromSystem()) {
-                        bindWallpaperDescriptionLocked(description, /* force= */ true,
-                                /* fromUser= */ false, wallpaper, callback);
-                    } else {
-                        bindWallpaperComponentLocked(mImageWallpaper, /* force= */ true,
-                                /* fromUser= */ false, wallpaper, callback);
-                    }
+                    bindWallpaperDescriptionLocked(description, /* force= */ true,
+                            /* fromUser= */ false, wallpaper, callback);
                 }
 
                 if (lockWallpaperChanged) {
@@ -393,13 +387,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     };
 
                     wallpaper.mBindSource = BindSource.SET_STATIC;
-                    if (updateRecentsFromSystem()) {
-                        bindWallpaperDescriptionLocked(description, /* force= */ true,
-                                /* fromUser= */ false, wallpaper, callback);
-                    } else {
-                        bindWallpaperComponentLocked(mImageWallpaper, /* force= */ true,
-                                /* fromUser= */ false, wallpaper, callback);
-                    }
+                    bindWallpaperDescriptionLocked(description, /* force= */ true,
+                            /* fromUser= */ false, wallpaper, callback);
                 } else if (isAppliedToLock) {
                     // This is system-plus-lock: we need to wipe the lock bookkeeping since
                     // we're falling back to displaying the system wallpaper there.
@@ -2485,7 +2474,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
 
     @Override
     public void setWallpaperDescriptionId(String newId, int which, int userId) {
-        if (!updateRecentsFromSystem()) return;
         synchronized (mLock) {
             WallpaperData wallpaper = (which == FLAG_LOCK) ? mLockWallpaperMap.get(userId)
                     : mWallpaperMap.get(userId);

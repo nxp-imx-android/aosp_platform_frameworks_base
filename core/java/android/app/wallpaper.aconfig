@@ -37,16 +37,6 @@ flag {
 }
 
 flag {
-  name: "update_recents_from_system"
-  namespace: "systemui"
-  description: "Update recent wallpapers list more reliably. Only effective after rebooting."
-  bug: "395679036"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "always_rebind_user_set_wallpaper"
     namespace: "systemui"
     description: "Always rebind wallpapers after a change via WallpaperManager API"
