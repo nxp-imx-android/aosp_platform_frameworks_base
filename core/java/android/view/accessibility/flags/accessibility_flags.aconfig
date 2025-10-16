@@ -65,6 +65,14 @@ flag {
 }
 
 flag {
+    name: "a11y_text_change_types_api"
+    namespace: "accessibility"
+    description: "Enables sending specific text change types (e.g., in composition, committed by IME) in AccessibilityEvent"
+    bug: "436338406"
+    is_exported: true
+}
+
+flag {
     name: "braille_display_hid"
     namespace: "accessibility"
     is_exported: true
