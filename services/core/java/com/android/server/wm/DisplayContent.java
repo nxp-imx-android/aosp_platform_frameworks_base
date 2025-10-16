@@ -2004,6 +2004,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 // orientation activity becomes the current top.
                 setFixedRotationLaunchingAppUnchecked(r,
                         r.getWindowConfiguration().getDisplayRotation());
+                // If there is no collecting transition, return false to let updateOrientation
+                // check if there should be a display orientation change transition to consume the
+                // fixed rotation launching app.
+                return mTransitionController.isCollecting();
             }
             // It has been set and not yet finished.
             return true;

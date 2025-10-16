@@ -1829,6 +1829,12 @@ public class DisplayContentTests extends WindowTestsBase {
         mDisplayContent.onTransitionFinished();
         assertFalse("Complete fixed rotation if not in a transition",
                 mDisplayContent.hasTopFixedRotationLaunchingApp());
+
+        doReturn(true).when(nonTopVisible).hasFixedRotationTransform();
+        assertFalse("Not skip orientation update if fixed rotation app switched without transition",
+                mDisplayContent.handleTopActivityLaunchingInDifferentOrientation(
+                        nonTopVisible, true /* checkOpening */));
+        assertTrue(mDisplayContent.isFixedRotationLaunchingApp(nonTopVisible));
     }
 
     @Test
