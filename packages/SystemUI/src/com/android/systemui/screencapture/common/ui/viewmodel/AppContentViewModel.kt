@@ -22,6 +22,7 @@ import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppCo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.awaitCancellation
 
 /** Data for a UI to display app content. */
 class AppContentViewModel
@@ -37,6 +38,8 @@ constructor(@Assisted override val model: ScreenCaptureAppContent) :
     override val thumbnail: Result<Bitmap>? = Result.success(model.thumbnail)
 
     override val backgroundColorOpaque: Color = Color.Black
+
+    override suspend fun activate(): Nothing = awaitCancellation()
 
     @AssistedFactory
     interface Factory : TargetViewModel.Factory<ScreenCaptureAppContent> {

@@ -30,10 +30,7 @@ import kotlinx.coroutines.coroutineScope
 
 class RecordDetailsAppSelectorViewModel
 @AssistedInject
-constructor(
-    private val recentTasksViewModel: RecentTasksViewModel,
-    private val recentTaskViewModelFactory: RecentTaskViewModel.Factory,
-) : HydratedActivatable() {
+constructor(private val recentTasksViewModel: RecentTasksViewModel) : HydratedActivatable() {
 
     val recentTasks: List<ScreenCaptureRecentTask>? by derivedStateOf {
         recentTasksViewModel.targets.value?.withoutPostRecordingActivity()
@@ -48,7 +45,7 @@ constructor(
     }
 
     fun createTaskViewModel(task: ScreenCaptureRecentTask): RecentTaskViewModel =
-        recentTaskViewModelFactory.create(task)
+        recentTasksViewModel.createViewModelFor(task) as RecentTaskViewModel
 
     private fun List<ScreenCaptureRecentTask>.withoutPostRecordingActivity():
         List<ScreenCaptureRecentTask> {

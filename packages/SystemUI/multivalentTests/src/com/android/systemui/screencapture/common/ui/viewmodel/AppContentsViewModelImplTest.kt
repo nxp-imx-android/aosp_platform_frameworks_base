@@ -19,10 +19,13 @@ package com.android.systemui.screencapture.common.ui.viewmodel
 import android.content.ComponentName
 import android.media.projection.MediaProjectionAppContent
 import android.os.UserHandle
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
@@ -43,48 +46,92 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
 
+    private val Kosmos.viewModel by
+        Kosmos.Fixture {
+            AppContentsViewModelImpl(
+                appContentInteractor = screenCaptureAppContentInteractor,
+                recentTaskInteractor = screenCaptureRecentTaskInteractor,
+                appContentViewModelFactory = appContentViewModelFactory,
+                drawableLoaderViewModel = drawableLoaderViewModel,
+                audioSwitchViewModel = audioSwitchViewModel,
+                thumbnailWidthPx = 200,
+                thumbnailHeightPx = 100,
+            )
+        }
+
+    private val Kosmos.fakeThumbnail by Kosmos.Fixture { createBitmap(200, 100) }
+    private val Kosmos.fakeRecentTask by
+        Kosmos.Fixture {
+            RecentTask(
+                taskId = 1,
+                displayId = 2,
+                userId = 3,
+                topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
+                baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
+                colorBackground = 0x12345699,
+                isForegroundTask = true,
+                userType = RecentTask.UserType.STANDARD,
+                splitBounds = null,
+            )
+        }
+    private val Kosmos.fakeMediaProjectionAppContent by
+        Kosmos.Fixture { MediaProjectionAppContent(fakeThumbnail, "FakeLabel", 123) }
+    private val Kosmos.fakeAppContent by
+        Kosmos.Fixture { ScreenCaptureAppContent("FakeBasePackage", fakeMediaProjectionAppContent) }
+    private val Kosmos.fakeAppContentViewModel by
+        Kosmos.Fixture { appContentViewModelFactory.create(fakeAppContent) }
+
     @Test
-    fun getAppContents_returnsAppContentsFromRepository() =
+    fun targets_returnsAppContentsFromRepository() =
         kosmos.runTest {
             // Arrange
-            val viewModel =
-                AppContentsViewModelImpl(
-                    appContentInteractor = screenCaptureAppContentInteractor,
-                    recentTaskInteractor = screenCaptureRecentTaskInteractor,
-                    thumbnailWidthPx = 200,
-                    thumbnailHeightPx = 100,
-                )
             viewModel.activateIn(testScope)
-            val fakeAppContent = MediaProjectionAppContent(createBitmap(200, 100), "TestLabel", 456)
 
             // Act
             val result = viewModel.targets
-            fakeScreenCaptureRecentTaskRepository.setRecentTasks(
-                RecentTask(
-                    taskId = 1,
-                    displayId = 2,
-                    userId = 3,
-                    topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
-                    baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
-                    colorBackground = 0x12345699,
-                    isForegroundTask = true,
-                    userType = RecentTask.UserType.STANDARD,
-                    splitBounds = null,
-                )
-            )
+            fakeScreenCaptureRecentTaskRepository.setRecentTasks(fakeRecentTask)
             fakeScreenCaptureAppContentRepository.setAppContentSuccess(
                 packageName = "FakeBasePackage",
                 user = UserHandle.CURRENT,
-                fakeAppContent,
+                fakeMediaProjectionAppContent,
             )
 
             // Assert
-            assertThat(result.value)
-                .containsExactly(
-                    ScreenCaptureAppContent(
-                        packageName = "FakeBasePackage",
-                        appContent = fakeAppContent,
-                    )
-                )
+            assertThat(result.value).containsExactly(fakeAppContent)
+        }
+
+    @Test
+    fun selectedTarget_returnsSelectedTarget() =
+        kosmos.runTest {
+            // Arrange
+            viewModel.activateIn(testScope)
+            val result by viewModel.selectedTarget
+            assertThat(result).isNull()
+
+            // Act
+            viewModel.setSelectedTarget(fakeAppContentViewModel)
+
+            // Assert
+            assertThat(result).isSameInstanceAs(fakeAppContentViewModel)
+        }
+
+    @Test
+    fun createViewModelFor_returnsViewModelForRecentTask() =
+        kosmos.runTest {
+            // Arrange
+            viewModel.activateIn(testScope)
+
+            // Act
+            val result =
+                viewModel.createViewModelFor(fakeAppContent).apply { activateIn(testScope) }
+
+            // Assert
+            with(result) {
+                assertThat(model).isSameInstanceAs(fakeAppContent)
+                assertThat(icon?.isFailure).isTrue()
+                assertThat(label?.getOrNull()).isEqualTo("FakeLabel")
+                assertThat(thumbnail?.getOrNull()?.sameAs(fakeThumbnail)).isTrue()
+                assertThat(backgroundColorOpaque).isEqualTo(Color.Black)
+            }
         }
 }

@@ -31,7 +31,7 @@ import androidx.compose.ui.Alignment
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.PostRecordSnackbar
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.SnackbarVisualsWithIcon
 import com.android.systemui.statusbar.phone.DialogDelegate
@@ -47,7 +47,7 @@ class PostRecordSnackbarDialogs
 constructor(
     @Application private val context: Context,
     private val dialogFactory: SystemUIDialogFactory,
-    private val drawableViewModel: DrawableLoaderViewModelImpl,
+    private val drawableViewModel: DrawableLoaderViewModel,
     private val activityStarter: ActivityStarter,
 ) {
 

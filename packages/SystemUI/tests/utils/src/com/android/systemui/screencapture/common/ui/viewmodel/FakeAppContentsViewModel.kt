@@ -21,11 +21,29 @@ import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
 import kotlinx.coroutines.awaitCancellation
 
-class FakeAppContentsViewModel : AppContentsViewModel {
+class FakeAppContentsViewModel(
+    var fakeViewModelFactory: AppContentViewModel.Factory,
+    fakeDrawableLoaderViewModel: DrawableLoaderViewModel,
+    fakeAudioSwitchViewModel: AudioSwitchViewModel = AudioSwitchViewModelImpl(),
+) :
+    AppContentsViewModel,
+    DrawableLoaderViewModel by fakeDrawableLoaderViewModel,
+    AudioSwitchViewModel by fakeAudioSwitchViewModel {
 
     private val fakeAppContents = mutableStateOf<List<ScreenCaptureAppContent>?>(null)
 
     override val targets: State<List<ScreenCaptureAppContent>?> = fakeAppContents
+
+    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureAppContent>?>(null)
+    override val selectedTarget: State<TargetViewModel<ScreenCaptureAppContent>?> = _selectedTarget
+
+    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureAppContent>?) {
+        _selectedTarget.value = target
+    }
+
+    override fun createViewModelFor(
+        target: ScreenCaptureAppContent
+    ): TargetViewModel<ScreenCaptureAppContent> = fakeViewModelFactory.create(target)
 
     fun setAppContents(appContents: List<ScreenCaptureAppContent>?) {
         fakeAppContents.value = appContents

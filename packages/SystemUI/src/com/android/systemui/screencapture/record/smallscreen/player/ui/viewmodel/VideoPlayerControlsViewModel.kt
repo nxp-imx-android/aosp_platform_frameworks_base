@@ -23,7 +23,6 @@ import androidx.compose.runtime.setValue
 import com.android.systemui.kairos.awaitClose
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -47,8 +46,8 @@ class VideoPlayerControlsViewModel
 @AssistedInject
 constructor(
     @Assisted private val mediaPlayer: MediaPlayer,
-    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+    private val drawableLoaderViewModel: DrawableLoaderViewModel,
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     val videoDurationMillis: Int
         get() = mediaPlayer.callSafe { duration } ?: 0

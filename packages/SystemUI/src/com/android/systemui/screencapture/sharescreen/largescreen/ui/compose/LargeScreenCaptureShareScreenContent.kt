@@ -19,39 +19,30 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 import androidx.compose.runtime.Composable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
-import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.AudioSwitchViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.PreShareToolbarViewModel
-import com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel.ShareContentListViewModel
 import javax.inject.Inject
+import javax.inject.Provider
 
 class LargeScreenCaptureShareScreenContent
 @Inject
 constructor(
     private val preShareToolbarViewModelFactory: PreShareToolbarViewModel.Factory,
-    private val shareContentListViewModelFactory: ShareContentListViewModel.Factory,
-    private val recentTaskViewModelFactory: RecentTaskViewModel.Factory,
-    private val audioSwitchViewModelFactory: AudioSwitchViewModel.Factory,
+    private val recentTasksViewModelProvider: Provider<RecentTasksViewModel>,
 ) : ScreenCaptureContent {
 
     @Composable
     override fun Content() {
-        val shareContentListViewModel: ShareContentListViewModel =
-            rememberViewModel("ShareContentListViewModel") {
-                shareContentListViewModelFactory.create()
-            }
+        val recentTasksViewModel =
+            rememberViewModel("RecentTasksViewModel") { recentTasksViewModelProvider.get() }
         val preShareToolbarViewModel: PreShareToolbarViewModel =
             rememberViewModel("PreShareToolbarViewModel") {
-                preShareToolbarViewModelFactory.create(shareContentListViewModel)
+                preShareToolbarViewModelFactory.create(recentTasksViewModel)
             }
-        val audioSwitchViewModel: AudioSwitchViewModel =
-            rememberViewModel("AudioSwitchViewModel") { audioSwitchViewModelFactory.create() }
 
         PreShareUI(
             preShareToolbarViewModel = preShareToolbarViewModel,
-            shareContentListViewModel = shareContentListViewModel,
-            audioSwitchViewModel = audioSwitchViewModel,
-            recentTaskViewModelFactory = recentTaskViewModelFactory,
+            recentTasksViewModel = recentTasksViewModel,
         )
     }
 }
