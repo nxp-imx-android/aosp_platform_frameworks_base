@@ -129,8 +129,6 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-            com.android.server.biometrics.Flags.FLAG_BIOMETRIC_PROMPT_EXTERNAL_DISPLAY)
     public void testAuthentication_whenExternalDisplay() throws RemoteException {
         setContextDisplayWithType(Display.TYPE_EXTERNAL);
 

@@ -37,7 +37,6 @@ import android.os.UserManager;
 import android.util.Pair;
 import android.util.Slog;
 import android.view.Display;
-import android.window.DesktopExperienceFlags.DesktopExperienceFlag;
 
 import com.android.internal.R;
 import com.android.server.biometrics.sensors.LockoutTracker;
@@ -66,11 +65,7 @@ class PreAuthInfo {
     static final int BIOMETRIC_LOCKOUT_PERMANENT = 11;
     static final int BIOMETRIC_SENSOR_PRIVACY_ENABLED = 12;
     static final int MANDATORY_BIOMETRIC_UNAVAILABLE_ERROR = 13;
-    private static final DesktopExperienceFlag BIOMETRIC_PROMPT_EXTERNAL_DISPLAY_FLAG =
-            new DesktopExperienceFlag(
-                    com.android.server.biometrics.Flags::biometricPromptExternalDisplay,
-                    /* shouldOverrideByDevOption= */ false,
-                    com.android.server.biometrics.Flags.FLAG_BIOMETRIC_PROMPT_EXTERNAL_DISPLAY);
+
     private static final String TAG = "BiometricService/PreAuthInfo";
     final boolean credentialRequested;
     // Sensors that can be used for this request (e.g. strong enough, enrolled, enabled).
@@ -406,7 +401,7 @@ class PreAuthInfo {
             cameraPrivacyEnabled = mBiometricCameraManager.isCameraPrivacyEnabled();
         }
 
-        if (BIOMETRIC_PROMPT_EXTERNAL_DISPLAY_FLAG.isTrue() && isExternalDisplay()) {
+        if (isExternalDisplay()) {
             status = BIOMETRIC_HARDWARE_NOT_DETECTED;
             modality = TYPE_ANY_BIOMETRIC | TYPE_CREDENTIAL;
         } else if (mBiometricRequested && credentialRequested) {

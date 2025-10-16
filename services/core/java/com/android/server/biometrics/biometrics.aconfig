@@ -19,16 +19,6 @@ flag {
 }
 
 flag {
-  name: "biometric_prompt_external_display"
-  namespace: "biometrics_framework"
-  description: "This flag returns error code when biometric prompt is requested on external display."
-  bug: "421237594"
-  metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "internal_cleanup_for_all_profiles"
   namespace: "biometrics_framework"
   description: "Feature flag for scheduling internal cleanup for all profiles"
