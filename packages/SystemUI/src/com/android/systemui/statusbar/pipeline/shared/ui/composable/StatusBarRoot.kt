@@ -82,7 +82,7 @@ import com.android.systemui.lifecycle.viewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
-import com.android.systemui.media.dagger.MediaModule.POPUP
+import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
@@ -149,7 +149,7 @@ constructor(
     private val ongoingCallController: OngoingCallController,
     private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     private val mediaHierarchyManager: MediaHierarchyManager,
-    @Named(POPUP) private val mediaHost: MediaHost,
+    @Named(MediaModule.POPUP) private val mediaHost: MediaHost,
     private val mediaViewModelFactory: MediaViewModel.Factory,
     @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,
     @DisplayAware private val homeStatusBarViewBinder: HomeStatusBarViewBinder,
