@@ -18,7 +18,9 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 
 import android.annotation.NonNull;
 import android.content.Context;
+import android.companion.datatransfer.continuity.TaskContinuityManager;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.os.RemoteException;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.FeatureController;
@@ -62,6 +64,20 @@ public class HandoffController extends FeatureController {
 
     public void requestHandoff(
             int associationId, int remoteTaskId, @NonNull IHandoffRequestCallback callback) {
+        if (!isEnabled()) {
+            Slog.w(getTag(), "Requested Handoff when controller is disabled. Returning failure.");
+            try {
+                callback.onHandoffRequestFinished(
+                        associationId,
+                        remoteTaskId,
+                        TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED);
+            } catch (RemoteException e) {
+                Slog.e(getTag(), "Failed to notify callback of handoff request cancellation", e);
+            }
+
+            return;
+        }
+
         Slog.v(getTag(), "Requesting handoff from association " + associationId);
         mOutboundHandoffRequestHandler.requestHandoff(
                 associationId, remoteTaskId, Objects.requireNonNull(callback));
