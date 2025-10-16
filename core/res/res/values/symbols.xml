@@ -232,6 +232,7 @@
   <java-symbol type="id" name="metric_chronometer_1" />
   <java-symbol type="id" name="metric_chronometer_2" />
   <java-symbol type="id" name="alt_title" />
+  <java-symbol type="id" name="alt_subtext" />
   <java-symbol type="id" name="app_name_text_divider" />
   <java-symbol type="id" name="status_bar_latest_event_content" />
   <java-symbol type="id" name="notification_main_column" />

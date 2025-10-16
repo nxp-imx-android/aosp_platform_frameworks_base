@@ -6348,6 +6348,24 @@ public class Notification implements Parcelable
             return contentViewUsesHeader && bigContentViewUsesHeader;
         }
 
+        /**
+         * Whether the notification shows a subtext or a summary text in the header. Doesn't support
+         * the legacy info field used before Android N.
+         *
+         * @see #bindHeaderText
+         * @hide
+         */
+        final boolean hasHeaderText(StandardTemplateParams p) {
+            if (p.mHideSubText) {
+                return false;
+            }
+            if (!TextUtils.isEmpty(p.mSubText)) {
+                return true;
+            }
+            return mStyle != null && mStyle.mSummaryTextSet
+                    && mStyle.hasSummaryInHeader() && !TextUtils.isEmpty(mStyle.mSummaryText);
+        }
+
         private void resetStandardTemplate(RemoteViews contentView) {
             resetNotificationHeader(contentView);
             contentView.setViewVisibility(R.id.right_icon, View.GONE);
@@ -6355,6 +6373,10 @@ public class Notification implements Parcelable
             contentView.setTextViewText(R.id.title, null);
             contentView.setViewVisibility(R.id.text, View.GONE);
             contentView.setTextViewText(R.id.text, null);
+            if (richOngoingImprovements()) {
+                contentView.setViewVisibility(R.id.alt_subtext, View.GONE);
+                contentView.setTextViewText(R.id.alt_subtext, null);
+            }
         }
 
         /**
@@ -6443,6 +6465,9 @@ public class Notification implements Parcelable
                     contentView.setViewVisibility(p.mTextViewId, View.GONE);
                     contentView.setTextViewText(p.mTextViewId, null);
                 }
+            }
+            if (hasHeaderText(p) && p.mSubtextViewId == R.id.alt_subtext) {
+                hasSecondLine = true;
             }
 
             updateExpanderAlignment(contentView, p, hasSecondLine);
@@ -6611,8 +6636,16 @@ public class Notification implements Parcelable
                 // end of the first line of text (or big_text) to leave space for the large icon.
                 result.mTitleMarginSet.applyToView(contentView, p.mTextViewId);
                 boolean shouldWrapAroundImage = !p.hasTitle() || p.mTitleViewId == R.id.alt_title;
-                contentView.setInt(p.mTextViewId, "setNumIndentLines",
-                        shouldWrapAroundImage ? 1 : 0);
+                if (richOngoingImprovements() && shouldWrapAroundImage
+                        && hasHeaderText(p) && p.mSubtextViewId == R.id.alt_subtext) {
+                    // If the alternate subtext is the first line of text that needs to be wrapped,
+                    // it gets the margin instead of the content text.
+                    result.mTitleMarginSet.applyToView(contentView, p.mSubtextViewId);
+                    contentView.setInt(p.mTextViewId, "setNumIndentLines", 0);
+                } else {
+                    contentView.setInt(p.mTextViewId, "setNumIndentLines",
+                            shouldWrapAroundImage ? 1 : 0);
+                }
             } else if (notificationsRedesignTemplates() && p.mNeedsExtraTextMargin) {
                 // In the collapsed view (except for compact HUNs), the top line needs to
                 // accommodate both the expander and large icon (when present)
@@ -6894,17 +6927,20 @@ public class Notification implements Parcelable
                     && mStyle.hasSummaryInHeader()) {
                 headerText = mStyle.mSummaryText;
             }
-            if (headerText == null
-                    && mContext.getApplicationInfo().targetSdkVersion < Build.VERSION_CODES.N
-                    && mN.extras.getCharSequence(EXTRA_INFO_TEXT) != null) {
-                headerText = mN.extras.getCharSequence(EXTRA_INFO_TEXT);
+            // The alternate subtext views don't support the legacy field
+            if (p.mSubtextViewId == R.id.header_text) {
+                if (headerText == null
+                        && mContext.getApplicationInfo().targetSdkVersion < Build.VERSION_CODES.N
+                        && mN.extras.getCharSequence(EXTRA_INFO_TEXT) != null) {
+                    headerText = mN.extras.getCharSequence(EXTRA_INFO_TEXT);
+                }
             }
             if (!TextUtils.isEmpty(headerText)) {
-                contentView.setTextViewText(R.id.header_text, ensureColorSpanContrastOrStripStyling(
+                contentView.setTextViewText(p.mSubtextViewId, ensureColorSpanContrastOrStripStyling(
                         processLegacyText(headerText), p));
-                setTextViewColorSecondary(contentView, R.id.header_text, p);
-                contentView.setViewVisibility(R.id.header_text, View.VISIBLE);
-                if (hasTextToLeft) {
+                setTextViewColorSecondary(contentView, p.mSubtextViewId, p);
+                contentView.setViewVisibility(p.mSubtextViewId, View.VISIBLE);
+                if (hasTextToLeft && p.mSubtextViewId == R.id.header_text) {
                     contentView.setViewVisibility(R.id.header_text_divider, View.VISIBLE);
                     setTextViewColorSecondary(contentView, R.id.header_text_divider, p);
                 }
@@ -12143,7 +12179,9 @@ public class Notification implements Parcelable
                     .titleViewId(R.id.alt_title)
                     .hideRightIcon(true);
             if (Flags.richOngoingImprovements() && mBuilder.mN.isPromotedOngoing()) {
-                p.useMinimalHeader();
+                // Use the minimal header style when promoted, but keep the subtext in the top line
+                // (even if it may be cramped).
+                p.useMinimalHeader().subTextViewId(R.id.header_text);
             }
             final TemplateBindResult result = new TemplateBindResult();
             final int expandedLayoutRes;
@@ -16902,6 +16940,7 @@ public class Notification implements Parcelable
         boolean mCallStyleActions;
         boolean mAllowTextWithProgress;
         int mTitleViewId;
+        int mSubtextViewId;
         int mTextViewId;
         @Nullable CharSequence mTitle;
         @Nullable CharSequence mText;
@@ -16929,6 +16968,7 @@ public class Notification implements Parcelable
             mCallStyleActions = false;
             mAllowTextWithProgress = false;
             mTitleViewId = R.id.title;
+            mSubtextViewId = R.id.header_text;
             mTextViewId = R.id.text;
             mTitle = null;
             mText = null;
@@ -17031,6 +17071,14 @@ public class Notification implements Parcelable
             return this;
         }
 
+        public StandardTemplateParams subTextViewId(int subTextViewId) {
+            if (!richOngoingImprovements()) {
+                return this;
+            }
+            mSubtextViewId = subTextViewId;
+            return this;
+        }
+
         public StandardTemplateParams textViewId(int textViewId) {
             mTextViewId = textViewId;
             return this;
@@ -17110,6 +17158,7 @@ public class Notification implements Parcelable
         public StandardTemplateParams useMinimalHeader() {
             if (Flags.richOngoingImprovements()) {
                 titleViewId(R.id.alt_title);
+                subTextViewId(R.id.alt_subtext);
                 hideAppName(true);
                 hideTime(true);
                 hideProfileBadge(true);
