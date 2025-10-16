@@ -41,6 +41,8 @@ private data class GamepadState(
     var rz: Float = 0.0f,
     var hatX: Float = 0.0f,
     var hatY: Float = 0.0f,
+    var lTrigger: Float = 0.0f,
+    var rTrigger: Float = 0.0f,
 )
 
 private fun synthesizeGamepadMotionEvent(
@@ -66,6 +68,12 @@ private fun synthesizeGamepadMotionEvent(
     }
     if (currentState.hatY != previousState.hatY) {
         builder.setHatY(currentState.hatY)
+    }
+    if (currentState.lTrigger != previousState.lTrigger) {
+        builder.setLTrigger(currentState.lTrigger)
+    }
+    if (currentState.rTrigger != previousState.rTrigger) {
+        builder.setRTrigger(currentState.rTrigger)
     }
     return builder.build()
 }
@@ -162,8 +170,29 @@ class MainActivity : Activity() {
         return true
     }
 
+    // For L2/R2, this generates both a key event and (indirectly, through dispatchTouchEvent) a
+    // motion event. This simulates both the digital "click" and the analog travel of a real
+    // trigger.
     private fun onButtonTouch(v: View, event: MotionEvent): Boolean {
         val action = event.action
+
+        val keyAction =
+            when (action) {
+                MotionEvent.ACTION_DOWN -> VirtualKeyEvent.ACTION_DOWN
+                MotionEvent.ACTION_UP -> VirtualKeyEvent.ACTION_UP
+                MotionEvent.ACTION_CANCEL -> VirtualKeyEvent.ACTION_UP
+                else -> return true // Ignore other actions like MOVE
+            }
+
+        val isDown = keyAction == VirtualKeyEvent.ACTION_DOWN
+        when (v.id) {
+            R.id.button_l2 -> {
+                gamepadState.lTrigger = if (isDown) 1.0f else 0.0f
+            }
+            R.id.button_r2 -> {
+                gamepadState.rTrigger = if (isDown) 1.0f else 0.0f
+            }
+        }
 
         val keyCode =
             when (v.id) {
@@ -180,13 +209,6 @@ class MainActivity : Activity() {
                 else -> throw IllegalStateException("Unknown button id: " + v.id)
             }
 
-        val keyAction =
-            when (action) {
-                MotionEvent.ACTION_DOWN -> KeyEvent.ACTION_DOWN
-                MotionEvent.ACTION_UP -> KeyEvent.ACTION_UP
-                MotionEvent.ACTION_CANCEL -> KeyEvent.ACTION_UP
-                else -> return true
-            }
         val keyEvent = VirtualKeyEvent.Builder().setKeyCode(keyCode).setAction(keyAction).build()
         checkNotNull(gamepad).sendKeyEvent(keyEvent)
         return true
@@ -259,6 +281,7 @@ class MainActivity : Activity() {
         config.vendorId = 1234
         config.productId = 5678
         config.associatedDisplayId = displayId
+        config.registerTriggerAxes = true
         gamepad = inputManager.createVirtualGamepad(config)
     }
 

@@ -24,4 +24,8 @@ parcelable VirtualGamepadConfig {
     String name;
     // The display id that should be associated with the created input device
     int associatedDisplayId;
+    // Whether to register trigger axes (LTRIGGER/RTRIGGER). Set this to false if targeting games
+    // that do not correctly handle analog triggers and digital button presses (L2/R2)
+    // simultaneously, as the presence of these axes can sometimes be misinterpreted.
+    boolean registerTriggerAxes;
 }

@@ -162,14 +162,15 @@ class VirtualInputDeviceController {
     }
 
     IVirtualGamepad createGamepad(@NonNull String deviceName, int vendorId, int productId,
-            @NonNull IBinder deviceToken, int displayId) {
+            @NonNull IBinder deviceToken, int displayId, boolean registerTriggerAxes) {
         final String phys = createPhys(PHYS_TYPE_GAMEPAD);
         try {
             final InputDeviceDescriptor device = createDeviceInternal(
                     InputDeviceDescriptor.TYPE_GAMEPAD, deviceName, vendorId,
                     productId, deviceToken, displayId, phys,
-                    () -> mNativeWrapper.openUinputGamepad(deviceName, vendorId, productId, phys));
-            return new VirtualGamepadDevice(device);
+                    () -> mNativeWrapper.openUinputGamepad(deviceName, vendorId, productId, phys,
+                            registerTriggerAxes));
+            return new VirtualGamepadDevice(device, registerTriggerAxes);
         } catch (DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         }
@@ -498,7 +499,7 @@ class VirtualInputDeviceController {
     private static native long nativeOpenUinputKeyboard(String deviceName, int vendorId,
             int productId, String phys);
     private static native long nativeOpenUinputGamepad(String deviceName, int vendorId,
-            int productId, String phys);
+            int productId, String phys, boolean registerTriggerAxes);
     private static native long nativeOpenUinputMouse(String deviceName, int vendorId, int productId,
             String phys);
     private static native long nativeOpenUinputTouchscreen(String deviceName, int vendorId,
@@ -516,7 +517,8 @@ class VirtualInputDeviceController {
     private static native boolean nativeWriteGamepadKeyEvent(long ptr, int androidKeyCode,
             int action, long eventTimeNanos);
     private static native boolean nativeWriteGamepadMotionEvent(long ptr, float x, float y, float z,
-            float rz, float hatX, float hatY, long eventTimeNanos);
+            float rz, float hatX, float hatY, float lTrigger, float rTrigger,
+            long eventTimeNanos);
     private static native boolean nativeWriteButtonEvent(long ptr, int buttonCode, int action,
             long eventTimeNanos);
     private static native boolean nativeWriteTouchEvent(long ptr, int pointerId, int toolType,
@@ -546,8 +548,9 @@ class VirtualInputDeviceController {
         }
 
         public long openUinputGamepad(String deviceName, int vendorId, int productId,
-                String phys) {
-            return nativeOpenUinputGamepad(deviceName, vendorId, productId, phys);
+                String phys, boolean registerTriggerAxes) {
+            return nativeOpenUinputGamepad(deviceName, vendorId, productId, phys,
+                    registerTriggerAxes);
         }
 
         public long openUinputMouse(String deviceName, int vendorId, int productId, String phys) {
@@ -591,7 +594,7 @@ class VirtualInputDeviceController {
 
         public boolean writeGamepadMotionEvent(long ptr, VirtualGamepadMotionEvent event) {
             return nativeWriteGamepadMotionEvent(ptr, event.x, event.y, event.z, event.rz,
-                    event.hatX, event.hatY, event.eventTimeNanos);
+                    event.hatX, event.hatY, event.lTrigger, event.rTrigger, event.eventTimeNanos);
         }
 
         public boolean writeButtonEvent(long ptr, int buttonCode, int action,
@@ -1032,9 +1035,11 @@ class VirtualInputDeviceController {
     /** A wrapper for an IVirtualInputDevice that exposes it as an IVirtualGamepad. */
     private final class VirtualGamepadDevice extends IVirtualGamepad.Stub {
         private final InputDeviceDescriptor mDevice;
+        private final boolean mRegisterTriggerAxes;
 
-        VirtualGamepadDevice(@NonNull InputDeviceDescriptor device) {
+        VirtualGamepadDevice(@NonNull InputDeviceDescriptor device, boolean registerTriggerAxes) {
             mDevice = device;
+            mRegisterTriggerAxes = registerTriggerAxes;
         }
 
         @Override
@@ -1062,17 +1067,40 @@ class VirtualInputDeviceController {
         @EnforcePermission(Manifest.permission.INJECT_EVENTS)
         public boolean sendGamepadMotionEvent(VirtualGamepadMotionEvent event) {
             sendGamepadMotionEvent_enforcePermission();
+            if ((!Float.isNaN(event.lTrigger) || !Float.isNaN(event.rTrigger))
+                    && !mRegisterTriggerAxes) {
+                throw new IllegalArgumentException(
+                        "Cannot send trigger values on a gamepad that did not register trigger"
+                                + " axes");
+            }
             validateAxisValue(event.x, MotionEvent.AXIS_X);
             validateAxisValue(event.y, MotionEvent.AXIS_Y);
             validateAxisValue(event.z, MotionEvent.AXIS_Z);
             validateAxisValue(event.rz, MotionEvent.AXIS_RZ);
             validateAxisValue(event.hatX, MotionEvent.AXIS_HAT_X);
             validateAxisValue(event.hatY, MotionEvent.AXIS_HAT_Y);
+            validateAxisValue(event.lTrigger, MotionEvent.AXIS_LTRIGGER);
+            validateAxisValue(event.rTrigger, MotionEvent.AXIS_RTRIGGER);
             return mNativeWrapper.writeGamepadMotionEvent(mDevice.getNativePointer(), event);
         }
 
         private void validateAxisValue(float value, int axis) {
-            if (!Float.isNaN(value) && (value < -1.0f || value > 1.0f)) {
+            if (Float.isNaN(value)) {
+                return;
+            }
+            final float min;
+            final float max;
+            switch (axis) {
+                case MotionEvent.AXIS_LTRIGGER:
+                case MotionEvent.AXIS_RTRIGGER:
+                    min = 0.0f;
+                    max = 1.0f;
+                    break;
+                default:
+                    min = -1.0f;
+                    max = 1.0f;
+            }
+            if (value < min || value > max) {
                 throw new IllegalArgumentException("Unsupported value " + value
                         + " for axis " + MotionEvent.axisToString(axis)
                         + " sent to virtual gamepad " + mDevice.mName);

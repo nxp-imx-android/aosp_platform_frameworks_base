@@ -58,6 +58,22 @@ parcelable VirtualGamepadMotionEvent {
      */
     float hatY;
 
+    /**
+     * The LTRIGGER axis value, from MotionEvent.AXIS_LTRIGGER. This is for the left trigger.
+     * Valid values are from 0.0f (released) to 1.0f (fully pressed).
+     * If this axis is not applicable for this event, it should be set to Float.NaN.
+     * If the device did not register the trigger axes in the config, this must be set to Float.NaN.
+     */
+    float lTrigger;
+
+    /**
+     * The RTRIGGER axis value, from MotionEvent.AXIS_RTRIGGER. This is for the right trigger.
+     * Valid values are from 0.0f (released) to 1.0f (fully pressed).
+     * If this axis is not applicable for this event, it should be set to Float.NaN.
+     * If the device did not register the trigger axes in the config, this must be set to Float.NaN.
+     */
+    float rTrigger;
+
     // The time at which the event occurred, in SystemClock.uptimeMillis() time base, but with
     // nanosecond precision (this will be trimmed to microseconds by linux, though).
     long eventTimeNanos;

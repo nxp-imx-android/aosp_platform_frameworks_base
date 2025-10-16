@@ -57,17 +57,28 @@ class VirtualGamepadTest {
     private lateinit var activity: CaptureEventActivity
     private lateinit var virtualGamepad: VirtualGamepad
 
+    private fun createVirtualGamepadConfig(
+        name: String,
+        registerTriggers: Boolean,
+    ): VirtualGamepadConfig {
+        val config = VirtualGamepadConfig()
+        config.name = name
+        config.vendorId = VENDOR_ID
+        config.productId = PRODUCT_ID
+        config.associatedDisplayId = activity.display!!.displayId
+        config.registerTriggerAxes = registerTriggers
+        return config
+    }
+
     @Before
     fun setUp() {
         activityScenarioRule.scenario.onActivity { activity = it }
 
         val inputManager = activity.getSystemService(InputManager::class.java)!!
-        val config = VirtualGamepadConfig()
-        config.name = "TestVirtualGamepad"
-        config.vendorId = VENDOR_ID
-        config.productId = PRODUCT_ID
-        config.associatedDisplayId = activity.display!!.displayId
-        virtualGamepad = inputManager.createVirtualGamepad(config)
+        virtualGamepad =
+            inputManager.createVirtualGamepad(
+                createVirtualGamepadConfig("TestVirtualGamepad", registerTriggers = true)
+            )
 
         PollingCheck.waitFor { activity.hasWindowFocus() }
     }
@@ -89,6 +100,8 @@ class VirtualGamepadTest {
                 .setRz(-0.2f)
                 .setHatX(1.0f)
                 .setHatY(-1.0f)
+                .setLTrigger(0.3f)
+                .setRTrigger(0.4f)
                 .setEventTimeNanos(SystemClock.uptimeNanos())
                 .build()
         virtualGamepad.sendMotionEvent(motionEvent)
@@ -107,6 +120,8 @@ class VirtualGamepadTest {
             assertThat(getAxisValue(MotionEvent.AXIS_RZ)).isWithin(0.001f).of(-0.2f)
             assertThat(getAxisValue(MotionEvent.AXIS_HAT_X)).isWithin(0.001f).of(1.0f)
             assertThat(getAxisValue(MotionEvent.AXIS_HAT_Y)).isWithin(0.001f).of(-1.0f)
+            assertThat(getAxisValue(MotionEvent.AXIS_LTRIGGER)).isWithin(0.001f).of(0.3f)
+            assertThat(getAxisValue(MotionEvent.AXIS_RTRIGGER)).isWithin(0.001f).of(0.4f)
             // Linux input interface only supports microsecond precision
             assertThat(eventTimeNanos / 1000).isEqualTo(motionEvent.eventTimeNanos / 1000)
         }
@@ -145,6 +160,38 @@ class VirtualGamepadTest {
                 withKeyCode(KeyEvent.KEYCODE_BUTTON_A),
             )
         )
+    }
+
+    @Test
+    fun createGamepad_withRegisterTriggerAxesFalse() {
+        virtualGamepad.close() // Close the gamepad created in setUp()
+        val inputManager = activity.getSystemService(InputManager::class.java)!!
+        virtualGamepad =
+            inputManager.createVirtualGamepad(
+                createVirtualGamepadConfig("TestVirtualGamepadNoTriggers", registerTriggers = false)
+            )
+
+        // Figure out the device id by sending in a key and receiving it.
+        // Key down
+        val keyDownEvent =
+            VirtualKeyEvent.Builder()
+                .setKeyCode(KeyEvent.KEYCODE_BUTTON_A)
+                .setAction(VirtualKeyEvent.ACTION_DOWN)
+                .build()
+        virtualGamepad.sendKeyEvent(keyDownEvent)
+        val receivedEvent = activity.verifier.assertReceivedKey(withKeyAction(KeyEvent.ACTION_DOWN))
+        // skip sending the Up event, the event will be canceled automatically anyways.
+        val inputDevice = inputManager.getInputDevice(receivedEvent.deviceId)
+        assertThat(inputDevice).isNotNull()
+        assertThat(inputDevice!!.getMotionRange(MotionEvent.AXIS_LTRIGGER)).isNull()
+        assertThat(inputDevice.getMotionRange(MotionEvent.AXIS_RTRIGGER)).isNull()
+
+        // attempts to send these axis values should also fail
+        val invalidMotionEvent =
+            VirtualGamepadMotionEventBuilder().setLTrigger(0.3f).setRTrigger(0.4f).build()
+        assertThrows(IllegalArgumentException::class.java) {
+            virtualGamepad.sendMotionEvent(invalidMotionEvent)
+        }
     }
 
     /** Send a non-gamepad key, and check that this fails. */
