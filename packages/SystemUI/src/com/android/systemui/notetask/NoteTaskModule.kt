@@ -27,6 +27,8 @@ import com.android.systemui.notetask.NoteTaskBubblesController.NoteTaskBubblesSe
 import com.android.systemui.notetask.quickaffordance.NoteTaskQuickAffordanceModule
 import com.android.systemui.notetask.shortcut.CreateNoteTaskShortcutActivity
 import com.android.systemui.notetask.shortcut.LaunchNoteTaskActivity
+import com.android.systemui.notetask.shortcut.WindowingModeFetcher
+import com.android.systemui.notetask.shortcut.WindowingModeFetcherImpl
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
@@ -70,6 +72,8 @@ interface NoteTaskModule {
 
     @[Binds IntoMap ClassKey(CreateNoteTaskShortcutActivity::class)]
     fun bindNoteTaskShortcutActivity(activity: CreateNoteTaskShortcutActivity): Activity
+
+    @Binds fun bindWindowingModeFetcher(impl: WindowingModeFetcherImpl): WindowingModeFetcher
 
     @Binds
     @IntoMap
