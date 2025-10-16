@@ -53,7 +53,7 @@ abstract class MoveToNextDisplay {
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    @get:Rule(order = 1) val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
     @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before

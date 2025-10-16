@@ -27,26 +27,22 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.wm.shell.Utils
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
-import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Base Test Class")
 abstract class ActionTabSwitchToDesktopApp(
     val navigationMode: NavBar = NavBar.MODE_GESTURAL,
     val rotation: Rotation = Rotation.ROTATION_0
-) {
+) : TestScenarioBase(rotation, navigationMode) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val keyEventHelper = KeyEventHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     val fullscreenApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     val desktopApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
-
-    @Rule @JvmField val testSetup = Utils.testSetupRule(navigationMode, rotation)
 
     @Before
     fun setup() {
