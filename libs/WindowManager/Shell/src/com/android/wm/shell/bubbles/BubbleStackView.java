@@ -525,6 +525,12 @@ public class BubbleStackView extends FrameLayout
                                 view /* bubble */,
                                 mDismissView.getHeight() /* translationYBy */,
                                 () -> {
+                                    BubbleExpandedView bev = getExpandedView();
+                                    if (bev != null) {
+                                        // When dragging a bubble to dismiss, keep it invisible
+                                        // throughout the switch animation.
+                                        bev.setContentVisibility(false);
+                                    }
                                     Bubble bubbleToDismiss =
                                             mBubbleData.getBubbleInStackWithView(view);
                                     BubbleLog.d(
@@ -2412,11 +2418,13 @@ public class BubbleStackView extends FrameLayout
         // Remove it from the views
         if (indexInStack >= 0) {
             mBubbleContainer.removeViewAt(indexInStack);
-            if (!isLastBubble && mBubbleData.hasOverflowBubbleWithKey(bubble.getKey())) {
-                // Overflow bubbles show the icon view so just clean up the expanded view.
-                bubble.cleanupExpandedView();
-            } else {
-                bubble.cleanupViews();
+            if (!bubble.isCleanupDeferred()) {
+                if (!isLastBubble && mBubbleData.hasOverflowBubbleWithKey(bubble.getKey())) {
+                    // Overflow bubbles show the icon view so just clean up the expanded view.
+                    bubble.cleanupExpandedView();
+                } else {
+                    bubble.cleanupViews();
+                }
             }
             updateExpandedView();
             if (isLastBubble && !isExpanded()) {
@@ -2616,7 +2624,7 @@ public class BubbleStackView extends FrameLayout
                         previouslySelected.setTaskViewVisibility(false);
                     }
 
-                    updateExpandedBubble();
+                    updateExpandedBubble(getExpandedBubbleCleanupRunnable(previouslySelected));
                     requestUpdate();
 
                     logBubbleEvent(previouslySelected,
@@ -3236,7 +3244,7 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
-    private void animateSwitchBubbles(boolean isJumpcutBubbleSwitching) {
+    private void animateSwitchBubbles(boolean isJumpcutBubbleSwitching, @Nullable Runnable onEnd) {
         // If we're no longer expanded, this is meaningless.
         if (!mIsExpanded) {
             mIsBubbleSwitchAnimating = false;
@@ -3311,6 +3319,9 @@ public class BubbleStackView extends FrameLayout
             if (mAfterTransitionRunnable != null) {
                 mAfterTransitionRunnable.run();
                 mAfterTransitionRunnable = null;
+            }
+            if (onEnd != null) {
+                onEnd.run();
             }
         };
 
@@ -3551,6 +3562,10 @@ public class BubbleStackView extends FrameLayout
                 // If we have more than 1 bubble and it's the current bubble being dismissed,
                 // we will perform the switch animation
                 mIsBubbleSwitchAnimating = true;
+                if (bubble instanceof Bubble b && Flags.fixFlickersDuringSwitchFromDismiss()) {
+                    // defer bubble clean up until after the animation to avoid IME focus switching
+                    b.setIsCleanupDeferred(true);
+                }
             }
             mBubbleData.dismissBubbleWithKey(bubble.getKey(), Bubbles.DISMISS_USER_GESTURE);
         }
@@ -3930,15 +3945,35 @@ public class BubbleStackView extends FrameLayout
         return mManageSettingsView != null && mManageSettingsView.getVisibility() == VISIBLE;
     }
 
+    @Nullable
+    private Runnable getExpandedBubbleCleanupRunnable(BubbleViewProvider previousBubble) {
+        if (previousBubble instanceof Bubble b && b.isCleanupDeferred()) {
+            return () -> {
+                if (mBubbleData.hasOverflowBubbleWithKey(b.getKey())) {
+                    // Overflow bubbles show the icon view so just clean up the expanded view.
+                    b.cleanupExpandedView();
+                } else {
+                    b.cleanupViews();
+                }
+                b.setIsCleanupDeferred(false);
+            };
+        }
+        return null;
+    }
+
     private void updateExpandedBubble() {
+        updateExpandedBubble(/* onEnd= */ null);
+    }
+
+    private void updateExpandedBubble(@Nullable Runnable onEnd) {
         if (Flags.fixBubblesImeFocusFlicker()) {
-            updateExpandedBubbleRemoveAfterAdd();
+            updateExpandedBubbleRemoveAfterAdd(onEnd);
         } else {
-            updateExpandedBubbleRemoveBeforeAdd();
+            updateExpandedBubbleRemoveBeforeAdd(onEnd);
         }
     }
 
-    private void updateExpandedBubbleRemoveBeforeAdd() {
+    private void updateExpandedBubbleRemoveBeforeAdd(@Nullable Runnable onEnd) {
         mExpandedViewContainer.removeAllViews();
         BubbleExpandedView bev = getExpandedView();
         if (mIsExpanded && bev != null) {
@@ -3956,12 +3991,15 @@ public class BubbleStackView extends FrameLayout
             if (!mIsExpansionAnimating) {
                 mIsBubbleSwitchAnimating = true;
                 mSurfaceSynchronizer.syncSurfaceAndRun(
-                        () -> post(() -> animateSwitchBubbles(isJumpcutBubbleSwitching)));
+                        () -> mMainExecutor.execute(
+                                () -> animateSwitchBubbles(isJumpcutBubbleSwitching, onEnd)));
+            } else if (onEnd != null) {
+                onEnd.run();
             }
         }
     }
 
-    private void updateExpandedBubbleRemoveAfterAdd() {
+    private void updateExpandedBubbleRemoveAfterAdd(@Nullable Runnable onEnd) {
         BubbleExpandedView bev = getExpandedView();
         if (!mIsExpanded || bev == null) {
             mExpandedViewContainer.removeAllViews();
@@ -3991,6 +4029,9 @@ public class BubbleStackView extends FrameLayout
         }
         if (mIsExpansionAnimating) {
             mExpandedViewContainer.removeViews(0, mExpandedViewContainer.getChildCount() - 1);
+            if (onEnd != null) {
+                onEnd.run();
+            }
         } else {
             mIsBubbleSwitchAnimating = true;
             mSurfaceSynchronizer.syncSurfaceAndRun(() -> {
@@ -3998,7 +4039,7 @@ public class BubbleStackView extends FrameLayout
                 // that the focus won't fall into the non-bubbled activity behind.
                 mExpandedViewContainer.removeViews(
                         0, mExpandedViewContainer.getChildCount() - 1);
-                post(() -> animateSwitchBubbles(isJumpcutBubbleSwitching));
+                mMainExecutor.execute(() -> animateSwitchBubbles(isJumpcutBubbleSwitching, onEnd));
             });
         }
     }
