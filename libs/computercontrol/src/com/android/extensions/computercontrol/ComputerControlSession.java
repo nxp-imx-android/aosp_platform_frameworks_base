@@ -159,7 +159,8 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
-     * Returns all windows on the display associated with the {@link ComputerControlSession}.
+     * Returns A11y information for all windows on the display associated with the
+     * {@link ComputerControlSession}, or an empty list if no information is currently available.
      */
     @NonNull
     public List<AccessibilityWindowInfo> getAccessibilityWindows() {
@@ -447,10 +448,6 @@ public final class ComputerControlSession implements AutoCloseable {
          * @param reason the reason that the session initially entered the blocked
          *               state.
          */
-        // TODO: b/441475896: Block interactions and screenshots for
-        //  BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH. Until then, a dialog indicating the blockage
-        //  will show up in the session, and the agent must dismiss it by interacting with the
-        //  session to exit the blocked state.
         void onBlocked(@SessionBlockReason int reason);
 
         /**
