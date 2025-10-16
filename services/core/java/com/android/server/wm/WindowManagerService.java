@@ -2600,23 +2600,14 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             if (DEBUG_LAYOUT) {
-                Slog.v(
-                        TAG_WM,
-                        "Relayout "
-                                + win
-                                + ": viewVisibility="
-                                + viewVisibility
-                                + " req="
-                                + requestedWidth
-                                + "x"
-                                + requestedHeight
-                                + " "
-                                + win.mAttrs);
+                Slog.v(TAG_WM, "Relayout " + win + ": viewVisibility=" + viewVisibility
+                        + " req=" + requestedWidth + "x" + requestedHeight + " " + win.mAttrs);
             }
             if ((attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
                 winAnimator.mAlpha = attrs.alpha;
             }
             if ((attrChanges & WindowManager.LayoutParams.TITLE_CHANGED) != 0) {
+                win.updateName();
                 win.mInputWindowHandle.setName(win.getName());
             }
             win.setWindowScale(win.mRequestedWidth, win.mRequestedHeight);
