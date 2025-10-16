@@ -125,7 +125,6 @@ import static android.service.notification.Adjustment.TYPE_PROMOTION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.callstyleCallbackApi;
 import static android.service.notification.Flags.notificationBitmapOffloading;
-import static android.service.notification.Flags.notificationForceGrouping;
 import static android.service.notification.Flags.notificationRegroupOnClassification;
 import static android.service.notification.Flags.redactSensitiveNotificationsBigTextStyle;
 import static android.service.notification.Flags.redactSensitiveNotificationsFromUntrustedListeners;
@@ -1094,12 +1093,7 @@ public class NotificationManagerService extends SystemService {
         if (summaries == null) {
             return;
         }
-        final String autbundledGroupKey;
-        if (notificationForceGrouping()) {
-            autbundledGroupKey = groupKey;
-        } else {
-            autbundledGroupKey = pkg;
-        }
+        final String autbundledGroupKey = groupKey;
 
         String summaryKey = summaries.get(autbundledGroupKey);
         if (summaryKey == null) {
@@ -1120,15 +1114,13 @@ public class NotificationManagerService extends SystemService {
                 || summaryAttr.groupAlertBehavior !=
                         summary.getSbn().getNotification().getGroupAlertBehavior();
 
-        if (notificationForceGrouping()) {
-            newFlags |= Notification.FLAG_SILENT;
-            if (!summary.getChannel().getId().equals(summaryAttr.channelId)) {
-                NotificationChannel newChannel = mPreferencesHelper.getNotificationChannel(pkg,
-                        summary.getUid(), summaryAttr.channelId, false);
-                if (newChannel != null) {
-                    summary.updateNotificationChannel(newChannel);
-                    attributesUpdated = true;
-                }
+        newFlags |= Notification.FLAG_SILENT;
+        if (!summary.getChannel().getId().equals(summaryAttr.channelId)) {
+            NotificationChannel newChannel = mPreferencesHelper.getNotificationChannel(pkg,
+                    summary.getUid(), summaryAttr.channelId, false);
+            if (newChannel != null) {
+                summary.updateNotificationChannel(newChannel);
+                attributesUpdated = true;
             }
         }
 
@@ -3321,12 +3313,8 @@ public class NotificationManagerService extends SystemService {
             @Override
             public void addAutoGroup(String key, String groupName, boolean requestSort) {
                 synchronized (mNotificationLock) {
-                    if (notificationForceGrouping()) {
-                        convertSummaryToNotificationLocked(key);
-                        addAutogroupKeyLocked(key, groupName, requestSort);
-                    } else {
-                        addAutogroupKeyLocked(key, groupName, requestSort);
-                    }
+                    convertSummaryToNotificationLocked(key);
+                    addAutogroupKeyLocked(key, groupName, requestSort);
                 }
             }
 
@@ -3702,20 +3690,17 @@ public class NotificationManagerService extends SystemService {
                     pkg, UserHandle.getUserHandleForUid(uid),
                     modifiedChannel, NOTIFICATION_CHANNEL_OR_GROUP_UPDATED);
         }
-
-        if (notificationForceGrouping()) {
-                mHandler.postDelayed(() -> {
-                    final NotificationChannel updatedChannel = mPreferencesHelper
-                            .getNotificationChannel(pkg, uid, channel.getId(), false);
-                    synchronized (mNotificationLock) {
-                        if (updatedChannel != null) {
-                            mGroupHelper.onChannelUpdated(
-                                    UserHandle.getUserHandleForUid(uid).getIdentifier(), pkg,
-                                    updatedChannel, mNotificationList, mSummaryByGroupKey);
-                        }
-                    }
-                }, DELAY_FORCE_REGROUP_TIME);
-        }
+        mHandler.postDelayed(() -> {
+            final NotificationChannel updatedChannel = mPreferencesHelper
+                    .getNotificationChannel(pkg, uid, channel.getId(), false);
+            synchronized (mNotificationLock) {
+                if (updatedChannel != null) {
+                    mGroupHelper.onChannelUpdated(
+                            UserHandle.getUserHandleForUid(uid).getIdentifier(), pkg,
+                            updatedChannel, mNotificationList, mSummaryByGroupKey);
+                }
+            }
+        }, DELAY_FORCE_REGROUP_TIME);
 
         handleSavePolicyFile();
     }
@@ -7773,12 +7758,10 @@ public class NotificationManagerService extends SystemService {
             return;
         }
         if (r.getSbn().getOverrideGroupKey() == null) {
-            if (notificationForceGrouping()) {
-                if (r.getSbn().isAppGroup()) {
-                    // Override group key early for forced grouped notifications
-                    r.setOverrideGroupKey(groupName);
-                    r.getNotification().flags |= Notification.FLAG_SILENT;
-                }
+            if (r.getSbn().isAppGroup()) {
+                // Override group key early for forced grouped notifications
+                r.setOverrideGroupKey(groupName);
+                r.getNotification().flags |= Notification.FLAG_SILENT;
             }
 
             addAutoGroupAdjustment(r, groupName);
@@ -7788,13 +7771,11 @@ public class NotificationManagerService extends SystemService {
                 mRankingHandler.requestSort();
             }
 
-            if (notificationForceGrouping()) {
-                if (r.getSbn().isAppGroup()) {
-                    mListeners.notifyPostedLocked(r, r);
+            if (r.getSbn().isAppGroup()) {
+                mListeners.notifyPostedLocked(r, r);
 
-                    mNotificationRecordLogger.log(
+                mNotificationRecordLogger.log(
                         NotificationRecordLogger.NotificationEvent.NOTIFICATION_FORCE_GROUP, r);
-                }
             }
         }
     }
@@ -7825,12 +7806,8 @@ public class NotificationManagerService extends SystemService {
     @VisibleForTesting
     @GuardedBy("mNotificationLock")
     void clearAutogroupSummaryLocked(int userId, String pkg, String groupKey) {
-        final String autbundledGroupKey;
-        if (notificationForceGrouping()) {
-            autbundledGroupKey = groupKey;
-        } else {
-            autbundledGroupKey = pkg;
-        }
+        final String autbundledGroupKey = groupKey;
+
         ArrayMap<String, String> summaries = mAutobundledSummaries.get(userId);
         final NotificationRecord autogroupSummary;
         if (summaries != null && summaries.containsKey(autbundledGroupKey)) {
@@ -7910,12 +7887,8 @@ public class NotificationManagerService extends SystemService {
 
     @GuardedBy("mNotificationLock")
     private boolean hasAutoGroupSummaryLocked(NotificationRecord record) {
-        final String autbundledGroupKey;
-        if (notificationForceGrouping()) {
-            autbundledGroupKey = GroupHelper.getFullAggregateGroupKey(record);
-        } else {
-            autbundledGroupKey = record.getSbn().getPackageName();
-        }
+        final String autbundledGroupKey = GroupHelper.getFullAggregateGroupKey(record);
+
 
         ArrayMap<String, String> summaries = mAutobundledSummaries.get(record.getUserId());
         return summaries != null && summaries.containsKey(autbundledGroupKey);
@@ -7942,15 +7915,8 @@ public class NotificationManagerService extends SystemService {
             }
             mAutobundledSummaries.put(userId, summaries);
 
-            boolean hasSummary;
-            String channelId;
-            if (notificationForceGrouping()) {
-                hasSummary = summaries.containsKey(groupKey);
-                channelId = summaryAttr.channelId;
-            } else {
-                hasSummary = summaries.containsKey(pkg);
-                channelId = notificationRecord.getChannel().getId();
-            }
+            boolean hasSummary = summaries.containsKey(groupKey);
+            String channelId = summaryAttr.channelId;
 
             if (!hasSummary) {
                 // Add summary
@@ -7992,11 +7958,7 @@ public class NotificationManagerService extends SystemService {
                 summaryRecord.setIsAppImportanceLocked(
                         notificationRecord.getIsAppImportanceLocked());
 
-                if (notificationForceGrouping()) {
-                    summaries.put(summarySbn.getGroupKey(), summarySbn.getKey());
-                } else {
-                    summaries.put(pkg, summarySbn.getKey());
-                }
+                summaries.put(summarySbn.getGroupKey(), summarySbn.getKey());
             }
             if (summaryRecord != null && checkDisqualifyingFeatures(userId, uid,
                     summaryRecord.getSbn().getId(), summaryRecord.getSbn().getTag(), summaryRecord,
@@ -8292,10 +8254,8 @@ public class NotificationManagerService extends SystemService {
                 mTtlHelper.dump(pw, "    ");
             }
 
-            if (notificationForceGrouping()) {
-                pw.println("\n  GroupHelper:");
-                mGroupHelper.dump(pw, "    ");
-            }
+            pw.println("\n  GroupHelper:");
+            mGroupHelper.dump(pw, "    ");
         }
     }
 
@@ -8432,11 +8392,7 @@ public class NotificationManagerService extends SystemService {
                         // strip flag from all enqueued notifications. listeners will be informed
                         // in post runnable.
                         StatusBarNotification sbn = r.getSbn();
-                        if (notificationForceGrouping()) {
-                            sbn.getNotification().flags = (r.getFlags() & ~flag);
-                        } else {
-                            sbn.getNotification().flags = (r.mOriginalFlags & ~flag);
-                        }
+                        sbn.getNotification().flags = (r.getFlags() & ~flag);
                     }
                 }
 
@@ -8445,11 +8401,7 @@ public class NotificationManagerService extends SystemService {
                 if (r != null) {
                     // if posted notification exists, strip its flag and tell listeners
                     StatusBarNotification sbn = r.getSbn();
-                    if (notificationForceGrouping()) {
-                        sbn.getNotification().flags = (r.getFlags() & ~flag);
-                    } else {
-                        sbn.getNotification().flags = (r.mOriginalFlags & ~flag);
-                    }
+                    sbn.getNotification().flags = (r.getFlags() & ~flag);
                     mRankingHelper.sort(mNotificationList);
                     mListeners.notifyPostedLocked(r, r);
                 }
@@ -9147,9 +9099,7 @@ public class NotificationManagerService extends SystemService {
             notification.setTimeoutAfter(NOTIFICATION_TTL);
         }
 
-        if (notificationForceGrouping()) {
-            notification.fixSilentGroup();
-        }
+        notification.fixSilentGroup();
 
         if (shouldOffloadBitmap(notification)) {
             Icon icon = Notification.BigPictureStyle.getPictureIcon(notification.extras);
@@ -9827,15 +9777,10 @@ public class NotificationManagerService extends SystemService {
          * They will be recreated as needed when the group children are unsnoozed
          */
         private boolean isSnoozable(NotificationRecord record) {
-            if (notificationForceGrouping()) {
-                boolean isExemptedSummary =
-                        ((record.getFlags() & FLAG_AUTOGROUP_SUMMARY) != 0
-                        || GroupHelper.isAggregatedGroup(record));
-                return !(record.getNotification().isGroupSummary() && isExemptedSummary);
-            } else {
-                return !(record.getNotification().isGroupSummary()
-                        && GroupHelper.AUTOGROUP_KEY.equals(record.getNotification().getGroup()));
-            }
+            boolean isExemptedSummary =
+                    ((record.getFlags() & FLAG_AUTOGROUP_SUMMARY) != 0
+                            || GroupHelper.isAggregatedGroup(record));
+            return !(record.getNotification().isGroupSummary() && isExemptedSummary);
         }
     }
 
@@ -9967,12 +9912,10 @@ public class NotificationManagerService extends SystemService {
                                 true /* isRemoved */);
                     }
                 } else {
-                    if (notificationForceGrouping()) {
-                        // No notification was found => maybe it was canceled by forced grouping
-                        if (Flags.notificationForceGroupSingletons()) {
-                            mGroupHelper.maybeCancelGroupChildrenForCanceledSummary(mPkg, mTag,
+                    // No notification was found => maybe it was canceled by forced grouping
+                    if (Flags.notificationForceGroupSingletons()) {
+                        mGroupHelper.maybeCancelGroupChildrenForCanceledSummary(mPkg, mTag,
                                 mId, mUserId, mReason);
-                        }
                     }
 
                     // No notification was found, assume that it is snoozed and cancel it.
@@ -10250,25 +10193,23 @@ public class NotificationManagerService extends SystemService {
                         return false;
                     }
 
-                    if (notificationForceGrouping()) {
-                        if (Flags.notificationForceGroupSingletons()) {
-                            // Check if this is an updated for a summary for an aggregated sparse
-                            // group and remove it because that summary has been canceled
-                            if (mGroupHelper.isUpdateForCanceledSummary(r)) {
-                                if (DBG) {
-                                    Log.w(TAG,
+                    if (Flags.notificationForceGroupSingletons()) {
+                        // Check if this is an updated for a summary for an aggregated sparse
+                        // group and remove it because that summary has been canceled
+                        if (mGroupHelper.isUpdateForCanceledSummary(r)) {
+                            if (DBG) {
+                                Log.w(TAG,
                                         "Suppressing notification because summary was canceled: "
-                                            + r);
-                                }
-
-                                String groupKey = r.getGroupKey();
-                                NotificationRecord groupSummary = mSummaryByGroupKey.get(groupKey);
-                                if (groupSummary != null && groupSummary.getKey()
-                                        .equals(r.getKey())) {
-                                    mSummaryByGroupKey.remove(groupKey);
-                                }
-                                return false;
+                                                + r);
                             }
+
+                            String groupKey = r.getGroupKey();
+                            NotificationRecord groupSummary = mSummaryByGroupKey.get(groupKey);
+                            if (groupSummary != null && groupSummary.getKey()
+                                    .equals(r.getKey())) {
+                                mSummaryByGroupKey.remove(groupKey);
+                            }
+                            return false;
                         }
                     }
 
@@ -10326,10 +10267,8 @@ public class NotificationManagerService extends SystemService {
                                 != n.getNotification().flags
                                 || !old.getChannel().getId().equals(r.getChannel().getId())) {
                             synchronized (mNotificationLock) {
-                                final String autogroupName =
-                                        notificationForceGrouping()
-                                            ? GroupHelper.getFullAggregateGroupKey(r)
-                                            : GroupHelper.AUTOGROUP_KEY;
+                                final String autogroupName
+                                        = GroupHelper.getFullAggregateGroupKey(r);
                                 boolean willBeAutogrouped =
                                         mGroupHelper.onNotificationPosted(r,
                                             hasAutoGroupSummaryLocked(r));
@@ -10341,21 +10280,19 @@ public class NotificationManagerService extends SystemService {
                                     addAutogroupKeyLocked(key,
                                             autogroupName, /*requestSort=*/false);
                                 } else {
-                                    if (notificationForceGrouping()) {
-                                        // Wait 3 seconds so that the app has a chance to post
-                                        // a group summary or children (complete a group)
-                                        mHandler.postDelayed(() -> {
-                                            synchronized (mNotificationLock) {
-                                                 NotificationRecord record =
-                                                        mNotificationsByKey.get(key);
-                                                if (record != null) {
-                                                    mGroupHelper.onNotificationPostedWithDelay(
-                                                            record, mNotificationList,
-                                                            mSummaryByGroupKey);
-                                                 }
+                                    // Wait 3 seconds so that the app has a chance to post
+                                    // a group summary or children (complete a group)
+                                    mHandler.postDelayed(() -> {
+                                        synchronized (mNotificationLock) {
+                                            NotificationRecord record =
+                                                    mNotificationsByKey.get(key);
+                                            if (record != null) {
+                                                mGroupHelper.onNotificationPostedWithDelay(
+                                                        record, mNotificationList,
+                                                        mSummaryByGroupKey);
                                             }
-                                        }, key, DELAY_FORCE_REGROUP_TIME);
-                                    }
+                                        }
+                                    }, key, DELAY_FORCE_REGROUP_TIME);
                                 }
                              }
                         }
@@ -10388,23 +10325,13 @@ public class NotificationManagerService extends SystemService {
                     } else {
                         Slog.e(TAG, "Not posting notification without small icon: " + notification);
                         if (old != null && !old.isCanceled) {
-                            mListeners.notifyRemovedLocked(r,
-                                    REASON_ERROR, r.getStats());
-                            if (notificationForceGrouping()) {
-                                mHandler.post(() -> {
-                                    synchronized (mNotificationLock) {
-                                        mGroupHelper.onNotificationRemoved(r, mNotificationList,
-                                                /* sendingDelete= */ false);
-                                    }
-                                });
-                            } else {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mGroupHelper.onNotificationRemoved(r);
-                                    }
-                                });
-                            }
+                            mListeners.notifyRemovedLocked(r, REASON_ERROR, r.getStats());
+                            mHandler.post(() -> {
+                                synchronized (mNotificationLock) {
+                                    mGroupHelper.onNotificationRemoved(r, mNotificationList,
+                                            /* sendingDelete= */ false);
+                                }
+                            });
                         }
 
                         if (callstyleCallbackApi()) {
@@ -10654,11 +10581,9 @@ public class NotificationManagerService extends SystemService {
             n.flags &= ~Notification.FLAG_GROUP_SUMMARY;
         }
 
-        if (notificationForceGrouping()) {
-            // If this is an update to a summary that was forced grouped => remove summary flag
-            if (wasSummaryAutogrouped(r, old)) {
-                n.flags &= ~FLAG_GROUP_SUMMARY;
-            }
+        // If this is an update to a summary that was forced grouped => remove summary flag
+        if (wasSummaryAutogrouped(r, old)) {
+            n.flags &= ~FLAG_GROUP_SUMMARY;
         }
 
         String group = sbn.getGroupKey();
@@ -11302,42 +11227,34 @@ public class NotificationManagerService extends SystemService {
                     r.isCanceled = true;
                 }
                 mListeners.notifyRemovedLocked(r, reason, r.getStats());
-                if (notificationForceGrouping()) {
-                    mHandler.removeCallbacksAndEqualMessages(r.getKey());
-                    mHandler.post(() -> {
-                        synchronized (NotificationManagerService.this.mNotificationLock) {
-                            mGroupHelper.onNotificationRemoved(r, mNotificationList, sendDelete);
-                        }
-                    });
-
-                    // Wait 3 seconds so that the app has a chance to cancel/post
-                    // a group summary or children
-                    final NotificationRecord groupSummary = mSummaryByGroupKey.get(r.getGroupKey());
-                    if (groupSummary != null
-                            && !GroupHelper.isAggregatedGroup(groupSummary)
-                            && !groupSummary.getKey().equals(canceledKey)) {
-                        // We only care about app-provided valid group summaries
-                        final String summaryKey = groupSummary.getKey();
-                        mHandler.removeCallbacksAndEqualMessages(summaryKey);
-                        mHandler.postDelayed(() -> {
-                            synchronized (mNotificationLock) {
-                                NotificationRecord summaryRecord = mNotificationsByKey.get(
-                                        summaryKey);
-                                if (summaryRecord != null) {
-                                    mGroupHelper.onGroupedNotificationRemovedWithDelay(
-                                            summaryRecord, mNotificationList, mSummaryByGroupKey);
-                                }
-                            }
-                        }, summaryKey, DELAY_FORCE_REGROUP_TIME);
+                mHandler.removeCallbacksAndEqualMessages(r.getKey());
+                mHandler.post(() -> {
+                    synchronized (NotificationManagerService.this.mNotificationLock) {
+                        mGroupHelper.onNotificationRemoved(r, mNotificationList, sendDelete);
                     }
-                } else {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mGroupHelper.onNotificationRemoved(r);
+                });
+
+                // Wait 3 seconds so that the app has a chance to cancel/post
+                // a group summary or children
+                final NotificationRecord groupSummary = mSummaryByGroupKey.get(r.getGroupKey());
+                if (groupSummary != null
+                        && !GroupHelper.isAggregatedGroup(groupSummary)
+                        && !groupSummary.getKey().equals(canceledKey)) {
+                    // We only care about app-provided valid group summaries
+                    final String summaryKey = groupSummary.getKey();
+                    mHandler.removeCallbacksAndEqualMessages(summaryKey);
+                    mHandler.postDelayed(() -> {
+                        synchronized (mNotificationLock) {
+                            NotificationRecord summaryRecord = mNotificationsByKey.get(
+                                    summaryKey);
+                            if (summaryRecord != null) {
+                                mGroupHelper.onGroupedNotificationRemovedWithDelay(
+                                        summaryRecord, mNotificationList, mSummaryByGroupKey);
+                            }
                         }
-                    });
+                    }, summaryKey, DELAY_FORCE_REGROUP_TIME);
                 }
+
                 if (callstyleCallbackApi()) {
                     notifyCallNotificationEventListenerOnRemoved(r);
                 }
@@ -11371,12 +11288,7 @@ public class NotificationManagerService extends SystemService {
         }
         final ArrayMap<String, String> summaries =
                 mAutobundledSummaries.get(r.getSbn().getUserId());
-        final String autbundledGroupKey;
-        if (notificationForceGrouping()) {
-            autbundledGroupKey = groupKey;
-        } else {
-            autbundledGroupKey = r.getSbn().getPackageName();
-        }
+        final String autbundledGroupKey = groupKey;
         if (summaries != null && r.getSbn().getKey().equals(
                 summaries.get(autbundledGroupKey))) {
             summaries.remove(autbundledGroupKey);

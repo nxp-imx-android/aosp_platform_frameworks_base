@@ -488,16 +488,9 @@ public final class NotificationRecord {
         mRankingTimeMs = calculateRankingTimeMs(previous.getRankingTimeMs());
         mCreationTimeMs = previous.mCreationTimeMs;
         mVisibleSinceMs = previous.mVisibleSinceMs;
-        if (android.service.notification.Flags.notificationForceGrouping()) {
-            if (previous.getSbn().getOverrideGroupKey() != null) {
-                getSbn().setOverrideGroupKey(previous.getSbn().getOverrideGroupKey());
-            }
-        } else {
-            if (previous.getSbn().getOverrideGroupKey() != null && !getSbn().isAppGroup()) {
-                getSbn().setOverrideGroupKey(previous.getSbn().getOverrideGroupKey());
-            }
+        if (previous.getSbn().getOverrideGroupKey() != null) {
+            getSbn().setOverrideGroupKey(previous.getSbn().getOverrideGroupKey());
         }
-
         // Don't copy importance information or mGlobalSortKey, recompute them.
     }
 
