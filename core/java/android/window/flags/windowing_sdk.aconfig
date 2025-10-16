@@ -94,7 +94,6 @@ flag {
     name: "root_task_for_bubble"
     description: "Using a root task to manage Bubble tasks"
     bug: "407669465"
-    is_fixed_read_only: true
 }
 
 flag {
