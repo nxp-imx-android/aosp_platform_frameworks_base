@@ -340,6 +340,37 @@ final class UpdatableFontDir {
         }
     }
 
+
+    /**
+     * Inserts multiple {@link FontUpdateRequest}s in transaction before the
+     * |fontFamilyNameToInsertBefore|.
+     * If one of the request fails, the fonts and config are rolled back to the previous state
+     * before this method is called.
+     * Example:
+     * 1. Insert one font file with the postScriptName "TestFont" and its font family "test" in
+     *    front of "serif" font family.
+     * updatableFontDir.insert(Arrays.asList(
+     *    new FontUpdateRequest(yourFileDescriptor, signature),
+     *    new FontUpdateRequest(new FontUpdateRequest.Family(
+     *       "test", Arrays.asList(new FontUpdateRequest.Font(
+     *         "TestFont", new FontStyle(), index, variationSettings)))), "serif");
+     *
+     * 2. Insert multiple font files with the postScriptName "TestFont1" and "TestFont2" and their
+     *    font family "test" in front of "serif" font family.
+     * updatableFontDir.insert(Arrays.asList(
+     *    new FontUpdateRequest(yourFileDescriptor1, signature1),
+     *    new FontUpdateRequest(yourFileDescriptor2, signature2),
+     *    new FontUpdateRequest(new FontUpdateRequest.Family(
+     *       "test", Arrays.asList(
+     *         new FontUpdateRequest.Font("TestFont1", new FontStyle(), 0, variationSettings),
+     *         new FontUpdateRequest.Font("TestFont2", new FontStyle(), 0, variationSettings)))),
+     *    "serif");
+     *
+     */
+    public void insert(List<FontUpdateRequest> requests, String fontFamilyNameToInsertBefore) {
+        // TODO: Implement this.
+    }
+
     /**
      * Installs a new font file, or updates an existing font file.
      *

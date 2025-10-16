@@ -65,6 +65,22 @@ import java.util.Objects;
  *     .build(), fm.getFontConfig().getConfigVersion());
  * </pre>
  *
+ * <p>You can add font files in the same request by calling
+ * {@link FontFamilyUpdateRequest.Builder#addFontFileUpdateRequest(FontFileUpdateRequest)}.
+ * You can insert a new font family with custom style parameters in front of the existing font
+ * family. The following example defines a font family called "emoji-v2v3" using "Emoji-V2V3" font
+ * file that is already available on the system with
+ * {@link FontFamilyUpdateRequest.Builder#addFontFileUpdateRequest(FontFileUpdateRequest)}
+ * <pre>
+ * FontManager fm = getContext().getSystemService(FontManager.class);
+ * fm.insertFontFamilyBefore(new FontFamilyUpdateRequest.Builder()
+ *     .addFontFileUpdateRequest(new FontFileUpdateRequest(yourFontFd, signature))
+ *     .addFontFamily(new FontFamilyUpdateRequest.FontFamily.Builder("emoji-v2v3", Arrays.asList(
+ *         new FontFamilyUpdateRequest.Font.Builder(
+ *             "Emoji-V2V3",
+ *             new FontStyle(FONT_WEIGHT_NORMAL, FONT_SLANT_UPRIGHT)).build())).build())
+ *     .build(), "NotoColorEmoji", fm.getFontConfig().getConfigVersion());
+ * </pre>
  * @hide
  */
 @SystemApi
