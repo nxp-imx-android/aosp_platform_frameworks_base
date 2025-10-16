@@ -9,6 +9,8 @@ import static android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.settingslib.wifi.WifiUtils.getHotspotIconResource;
+import static com.android.systemui.Flags.FLAG_QS_TILE_DETAILED_VIEW;
+import static com.android.systemui.Flags.FLAG_QS_WIFI_CONFIG;
 import static com.android.systemui.qs.tiles.dialog.InternetDetailsContentController.TOAST_PARAMS_HORIZONTAL_WEIGHT;
 import static com.android.systemui.qs.tiles.dialog.InternetDetailsContentController.TOAST_PARAMS_VERTICAL_WEIGHT;
 import static com.android.wifitrackerlib.WifiEntry.WIFI_LEVEL_MAX;
@@ -45,6 +47,8 @@ import android.net.NetworkCapabilities;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.annotations.DisableFlags;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionInfo;
@@ -689,7 +693,8 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void onAccessPointsChanged_oneConnectedEntryAndThreeOthers_callbackCutMore() {
+    @DisableFlags(FLAG_QS_WIFI_CONFIG)
+    public void onAccessPointsChanged_oneConnectedEntryAndThreeOthers_flagOff_callbackCutMore() {
         reset(mInternetDialogCallback);
         mAccessPoints.clear();
         mAccessPoints.add(mConnectedEntry);
@@ -707,7 +712,28 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void onAccessPointsChanged_fourWifiEntries_callbackCutMore() {
+    @EnableFlags({FLAG_QS_WIFI_CONFIG, FLAG_QS_TILE_DETAILED_VIEW})
+    public void onAccessPointsChanged_oneConnectedEntryAndThreeOthers_flagOn_callbackNoCutMore() {
+        reset(mInternetDialogCallback);
+        mAccessPoints.clear();
+        mAccessPoints.add(mConnectedEntry);
+        mAccessPoints.add(mWifiEntry1);
+        mAccessPoints.add(mWifiEntry2);
+        mAccessPoints.add(mWifiEntry3);
+
+        mInternetDetailsContentController.onAccessPointsChanged(mAccessPoints);
+
+        mWifiEntries.clear();
+        mWifiEntries.add(mWifiEntry1);
+        mWifiEntries.add(mWifiEntry2);
+        mWifiEntries.add(mWifiEntry3);
+        verify(mInternetDialogCallback).onAccessPointsChanged(mWifiEntries, mConnectedEntry,
+                true /* hasMoreEntry */);
+    }
+
+    @Test
+    @DisableFlags(FLAG_QS_WIFI_CONFIG)
+    public void onAccessPointsChanged_fourWifiEntries_flagOff_callbackCutMore() {
         reset(mInternetDialogCallback);
         mAccessPoints.clear();
         mAccessPoints.add(mWifiEntry1);
@@ -721,6 +747,27 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
         mWifiEntries.add(mWifiEntry1);
         mWifiEntries.add(mWifiEntry2);
         mWifiEntries.add(mWifiEntry3);
+        verify(mInternetDialogCallback).onAccessPointsChanged(mWifiEntries,
+                null /* connectedEntry */, true /* hasMoreEntry */);
+    }
+
+    @Test
+    @EnableFlags({FLAG_QS_WIFI_CONFIG, FLAG_QS_TILE_DETAILED_VIEW})
+    public void onAccessPointsChanged_fourWifiEntries_flagOn_callbackNoCutMore() {
+        reset(mInternetDialogCallback);
+        mAccessPoints.clear();
+        mAccessPoints.add(mWifiEntry1);
+        mAccessPoints.add(mWifiEntry2);
+        mAccessPoints.add(mWifiEntry3);
+        mAccessPoints.add(mWifiEntry4);
+
+        mInternetDetailsContentController.onAccessPointsChanged(mAccessPoints);
+
+        mWifiEntries.clear();
+        mWifiEntries.add(mWifiEntry1);
+        mWifiEntries.add(mWifiEntry2);
+        mWifiEntries.add(mWifiEntry3);
+        mWifiEntries.add(mWifiEntry4);
         verify(mInternetDialogCallback).onAccessPointsChanged(mWifiEntries,
                 null /* connectedEntry */, true /* hasMoreEntry */);
     }
