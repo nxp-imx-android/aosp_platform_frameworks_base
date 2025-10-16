@@ -89,6 +89,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -404,7 +406,10 @@ public class AccessibilityUserStateTest {
 
     @Test
     public void isShortcutTargetInstalledLocked_returnTrue() {
-        mUserState.mInstalledServices.add(mMockServiceInfo);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                mUserState.getInstalledServices());
+        installedServices.add(mMockServiceInfo);
+        mUserState.buildInstalledServicesMapLocked(installedServices);
         assertTrue(mUserState.isShortcutTargetInstalledLocked(COMPONENT_NAME.flattenToString()));
     }
 
@@ -543,7 +548,10 @@ public class AccessibilityUserStateTest {
         resolveInfo.serviceInfo = serviceInfo;
         when(mMockServiceInfo.getTileServiceName()).thenReturn(tileComponent.getClassName());
         when(mMockServiceInfo.getResolveInfo()).thenReturn(resolveInfo);
-        mUserState.mInstalledServices.add(mMockServiceInfo);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                mUserState.getInstalledServices());
+        installedServices.add(mMockServiceInfo);
+        mUserState.buildInstalledServicesMapLocked(installedServices);
         mUserState.updateTileServiceMapForAccessibilityServiceLocked();
 
         Map<ComponentName, AccessibilityServiceInfo> actual =
@@ -605,6 +613,20 @@ public class AccessibilityUserStateTest {
         targets.clear();
 
         assertThat(mUserState.getShortcutTargetsLocked(ALL)).isNotEmpty();
+    }
+
+    @Test
+    public void buildInstalledServicesMapLocked_returnCorrectMap() {
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                mUserState.getInstalledServices());
+        installedServices.add(mMockServiceInfo);
+        mUserState.buildInstalledServicesMapLocked(installedServices);
+
+        assertThat(mUserState.mInstalledServicesMap.size()).isEqualTo(1);
+        assertThat(mUserState.mInstalledServicesMap).containsKey(COMPONENT_NAME);
+
+        assertThat(mUserState.mInstalledServicesMap.get(COMPONENT_NAME))
+                .isEqualTo(mMockServiceInfo);
     }
 
     private int getSecureIntForUser(String key, int userId) {

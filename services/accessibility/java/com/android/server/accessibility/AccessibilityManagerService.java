@@ -1036,7 +1036,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         final AccessibilityUserState userState = getCurrentUserStateLocked();
         // Reload the installed services since some services may have different attributes
         // or resolve info (does not support equals), etc. Remove them then to force reload.
-        userState.mInstalledServices.clear();
+        userState.mInstalledServicesMap.clear();
         if (readConfigurationForUserStateLocked(userState,
                     parsedAccessibilityServiceInfos, parsedAccessibilityShortcutInfos)) {
             onUserStateChangedLocked(userState);
@@ -1093,7 +1093,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             String[] packages, AccessibilityUserState userState) {
         final Set<String> packageSet = new HashSet<>(List.of(packages));
         final Set<ComponentName> continuousServices =
-                userState.mInstalledServices.stream().filter(service ->
+                userState.getInstalledServices().stream().filter(service ->
                         (service.flags & FLAG_REQUEST_ACCESSIBILITY_BUTTON)
                                 == FLAG_REQUEST_ACCESSIBILITY_BUTTON
                 ).map(AccessibilityServiceInfo::getComponentName).collect(Collectors.toSet());
@@ -1605,7 +1605,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             resolvedUserId = mSecurityPolicy
                     .resolveCallingUserIdEnforcingPermissionsLocked(userId);
             serviceInfos = new ArrayList<>(
-                    getUserStateLocked(resolvedUserId).mInstalledServices);
+                    getUserStateLocked(resolvedUserId).getInstalledServices());
         }
 
         if (Binder.getCallingPid() == OWN_PROCESS_ID) {
@@ -2755,9 +2755,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
         }
 
-        if (!parsedAccessibilityServiceInfos.equals(userState.mInstalledServices)) {
-            userState.mInstalledServices.clear();
-            userState.mInstalledServices.addAll(parsedAccessibilityServiceInfos);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        if (!parsedAccessibilityServiceInfos.equals(installedServices)) {
+            userState.buildInstalledServicesMapLocked(parsedAccessibilityServiceInfos);
             userState.updateTileServiceMapForAccessibilityServiceLocked();
             return true;
         }
@@ -3125,8 +3126,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         // Store the list of installed services.
         mTempComponentNameSet.clear();
-        for (int i = 0, count = userState.mInstalledServices.size(); i < count; i++) {
-            AccessibilityServiceInfo installedService = userState.mInstalledServices.get(i);
+        for (AccessibilityServiceInfo installedService : userState.getInstalledServices()) {
             ComponentName componentName = ComponentName.unflattenFromString(
                     installedService.getId());
             mTempComponentNameSet.add(componentName);
@@ -3580,9 +3580,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         // Up to JB-MR1 we had a allowlist with services that can enable touch
         // exploration. When a service is first started we show a dialog to the
         // use to get a permission to allowlist the service.
-        final int installedServiceCount = userState.mInstalledServices.size();
-        for (int i = 0; i < installedServiceCount; i++) {
-            AccessibilityServiceInfo serviceInfo = userState.mInstalledServices.get(i);
+        for (AccessibilityServiceInfo serviceInfo : userState.getInstalledServices()) {
             ResolveInfo resolveInfo = serviceInfo.getResolveInfo();
             if ((serviceInfo.getCapabilities()
                         & AccessibilityServiceInfo.CAPABILITY_CAN_REQUEST_TOUCH_EXPLORATION) == 0
@@ -6960,7 +6958,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         && component.getPackageName().equals(packageName));
                 // Reloads the installed services info to make sure the rebound service could
                 // get a new one.
-                userState.mInstalledServices.clear();
+                userState.mInstalledServicesMap.clear();
                 final boolean configurationChanged;
                 configurationChanged = mManagerService.readConfigurationForUserStateLocked(
                         userState, parsedAccessibilityServiceInfos,
