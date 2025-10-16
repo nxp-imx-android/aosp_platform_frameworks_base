@@ -133,14 +133,14 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
     }
 
     protected void dump(PrintWriter pw) {
-        pw.println("\nMediaFocusControl dump time: "
-                + DateFormat.getTimeInstance().format(new Date()));
+        pw.println("## MediaFocusControl");
         dumpFocusStack(pw);
-        pw.println("\n");
+        pw.println();
         // log
         mEventLogger.dump(pw);
         dumpMultiAudioFocus(pw);
         dumpUidIgnore(pw);
+        pw.println();
     }
 
     /**

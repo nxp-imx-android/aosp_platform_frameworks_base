@@ -40,9 +40,6 @@ import java.util.Locale;
  */
 public class EventLogger {
 
-    /** Prefix for the title added at the beginning of a {@link #dump(PrintWriter)} operation */
-    private static final String DUMP_TITLE_PREFIX = "Events log: ";
-
     /** Identifies the source of events. */
     @Nullable private final String mTag;
 
@@ -110,10 +107,7 @@ public class EventLogger {
     }
 
     protected String getDumpTitle() {
-        if (mTag == null) {
-            return DUMP_TITLE_PREFIX;
-        }
-        return DUMP_TITLE_PREFIX + mTag;
+        return mTag;
     }
 
     /** Dumps events using {@link PrintWriter} with a certain indent. */
