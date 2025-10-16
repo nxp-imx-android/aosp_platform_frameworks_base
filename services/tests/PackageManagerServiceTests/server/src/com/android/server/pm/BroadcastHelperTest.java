@@ -121,7 +121,6 @@ public class BroadcastHelperTest {
         mBroadcastHelper = new BroadcastHelper(mMockPackageManagerServiceInjector);
     }
 
-    @EnableFlags(Flags.FLAG_INCLUDE_BROADCAST_DEBUG_REASON)
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSystemAndApplicationItself()
             throws Exception {
@@ -143,7 +142,6 @@ public class BroadcastHelperTest {
         verifyBroadcastDebugReason(actualOptions, PackageMetrics.STRING_TEST);
     }
 
-    @EnableFlags(Flags.FLAG_INCLUDE_BROADCAST_DEBUG_REASON)
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSharedUserIdApplications()
             throws Exception {
