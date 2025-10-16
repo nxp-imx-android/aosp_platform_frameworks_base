@@ -3789,10 +3789,19 @@
     <!-- Text for TileService request dialog. This is shown to the user that an app is requesting
          user approval to add the shown tile to Quick Settings [CHAR LIMIT=NONE] -->
     <string name="qs_tile_request_dialog_text"><xliff:g id="appName" example="Fake App">%1$s</xliff:g> wants to add the following tile to Quick Settings</string>
+    <!-- Text for TileService request dialog. This is shown to the user that an app is requesting
+         user approval to select a size and add the shown tile to Quick Settings [CHAR LIMIT=NONE] -->
+    <string name="qs_tile_request_dialog_text_with_size"><xliff:g id="appName" example="Fake App">%1$s</xliff:g> wants to add a tile to Quick Settings. Select a tile size to continue.</string>
     <!-- Text for TileService request dialog. Text for button for user to approve adding the tile [CHAR LIMIT=20] -->
     <string name="qs_tile_request_dialog_add">Add tile</string>
     <!-- Text for TileService request dialog. Text for button for user to reject adding the tile [CHAR LIMIT=20] -->
-    <string name="qs_tile_request_dialog_not_add">Do not add tile</string>
+    <string name="qs_tile_request_dialog_not_add">Don\'t add tile</string>
+    <!-- Title for TileService request dialog. [CHAR LIMIT=20] -->
+    <string name="qs_tile_request_dialog_title">Add tile to Quick Settings</string>
+    <!-- Content description for the tile's small format. [CHAR LIMIT=20] -->
+    <string name="qs_tile_request_dialog_small_format_content_description">Small format</string>
+    <!-- Content description for the tile's large format. [CHAR LIMIT=20] -->
+    <string name="qs_tile_request_dialog_large_format_content_description">Large format</string>
 
     <!-- Title for User Switch dialog. [CHAR LIMIT=20] -->
     <string name="qs_user_switch_dialog_title">Select user</string>

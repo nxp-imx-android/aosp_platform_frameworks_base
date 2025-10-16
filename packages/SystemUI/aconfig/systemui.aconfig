@@ -823,6 +823,13 @@ flag {
 }
 
 flag {
+    name: "qs_sizes_in_tile_request_dialog"
+    namespace: "systemui"
+    description: "Allows for selecting a tile's size in the tile request dialog."
+    bug: "445464782"
+}
+
+flag {
     name: "qs_material_expressive_tiles"
     namespace: "systemui"
     description: "Uses the Material Expressive button groups for QS tiles."
