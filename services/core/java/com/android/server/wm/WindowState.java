@@ -4540,8 +4540,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     boolean forAllWindows(ToBooleanFunction<WindowState> callback, boolean traverseTopToBottom) {
         if (mChildren.isEmpty()) {
-            // The window has no children so we just return it.
-            return applyInOrderWithImeWindows(callback, traverseTopToBottom);
+            // The window has no children so we apply the callback on it.
+            return applyInOrderWithImeContainer(callback, traverseTopToBottom);
         }
 
         if (traverseTopToBottom) {
@@ -4551,7 +4551,16 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
-    private boolean forAllWindowBottomToTop(ToBooleanFunction<WindowState> callback) {
+    /**
+     * For all windows at or below this window call the callback, traversing the hierarchy from
+     * bottom-to-top in terms of z-order.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @return True if the search ended before we reached the end of the hierarchy due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean forAllWindowBottomToTop(@NonNull ToBooleanFunction<WindowState> callback) {
         // We want to consume the negative sublayer children first because they need to appear
         // below the parent, then this window (the parent), and then the positive sublayer children
         // because they need to appear above the parent.
@@ -4560,7 +4569,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         WindowState child = mChildren.get(i);
 
         while (i < count && child.mSubLayer < 0) {
-            if (child.applyInOrderWithImeWindows(callback, false /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, false /* traverseTopToBottom */)) {
                 return true;
             }
             i++;
@@ -4570,12 +4579,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             child = mChildren.get(i);
         }
 
-        if (applyInOrderWithImeWindows(callback, false /* traverseTopToBottom */)) {
+        if (applyInOrderWithImeContainer(callback, false /* traverseTopToBottom */)) {
             return true;
         }
 
         while (i < count) {
-            if (child.applyInOrderWithImeWindows(callback, false /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, false /* traverseTopToBottom */)) {
                 return true;
             }
             i++;
@@ -4595,9 +4604,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final SparseArray<InsetsSource> mergedLocalInsetsSources =
                 createMergedSparseArray(localInsetsSourcesFromParent, mLocalInsetsSources);
 
-        // ForAllWindows is the reliable way to visit the IME window and the windows within this
-        // WindowState in the correct order. updateAboveInsetsState doesn't take the real order of
-        // IME into account.
+        // forAllWindows is the reliable way to visit the ImeContainer and the windows within this
+        // WindowState in the correct order. updateAboveInsetsState doesn't take the placement of
+        // the ImeContainer relative to the IME Layering Target into account
+        // (see #applyForImeContainerIfNeeded).
         forAllWindows(w -> {
             if (!w.mAboveInsetsState.equals(aboveInsetsState)) {
                 w.mAboveInsetsState.set(aboveInsetsState);
@@ -4605,9 +4615,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
 
             if (!mergedLocalInsetsSources.contentEquals(w.mMergedLocalInsetsSources)) {
-                // The traversal will reach IME if this window is an IME target window. However, we
-                // should not copy the local insets to the IME window. The forAllWindow will reach
-                // all IME containers by the logic in {@link #applyImeWindowsIfNeeded}.
+                // The traversal will reach the ImeContainer (and thus the IME Window) if this
+                // window is the current IME Layering Target. However, we should not copy the local
+                // insets to the IME window.
                 if (!w.mIsImWindow) {
                     w.mMergedLocalInsetsSources = mergedLocalInsetsSources;
                     insetsChangedWindows.add(w);
@@ -4623,7 +4633,16 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }, true /* traverseTopToBottom */);
     }
 
-    private boolean forAllWindowTopToBottom(ToBooleanFunction<WindowState> callback) {
+    /**
+     * For all windows at or below this window call the callback, traversing the hierarchy from
+     * top-to-bottom in terms of z-order.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @return True if the search ended before we reached the end of the hierarchy due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean forAllWindowTopToBottom(@NonNull ToBooleanFunction<WindowState> callback) {
         // We want to consume the positive sublayer children first because they need to appear
         // above the parent, then this window (the parent), and then the negative sublayer children
         // because they need to appear above the parent.
@@ -4631,7 +4650,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         WindowState child = mChildren.get(i);
 
         while (i >= 0 && child.mSubLayer >= 0) {
-            if (child.applyInOrderWithImeWindows(callback, true /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, true /* traverseTopToBottom */)) {
                 return true;
             }
             --i;
@@ -4641,12 +4660,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             child = mChildren.get(i);
         }
 
-        if (applyInOrderWithImeWindows(callback, true /* traverseTopToBottom */)) {
+        if (applyInOrderWithImeContainer(callback, true /* traverseTopToBottom */)) {
             return true;
         }
 
         while (i >= 0) {
-            if (child.applyInOrderWithImeWindows(callback, true /* traverseTopToBottom */)) {
+            if (child.applyInOrderWithImeContainer(callback, true /* traverseTopToBottom */)) {
                 return true;
             }
             --i;
@@ -4659,29 +4678,56 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return false;
     }
 
-    private boolean applyImeWindowsIfNeeded(ToBooleanFunction<WindowState> callback,
+    /**
+     * For all windows at or below the {@link ImeContainer} call the callback if this window is the
+     * current {@link DisplayContent#mImeLayeringTarget}, otherwise skip this.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @param traverseTopToBottom If true traverses the hierarchy from top-to-bottom in terms of
+     *                            z-order, else from bottom-to-top.
+     * @return True if the search ended before we reached the end of the hierarchy, due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean applyForImeContainerIfNeeded(@NonNull ToBooleanFunction<WindowState> callback,
             boolean traverseTopToBottom) {
-        // No need to apply to IME window if the window is not the current IME layering target.
+        // Skip traversing the ImeContainer if this window is not the current IME layering target.
         if (!isImeLayeringTarget()) {
             return false;
         }
-        return mDisplayContent.forAllImeWindows(callback, traverseTopToBottom);
+        return mDisplayContent.getImeContainer().forAllWindowForce(callback, traverseTopToBottom);
     }
 
-    private boolean applyInOrderWithImeWindows(ToBooleanFunction<WindowState> callback,
+    /**
+     * Apply the callback on this window. If this window is the current
+     * {@link DisplayContent#mImeLayeringTarget}, also applies this callback on the
+     * {@link ImeContainer} based on the given order.
+     *
+     * <p>To maintain a visual traversal order, the {@link ImeContainer} is initially skipped during
+     * window hierarchy traversal if there is an {@link DisplayContent#mImeLayeringTarget}, and it
+     * is re-visited as soon as traversal reaches the {@link DisplayContent#mImeLayeringTarget},
+     * which will always be right below it. See {@link ImeContainer} for details.
+     *
+     * @param callback Calls the {@link ToBooleanFunction#apply} method for each window found and
+     *                 stops the search if {@link ToBooleanFunction#apply} returns true.
+     * @param traverseTopToBottom If true traverses the hierarchy from top-to-bottom in terms of
+     *                            z-order, else from bottom-to-top.
+     * @return True if the search ended before we reached the end of the hierarchy, due to
+     *         {@link ToBooleanFunction#apply} returning true.
+     */
+    private boolean applyInOrderWithImeContainer(@NonNull ToBooleanFunction<WindowState> callback,
             boolean traverseTopToBottom) {
         if (traverseTopToBottom) {
-            if (applyImeWindowsIfNeeded(callback, traverseTopToBottom)
-                    || callback.apply(this)) {
-                return true;
-            }
+            // If this window is the current IME Layering target, the IME Container is above it,
+            // so traverse that first.
+            return applyForImeContainerIfNeeded(callback, true /* traverseTopToBottom */)
+                    || callback.apply(this);
         } else {
-            if (callback.apply(this)
-                    || applyImeWindowsIfNeeded(callback, traverseTopToBottom)) {
-                return true;
-            }
+            // If this window is the current IME Layering target, the IME Container is above it,
+            // so traverse that last.
+            return callback.apply(this)
+                    || applyForImeContainerIfNeeded(callback, false /* traverseTopToBottom */);
         }
-        return false;
     }
 
     WindowState getWindow(Predicate<WindowState> callback) {

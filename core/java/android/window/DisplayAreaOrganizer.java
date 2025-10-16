@@ -101,10 +101,11 @@ public class DisplayAreaOrganizer extends WindowOrganizer {
     public static final int FEATURE_IME_PLACEHOLDER = FEATURE_SYSTEM_FIRST + 7;
 
     /**
-     * Display area hosting IME window tokens (@see ImeContainer). By default, IMEs are parented
-     * to FEATURE_IME_PLACEHOLDER but can be reparented under other RootDisplayArea.
+     * Display area hosting IME window tokens (see {@link com.android.server.wm.ImeContainer}).
+     * By default, IMEs are parented to {@link #FEATURE_IME_PLACEHOLDER} but can be reparented under
+     * other {@link com.android.server.wm.RootDisplayArea}.
      *
-     * This feature can register organizers in order to disable the reparenting logic and manage
+     * <p>This feature can register organizers in order to disable the reparenting logic and manage
      * the position and settings of the container manually. This is useful for foldable devices
      * which require custom UX rules for the IME position (e.g. IME on one screen and the focused
      * app on another screen).

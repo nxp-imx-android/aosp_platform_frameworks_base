@@ -37,7 +37,6 @@ import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_LAST;
 import static android.window.DisplayAreaOrganizer.KEY_ROOT_DISPLAY_AREA_ID;
 
-import static com.android.server.wm.DisplayArea.Type.ABOVE_TASKS;
 import static com.android.server.wm.DisplayAreaPolicyBuilder.Feature;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -94,7 +93,7 @@ public class DisplayAreaPolicyBuilderTest {
     private TestWindowManagerPolicy mPolicy = new TestWindowManagerPolicy();
     private WindowManagerService mWms;
     private RootDisplayArea mRoot;
-    private DisplayArea.Tokens mImeContainer;
+    private ImeContainer mImeContainer;
     private DisplayContent mDisplayContent;
     private TaskDisplayArea mDefaultTaskDisplayArea;
     private List<TaskDisplayArea> mTaskDisplayAreaList;
@@ -107,7 +106,7 @@ public class DisplayAreaPolicyBuilderTest {
     public void setup() {
         mWms = mSystemServices.getWindowManagerService();
         mRoot = new SurfacelessDisplayAreaRoot(mWms);
-        mImeContainer = new DisplayArea.Tokens(mWms, ABOVE_TASKS, "ImeContainer");
+        mImeContainer = new ImeContainer(mWms);
         mDisplayContent = mock(DisplayContent.class);
         doReturn(true).when(mDisplayContent).isTrusted();
         doReturn(DEFAULT_DISPLAY).when(mDisplayContent).getDisplayId();
