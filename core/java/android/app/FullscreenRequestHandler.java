@@ -38,7 +38,8 @@ public class FullscreenRequestHandler {
             RESULT_APPROVED,
             RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY,
             RESULT_FAILED_NOT_TOP_FOCUSED,
-            RESULT_FAILED_ALREADY_FULLY_EXPANDED
+            RESULT_FAILED_ALREADY_FULLY_EXPANDED,
+            RESULT_FAILED_NOT_SUPPORTED
     })
     public @interface RequestResult {}
 
@@ -46,6 +47,7 @@ public class FullscreenRequestHandler {
     public static final int RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY = 1;
     public static final int RESULT_FAILED_NOT_TOP_FOCUSED = 2;
     public static final int RESULT_FAILED_ALREADY_FULLY_EXPANDED = 3;
+    public static final int RESULT_FAILED_NOT_SUPPORTED = 4;
 
     public static final String REMOTE_CALLBACK_RESULT_KEY = "result";
 
@@ -94,6 +96,10 @@ public class FullscreenRequestHandler {
             case RESULT_FAILED_ALREADY_FULLY_EXPANDED:
                 e = new IllegalStateException("The window is already fully expanded.");
                 break;
+            case RESULT_FAILED_NOT_SUPPORTED:
+                e = new UnsupportedOperationException("Fullscreen request denied by system "
+                        + "policy.");
+                break;
             default:
                 callback.onResult(null);
                 break;
@@ -110,10 +116,13 @@ public class FullscreenRequestHandler {
             }
             return RESULT_APPROVED;
         }
-        if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()
-                && (windowingMode == WINDOWING_MODE_FULLSCREEN
-                || windowingMode == WINDOWING_MODE_MULTI_WINDOW)) {
-            return RESULT_FAILED_ALREADY_FULLY_EXPANDED;
+        if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()) {
+            if (windowingMode == WINDOWING_MODE_FULLSCREEN) {
+                return RESULT_FAILED_ALREADY_FULLY_EXPANDED;
+            }
+            if ( windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
+                return RESULT_FAILED_NOT_SUPPORTED;
+            }
         }
         return RESULT_APPROVED;
     }
