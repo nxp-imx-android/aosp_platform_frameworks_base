@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.collection.inflation
 
-import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.content.Context
 import android.database.ContentObserver
 import android.os.Handler
@@ -154,6 +153,6 @@ constructor(
             isChildInGroup = entry.hasEverBeenGroupChild(),
             isGroupSummary = entry.hasEverBeenGroupSummary(),
             summarization = entry.summarization,
-            isBundled = SYSTEM_RESERVED_IDS.contains(entry.ranking?.channel?.id),
+            isBundled = entry.isBundled,
         )
 }

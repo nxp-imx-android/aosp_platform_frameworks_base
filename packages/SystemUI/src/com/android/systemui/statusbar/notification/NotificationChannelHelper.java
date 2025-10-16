@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.notification;
 
-import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
-
 import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -45,7 +43,7 @@ public class NotificationChannelHelper {
             NotificationListenerService.Ranking ranking,
             StatusBarNotification sbn,
             NotificationChannel channel) {
-        if (SYSTEM_RESERVED_IDS.contains(channel.getId())) {
+        if (channel.isBundleChannel()) {
             return channel;
         }
         if (!TextUtils.isEmpty(channel.getConversationId())) {

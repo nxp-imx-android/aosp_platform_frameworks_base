@@ -54,7 +54,6 @@ import static android.app.Notification.FLAG_ONLY_ALERT_ONCE;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.Notification.FLAG_USER_INITIATED_JOB;
 import static android.app.NotificationChannel.OLD_CONVERSATION_CHANNEL_ID_FORMAT;
-import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED;
 import static android.app.NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED;
 import static android.app.NotificationManager.ACTION_CONSOLIDATED_NOTIFICATION_POLICY_CHANGED;
@@ -2061,7 +2060,7 @@ public class NotificationManagerService extends SystemService {
         NotificationChannel originalChannel = mPreferencesHelper.getNotificationChannel(
                 r.getSbn().getPackageName(), r.getUid(), origChannelId, false);
         String currChannelId = r.getChannel().getId();
-        boolean isClassified = NotificationChannel.SYSTEM_RESERVED_IDS.contains(currChannelId);
+        boolean isClassified = r.getChannel().isBundleChannel();
         if (originalChannel != null && !origChannelId.equals(currChannelId) && isClassified) {
             final Bundle signals = new Bundle();
             signals.putParcelable(KEY_UNCLASSIFY, originalChannel);
@@ -2093,8 +2092,7 @@ public class NotificationManagerService extends SystemService {
             Slog.v(TAG, "reclassifyNotification: " + r);
         }
 
-        boolean isClassified = NotificationChannel.SYSTEM_RESERVED_IDS.contains(
-                r.getChannel().getId());
+        boolean isClassified = r.getChannel().isBundleChannel();
         if (r.getBundleType() != Adjustment.TYPE_OTHER && !isClassified) {
             final Bundle classifBundle = new Bundle();
             classifBundle.putInt(KEY_TYPE, r.getBundleType());
@@ -5122,7 +5120,7 @@ public class NotificationManagerService extends SystemService {
             checkNotNull(parentChannel);
             checkNotNull(conversationId);
             String parentId = parentChannel.getId();
-            if (SYSTEM_RESERVED_IDS.contains(parentId)) {
+            if (parentChannel.isBundleChannel()) {
                 Log.v(TAG, "Cannot create conversation for classified notification with pkg:"
                         + pkg + " parentId:" + parentId + " conversationId:" + conversationId);
                 return;
@@ -5217,7 +5215,9 @@ public class NotificationManagerService extends SystemService {
             // Check for all reserved channels, but do not throw because it's a common
             // preexisting pattern for apps to (try to) delete all channels that don't match
             //  their current desired channel structure
-            if (SYSTEM_RESERVED_IDS.contains(channelId)) {
+            NotificationChannel exists = mPreferencesHelper.getNotificationChannel(
+                    pkg, callingUid, channelId, false);
+            if (exists != null && exists.isBundleChannel()) {
                 Log.v(TAG, "Package " + pkg + " cannot delete a reserved channel");
                 return;
             }
@@ -7376,16 +7376,16 @@ public class NotificationManagerService extends SystemService {
                 return null;
             }
 
-            if (SYSTEM_RESERVED_IDS.contains(parentId)) {
-                Log.v(TAG, "Cannot create conversation for classified notif from privileged " +
-                        "listener with pkg:" + pkg + " user:" + user + " parentId:" + parentId
-                        + " conversationId:" + conversationId);
-                return null;
-            }
             int uid = getUidForPackageAndUser(pkg, user);
             NotificationChannel parentChannel =
                     mPreferencesHelper.getNotificationChannel(pkg, uid, parentId, false);
             if (parentChannel == null) {
+                return null;
+            }
+            if (parentChannel.isBundleChannel()) {
+                Log.v(TAG, "Cannot create conversation for classified notif from privileged " +
+                        "listener with pkg:" + pkg + " user:" + user + " parentId:" + parentId
+                        + " conversationId:" + conversationId);
                 return null;
             }
 
@@ -8897,10 +8897,6 @@ public class NotificationManagerService extends SystemService {
     @Nullable
     private NotificationChannel getNotificationChannelRestoreDeleted(String pkg,
             int callingUid, int notificationUid, String channelId, String conversationId) {
-        if (SYSTEM_RESERVED_IDS.contains(channelId)) {
-            // apps cannot post to these channels directly, in case they post incorrect content
-            return null;
-        }
         // Restore a deleted conversation channel, if exists. Otherwise use the parent channel.
         NotificationChannel channel = mPreferencesHelper.getConversationNotificationChannel(
                 pkg, notificationUid, channelId, conversationId,
@@ -8920,6 +8916,10 @@ public class NotificationManagerService extends SystemService {
                 // Do not restore parent channel
                 channel = null;
             }
+        }
+        if (channel != null && channel.isBundleChannel()) {
+            // apps cannot post to these channels directly, in case they post incorrect content
+            return null;
         }
         return channel;
     }
@@ -9166,7 +9166,7 @@ public class NotificationManagerService extends SystemService {
         if (channel.getImportance() <= IMPORTANCE_MIN) {
             return false;
         }
-        if (NotificationChannel.SYSTEM_RESERVED_IDS.contains(channel.getId())) {
+        if (channel.isBundleChannel()) {
             return false;
         }
         return true;

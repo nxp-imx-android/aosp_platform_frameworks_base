@@ -871,7 +871,7 @@ public final class NotificationRecord {
                 }
                 if (signals.containsKey(KEY_TYPE) && !keysToSkip.contains(KEY_TYPE)) {
                     // Store original channel visibility before re-assigning channel
-                    if (!NotificationChannel.SYSTEM_RESERVED_IDS.contains(mChannel.getId())) {
+                    if (!mChannel.isBundleChannel()) {
                         setOriginalChannelVisibility(mChannel.getLockscreenVisibility());
                     }
                     updateNotificationChannel(signals.getParcelable(KEY_TYPE,

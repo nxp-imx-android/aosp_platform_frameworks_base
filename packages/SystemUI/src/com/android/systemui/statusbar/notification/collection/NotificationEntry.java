@@ -22,7 +22,6 @@ import static android.app.Notification.CATEGORY_EVENT;
 import static android.app.Notification.CATEGORY_MESSAGE;
 import static android.app.Notification.CATEGORY_REMINDER;
 import static android.app.Notification.FLAG_BUBBLE;
-import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_BADGE;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_FULL_SCREEN_INTENT;
@@ -438,11 +437,15 @@ public final class NotificationEntry extends ListEntry {
     }
 
     public boolean isBundled() {
-        if (getRanking() == null || getRanking().getChannel() == null) {
-            Slog.wtfQuiet(TAG, "getRanking() or getRanking().getChannel() is null " + getKey());
+        if (getRanking() == null) {
+            Slog.wtfQuiet(TAG, "getRanking() is null " + getKey());
             return false;
         }
-        return SYSTEM_RESERVED_IDS.contains(getRanking().getChannel().getId());
+        if (getRanking().getChannel() == null) {
+            Slog.wtfQuiet(TAG, "getRanking().getChannel() is null " + getKey());
+            return false;
+        }
+        return getRanking().getChannel().isBundleChannel();
     }
 
     /*
