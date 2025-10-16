@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.companion.datatransfer.continuity.TaskContinuityManager;
 import android.content.Context;
 import android.os.RemoteException;
 import android.testing.AndroidTestingRunner;
@@ -69,9 +70,22 @@ public class HandoffControllerTest {
         int associationId = 1;
         int remoteTaskId = 2;
         FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
+        mHandoffController.enable();
         mHandoffController.requestHandoff(associationId, remoteTaskId, callback);
         verify(mMockOutboundHandoffRequestHandler)
                 .requestHandoff(associationId, remoteTaskId, callback);
+    }
+
+    @Test
+    public void testRequestHandoff_handoffDisabled_returnsFailure() {
+        int associationId = 1;
+        int remoteTaskId = 2;
+        FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
+        mHandoffController.requestHandoff(associationId, remoteTaskId, callback);
+        callback.verifyInvoked(
+                associationId,
+                remoteTaskId,
+                TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_HANDOFF_DISABLED);
     }
 
     @Test
