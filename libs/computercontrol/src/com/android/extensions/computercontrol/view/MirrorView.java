@@ -22,6 +22,7 @@ import android.content.Context;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Size;
+import android.view.Gravity;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -126,6 +127,7 @@ public class MirrorView extends FrameLayout {
             post(() -> {
                 mMirrorSurface.setMirrorSurfaceControl(mirrorSurface, size);
                 updateMirrorSurfaceVisibility(/* visible= */ mirrorSurface != null);
+                requestLayout();
             });
         });
     }
@@ -186,8 +188,8 @@ public class MirrorView extends FrameLayout {
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
             }
         });
-        addView(mMirrorSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        addView(mMirrorSurface, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
     }
 
     private float getCompoundedAlpha() {
@@ -250,6 +252,48 @@ public class MirrorView extends FrameLayout {
                 }
             };
             getHolder().addCallback(callback);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+            if (mDisplaySize == null || mDisplaySize.getWidth() == 0
+                    || mDisplaySize.getHeight() == 0) {
+                // No display size, or invalid. Let SurfaceView do its default thing.
+                return;
+            }
+
+            final int parentWidth = MeasureSpec.getSize(widthMeasureSpec);
+            final int parentHeight = MeasureSpec.getSize(heightMeasureSpec);
+
+            if (parentWidth == 0 || parentHeight == 0) {
+                return;
+            }
+
+            final int displayWidth = mDisplaySize.getWidth();
+            final int displayHeight = mDisplaySize.getHeight();
+
+            final float viewAspectRatio = (float) parentWidth / parentHeight;
+            final float displayAspectRatio = (float) displayWidth / displayHeight;
+
+            final int surfaceWidth;
+            final int surfaceHeight;
+
+            if (viewAspectRatio > displayAspectRatio) {
+                // The parent is wider than the display, so there will be pillarboxing.
+                // The surface should be scaled to fit the height of the parent.
+                surfaceHeight = parentHeight;
+                surfaceWidth = (int) (surfaceHeight * displayAspectRatio);
+            } else {
+                // The parent is taller than or has the same aspect ratio as the display, so there
+                // will be letterboxing. The surface should be scaled to fit the width of the
+                // parent.
+                surfaceWidth = parentWidth;
+                surfaceHeight = (int) (surfaceWidth / displayAspectRatio);
+            }
+
+            setMeasuredDimension(surfaceWidth, surfaceHeight);
         }
 
         @Override
