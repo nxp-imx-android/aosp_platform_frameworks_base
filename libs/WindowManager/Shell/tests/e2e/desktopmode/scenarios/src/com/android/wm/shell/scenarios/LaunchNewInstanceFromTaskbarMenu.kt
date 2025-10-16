@@ -23,7 +23,6 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
@@ -73,16 +72,15 @@ abstract class LaunchNewInstanceFromTaskbarMenu(val rotation: Rotation = Rotatio
 
     private fun openNewWindowFromTaskbarMenu() {
         tapl.launchedAppState.taskbar.getAppIcon(browserApp.appName).openMenu()
-        // Selects the new window by its index, which prevents regressions by future alterations
-        // to the text or content description.
-        val newWindowObject = device.wait(Until.findObjects(By.pkg(NEW_WINDOW_PACKAGE)), TIMEOUT)
-        newWindowObject.get(NEW_WINDOW_INDEX).also { it.click() }
+        // Selects the new window by its text or content description.
+        var newWindowObject = device.findObject(By.text(NEW_WINDOW))
+        if (newWindowObject == null) {
+            newWindowObject = device.findObject(By.descContains(NEW_WINDOW))
+        }
+        newWindowObject.click()
     }
 
     companion object {
-        private const val NEW_WINDOW_PACKAGE = "com.google.android.apps.nexuslauncher"
-        // The index of the "New window" button in the taskbar long-press menu.
-        private const val NEW_WINDOW_INDEX = 3
-        private const val TIMEOUT: Long = 5000L
+        private const val NEW_WINDOW = "New Window"
     }
 }
