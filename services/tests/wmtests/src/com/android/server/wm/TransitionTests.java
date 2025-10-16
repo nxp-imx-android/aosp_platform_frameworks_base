@@ -36,6 +36,7 @@ import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+import static android.window.TransitionInfo.FLAG_ALWAYS_ON_TOP;
 import static android.window.TransitionInfo.FLAG_CROSS_PROFILE_OWNER_THUMBNAIL;
 import static android.window.TransitionInfo.FLAG_FILLS_TASK;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
@@ -80,6 +81,7 @@ import static org.mockito.Mockito.verify;
 import static java.lang.Integer.MAX_VALUE;
 
 import android.app.ActivityManager;
+import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -3426,6 +3428,97 @@ public class TransitionTests extends WindowTestsBase {
 
         WindowContainer ancestor = Transition.findCommonAncestor(sortedTargets, display1Task);
         assertTrue(ancestor.isDescendantOf(otherDisplay.getParent()));
+    }
+
+    @Test
+    public void testSetAlwaysOnTopChange() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        controller.setFullReadyTrackingForTest(true);
+
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_CHANGE, controller);
+
+        // Create task and make it visible.
+        final Task task = createTask(mDisplayContent);
+        task.setVisibleRequested(true);
+
+        // Start collecting to get a snapshot before changing the AoT.
+        controller.moveToCollecting(transition);
+        transition.collect(task);
+
+        // Change AoT, since it's a spy, need to do a bit of mocking.
+        task.setAlwaysOnTop(true);
+        doReturn(true).when(task).isAlwaysOnTop();
+
+        controller.requestStartTransition(transition, task, null /* remote */, null /* display */);
+
+        // Make a transition ready manually with a test condition. This will force
+        // TransitionController to collect order changes.
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        transition.mReadyTracker.add(testCondition);
+        transition.mReadyTracker.meet(testCondition);
+
+        player.start();
+
+        // Make sure there's only AoT change.
+        final TransitionInfo info = player.mLastReady;
+        assertTrue((info.getChanges().get(0).getFlags() & TransitionInfo.FLAG_ALWAYS_ON_TOP) != 0);
+        assertEquals(TRANSIT_CHANGE, info.getChanges().get(0).getMode());
+        assertTrue(
+                info.getChanges().stream()
+                        .noneMatch(change -> (change.getFlags() & FLAG_MOVED_TO_TOP) == 1));
+        player.finish();
+    }
+
+    @Test
+    public void testOrderChangesWhenExitAlwaysOnTop() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        controller.setFullReadyTrackingForTest(true);
+
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_CHANGE, controller);
+
+        // Start with always-on-top task and a regular task.
+        final Task task = createTask(mDisplayContent);
+        task.setVisibleRequested(true);
+
+        // Change AoT, since it's a spy, need to do a bit of mocking.
+        final Task alwaysOnTopTask = createTask(mDisplayContent);
+        final WindowConfiguration wc = mock(WindowConfiguration.class);
+        doReturn(wc).when(alwaysOnTopTask).getWindowConfiguration();
+        alwaysOnTopTask.setVisibleRequested(true);
+        alwaysOnTopTask.setAlwaysOnTop(true);
+        doReturn(true).when(wc).isAlwaysOnTop();
+        doReturn(true).when(alwaysOnTopTask).isAlwaysOnTop();
+
+        // Start collecting to get a snapshot before changing the AoT.
+        controller.moveToCollecting(transition);
+        transition.collect(task);
+        transition.collect(alwaysOnTopTask);
+
+        // Change AoT back.
+        alwaysOnTopTask.setAlwaysOnTop(false);
+        doReturn(false).when(wc).isAlwaysOnTop();
+        doReturn(false).when(alwaysOnTopTask).isAlwaysOnTop();
+
+        controller.requestStartTransition(transition, task, null /* remote */, null /* display */);
+
+        // Make a transition ready manually with a test condition. This will force
+        // TransitionController to collect order changes.
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        transition.mReadyTracker.add(testCondition);
+        transition.mReadyTracker.meet(testCondition);
+
+        player.start();
+
+        // Make sure there's only a move to top change.
+        final TransitionInfo info = player.mLastReady;
+        assertTrue((info.getChanges().get(0).getFlags() & TransitionInfo.FLAG_MOVED_TO_TOP) != 0);
+        assertTrue(
+                info.getChanges().stream()
+                        .noneMatch(change -> (change.getFlags() & FLAG_ALWAYS_ON_TOP) == 1));
+        assertEquals(TRANSIT_CHANGE, info.getChanges().get(0).getMode());
+        player.finish();
     }
 
     private void tryFinishTransitionSyncSet(Transition transition) {

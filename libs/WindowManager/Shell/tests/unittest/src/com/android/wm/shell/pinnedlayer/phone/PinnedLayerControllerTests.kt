@@ -36,6 +36,7 @@ import android.view.WindowManager.TransitionType
 import android.window.TransitionInfo
 import android.window.TransitionInfo.FLAG_NONE
 import android.window.TransitionRequestInfo
+import android.window.WindowContainerToken
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
@@ -100,6 +101,56 @@ class PinnedLayerControllerTests : ShellTestCase() {
         ) {}
 
         verifyCallbackResult(callback, RESULT_APPROVED)
+        assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
+        assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
+    }
+
+    @Test
+    fun testHandlePinRequest_taskIsPinned_approveRequestAndDoNothing() {
+        val transition1 = mock<IBinder>()
+        val callback1 = mock<IRemoteCallback>()
+        val pinnedToken = MockToken.token()
+        val requestInfo1 =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback1,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedToken,
+            )
+        val transitionInfo1 = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        transitionInfo1.addChange(
+            buildChange(TRANSIT_CHANGE, requireNotNull(requestInfo1.triggerTask))
+        )
+
+        val transition2 = mock<IBinder>()
+        val callback2 = mock<IRemoteCallback>()
+        val requestInfo2 =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback2,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedToken,
+            )
+        val transitionInfo2 = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        transitionInfo2.addChange(
+            buildChange(TRANSIT_CHANGE, requireNotNull(requestInfo2.triggerTask))
+        )
+
+        val wct1 = pinnedLayerController.handleRequest(transition1, requestInfo1)
+        pinnedLayerController.startAnimation(
+            transition1,
+            transitionInfo1,
+            startTransaction,
+            finishTransaction,
+        ) {}
+
+        val wct2 = pinnedLayerController.handleRequest(transition2, requestInfo2)
+        pinnedLayerController.onTransitionConsumed(transition2, /* aborted= */ true, null)
+
+        assertNotNull(wct1)
+        assertNotNull(wct2)
+        verifyCallbackResult(callback1, RESULT_APPROVED)
+        verifyCallbackResult(callback2, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
         assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
     }
@@ -196,16 +247,23 @@ class PinnedLayerControllerTests : ShellTestCase() {
     fun handleMinimizeRequest_taskIsPinned_keepPinnedRecord() {
         val pinTransition = mock<IBinder>()
         val pinCallback = mock<IRemoteCallback>()
+        val pinnedToken = MockToken.token()
         val pinRequestInfo =
             setupWindowingLayerTransition(
                 WINDOWING_LAYER_PINNED,
                 pinCallback,
                 triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedToken,
             )
         val pinTransitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
         val backTransition = mock<IBinder>()
-        val backRequestInfo = sendTransitionRequest(TRANSIT_TO_BACK, triggerTaskId = TASK_ID_0)
+        val backRequestInfo =
+            sendTransitionRequest(
+                TRANSIT_TO_BACK,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedToken,
+            )
         val backTransitionInfo = TransitionInfo(TRANSIT_TO_BACK, FLAG_NONE)
         backTransitionInfo.addChange(
             buildChange(TRANSIT_TO_BACK, requireNotNull(backRequestInfo.triggerTask))
@@ -274,23 +332,35 @@ class PinnedLayerControllerTests : ShellTestCase() {
     fun handleMoveToFront_taskIsPinned_repinAsActive() {
         val pinTransition = mock<IBinder>()
         val pinCallback = mock<IRemoteCallback>()
+        val pinnedTaskToken = MockToken.token()
         val pinRequestInfo =
             setupWindowingLayerTransition(
                 WINDOWING_LAYER_PINNED,
                 pinCallback,
                 triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedTaskToken,
             )
         val pinTransitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
         val backTransition = mock<IBinder>()
-        val backRequestInfo = sendTransitionRequest(TRANSIT_TO_BACK, triggerTaskId = TASK_ID_0)
+        val backRequestInfo =
+            sendTransitionRequest(
+                TRANSIT_TO_BACK,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedTaskToken,
+            )
         val backTransitionInfo = TransitionInfo(TRANSIT_TO_BACK, FLAG_NONE)
         backTransitionInfo.addChange(
             buildChange(TRANSIT_TO_BACK, requireNotNull(backRequestInfo.triggerTask))
         )
 
         val frontTransition = mock<IBinder>()
-        val frontRequestInfo = sendTransitionRequest(TRANSIT_TO_FRONT, triggerTaskId = TASK_ID_0)
+        val frontRequestInfo =
+            sendTransitionRequest(
+                TRANSIT_TO_FRONT,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedTaskToken,
+            )
         val frontTransitionInfo = TransitionInfo(TRANSIT_TO_FRONT, FLAG_NONE)
         frontTransitionInfo.addChange(
             buildChange(TRANSIT_TO_FRONT, requireNotNull(frontRequestInfo.triggerTask))
@@ -337,19 +407,26 @@ class PinnedLayerControllerTests : ShellTestCase() {
         @WindowingLayer layer: Int = WINDOWING_LAYER_NORMAL_APP,
         callback: IRemoteCallback,
         triggerTaskId: Int = 0,
+        triggerTaskToken: WindowContainerToken = MockToken.token(),
     ): TransitionRequestInfo {
         val windowingLayerChange = TransitionRequestInfo.WindowingLayerChange(layer, callback)
-        return sendTransitionRequest(TRANSIT_CHANGE, triggerTaskId, windowingLayerChange)
+        return sendTransitionRequest(
+            TRANSIT_CHANGE,
+            triggerTaskId,
+            triggerTaskToken = triggerTaskToken,
+            windowingLayerChange = windowingLayerChange,
+        )
     }
 
     private fun sendTransitionRequest(
         @TransitionType type: Int,
         triggerTaskId: Int,
+        triggerTaskToken: WindowContainerToken = MockToken.token(),
         windowingLayerChange: TransitionRequestInfo.WindowingLayerChange? = null,
     ): TransitionRequestInfo {
         val triggerTask =
             RunningTaskInfo().apply {
-                token = MockToken.token()
+                token = triggerTaskToken
                 taskId = triggerTaskId
             }
         return TransitionRequestInfo(
