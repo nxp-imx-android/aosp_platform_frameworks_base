@@ -10887,6 +10887,8 @@ public final class ViewRootImpl implements ViewParent,
 
         @Override
         public void onFocusEvent(boolean hasFocus) {
+            EventLog.writeEvent(LOGTAG_INPUT_FOCUS,
+                    "ViewRootImpl focus=" + hasFocus + " for " + getTitle());
             windowFocusChanged(hasFocus);
         }
 
