@@ -21,16 +21,6 @@ flag {
 }
 
 flag {
-    name: "bal_check_unpinned_activities"
-    namespace: "responsible_apis"
-    description: "Check each Activity if it is unpinned instead of just the WPC config."
-    bug: "439984935"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "bal_cover_intent_sender"
     namespace: "responsible_apis"
     description: "Cover IntentSender API in addition to PendingIntent."
