@@ -1,0 +1,102 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package android.app.appfunctions;
+
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+
+import static java.util.Objects.requireNonNull;
+
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+
+import java.util.Objects;
+
+/**
+ * Represents a predefined AppFunction schema.
+ *
+ * <p>A schema defines a function's input parameters and output. This class holds identifying
+ * information about a specific, SDK-provided schema.
+ */
+@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+public class AppFunctionSchemaMetadata {
+    @NonNull private final String mCategory;
+    @NonNull private final String mName;
+    private final long mVersion;
+
+    /**
+     * Construct an {@link AppFunctionSchemaMetadata}.
+     *
+     * @param schemaName The unique name of the schema within its category.
+     * @param schemaVersion The version of the schema. This is used to track the changes to the
+     *     schema over time.
+     * @param schemaCategory The category of the schema, used to group related schemas.
+     */
+    public AppFunctionSchemaMetadata(
+            @NonNull String schemaCategory, @NonNull String schemaName, long schemaVersion) {
+        mCategory = requireNonNull(schemaCategory);
+        mName = requireNonNull(schemaName);
+        mVersion = schemaVersion;
+    }
+
+    /**
+     * Specifies the category of the schema used by this function. This allows for logical grouping
+     * of schemas. For instance, all schemas related to email functionality would be categorized as
+     * 'email'.
+     */
+    @NonNull
+    public String getCategory() {
+        return mCategory;
+    }
+
+    /** The unique name of the schema within its category. */
+    @NonNull
+    public String getName() {
+        return mName;
+    }
+
+    /** The version of the schema. This is used to track the changes to the schema over time. */
+    public long getVersion() {
+        return mVersion;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AppFunctionSchemaMetadata that)) return false;
+        return mCategory.equals(that.mCategory)
+                && mName.equals(that.mName)
+                && mVersion == that.mVersion;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mCategory, mName, mVersion);
+    }
+
+    @Override
+    public String toString() {
+        return "AppFunctionSchemaMetadata("
+                + "schemaCategory="
+                + mCategory
+                + ", "
+                + "schemaName="
+                + mName
+                + ", "
+                + "schemaVersion="
+                + mVersion
+                + ")";
+    }
+}
