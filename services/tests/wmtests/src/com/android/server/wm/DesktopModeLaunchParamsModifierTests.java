@@ -196,8 +196,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testAppliesFullscreenAndReturnDoneIfRequestViaActivityOptions() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenReturn(true);

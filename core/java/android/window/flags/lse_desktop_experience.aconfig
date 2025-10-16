@@ -1797,17 +1797,6 @@ flag {
 }
 
 flag {
-    name: "respect_fullscreen_activity_option_in_desktop_launch_params"
-    namespace: "lse_desktop_experience"
-    description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for /n"
-                 "activities which request fullscreen via their activity options."
-    bug: "416032057"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "restrict_freeform_hidden_system_bars_to_filling_tasks"
     namespace: "lse_desktop_experience"
     description: "Only allow filling freeform tasks to hide the system bars"
