@@ -67,7 +67,6 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.IntPair;
 import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
-import com.android.server.job.Flags;
 import com.android.server.job.GrantedUriPermissions;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.job.JobSchedulerService;
@@ -2793,8 +2792,7 @@ public final class JobStatus {
         }
 
         // Check the new policy.
-        return Flags.updateMediaBackupExemptionPolicy()
-                && getEffectivePriority() == JobInfo.PRIORITY_HIGH
+        return getEffectivePriority() == JobInfo.PRIORITY_HIGH
                 && sourcePackageName.equals(
                         mJobSchedulerInternal.getCloudMediaProviderPackage(sourceUserId));
     }
