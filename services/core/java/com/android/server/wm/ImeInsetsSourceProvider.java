@@ -539,7 +539,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             // invoke the listener, to let IMS eventually know
             if (caller == controlTarget && !caller.isRequestedVisible(WindowInsets.Type.ime())
                     && (caller.getAnimatingTypes() & WindowInsets.Type.ime()) == 0) {
-                ImeTracker.forLogging().onFailed(statsToken,
+                ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_WM_NOTIFY_HIDE_ANIMATION_FINISHED);
                 invokeOnImeRequestedChangedListener(caller, statsToken);
             } else {
