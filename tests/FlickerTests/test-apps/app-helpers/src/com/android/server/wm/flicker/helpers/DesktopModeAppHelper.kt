@@ -772,6 +772,17 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         }.waitForAndVerify()
     }
 
+    fun clickNewWindowButton(
+        wmHelper: WindowManagerStateHelper,
+        device: UiDevice
+    ) {
+        clickOpenMenuButton(wmHelper)
+
+        val newWindowButton = device.wait(Until.findObject(By.text("New Window")), TIMEOUT.toMillis())
+
+        newWindowButton.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
     /**
      * Opens a specified number of the same application.
      *

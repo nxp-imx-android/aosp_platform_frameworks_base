@@ -88,7 +88,6 @@ test_module_config {
         "com.android.wm.shell.flicker.maximize.MaximizeUnfocusedAppWindowFlickerTest",
         "com.android.wm.shell.flicker.minimize.MinimizeAppsFlickerTest",
         "com.android.wm.shell.flicker.minimize.MinimizeAutoPipAppWindowFlickerTest",
-        "com.android.wm.shell.flicker.multiinstance.LaunchNewInstanceFromAppWindowMenuFlickerTest",
         "com.android.wm.shell.flicker.multiinstance.ManageOpenInstancesFromAppHeaderFlickerTest",
         "com.android.wm.shell.flicker.multiinstance.ManageOpenInstancesFromAppMenuFlickerTest",
         "com.android.wm.shell.flicker.multiinstance.ManageOpenInstancesFromTaskbarMenuFlickerTest",
@@ -423,13 +422,6 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.minimize.MinimizeAutoPipAppWindowFlickerTest"],
-}
-
-test_module_config {
-    name: "WMShellFlickerTestsDesktopMode-multiinstance-LaunchNewInstanceFromAppWindowMenuFlickerTest",
-    base: "WMShellFlickerTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.multiinstance.LaunchNewInstanceFromAppWindowMenuFlickerTest"],
 }
 
 test_module_config {

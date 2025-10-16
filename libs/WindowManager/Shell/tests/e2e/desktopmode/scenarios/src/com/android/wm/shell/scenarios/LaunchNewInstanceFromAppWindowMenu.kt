@@ -17,13 +17,14 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -31,29 +32,44 @@ import org.junit.Test
 
 /** Base scenario test to launch a new instance from app window menu and select the new window. */
 @Ignore("Test Base Class")
-abstract class LaunchNewInstanceFromAppWindowMenu(val rotation: Rotation = Rotation.ROTATION_0) :
-    TestScenarioBase(rotation) {
+abstract class LaunchNewInstanceFromAppWindowMenu(
+    val navigationMode: NavBar = NavBar.MODE_GESTURAL,
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val browserApp = BrowserAppHelper(instrumentation)
-    val testApp = DesktopModeAppHelper(browserApp)
+    val browserApp = BrowserAppHelper(instrumentation)
+    val browserDesktopAppHelper = DesktopModeAppHelper(browserApp)
 
     @Before
     fun setup() {
         browserApp.launchViaIntent(wmHelper)
         browserApp.closePopupsIfNeeded(device)
-        testApp.enterDesktopMode(wmHelper, device)
     }
 
     @Test
-    open fun launchNewInstance() {
-        openNewWindowFromAppWindowMenu()
+    open fun launchNewInstanceFromFullScreenAndEnterSplitScreen() {
+        browserApp.openThreeDotsMenu()
+        browserApp.clickNewWindowInMenu()
+        SplitScreenUtils.waitForSplitComplete(wmHelper,browserApp,browserApp)
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .withTopVisibleApp(browserApp)
+            .waitForAndVerify()
+    }
+
+    @Test
+    open fun launchNewInstanceFromDesktopMode() {
+        browserDesktopAppHelper.enterDesktopMode(wmHelper, device)
+        browserDesktopAppHelper.clickNewWindowButton(wmHelper, device)
         wmHelper
             .StateSyncBuilder()
             .withFreeformApp(browserApp.componentMatcher)
             .withAppTransitionIdle()
+            .withTopVisibleApp(browserDesktopAppHelper)
             .waitForAndVerify()
     }
 
@@ -62,11 +78,6 @@ abstract class LaunchNewInstanceFromAppWindowMenu(val rotation: Rotation = Rotat
         // The test launches new windows. We want to make sure to clear storage (and remove all
         // opened windows) to prevent hitting the Chrome window limit.
         browserApp.clearStorage()
-        testApp.exit(wmHelper)
-    }
-
-    private fun openNewWindowFromAppWindowMenu() {
-        browserApp.openThreeDotsMenu()
-        browserApp.clickNewWindowInMenu()
+        browserApp.exit(wmHelper)
     }
 }
