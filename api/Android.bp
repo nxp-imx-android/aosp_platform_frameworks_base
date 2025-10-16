@@ -137,11 +137,6 @@ combined_apis {
             "framework-anomaly-detector",
         ],
         default: [],
-    }) + select(release_flag("RELEASE_NPUMANAGER_MODULE"), {
-        true: [
-            "framework-npumanager",
-        ],
-        default: [],
     }),
     system_server_classpath: [
         "service-art",
