@@ -149,20 +149,21 @@ fun Expandable(
     content: @Composable (Expandable) -> Unit,
 ) {
     Expandable(
-        rememberExpandableController(
-            color,
-            shape,
-            contentColor,
-            borderStroke,
-            transitionControllerFactory,
-        ),
-        modifier,
-        onClick,
-        onClickLabel,
-        interactionSource,
-        useModifierBasedImplementation,
-        defaultMinSize,
-        content,
+        controller =
+            rememberExpandableController(
+                color,
+                shape,
+                contentColor,
+                borderStroke,
+                transitionControllerFactory,
+            ),
+        modifier = modifier,
+        onClick = onClick,
+        onClickLabel = onClickLabel,
+        interactionSource = interactionSource,
+        useModifierBasedImplementation = useModifierBasedImplementation,
+        defaultMinSize = defaultMinSize,
+        content = content,
     )
 }
 
@@ -196,6 +197,7 @@ fun Expandable(
  */
 @Composable
 fun Expandable(
+    expandable: Expandable? = null,
     controller: ExpandableController,
     modifier: Modifier = Modifier,
     onClick: ((Expandable) -> Unit)? = null,
@@ -208,12 +210,13 @@ fun Expandable(
     content: @Composable (Expandable) -> Unit,
 ) {
     val controller = controller as ExpandableControllerImpl
+    val expandable = expandable ?: Expandable(controller.transitionSource)
 
     if (controller.transitionControllerFactory != null) {
         DisposableEffect(controller.transitionControllerFactory) {
             // Notify the transition controller factory that the expandable is now available, so it
             // can move forward with any pending requests.
-            controller.transitionControllerFactory.onCompose(controller.expandable)
+            controller.transitionControllerFactory.onCompose(expandable)
             // Once this composable is gone, the transition controller factory must be notified so
             // it doesn't accepts requests providing stale content.
             onDispose { controller.transitionControllerFactory.onDispose() }
@@ -221,9 +224,9 @@ fun Expandable(
     }
 
     if (useModifierBasedImplementation || expandableForceModifierImplementation()) {
-        Box(modifier.expandable(controller, onClick, onClickLabel, interactionSource)) {
+        Box(modifier.expandable(expandable, controller, onClick, onClickLabel, interactionSource)) {
             WrappedContent(
-                controller.expandable,
+                expandable,
                 controller.contentColor,
                 defaultMinSize = defaultMinSize,
                 content,
@@ -282,6 +285,7 @@ fun Expandable(
             // The content and its animated background in the overlay. We draw it only when we are
             // animating.
             AnimatedContentInOverlay(
+                expandable,
                 color,
                 controller.boundsInComposeViewRoot.size,
                 controller.overlay
@@ -301,7 +305,7 @@ fun Expandable(
                     .drawWithContent { /* Don't draw anything when the dialog is shown. */ }
                     .onGloballyPositioned { controller.boundsInComposeViewRoot = it.boundsInRoot() }
             ) {
-                wrappedContent(controller.expandable)
+                wrappedContent(expandable)
             }
         }
         else -> {
@@ -309,7 +313,15 @@ fun Expandable(
                 modifier
                     .updateExpandableSize()
                     .then(minInteractiveSizeModifier)
-                    .then(clickModifier(controller, onClick, onClickLabel, interactionSource))
+                    .then(
+                        clickModifier(
+                            expandable,
+                            controller,
+                            onClick,
+                            onClickLabel,
+                            interactionSource,
+                        )
+                    )
                     .animatedBackground(color, shape = shape)
                     .border(controller)
                     .onGloballyPositioned {
@@ -318,7 +330,7 @@ fun Expandable(
                         }
                     }
             ) {
-                wrappedContent(controller.expandable)
+                wrappedContent(expandable)
             }
         }
     }
@@ -360,6 +372,7 @@ private fun WrappedContent(
 @Composable
 @Stable
 private fun Modifier.expandable(
+    expandable: Expandable,
     controller: ExpandableController,
     onClick: ((Expandable) -> Unit)? = null,
     onClickLabel: String? = null,
@@ -375,11 +388,15 @@ private fun Modifier.expandable(
         }
     }
 
+    // TODO(b/412899675): create a Modifier extension for lifecycle based registration of
+    // TransitionSource
     val drawContent = !isAnimating && !controller.isDialogShowing
     return this.thenIf(onClick != null) { Modifier.minimumInteractiveComponentSize() }
         .thenIf(drawContent) {
             Modifier.border(controller)
-                .then(clickModifier(controller, onClick, onClickLabel, interactionSource))
+                .then(
+                    clickModifier(expandable, controller, onClick, onClickLabel, interactionSource)
+                )
                 .animatedBackground(controller.color, shape = controller.shape)
         }
         .onPlaced { coords ->
@@ -485,6 +502,7 @@ private class DrawExpandableInOverlayNode(
 }
 
 private fun clickModifier(
+    expandable: Expandable,
     controller: ExpandableControllerImpl,
     onClick: ((Expandable) -> Unit)?,
     onClickLabel: String? = null,
@@ -502,20 +520,21 @@ private fun clickModifier(
             indication = null,
             onClickLabel = onClickLabel,
         ) {
-            onClick(controller.expandable)
+            onClick(expandable)
         }
     }
 
     // If no interaction source is provided, we draw the default indication (a ripple) and make sure
     // it's clipped by the expandable shape.
     return Modifier.clip(controller.shape).clickable(onClickLabel = onClickLabel) {
-        onClick(controller.expandable)
+        onClick(expandable)
     }
 }
 
 /** Draw [content] in [overlay] while respecting its screen position given by [animatorState]. */
 @Composable
 private fun AnimatedContentInOverlay(
+    expandable: Expandable,
     color: () -> Color,
     sizeInOriginalLayout: Size,
     overlay: ViewGroupOverlay,
@@ -576,7 +595,7 @@ private fun AnimatedContentInOverlay(
                             // We center the content in the expanding container.
                             contentAlignment = Alignment.Center,
                         ) {
-                            Box(contentModifier) { content(controller.expandable) }
+                            Box(contentModifier) { content(expandable) }
                         }
                     }
                 }

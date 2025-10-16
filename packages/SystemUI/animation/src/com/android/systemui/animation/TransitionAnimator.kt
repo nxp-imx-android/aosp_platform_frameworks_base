@@ -139,6 +139,8 @@ class TransitionAnimator(
             )
         }
 
+        fun dynamicTargetResolutionEnabled() = Flags.animationLibraryDynamicTargetResolution()
+
         internal fun WindowAnimationState.toTransitionState() =
             State().also {
                 bounds?.let { b ->

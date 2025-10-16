@@ -19,8 +19,47 @@ package com.android.systemui.animation
 import android.content.ComponentName
 import android.view.View
 
-/** A piece of UI that can be expanded into a Dialog or an Activity. */
-interface Expandable {
+/**
+ * A long-lived coordinator for a logical transition.
+ *
+ * This class manages a [TransitionSource] UI components that correspond to the same logical target.
+ * Its primary role is to resolve the "best" active [TransitionSource] from its set when an
+ * animation is requested.
+ *
+ * This object is designed to be long-lived (e.g., held in a ViewModel or Interactor) to survive
+ * configuration changes, while the [TransitionSource] it manages are short-lived and tied to the
+ * View/Composable lifecycle.
+ */
+class Expandable(
+    // TODO(b/412899675) remove this once flag rolls out.
+    val transitionSources: MutableSet<TransitionSource> = mutableSetOf()
+) {
+
+    constructor(transitionSource: TransitionSource) : this() {
+        transitionSources.add(transitionSource)
+    }
+
+    /**
+     * Create a [DialogTransitionAnimator.Controller] that can be used to expand this [Expandable]
+     * into a Dialog, or return `null` if this [Expandable] should not be animated (e.g. if it is
+     * currently not attached or visible).
+     */
+    fun dialogTransitionController(cuj: DialogCuj? = null): DialogTransitionAnimator.Controller? {
+        return transitionSources.first().dialogTransitionController(cuj)
+    }
+
+    fun activityTransitionController(
+        launchCujType: Int? = null
+    ): ActivityTransitionAnimator.Controller? {
+        return activityTransitionController(
+            launchCujType,
+            cookie = null,
+            component = null,
+            returnCujType = null,
+            isEphemeral = true,
+        )
+    }
+
     /**
      * Create an [ActivityTransitionAnimator.Controller] that can be used to expand this
      * [Expandable] into an Activity, or return `null` if this [Expandable] should not be animated
@@ -41,66 +80,26 @@ interface Expandable {
         component: ComponentName? = null,
         returnCujType: Int? = null,
         isEphemeral: Boolean = true,
-    ): ActivityTransitionAnimator.Controller?
-
-    /**
-     * See [activityTransitionController] above.
-     *
-     * Interfaces don't support [JvmOverloads], so this is a useful overload for Java usages that
-     * don't use the return-related parameters.
-     */
-    fun activityTransitionController(
-        launchCujType: Int? = null
     ): ActivityTransitionAnimator.Controller? {
-        return activityTransitionController(
-            launchCujType,
-            cookie = null,
-            component = null,
-            returnCujType = null,
-            isEphemeral = true,
-        )
+        return transitionSources
+            .first()
+            .activityTransitionController(
+                launchCujType,
+                cookie,
+                component,
+                returnCujType,
+                isEphemeral,
+            )
     }
 
-    /**
-     * Create a [DialogTransitionAnimator.Controller] that can be used to expand this [Expandable]
-     * into a Dialog, or return `null` if this [Expandable] should not be animated (e.g. if it is
-     * currently not attached or visible).
-     */
-    fun dialogTransitionController(cuj: DialogCuj? = null): DialogTransitionAnimator.Controller?
-
     companion object {
-        /**
-         * Create an [Expandable] that will animate [view] when expanded.
-         *
-         * Note: The background of [view] should be a (rounded) rectangle so that it can be properly
-         * animated.
-         */
+
         @JvmStatic
         fun fromView(view: View): Expandable {
-            return object : Expandable {
-                override fun activityTransitionController(
-                    launchCujType: Int?,
-                    cookie: ActivityTransitionAnimator.TransitionCookie?,
-                    component: ComponentName?,
-                    returnCujType: Int?,
-                    isEphemeral: Boolean,
-                ): ActivityTransitionAnimator.Controller? {
-                    return ActivityTransitionAnimator.Controller.fromView(
-                        view,
-                        launchCujType,
-                        cookie,
-                        component,
-                        returnCujType,
-                        isEphemeral,
-                    )
-                }
-
-                override fun dialogTransitionController(
-                    cuj: DialogCuj?
-                ): DialogTransitionAnimator.Controller? {
-                    return DialogTransitionAnimator.Controller.fromView(view, cuj)
-                }
-            }
+            val transitionSource = TransitionSource.fromView(view)
+            // TODO(b/412899675): make the addition lifecycle aware
+            val expandable = Expandable(transitionSource)
+            return expandable
         }
     }
 }

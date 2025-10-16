@@ -34,7 +34,6 @@ import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
-import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.animation.TransitionSource
 
@@ -119,8 +118,8 @@ class ComposeTransitionSource(
             mutableTransitionState,
         )
 
-    override val expandable: Expandable
-        get() = transitionDelegate.expandable
+    override val transitionSource: TransitionSource
+        get() = this
 
     override val isAnimating: Boolean by derivedStateOf { animatorState != null && overlay != null }
 
@@ -128,11 +127,7 @@ class ComposeTransitionSource(
         transitionDelegate.disposeController()
     }
 
-    override fun dialogTransitionController(cuj: DialogCuj?): DialogTransitionAnimator.Controller? {
-        if (!isComposed()) {
-            return null
-        }
-
+    override fun dialogTransitionController(cuj: DialogCuj?): DialogTransitionAnimator.Controller {
         return transitionDelegate.dialogController(cuj)
     }
 
@@ -142,18 +137,12 @@ class ComposeTransitionSource(
         component: ComponentName?,
         returnCujType: Int?,
         isEphemeral: Boolean,
-    ): ActivityTransitionAnimator.Controller? {
-        if (!isComposed()) {
-            return null
-        }
-
-        val controller =
-            transitionDelegate.activityController(launchCujType, cookie, component, returnCujType)
-        if (isEphemeral) {
-            activityControllerForDisposal?.onDispose()
-            activityControllerForDisposal = controller
-        }
-
-        return controller
+    ): ActivityTransitionAnimator.Controller {
+        return transitionDelegate.activityController(
+            launchCujType,
+            cookie,
+            component,
+            returnCujType,
+        )
     }
 }

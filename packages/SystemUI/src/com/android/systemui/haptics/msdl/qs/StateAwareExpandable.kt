@@ -22,6 +22,7 @@ import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
+import com.android.systemui.animation.TransitionSource
 
 private fun ActivityTransitionAnimator.Controller.withStateAwareness(
     onActivityLaunchTransitionStart: () -> Unit,
@@ -72,29 +73,40 @@ fun Expandable.withStateAwareness(
     onActivityLaunchTransitionEnd: () -> Unit,
 ): Expandable {
     val delegate = this
-    return object : Expandable {
-        override fun activityTransitionController(
-            launchCujType: Int?,
-            cookie: ActivityTransitionAnimator.TransitionCookie?,
-            component: ComponentName?,
-            returnCujType: Int?,
-            isEphemeral: Boolean,
-        ): ActivityTransitionAnimator.Controller? =
-            delegate
-                .activityTransitionController(
-                    launchCujType,
-                    cookie,
-                    component,
-                    returnCujType,
-                    isEphemeral,
-                )
-                ?.withStateAwareness(onActivityLaunchTransitionStart, onActivityLaunchTransitionEnd)
 
-        override fun dialogTransitionController(
-            cuj: DialogCuj?
-        ): DialogTransitionAnimator.Controller? =
-            delegate
-                .dialogTransitionController(cuj)
-                ?.withStateAwareness(onDialogDrawingStart, onDialogDrawingEnd)
-    }
+    val transitionSources: MutableSet<TransitionSource> =
+        delegate.transitionSources.mapTo(mutableSetOf()) { source ->
+            object : TransitionSource {
+                override fun dialogTransitionController(
+                    cuj: DialogCuj?
+                ): DialogTransitionAnimator.Controller? {
+                    return source
+                        .dialogTransitionController(cuj)
+                        ?.withStateAwareness(onDialogDrawingStart, onDialogDrawingEnd)
+                }
+
+                override fun activityTransitionController(
+                    launchCujType: Int?,
+                    cookie: ActivityTransitionAnimator.TransitionCookie?,
+                    component: ComponentName?,
+                    returnCujType: Int?,
+                    isEphemeral: Boolean,
+                ): ActivityTransitionAnimator.Controller? {
+                    return source
+                        .activityTransitionController(
+                            launchCujType,
+                            cookie,
+                            component,
+                            returnCujType,
+                            isEphemeral,
+                        )
+                        ?.withStateAwareness(
+                            onActivityLaunchTransitionStart,
+                            onActivityLaunchTransitionEnd,
+                        )
+                }
+            }
+        }
+
+    return Expandable(transitionSources)
 }
