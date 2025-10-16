@@ -92,8 +92,8 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         runTestScenarioWithActivity((robot) -> {
             robot.applyOnActivity((a) -> {
                 a.setDisplayId(DEFAULT_DISPLAY);
+                a.setOnLargeScreen();
                 a.createActivityWithComponent();
-                a.setIgnoreOrientationRequest(true);
             });
 
             robot.checkOverrideOrientation(/* candidate */ SCREEN_ORIENTATION_PORTRAIT,
@@ -143,8 +143,8 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
             robot.conf().enableUserAppAspectRatioFullscreen(true);
             robot.applyOnActivity((a) -> {
                 a.setDisplayId(DEFAULT_DISPLAY);
+                a.setOnLargeScreen();
                 a.createActivityWithComponent();
-                a.setIgnoreOrientationRequest(true);
                 a.setGetUserMinAspectRatioOverrideCode(USER_MIN_ASPECT_RATIO_FULLSCREEN);
             });
 

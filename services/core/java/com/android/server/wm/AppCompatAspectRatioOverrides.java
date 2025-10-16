@@ -176,16 +176,7 @@ class AppCompatAspectRatioOverrides {
         if (mIsSystemFullscreenOverrideEnabled != null) {
             return mIsSystemFullscreenOverrideEnabled;
         }
-        final int aspectRatio = getUserMinAspectRatioOverrideCode();
-        final boolean baseOverride =
-                isChangeEnabled(mActivityRecord, OVERRIDE_ANY_ORIENTATION_TO_USER)
-                        && (!com.android.window.flags.Flags.optOutOverrideOrientationToUser()
-                                || !mActivityRecord.mAppCompatController.getResizeOverrides()
-                                        .allowRestrictedResizability())
-                        && !mAllowOrientationOverrideOptProp.isFalse()
-                        && (aspectRatio == USER_MIN_ASPECT_RATIO_UNSET
-                            || aspectRatio == USER_MIN_ASPECT_RATIO_FULLSCREEN);
-
+        final boolean baseOverride = isSystemFullscreenOverrideEnabled(dc);
         if (dc != null) {
             // If attached to display, cache full-screen override to maintain consistent
             // override behaviour when activity is moved between displays.
@@ -196,6 +187,31 @@ class AppCompatAspectRatioOverrides {
         }
 
         return baseOverride;
+    }
+
+    private boolean isSystemFullscreenOverrideEnabled(@Nullable DisplayContent dc) {
+        if (com.android.window.flags.Flags.optOutOverrideOrientationToUser()
+                && (dc == null || !dc.isLargeScreen())) {
+            // According to the definition of OVERRIDE_ANY_ORIENTATION_TO_USER, it only applies
+            // on large screen devices.
+            return false;
+        }
+        if (!isChangeEnabled(mActivityRecord, OVERRIDE_ANY_ORIENTATION_TO_USER)) {
+            return false;
+        }
+        if (com.android.window.flags.Flags.optOutOverrideOrientationToUser()
+                && mActivityRecord.mAppCompatController.getResizeOverrides()
+                        .allowRestrictedResizability()) {
+            // The app declares PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES=true;
+            return false;
+        }
+        if (mAllowOrientationOverrideOptProp.isFalse()) {
+            // The app declares PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE=false.
+            return false;
+        }
+        final int userAspectRatio = getUserMinAspectRatioOverrideCode();
+        return userAspectRatio == USER_MIN_ASPECT_RATIO_UNSET
+                || userAspectRatio == USER_MIN_ASPECT_RATIO_FULLSCREEN;
     }
 
     boolean hasSystemFullscreenOverrideCache() {
