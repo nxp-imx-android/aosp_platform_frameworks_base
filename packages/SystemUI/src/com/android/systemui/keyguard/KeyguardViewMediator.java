@@ -3990,6 +3990,15 @@ public class KeyguardViewMediator implements CoreStartable,
     private void handleReset(boolean hideBouncer) {
         synchronized (KeyguardViewMediator.this) {
             mIsKeyguardExitAnimationCanceled = true;
+
+            // There are cases where a reset will be triggered as the process to hide keyguard
+            // begins. Make sure to tell WM to cancel any requests to go away.
+            if (mHiding) {
+                setShowingLocked(true /* showing */, true /* force */,
+                        "handleReset while mHiding == true");
+                mKeyguardInteractor.showKeyguard();
+            }
+
             if (DEBUG) Log.d(TAG, "handleReset");
             mKeyguardViewControllerLazy.get().reset(hideBouncer);
         }
