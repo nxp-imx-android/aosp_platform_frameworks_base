@@ -17,13 +17,16 @@
 package com.android.server;
 
 import static android.os.SecurityStateManager.KEY_KERNEL_VERSION;
+import static android.os.SecurityStateManager.KEY_SUPPLEMENTAL_PATCHES;
 import static android.os.SecurityStateManager.KEY_SYSTEM_SPL;
 import static android.os.SecurityStateManager.KEY_VENDOR_SPL;
 
 import static com.android.server.SecurityStateManagerService.KERNEL_RELEASE_PATTERN;
+import static com.android.server.SecurityStateManagerService.SUPPLEMENTAL_PATCH_CONFIG_FILE;
 import static com.android.server.SecurityStateManagerService.VENDOR_SECURITY_PATCH_PROPERTY_KEY;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -43,6 +46,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,6 +55,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 
 @RunWith(AndroidJUnit4.class)
@@ -72,8 +79,13 @@ public class SecurityStateTest {
     private static final String DEFAULT_MODULE_METADATA_PROVIDER_VERSION = "2023-12-01";
     private static final String DEFAULT_SECURITY_STATE_PACKAGE = "com.google.android.gms";
     private static final String DEFAULT_SECURITY_STATE_PACKAGE_VERSION = "2023-12-05";
+
     private static final String[] SECURITY_STATE_PACKAGES =
             new String[]{DEFAULT_SECURITY_STATE_PACKAGE};
+    private static final String[] EXPECTED_CVES = new String[]{"CVE-2023-12345", "CVE-2024-54321"};
+
+    private static final String TEST_CONFIG_FILE_PATH =
+            "/data/local/tmp/test_supplemental_security_patches.xml";
 
     @Before
     public void setUp() throws Exception {
@@ -97,12 +109,19 @@ public class SecurityStateTest {
 
     @Test
     public void testGetGlobalSecurityState_returnsBundle() {
-        SecurityStateManagerService securityState = new SecurityStateManagerService(mMockContext);
+        SecurityStateManagerService securityState =
+                new SecurityStateManagerService(mMockContext, TEST_CONFIG_FILE_PATH);
 
         Bundle bundle = securityState.getGlobalSecurityState();
 
+        String[] actualCves = bundle.getStringArray(KEY_SUPPLEMENTAL_PATCHES);
+        Arrays.sort(EXPECTED_CVES);
+        Arrays.sort(actualCves);
+
+        assertArrayEquals(EXPECTED_CVES, actualCves);
         assertEquals(bundle.getString(KEY_SYSTEM_SPL), Build.VERSION.SECURITY_PATCH);
-        assertEquals(bundle.getString(KEY_VENDOR_SPL),
+        assertEquals(
+                bundle.getString(KEY_VENDOR_SPL),
                 SystemProperties.get(VENDOR_SECURITY_PATCH_PROPERTY_KEY, ""));
         Matcher matcher = KERNEL_RELEASE_PATTERN.matcher(VintfRuntimeInfo.getKernelVersion());
         String kernelVersion = "";
@@ -110,9 +129,11 @@ public class SecurityStateTest {
             kernelVersion = matcher.group(1);
         }
         assertEquals(bundle.getString(KEY_KERNEL_VERSION), kernelVersion);
-        assertEquals(bundle.getString(DEFAULT_MODULE_METADATA_PROVIDER),
+        assertEquals(
+                bundle.getString(DEFAULT_MODULE_METADATA_PROVIDER),
                 DEFAULT_MODULE_METADATA_PROVIDER_VERSION);
-        assertEquals(bundle.getString(DEFAULT_SECURITY_STATE_PACKAGE),
+        assertEquals(
+                bundle.getString(DEFAULT_SECURITY_STATE_PACKAGE),
                 DEFAULT_SECURITY_STATE_PACKAGE_VERSION);
     }
 }
