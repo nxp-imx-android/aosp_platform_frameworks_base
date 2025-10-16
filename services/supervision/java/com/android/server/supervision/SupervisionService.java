@@ -347,6 +347,20 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 });
     }
 
+    private void clearAllPolicies(@UserIdInt int userId) {
+        if (!Flags.enableSupervisionManagerPolicyApis()) {
+            return;
+        }
+        synchronized (getLockObject()) {
+            SupervisionUserData data = getUserDataLocked(userId);
+            if (data.policies.isEmpty()) {
+                return;
+            }
+            data.policies.clear();
+            mSupervisionSettings.saveUserData();
+        }
+    }
+
     private void applyPolicy(@UserIdInt int userId, @NonNull Policy policy) {
         switch (policy) {
             case PackagePolicy pp -> applyPackagePolicy(userId, pp);
@@ -488,6 +502,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     dispatchSupervisionEvent(
                             userId, listener -> listener.onSetSupervisionEnabled(userId, false));
                     clearAllDevicePoliciesAndSuspendedPackages(userId);
+                    clearAllPolicies(userId);
                 });
     }
 

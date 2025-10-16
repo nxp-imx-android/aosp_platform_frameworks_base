@@ -797,6 +797,9 @@ class SupervisionServiceTest {
 
         injector.awaitServiceThreadIdle()
 
+        if (!enabled) {
+            assertThat(service.getUserDataLocked(userId).policies).isEmpty()
+        }
         verifySupervisionListeners(userId, enabled, listeners)
     }
 
@@ -814,6 +817,9 @@ class SupervisionServiceTest {
 
         injector.awaitServiceThreadIdle()
 
+        if (!enabled) {
+            assertThat(service.getUserDataLocked(userId).policies).isEmpty()
+        }
         verifySupervisionListeners(userId, enabled, listeners)
     }
 
@@ -902,6 +908,16 @@ class SupervisionServiceTest {
             eq(USER_ID),
             any()
         )
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun onDisableSupervision_clearsPolicies() {
+        verifySetPackagePolicy(enabled = true)
+
+        assertThat(service.getUserDataLocked(USER_ID).policies).isNotEmpty()
+
+        setSupervisionEnabledForUser(USER_ID, false)
     }
 
     private val systemSupervisionPackage: String
