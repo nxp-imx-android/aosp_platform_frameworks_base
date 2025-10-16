@@ -36,7 +36,15 @@ data class SafetyCenterUiData(
     val entriesByUserIdAndSourceId: Map<Int, Map<String, SafetyCenterEntry>>,
     val activeIssuesBySourceId: Map<String, List<SafetyCenterIssue>>,
     val dismissedIssuesBySourceId: Map<String, List<SafetyCenterIssue>>,
+    val resolvedIssues: Map<String, String> = emptyMap(),
 ) {
+
+    /**
+     * Creates a copy of this [SafetyCenterUiData] with the provided [resolvedIssues].
+     */
+    fun copyWithResolvedIssues(resolvedIssues: Map<String, String>): SafetyCenterUiData {
+        return this.copy(resolvedIssues = resolvedIssues)
+    }
 
     /**
      * Retrieves a specific SafetyCenterEntry for a given user and source ID.
