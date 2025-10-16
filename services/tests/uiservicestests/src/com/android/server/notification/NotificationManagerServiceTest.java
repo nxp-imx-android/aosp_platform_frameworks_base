@@ -20072,6 +20072,117 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
+            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI,
+            Flags.FLAG_DISABLE_NAS_AFFECTS_CLASSIFICATION_AND_SUMMARIZATION})
+    public void disableNas_unclassifiesAllNotifications() throws Exception {
+        List<UserInfo> userInfos = new ArrayList<>();
+        userInfos.add(new UserInfo(mUserId, "", 0));
+        when(mUm.getEnabledProfiles(anyInt())).thenReturn(userInfos);
+        ComponentName assistantCn = ComponentName.unflattenFromString("nas/nas");
+        NotificationChannel originalChannel =
+                new NotificationChannel("c1", "Channel", IMPORTANCE_DEFAULT);
+        mBinderService.createNotificationChannels(mPkg,
+                new ParceledListSlice(Arrays.asList(originalChannel)));
+        when(mAssistants.getAllowedComponents(anyInt())).thenReturn(List.of(assistantCn));
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        doAnswer(invocationOnMock -> {
+            RankingReconsideration recon =
+                    ((RankingReconsideration) invocationOnMock.getArguments()[0]);
+            final NotificationRecord r = mService.mNotificationsByKey.get(recon.getKey());
+            if (r != null) {
+                recon.applyChangesLocked(r);
+            }
+            return null;
+        }).when(mRankingHandler).requestReconsideration(any());
+
+        // Have one notification.
+        Notification n = new Notification.Builder(mContext, "c1").setSmallIcon(1).build();
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "", 1, n, mUserId);
+        waitForIdle();
+        assertThat(mService.mNotificationList).hasSize(1);
+        NotificationRecord nr = Iterables.getOnlyElement(mService.mNotificationList);
+        assertThat(nr.getChannel().getId()).isEqualTo("c1");
+
+        // It gets classified as "News".
+        Bundle signals = new Bundle();
+        signals.putInt(Adjustment.KEY_TYPE, Adjustment.TYPE_NEWS);
+        Adjustment adjustment = new Adjustment(nr.getSbn().getPackageName(), nr.getKey(),
+                signals, "", nr.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        mService.handleRankingSort();
+        waitForIdle();
+        assertThat(nr.getChannel().getId()).isEqualTo(NEWS_ID);
+
+        // Assistant is disabled.
+        mBinderService.setNotificationAssistantAccessGrantedForUser(assistantCn, mUserId, false);
+        mService.handleRankingSort();
+        waitForIdle();
+
+        // Notification goes back to its original channel.
+        assertThat(nr.getChannel().getId()).isEqualTo("c1");
+    }
+
+    @Test
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
+            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI,
+            Flags.FLAG_DISABLE_NAS_AFFECTS_CLASSIFICATION_AND_SUMMARIZATION})
+    public void disableNas_unsummarizesAllNotifications() throws Exception {
+        List<UserInfo> userInfos = new ArrayList<>();
+        userInfos.add(new UserInfo(mUserId, "", 0));
+        when(mUm.getEnabledProfiles(anyInt())).thenReturn(userInfos);
+        ComponentName assistantCn = ComponentName.unflattenFromString("nas/nas");
+        NotificationChannel originalChannel =
+                new NotificationChannel("c1", "Channel", IMPORTANCE_DEFAULT);
+        mBinderService.createNotificationChannels(mPkg,
+                new ParceledListSlice(Arrays.asList(originalChannel)));
+        when(mAssistants.getAllowedComponents(anyInt())).thenReturn(List.of(assistantCn));
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        doAnswer(invocationOnMock -> {
+            RankingReconsideration recon =
+                    ((RankingReconsideration) invocationOnMock.getArguments()[0]);
+            final NotificationRecord r = mService.mNotificationsByKey.get(recon.getKey());
+            if (r != null) {
+                recon.applyChangesLocked(r);
+            }
+            return null;
+        }).when(mRankingHandler).requestReconsideration(any());
+
+        // Have one notification.
+        Notification n = new Notification.Builder(mContext, "c1").setSmallIcon(1).build();
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "", 1, n, mUserId);
+        waitForIdle();
+        assertThat(mService.mNotificationList).hasSize(1);
+        NotificationRecord nr = Iterables.getOnlyElement(mService.mNotificationList);
+        assertThat(nr.getSummarization()).isNull();
+
+        // It gets summarized.
+        Bundle signals = new Bundle();
+        signals.putCharSequence(Adjustment.KEY_SUMMARIZATION, "hello");
+        Adjustment adjustment = new Adjustment(nr.getSbn().getPackageName(), nr.getKey(),
+                signals, "", nr.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        mService.handleRankingSort();
+        waitForIdle();
+        assertThat(nr.getSummarization()).isEqualTo("hello");
+
+        // Assistant is disabled.
+        mBinderService.setNotificationAssistantAccessGrantedForUser(assistantCn, mUserId, false);
+        mService.handleRankingSort();
+        waitForIdle();
+
+        // Notification loses summary.
+        assertThat(nr.getSummarization()).isNull();
+    }
+
+
+    @Test
     public void testNoChildrenYet_summaryNotSilent() throws Exception {
         // Post summary
         final String originalGroupName = "originalGroup";

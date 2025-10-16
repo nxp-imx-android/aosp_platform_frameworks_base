@@ -7659,6 +7659,17 @@ public class NotificationManagerService extends SystemService {
 
                     handleSavePolicyFile();
                 }
+
+                if (Flags.disableNasAffectsClassificationAndSummarization() && !granted) {
+                    if ((notificationClassificationUi() && notificationRegroupOnClassification())) {
+                        applyNotificationUpdateForUserProfiles(userId,
+                                NotificationManagerService.this::unclassifyNotificationLocked);
+                    }
+                    if (nmSummarizationUi() || nmSummarization()) {
+                        applyNotificationUpdateForUserProfiles(userId,
+                                NotificationManagerService.this::unsummarizeNotificationLocked);
+                    }
+                }
             }
         }
     }

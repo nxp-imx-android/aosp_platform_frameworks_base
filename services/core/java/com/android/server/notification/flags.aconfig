@@ -223,6 +223,16 @@ flag {
   }
 }
 
+flag {
+  name: "disable_nas_affects_classification_and_summarization"
+  namespace: "notifications"
+  description: "Disabling NAS also unclassifies and unsummarizes existing notifications"
+  bug: "446994142"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
 # Start: Flags that have been cleaned up in code but must remain defined for CTS
 
 flag {
