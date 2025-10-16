@@ -18,6 +18,7 @@ package com.android.systemui.qs.tiles.dialog;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.TextUtils;
@@ -37,6 +38,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.Utils;
 import com.android.settingslib.wifi.WifiUtils;
+import com.android.systemui.common.shared.model.Icon;
 import com.android.systemui.qs.flags.QsWifiConfig;
 import com.android.systemui.res.R;
 import com.android.wifi.flags.Flags;
@@ -88,6 +90,24 @@ public class InternetAdapter extends RecyclerView.Adapter<InternetAdapter.Intern
         mContext = viewGroup.getContext();
         mHolderView = LayoutInflater.from(mContext).inflate(R.layout.internet_list_item,
                 viewGroup, false);
+
+        if (mIsInDetailsView) {
+            LinearLayout wifiList = mHolderView.findViewById(R.id.wifi_list);
+            Resources res = mHolderView.getContext().getResources();
+            LinearLayout.LayoutParams layoutParams =
+                    (LinearLayout.LayoutParams) wifiList.getLayoutParams();
+
+            layoutParams.height = res.getDimensionPixelSize(R.dimen.tile_details_entry_height);
+
+            final int horizontalMargin =
+                    res.getDimensionPixelSize(R.dimen.tile_details_entry_horizontal_margin);
+
+            layoutParams.setMarginStart(horizontalMargin);
+            layoutParams.setMarginEnd(horizontalMargin);
+
+            wifiList.setLayoutParams(layoutParams);
+        }
+
         return new InternetViewHolder(mHolderView, mInternetDetailsContentController,
                 mCoroutineScope, mIsInDetailsView);
     }

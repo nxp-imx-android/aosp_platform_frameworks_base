@@ -220,7 +220,7 @@
                     android:clickable="false"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/tile_details_entry_start_margin">
+                    android:layout_marginStart="@dimen/tile_details_entry_horizontal_margin">
 
                     <TextView
                         android:text="@string/pair_new_bluetooth_devices"

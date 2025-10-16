@@ -36,6 +36,7 @@ import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewStub
 import android.view.WindowManager
 import android.widget.ImageView
@@ -48,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -244,7 +246,9 @@ constructor(
         // Set wifi, mobile and ethernet layouts
         setWifiLayout()
         setMobileLayout()
-        ethernetLayout = contentView.requireViewById(R.id.ethernet_layout)
+        ethernetLayout = contentView.requireViewById<LinearLayout>(R.id.ethernet_layout).apply {
+            setEntryMargins()
+        }
 
         // Share WiFi
         shareWifiButton = contentView.requireViewById(R.id.share_wifi_button)
@@ -281,6 +285,17 @@ constructor(
         wifiButtonsContainer = contentView.requireViewById(R.id.wifi_buttons_container)
     }
 
+    // Sets horizontal margins to create a consistent look for tile detail entries.
+    private fun ViewGroup.setEntryMargins() {
+        val horizontalMargin =
+            this.resources.getDimensionPixelSize(R.dimen.tile_details_entry_horizontal_margin)
+
+        updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            marginStart = horizontalMargin
+            marginEnd = horizontalMargin
+        }
+    }
+
     private fun setWifiLayout() {
         // Initialize Wi-Fi related views
         turnWifiOnLayout = contentView.requireViewById(R.id.turn_on_wifi_layout)
@@ -300,6 +315,16 @@ constructor(
                 layoutManager = LinearLayoutManager(context)
                 adapter = this@InternetDetailsContentManager.adapter
             }
+
+
+        val entryHeight = contentView.context.resources.getDimensionPixelSize(
+            R.dimen.tile_details_entry_height
+        )
+
+        turnWifiOnLayout.apply {
+            setEntryMargins()
+            layoutParams = layoutParams.apply { height = entryHeight }
+        }
 
         // Add backgrounds for each entry and also add a gap between each item.
         val verticalSpacing =
@@ -350,7 +375,10 @@ constructor(
             }
         )
 
-        seeAllLayout = contentView.requireViewById(R.id.see_all_layout)
+        seeAllLayout = contentView.requireViewById<LinearLayout>(R.id.see_all_layout).apply {
+            setEntryMargins()
+            layoutParams = layoutParams.apply { height = entryHeight }
+        }
 
         // Set click listeners for Wi-Fi related views
         turnWifiOnLayout.setOnClickListener {
