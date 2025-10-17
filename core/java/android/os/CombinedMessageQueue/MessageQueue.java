@@ -32,6 +32,7 @@ import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.Overridable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodReplace;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
@@ -175,6 +176,14 @@ public final class MessageQueue {
             return useConcurrent;
         }
         return sUseConcurrent;
+    }
+
+    /**
+     * @return human-readable string that identifies the implementation.
+     * @hide
+     */
+    public static String getImplName() {
+        return "combined:" + getUseConcurrent();
     }
 
     private static boolean computeUseConcurrent() {

@@ -35,6 +35,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.MessageQueue;
 import android.os.Process_ravenwood;
 import android.os.ServiceManager;
 import android.os.ServiceManager.ServiceNotFoundException;
@@ -237,6 +238,9 @@ public class RavenwoodDriver {
         Typeface.loadPreinstalledSystemFontMap();
         Typeface.loadNativeSystemFonts();
 
+        // Do it after the framework is initialized.
+        dumpFrameworkInfo();
+
         // This will let AndroidJUnit4 use the original runner.
         System.setProperty("android.junit.runner",
                 "androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner");
@@ -431,5 +435,9 @@ public class RavenwoodDriver {
 
         var itz = android.icu.util.TimeZone.getDefault();
         Log.i(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
+    }
+
+    private static void dumpFrameworkInfo() {
+        Log.i(TAG, "MessageQueue implementation=" + MessageQueue.getImplName());
     }
 }

@@ -163,6 +163,14 @@ public final class MessageQueue {
         return sUseDeliQueue;
     }
 
+    /**
+     * @return human-readable string that identifies the implementation.
+     * @hide
+     */
+    public static String getImplName() {
+        return "deli:" + getUseConcurrent();
+    }
+
     private static boolean computeUseDeliQueue() {
         if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
                 || Flags.useConcurrentMessageQueueInApps()) {
