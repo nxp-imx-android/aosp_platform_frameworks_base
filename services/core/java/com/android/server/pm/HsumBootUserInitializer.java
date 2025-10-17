@@ -95,7 +95,7 @@ public final class HsumBootUserInitializer {
         }
         var instance = new HsumBootUserInitializer(ums, ams, pms, contentResolver,
                 designateMainUserOnBoot(context), createInitialUserOnBoot(context),
-                isManagedDevice);
+                isManagedDevice, context);
         setDumpable(instance, context);
         return instance;
     }
@@ -104,7 +104,7 @@ public final class HsumBootUserInitializer {
     HsumBootUserInitializer(UserManagerService ums, ActivityManagerService ams,
             PackageManagerService pms, ContentResolver contentResolver,
             boolean shouldDesignateMainUser, boolean shouldCreateInitialUser,
-            boolean isManagedDevice) {
+            boolean isManagedDevice, Context context) {
         mUms = ums;
         mAms = ams;
         mPms = pms;
@@ -113,7 +113,8 @@ public final class HsumBootUserInitializer {
         mShouldCreateInitialUser = shouldCreateInitialUser;
         mIsManagedDevice = isManagedDevice;
         mDeviceProvisionedObserver = (Flags.hsuDeviceProvisioner()
-                    ? new HsuDeviceProvisioner(new Handler(Looper.getMainLooper()), contentResolver)
+                    ? new HsuDeviceProvisioner(
+                            context, new Handler(Looper.getMainLooper()), contentResolver)
                     : new ContentObserver(new Handler(Looper.getMainLooper())) {
                         @Override
                         public void onChange(boolean selfChange) {
