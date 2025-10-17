@@ -88,6 +88,7 @@ import com.android.wm.shell.compatui.CompatUIShellCommandHandler;
 import com.android.wm.shell.compatui.CompatUIStatusManager;
 import com.android.wm.shell.compatui.api.CompatUIComponentFactory;
 import com.android.wm.shell.compatui.api.CompatUIComponentIdGenerator;
+import com.android.wm.shell.compatui.api.CompatUIComponentRepository;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUIRepository;
 import com.android.wm.shell.compatui.api.CompatUIState;
@@ -321,6 +322,7 @@ public abstract class WMShellBaseModule {
             Lazy<CompatUIShellCommandHandler> compatUIShellCommandHandler,
             Lazy<AccessibilityManager> accessibilityManager,
             CompatUIRepository compatUIRepository,
+            CompatUIComponentRepository compatUIComponentRepository,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             @NonNull CompatUIState compatUIState,
             @NonNull CompatUIComponentIdGenerator componentIdGenerator,
@@ -334,8 +336,9 @@ public abstract class WMShellBaseModule {
         }
         if (Flags.appCompatUiFramework()) {
             return Optional.of(
-                    new DefaultCompatUIHandler(compatUIRepository, compatUIState,
-                            componentIdGenerator, compatUIComponentFactory, mainExecutor));
+                    new DefaultCompatUIHandler(compatUIRepository, compatUIComponentRepository,
+                            compatUIState, componentIdGenerator, compatUIComponentFactory,
+                            mainExecutor));
         }
         return Optional.of(
                 new CompatUIController(
@@ -380,8 +383,10 @@ public abstract class WMShellBaseModule {
     static CompatUIComponentFactory provideCompatUIComponentFactory(
             @NonNull Context context,
             @NonNull SyncTransactionQueue syncQueue,
+            @NonNull CompatUIComponentRepository compatUIComponentRepository,
             @NonNull DisplayController displayController) {
-        return new DefaultCompatUIComponentFactory(context, syncQueue, displayController);
+        return new DefaultCompatUIComponentFactory(context, syncQueue, displayController,
+                compatUIComponentRepository);
     }
 
     @WMSingleton
