@@ -19,10 +19,13 @@ package com.android.systemui.statusbar.pipeline.shared.ui.composable
 import android.content.Context
 import android.graphics.Rect
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -41,7 +44,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onLayoutRectChanged
@@ -49,11 +56,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.theme.colorAttr
 import com.android.keyguard.AlphaOptimizedLinearLayout
@@ -77,12 +87,14 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.RudimentaryBattery
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
@@ -119,6 +131,7 @@ import com.android.systemui.statusbar.ui.viewmodel.StatusBarRegionSamplingViewMo
 import com.android.systemui.util.boundsOnScreen
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.math.abs
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
 
@@ -142,6 +155,7 @@ constructor(
     @DisplayAware private val homeStatusBarViewBinder: HomeStatusBarViewBinder,
     @DisplayAware private val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory,
     private val statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
+    private val shadeWindowRootView: WindowRootView,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
@@ -150,6 +164,7 @@ constructor(
                 PlatformTheme {
                     StatusBarRoot(
                         parent = root,
+                        shadeWindowRootView = shadeWindowRootView,
                         statusBarViewModelFactory = homeStatusBarViewModelFactory,
                         statusBarViewBinder = homeStatusBarViewBinder,
                         notificationIconsBinder = notificationIconsBinder,
@@ -190,6 +205,7 @@ constructor(
 @Composable
 fun StatusBarRoot(
     parent: ViewGroup,
+    shadeWindowRootView: WindowRootView,
     statusBarViewModelFactory: HomeStatusBarViewModelFactory,
     statusBarViewBinder: HomeStatusBarViewBinder,
     notificationIconsBinder: NotificationIconContainerStatusBarViewBinder,
@@ -236,6 +252,8 @@ fun StatusBarRoot(
         }
     }
 
+    val touchSlop = LocalViewConfiguration.current.touchSlop
+
     // Let the DesktopStatusBar compose all the UI if [useDesktopStatusBar] is true.
     if (StatusBarForDesktop.isEnabled && statusBarViewModel.useDesktopStatusBar) {
         DesktopStatusBar(
@@ -247,6 +265,14 @@ fun StatusBarRoot(
             mediaViewModelFactory = mediaViewModelFactory,
             mediaHost = mediaHost,
             iconViewStore = iconViewStore,
+            modifier =
+                modifier.forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
+                    position,
+                    size ->
+                    // This call is needed to make sure the shade is preemptively moved to the
+                    // display that the user is currently interacting with.
+                    statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
+                },
         )
         return
     }
@@ -393,7 +419,16 @@ fun StatusBarRoot(
                 onViewCreated(phoneStatusBarView)
                 phoneStatusBarView
             },
-            modifier = modifier,
+            modifier =
+                modifier.thenIf(StatusBarEventForwardingModernization.isEnabled) {
+                    Modifier.forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
+                        position,
+                        size ->
+                        // This call is needed to make sure the shade is preemptively moved to the
+                        // display that the user is currently interacting with.
+                        statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
+                    }
+                },
             onRelease = { touchableExclusionRegionDisposableHandle?.dispose() },
         )
     }
@@ -744,4 +779,85 @@ private fun rememberViewWidthAsState(view: View): MutableIntState {
         onDispose { view.removeOnLayoutChangeListener(layoutListener) }
     }
     return viewWidth
+}
+
+/**
+ * A pointer input modifier that intercepts events and forwards them to a provided view if there is
+ * a drag or swipe.
+ *
+ * It works by:
+ * 1. Observing pointer events in the 'Initial' pass, before they reach child composables.
+ * 2. Caching events (ACTION_DOWN, ACTION_MOVE) until the vertical drag distance exceeds the system
+ *    touch slop.
+ * 3. Once the slop is exceeded, it begins "intercepting". It dispatches the entire cached gesture
+ *    (starting from ACTION_DOWN) to the provided [view].
+ * 4. For the remainder of the gesture, it continues dispatching events directly to the [view] and
+ *    consumes them, preventing any child composables from receiving them.
+ */
+@VisibleForTesting
+fun Modifier.forwardDragAndSwipeToShadeRootView(
+    view: View,
+    touchSlop: Float,
+    onDown: (downPosition: Offset, size: IntSize) -> Unit,
+): Modifier =
+    pointerInput(view) {
+        awaitEachGesture {
+            // Wait for the initial press, but don't consume it.
+            // This allows clicks to pass through if no drag occurs.
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+
+            val cachedEvents = mutableListOf<MotionEvent>()
+            var isIntercepting = false
+
+            // Always cache the down event.
+            currentEvent.motionEvent?.let { cachedEvents.add(MotionEvent.obtain(it)) }
+            onDown(down.position, size)
+            try {
+                // Loop to process events for the current gesture.
+                while (true) {
+                    val event = awaitPointerEvent(pass = PointerEventPass.Initial)
+                    val mainChange = event.changes.first()
+
+                    if (isIntercepting) {
+                        // If we are already intercepting, dispatch and consume.
+                        dispatchAndConsume(event, view)
+                    } else {
+                        // If not intercepting, check if we should start.
+                        val dy = mainChange.position.y - down.position.y
+                        if (abs(dy) > touchSlop) {
+                            isIntercepting = true
+
+                            // Slop exceeded. Dispatch the cached events...
+                            cachedEvents.forEach { view.dispatchTouchEvent(it) }
+                            // ...and the current event, then consume it.
+                            dispatchAndConsume(event, view)
+                        } else {
+                            // Slop not exceeded, just cache the event.
+                            event.motionEvent?.let { cachedEvents.add(MotionEvent.obtain(it)) }
+                        }
+                    }
+
+                    // Exit the loop if the primary pointer is up.
+                    if (mainChange.pressed.not()) {
+                        break
+                    }
+                }
+            } finally {
+                // Ensure all cached events are recycled at the end of the gesture.
+                cachedEvents.forEach { it.recycle() }
+            }
+        }
+    }
+
+/** Helper to dispatch a copy of the MotionEvent and consume all PointerChanges. */
+private fun dispatchAndConsume(event: PointerEvent, legacyView: View) {
+    event.motionEvent?.let {
+        val copy = MotionEvent.obtain(it)
+        try {
+            legacyView.dispatchTouchEvent(copy)
+        } finally {
+            copy.recycle()
+        }
+    }
+    event.changes.forEach { it.consume() }
 }

@@ -44,6 +44,7 @@ import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.Clock
@@ -269,7 +270,13 @@ private constructor(
 
     init {
         // These should likely be done in `onInit`, not `init`.
-        mView.setTouchEventHandler(PhoneStatusBarViewTouchHandler())
+        mView.setTouchEventHandler(
+            if (StatusBarEventForwardingModernization.isEnabled) {
+                null
+            } else {
+                PhoneStatusBarViewTouchHandler()
+            }
+        )
         statusBarContentInsetsProvider?.let {
             mView.setHasCornerCutoutFetcher { it.currentRotationHasCornerCutout() }
             mView.setInsetsFetcher { it.getStatusBarContentInsetsForCurrentRotation() }
@@ -324,6 +331,9 @@ private constructor(
         darkIconDispatcher.removeDarkReceiver(clock)
     }
 
+    @Deprecated(
+        "This touch handler will be unused once StatusBarEventForwardingModernization is enabled"
+    )
     inner class PhoneStatusBarViewTouchHandler : Gefingerpoken {
         private val touchSlop = ViewConfiguration.get(mView.context).scaledTouchSlop
         private var initialTouchX = 0f
@@ -332,6 +342,8 @@ private constructor(
         private val cachedEvents = mutableListOf<MotionEvent>()
 
         override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+            StatusBarEventForwardingModernization.assertInLegacyMode()
+
             if (event.action == MotionEvent.ACTION_DOWN) {
                 dispatchEventToShadeDisplayPolicy(event)
             }
@@ -373,6 +385,8 @@ private constructor(
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
+            StatusBarEventForwardingModernization.assertInLegacyMode()
+
             onTouch(event)
 
             // If panels aren't enabled, ignore the gesture and don't pass it down to the
