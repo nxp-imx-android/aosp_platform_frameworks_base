@@ -41,6 +41,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pip.PipTransitionController
+import com.android.wm.shell.pip2.phone.PipScheduler
 import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.splitscreen.StageCoordinator
@@ -88,6 +89,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         mock(),
     ))
     private val pinnedLayerController = mock<PinnedLayerController>()
+    private val pipScheduler = mock<PipScheduler>()
 
     private val shellInit: ShellInit = ShellInit(TestShellExecutor())
     private val mixedHandler = DefaultMixedHandler(
@@ -95,6 +97,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         transitions,
         Optional.of(splitScreenController),
         pipTransitionController,
+        Optional.of(pipScheduler),
         pinnedLayerController,
         Optional.of(recentsTransitionHandler),
         keyguardTransitionHandler,
@@ -308,7 +311,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
             TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition, transitions, mixedHandler,
             pipTransitionController, splitScreenController.getTransitionHandler(),
             keyguardTransitionHandler, unfoldTransitionHandler, activityEmbeddingController,
-            desktopTasksController, bubbleTransitions
+            desktopTasksController, bubbleTransitions, pinnedLayerController
         ))
         mixedHandler.mActiveTransitions.add(mixedTransition)
         val info = TransitionInfo(TRANSIT_OPEN, 0)

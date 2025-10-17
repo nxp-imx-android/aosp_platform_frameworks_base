@@ -33,11 +33,13 @@ import static com.android.wm.shell.transition.DefaultMixedHandler.subCopy;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.IBinder;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -52,7 +54,7 @@ public class MixedTransitionHelper {
             @NonNull Transitions.TransitionFinishCallback finishCallback,
             @NonNull Transitions player, @NonNull MixedTransitionHandler mixedHandler,
             @NonNull PipTransitionController pipHandler, @NonNull StageCoordinator splitHandler,
-            boolean replacingPip) {
+            @Nullable PinnedLayerController pinnedLayerController, boolean replacingPip) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
                 + "entering PIP while Split-Screen is foreground.");
         TransitionInfo.Change pipChange = null;
@@ -155,6 +157,16 @@ public class MixedTransitionHelper {
                 if (pipActivityChange != null) {
                     pipInfo.getChanges().add(pipActivityChange);
                 }
+
+                if (pinnedLayerController != null
+                        && pinnedLayerController.observes(mixed.mTransition)) {
+                    // launching pip has additional side effects on pinned layer
+                    mixed.mInFlightSubAnimations++;
+                    final TransitionInfo pinnedLayerInfo = removePinnedLayerTaskChangesFrom(
+                        pinnedLayerController, info, mixed.mTransition);
+                    pinnedLayerController.startAnimation(mixed.mTransition, pinnedLayerInfo,
+                            startTransaction, finishTransaction, finishCB);
+                }
                 pipHandler.startAnimation(mixed.mTransition, pipInfo, startTransaction,
                         finishTransaction, finishCB);
             } else {
@@ -172,6 +184,13 @@ public class MixedTransitionHelper {
             // new pip task is spawned). In this case, we don't actually exit split so we can
             // just let pip transition handle the animation verbatim.
             mixed.mInFlightSubAnimations = 1;
+            if (pinnedLayerController != null
+                    && pinnedLayerController.observes(mixed.mTransition)) {
+                    // launching pip has additional side effects on pinned layer
+                    mixed.mInFlightSubAnimations++;
+                    pinnedLayerController.startAnimation(mixed.mTransition, info,
+                            startTransaction, finishTransaction, finishCB);
+                }
             pipHandler.startAnimation(
                     mixed.mTransition, info, startTransaction, finishTransaction, finishCB);
         }
@@ -242,5 +261,25 @@ public class MixedTransitionHelper {
             pipHandler.syncPipSurfaceState(info, startTransaction, finishTransaction);
         }
         return mixed.startSubAnimation(keyguardHandler, info, startTransaction, finishTransaction);
+    }
+
+    @NonNull
+    static TransitionInfo removePinnedLayerTaskChangesFrom(
+            @NonNull PinnedLayerController pinnedLayerController,
+            @NonNull TransitionInfo outInfo,
+            @NonNull IBinder transition) {
+        final TransitionInfo pinnedLayerInfo =
+                subCopy(outInfo, outInfo.getType(), /* withChanges */ false);
+        for (int i = outInfo.getChanges().size() - 1; i >= 0; --i) {
+            final TransitionInfo.Change change = outInfo.getChanges().get(i);
+
+            // With the current implementation, it's safe to assume that if a task has
+            // pinned layer changes, those are its only changes.
+            if (pinnedLayerController.awaitsChangesFor(change.getTaskInfo(), transition)) {
+                outInfo.getChanges().remove(i);
+                pinnedLayerInfo.getChanges().add(change);
+            }
+        }
+        return pinnedLayerInfo;
     }
 }

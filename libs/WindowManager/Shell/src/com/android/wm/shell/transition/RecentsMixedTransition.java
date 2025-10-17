@@ -34,6 +34,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
@@ -54,9 +55,10 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
             MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
             StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
             RecentsTransitionHandler recentsHandler, DesktopTasksController desktopTasksController,
-            BubbleTransitions bubbleTransitions, int displayId) {
+            BubbleTransitions bubbleTransitions, PinnedLayerController pinnedLayerController,
+            int displayId) {
         super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler,
-                bubbleTransitions);
+                bubbleTransitions, pinnedLayerController);
         mRecentsHandler = recentsHandler;
         mDesktopTasksController = desktopTasksController;
         mLeftoversHandler = mRecentsHandler;
@@ -160,7 +162,7 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
                     != SPLIT_POSITION_UNDEFINED) {
                 return animateEnterPipFromSplit(this, info, startTransaction, finishTransaction,
                         finishCallback, mPlayer, mMixedHandler, mPipHandler, mSplitHandler,
-                        /*replacingPip*/ false);
+                        mPinnedLayerController, /*replacingPip*/ false);
             }
         }
 

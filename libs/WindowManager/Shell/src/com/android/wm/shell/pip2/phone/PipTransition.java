@@ -1208,4 +1208,9 @@ public class PipTransition extends PipTransitionController implements
         return inPipTask != null && mPipTransitionState.isInPip()
                 && taskId == inPipTask.getTaskId();
     }
+
+    @Override
+    public boolean isInPip() {
+        return mPipTransitionState.isInPip();
+    }
 }

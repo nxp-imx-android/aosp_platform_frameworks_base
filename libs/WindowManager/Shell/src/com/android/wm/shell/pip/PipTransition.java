@@ -1385,6 +1385,11 @@ public class PipTransition extends PipTransitionController {
         return inPipTask != null && mPipOrganizer.isInPip() && taskId == inPipTask.taskId;
     }
 
+    @Override
+    public boolean isInPip() {
+        return mPipOrganizer.isInPip();
+    }
+
     private void updatePipForUnhandledTransition(@NonNull TransitionInfo.Change pipChange,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction) {

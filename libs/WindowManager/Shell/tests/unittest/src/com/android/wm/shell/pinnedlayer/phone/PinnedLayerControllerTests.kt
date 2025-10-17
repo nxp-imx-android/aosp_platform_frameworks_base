@@ -35,6 +35,7 @@ import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.view.WindowManager.TransitionType
 import android.window.TransitionInfo
 import android.window.TransitionInfo.FLAG_NONE
+import android.window.WindowContainerTransaction
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -46,6 +47,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -394,6 +396,88 @@ class PinnedLayerControllerTests : ShellTestCase() {
         assertEquals(TASK_ID_0, pinnedLayerController.currentPinnedTask?.taskId)
     }
 
+    @Test
+    fun augmentToDismissPinnedTask_hasActivePinnedTask_unpinsTask() {
+        val pinTransition = mock<IBinder>()
+        val pinCallback = mock<IRemoteCallback>()
+        val pinRequestInfo =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                pinCallback,
+                triggerTaskId = TASK_ID_0,
+            )
+        val pinTransitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+
+        // Pin the task
+        pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerController.startAnimation(
+            pinTransition,
+            pinTransitionInfo,
+            startTransaction,
+            finishTransaction,
+        ) {}
+        assertTrue(pinnedLayerController.hasActivePinnedTask())
+
+        // Augment to dismiss the pin
+        val dismissTransition = mock<IBinder>()
+        val dismissRequestInfo = mock<TransitionRequestInfo>()
+        val wct = WindowContainerTransaction()
+        pinnedLayerController.augmentRequestDismissPinnedTask(dismissTransition, dismissRequestInfo, wct)
+
+        // After augmenting, start the animation to process the unpin
+        val backRequestInfo = sendTransitionRequest(TRANSIT_TO_BACK, triggerTaskId = TASK_ID_0)
+        val backTransitionInfo = TransitionInfo(TRANSIT_TO_BACK, FLAG_NONE)
+        backTransitionInfo.addChange(
+            buildChange(TRANSIT_TO_BACK, requireNotNull(backRequestInfo.triggerTask))
+        )
+        pinnedLayerController.startAnimation(
+            dismissTransition,
+            backTransitionInfo,
+            startTransaction,
+            finishTransaction,
+        ) {}
+
+        assertFalse(pinnedLayerController.hasActivePinnedTask())
+    }
+
+    @Test
+    fun augmentToDismissPinnedTask_withoutPinnedTask_doesNothing() {
+        val wct = WindowContainerTransaction()
+
+        pinnedLayerController.augmentRequestDismissPinnedTask(
+            mock<IBinder>(), mock<TransitionRequestInfo>(), wct
+        )
+
+        assertTrue(wct.isEmpty)
+    }
+
+    @Test
+    fun hasActivePinnedTask_withoutPinnedTask_returnsFalse() {
+        assertFalse(pinnedLayerController.hasActivePinnedTask())
+    }
+
+    @Test
+    fun hasActivePinnedTask_withPinnedTask_returnsFalse() {
+        val transition = mock<IBinder>()
+        val callback = mock<IRemoteCallback>()
+        val requestInfo =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback,
+            )
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+
+        pinnedLayerController.handleRequest(transition, requestInfo)
+        pinnedLayerController.startAnimation(
+            transition,
+            transitionInfo,
+            startTransaction,
+            finishTransaction,
+        ) {}
+
+        assertTrue(pinnedLayerController.hasActivePinnedTask())
+    }
+
     private fun verifyCallbackResult(callback: IRemoteCallback, expected: Int) {
         val bundleCaptor = ArgumentCaptor.forClass(Bundle::class.java)
         verify(callback).sendResult(bundleCaptor.capture())
@@ -406,7 +490,7 @@ class PinnedLayerControllerTests : ShellTestCase() {
     private fun setupWindowingLayerTransition(
         @WindowingLayer layer: Int = WINDOWING_LAYER_NORMAL_APP,
         callback: IRemoteCallback,
-        triggerTaskId: Int = 0,
+        triggerTaskId: Int = TASK_ID_0,
         triggerTaskToken: WindowContainerToken = MockToken.token(),
     ): TransitionRequestInfo {
         val windowingLayerChange = TransitionRequestInfo.WindowingLayerChange(layer, callback)

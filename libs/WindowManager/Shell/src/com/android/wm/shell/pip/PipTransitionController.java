@@ -351,6 +351,12 @@ public abstract class PipTransitionController implements Transitions.TransitionH
         return false;
     }
 
+    /** Whether any task is active in pip. */
+    public boolean isInPip() {
+        // No-op, to be handled differently in PIP1 and PIP2
+        return false;
+    }
+
     /** Add PiP-related changes to `outWCT` for the given request. */
     public void augmentRequest(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request, @NonNull WindowContainerTransaction outWCT) {
