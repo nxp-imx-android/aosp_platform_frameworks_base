@@ -464,13 +464,12 @@ constructor(
         return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
                 text = action.title
-                if (
-                    notificationAnimatedActionContentDescription() &&
-                        isAnimatedAction &&
-                        action.extras.containsKey(Notification.Action.EXTRA_CONTENT_DESCRIPTION)
-                ) {
+                if (notificationAnimatedActionContentDescription() && isAnimatedAction) {
                     contentDescription =
-                        action.extras.getString(Notification.Action.EXTRA_CONTENT_DESCRIPTION)
+                        context.getString(
+                            R.string.notification_animated_action_content_description,
+                            action.title.toString(),
+                        )
                 }
 
                 // We received the Icon from the application - so use the Context of the application
