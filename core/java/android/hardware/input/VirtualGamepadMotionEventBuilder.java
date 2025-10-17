@@ -31,6 +31,8 @@ public final class VirtualGamepadMotionEventBuilder {
     private float mRz = Float.NaN;
     private float mHatX = Float.NaN;
     private float mHatY = Float.NaN;
+    private float mLTrigger = Float.NaN;
+    private float mRTrigger = Float.NaN;
     private long mEventTimeNanos = 0;
 
     /**
@@ -88,6 +90,26 @@ public final class VirtualGamepadMotionEventBuilder {
     }
 
     /**
+     * Sets the {@link android.view.MotionEvent#AXIS_LTRIGGER LTRIGGER} axis value.
+     * This should not be called if the triggers were not registered in the gamepad config.
+     */
+    @NonNull
+    public VirtualGamepadMotionEventBuilder setLTrigger(float lTrigger) {
+        mLTrigger = lTrigger;
+        return this;
+    }
+
+    /**
+     * Sets the {@link android.view.MotionEvent#AXIS_RTRIGGER RTRIGGER} axis value.
+     * This should not be called if the triggers were not registered in the gamepad config.
+     */
+    @NonNull
+    public VirtualGamepadMotionEventBuilder setRTrigger(float rTrigger) {
+        mRTrigger = rTrigger;
+        return this;
+    }
+
+    /**
      * Sets the time of the event, in nanoseconds.
      * If not set, {@link SystemClock#uptimeNanos()} will be used.
      */
@@ -109,6 +131,8 @@ public final class VirtualGamepadMotionEventBuilder {
         event.rz = mRz;
         event.hatX = mHatX;
         event.hatY = mHatY;
+        event.lTrigger = mLTrigger;
+        event.rTrigger = mRTrigger;
         event.eventTimeNanos =
                 mEventTimeNanos != 0 ? mEventTimeNanos : SystemClock.uptimeNanos();
         return event;

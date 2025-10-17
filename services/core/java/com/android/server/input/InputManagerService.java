@@ -2002,7 +2002,8 @@ public class InputManagerService extends IInputManager.Stub
         return mVirtualInputDeviceController.createGamepad(config.name,
                 config.vendorId, config.productId, token,
                 InputManagerService.this.getTargetDisplayIdForInput(
-                        config.associatedDisplayId));
+                        config.associatedDisplayId),
+                config.registerTriggerAxes);
     }
 
     @Override // Binder call
