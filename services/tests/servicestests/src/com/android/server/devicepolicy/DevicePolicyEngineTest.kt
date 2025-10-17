@@ -465,7 +465,7 @@ class DevicePolicyEngineTest {
     )
 
     init {
-        PolicyDefinition
+        PolicyDefinitionMap
             .addGenericPolicyDefinitionForTesting(
                 stringPolicyDefinition.policyKey.identifier,
                 stringPolicyDefinition
@@ -515,7 +515,7 @@ class DevicePolicyEngineTest {
     )
 
     init {
-        PolicyDefinition
+        PolicyDefinitionMap
             .addGenericPolicyDefinitionForTesting(
                 stringListPolicyDefinition.policyKey.identifier,
                 stringListPolicyDefinition
