@@ -5143,7 +5143,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             ServiceInfo si = ri.serviceInfo;
             final String imeId = InputMethodInfo.computeId(ri);
             if (!android.Manifest.permission.BIND_INPUT_METHOD.equals(si.permission)) {
-                Slog.w(TAG, "Skipping input method " + imeId
+                Slog.w(TAG, "Skipping an input method " + imeId
                         + ": it does not require the permission "
                         + android.Manifest.permission.BIND_INPUT_METHOD);
                 continue;
@@ -5151,26 +5151,26 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
             ProtoLog.v(IMMS_DEBUG, "Checking %s", imeId);
 
+            // The number of service is at most MAX_IMES_PER_PACKAGE for each package unless
+            // it's a system app or it's explicitly enabled.
+            final String packageName = si.packageName;
+            final int imiCountInPkg = imiPackageCount.getOrDefault(packageName, 0);
+            if (!si.applicationInfo.isSystemApp() && !enabledInputMethodList.contains(imeId)
+                    && imiCountInPkg >= InputMethodInfo.MAX_IMES_PER_PACKAGE) {
+                Slog.w(TAG,
+                        "Skipping an input method " + imeId + ": too many services in a package.");
+                continue;
+            }
+
             try {
                 final InputMethodInfo imi = new InputMethodInfo(userAwareContext, ri,
                         Collections.emptyList());
                 if (imi.isVrOnly()) {
                     continue;  // Skip VR-only IME, which isn't supported for now.
                 }
-                final String packageName = si.packageName;
-                // only include IMEs which are from the system, enabled, or below the threshold
-                if (si.applicationInfo.isSystemApp() || enabledInputMethodList.contains(imi.getId())
-                        || imiPackageCount.getOrDefault(packageName, 0)
-                        < InputMethodInfo.MAX_IMES_PER_PACKAGE) {
-                    imiPackageCount.put(packageName,
-                            1 + imiPackageCount.getOrDefault(packageName, 0));
-
-                    methodMap.put(imi.getId(), imi);
-                    ProtoLog.v(IMMS_DEBUG, "Found an input method %s", imi);
-                } else {
-                    ProtoLog.v(IMMS_DEBUG, "Found an input method, but ignored due threshold: %s",
-                            imi);
-                }
+                methodMap.put(imi.getId(), imi);
+                imiPackageCount.put(packageName, imiCountInPkg + 1);
+                ProtoLog.v(IMMS_DEBUG, "Found an input method %s", imi);
             } catch (Exception e) {
                 Slog.wtf(TAG, "Unable to load input method " + imeId, e);
             }
