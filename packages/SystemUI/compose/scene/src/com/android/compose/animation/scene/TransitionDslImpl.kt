@@ -39,6 +39,7 @@ import com.android.internal.jank.Cuj.CujType
 internal fun transitionsImpl(builder: SceneTransitionsBuilder.() -> Unit): SceneTransitions {
     val impl = SceneTransitionsBuilderImpl().apply(builder)
     return SceneTransitions(
+        defaultTransitionSpec = impl.defaultTransitionSpec,
         transitionSpecs = impl.transitionSpecs,
         interruptionHandler = impl.interruptionHandler,
     )
@@ -47,6 +48,7 @@ internal fun transitionsImpl(builder: SceneTransitionsBuilder.() -> Unit): Scene
 private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
     override var interruptionHandler: InterruptionHandler = DefaultInterruptionHandler
 
+    var defaultTransitionSpec: DefaultTransitionSpec? = null
     val transitionSpecs = mutableListOf<TransitionSpecImpl>()
 
     override fun to(
@@ -88,6 +90,21 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
         )
     }
 
+    override fun default(
+        preview: (TransitionBuilder.() -> Unit)?,
+        builder: TransitionBuilder.() -> Unit,
+    ) {
+        check(defaultTransitionSpec == null) {
+            "SceneTransitionsBuilder.default {} can only be defined once"
+        }
+
+        defaultTransitionSpec =
+            DefaultTransitionSpec(
+                previewTransformationSpec = preview?.let { { t -> transformationSpec(t, it) } },
+                transformationSpec = { t -> transformationSpec(t, builder) },
+            )
+    }
+
     private fun transition(
         from: ContentKey?,
         to: ContentKey?,
@@ -97,18 +114,6 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
         reversePreview: (TransitionBuilder.() -> Unit)?,
         builder: TransitionBuilder.() -> Unit,
     ): TransitionSpec {
-        fun transformationSpec(
-            transition: TransitionState.Transition,
-            builder: TransitionBuilder.() -> Unit,
-        ): TransformationSpecImpl {
-            val impl = TransitionBuilderImpl(transition).apply(builder)
-            return TransformationSpecImpl(
-                progressSpec = impl.spec,
-                distance = impl.distance,
-                transformationMatchers = impl.transformationMatchers,
-            )
-        }
-
         val spec =
             TransitionSpecImpl(
                 key = key,
@@ -122,6 +127,18 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
             )
         transitionSpecs.add(spec)
         return spec
+    }
+
+    private fun transformationSpec(
+        transition: TransitionState.Transition,
+        builder: TransitionBuilder.() -> Unit,
+    ): TransformationSpecImpl {
+        val impl = TransitionBuilderImpl(transition).apply(builder)
+        return TransformationSpecImpl(
+            progressSpec = impl.spec,
+            distance = impl.distance,
+            transformationMatchers = impl.transformationMatchers,
+        )
     }
 }
 
