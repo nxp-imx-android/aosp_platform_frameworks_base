@@ -15,12 +15,11 @@
  */
 package com.android.systemui.statusbar.phone.ongoingcall
 
-import com.android.systemui.Flags
 import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 
 /** Helper for reading or using the status_bar_use_interactor_for_call_chip flag state. */
+@Deprecated("Feature has fully launched. This object is being deleted.")
 @Suppress("NOTHING_TO_INLINE")
 object StatusBarChipsModernization {
     /** The aconfig flag name */
@@ -28,7 +27,7 @@ object StatusBarChipsModernization {
         "For tests, use @EnableChipsModernization or @DisableChipsModernization " +
             "annotations instead"
     )
-    const val FLAG_NAME = Flags.FLAG_STATUS_BAR_CHIPS_MODERNIZATION
+    const val FLAG_NAME = "DO_NOT_USE"
 
     /** A token used for dependency declaration */
     val token: FlagToken
@@ -37,7 +36,7 @@ object StatusBarChipsModernization {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.statusBarChipsModernization() && StatusBarRootModernization.isEnabled
+        get() = true
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

@@ -315,17 +315,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_chips_modernization"
-    namespace: "systemui"
-    description: "Deprecate OngoingCallController and implement OngoingActivityChips"
-    "in compose"
-    bug: "372657935"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "status_bar_system_status_icons_in_compose"
   namespace: "systemui"
   description: "Use compose for displaying icons in the status bar system status area"

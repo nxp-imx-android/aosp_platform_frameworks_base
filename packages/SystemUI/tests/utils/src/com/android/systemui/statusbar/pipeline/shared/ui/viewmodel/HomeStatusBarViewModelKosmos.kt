@@ -40,7 +40,6 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.multiDisplayStatusBarC
 import com.android.systemui.statusbar.layout.ui.viewmodel.statusBarBoundsViewModelFactory
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.icon.domain.interactor.statusBarNotificationIconsInteractor
-import com.android.systemui.statusbar.notification.icon.ui.viewbinder.connectedDisplaysStatusBarNotificationIconViewStoreFactory
 import com.android.systemui.statusbar.phone.domain.interactor.darkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.lightsOutInteractor
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelBasedOnSettingFactory
@@ -52,9 +51,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarVie
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatusIconsViewModelFactory
 
 var Kosmos.homeStatusBarViewBinder: HomeStatusBarViewBinder by
-    Kosmos.Fixture {
-        HomeStatusBarViewBinderImpl(connectedDisplaysStatusBarNotificationIconViewStoreFactory)
-    }
+    Kosmos.Fixture { HomeStatusBarViewBinderImpl() }
 
 var Kosmos.homeStatusBarViewModel: HomeStatusBarViewModel by
     Kosmos.Fixture { homeStatusBarViewModelFactory.invoke(testableContext.displayId) }
