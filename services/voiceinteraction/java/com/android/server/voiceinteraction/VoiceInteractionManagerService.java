@@ -21,6 +21,7 @@ import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION;
 import static android.content.Intent.FLAG_ACTIVITY_NO_USER_ACTION;
+
 import static com.android.server.voiceinteraction.flags.Flags.disableStartingContextualSearchViaVims;
 
 import android.Manifest;
@@ -36,6 +37,8 @@ import android.app.AppGlobals;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledSince;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -86,6 +89,7 @@ import android.service.voice.VoiceInteractionManagerInternal;
 import android.service.voice.VoiceInteractionService;
 import android.service.voice.VoiceInteractionServiceInfo;
 import android.service.voice.VoiceInteractionSession;
+import android.service.voice.flags.Flags;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -114,6 +118,7 @@ import com.android.server.SoundTriggerInternal;
 import com.android.server.SystemServerInitThreadPool;
 import com.android.server.SystemService;
 import com.android.server.UiThread;
+import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.permission.LegacyPermissionManagerInternal;
 import com.android.server.policy.AppOpsPolicy;
@@ -152,9 +157,27 @@ public class VoiceInteractionManagerService extends SystemService {
     private static final String CS_INTENT_FILTER =
             "com.android.contextualsearch.LAUNCH";
 
+    /**
+     * To enhance user privacy and improve platform performance, this changes how assistant
+     * applications access screen content. Previously, AssistStructure data, which includes the view
+     * hierarchy of the screen, was provided to VoiceInteractionService implementations by default.
+     * To reduce latency and avoid unnecessary data collection, this behavior is changing. For
+     * applications targeting the {@link android.os.Build.VERSION_CODES.CINNAMON_BUN}, this data
+     * will no longer be provided implicitly. To receive screen content in the AssistStructure,
+     * developers must now declare their intent by setting the usesAssistStructureScreenContent
+     * attribute to true in their voice interaction service's manifest file. Additionally, they must
+     * request the new {@link READ_ASSIST_STRUCTURE_SCREEN_CONTENT} permission and use the {@link
+     * SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT} flag in their {@link showSession} calls to receive
+     * the data. These changes ensure that screen content is only collected and delivered when
+     * explicitly requested by an assistant that has declared its intent to use it.
+     */
+    @ChangeId
+    @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.CINNAMON_BUN)
+    static final long ENABLE_RESTRICT_ASSIST_STRUCTURE = 437416500L;
 
     final Context mContext;
     final ContentResolver mResolver;
+    final PlatformCompat mPlatformCompat;
     // Can be overridden for testing purposes
     private IEnrolledModelDb mDbHelper;
     private final IEnrolledModelDb mRealDbHelper;
@@ -176,6 +199,7 @@ public class VoiceInteractionManagerService extends SystemService {
         super(context);
         mContext = context;
         mResolver = context.getContentResolver();
+        mPlatformCompat = new PlatformCompat(context);
         mUserManagerInternal = Objects.requireNonNull(
                 LocalServices.getService(UserManagerInternal.class));
         mDbHelper = mRealDbHelper = new DatabaseHelper(context);
@@ -1042,12 +1066,66 @@ public class VoiceInteractionManagerService extends SystemService {
                 enforceIsCurrentVoiceInteractionService();
 
                 final long caller = Binder.clearCallingIdentity();
+
+                int modifiedFlags = enforceSessionFlags(flags);
                 try {
-                    mImpl.showSessionLocked(args, flags, attributionTag, null, null);
+                    mImpl.showSessionLocked(args, modifiedFlags, attributionTag, null, null);
                 } finally {
                     Binder.restoreCallingIdentity(caller);
                 }
             }
+        }
+
+        /**
+         * Enforces session flag restrictions based on the active voice interaction service's
+         * manifest.
+         *
+         * <p>For services targeting {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} or higher
+         * (as determined by the {@link #ENABLE_RESTRICT_ASSIST_STRUCTURE} compatibility change),
+         * this method strips flags for features that the service has not explicitly declared in its
+         * manifest.
+         *
+         * <ul>
+         *   <li>If {@code usesAssistData} is not declared, {@link
+         *       VoiceInteractionSession#SHOW_WITH_ASSIST} is removed.
+         *   <li>If {@code usesAssistScreenshots} is not declared, {@link
+         *       VoiceInteractionSession#SHOW_WITH_SCREENSHOT} is removed.
+         *   <li>If {@code usesAssistStructureScreenContent} is not declared, {@link
+         *       VoiceInteractionSession#SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT} is removed.
+         * </ul>
+         *
+         * This ensures that services only receive assist data and screenshots if they have
+         * explicitly opted in via their manifest.
+         *
+         * @param requestedFlags The original set of flags requested for the session.
+         * @return The filtered set of flags, with undeclared feature flags removed.
+         */
+        private int enforceSessionFlags(int requestedFlags) {
+
+            // Ensure both an active VIS service and service info object exist, or exit early.
+            if (mImpl == null || mImpl.mInfo == null) {
+                return requestedFlags;
+            }
+
+            int modifiedFlags = requestedFlags;
+
+            if (mPlatformCompat.isChangeEnabled(
+                    ENABLE_RESTRICT_ASSIST_STRUCTURE, mImpl.getApplicationInfo())) {
+
+                if (!mImpl.mInfo.getUsesAssistData()) {
+                    modifiedFlags &= ~VoiceInteractionSession.SHOW_WITH_ASSIST;
+                }
+
+                if (!mImpl.mInfo.getUsesAssistScreenshots()) {
+                    modifiedFlags &= ~VoiceInteractionSession.SHOW_WITH_SCREENSHOT;
+                }
+
+                if (!mImpl.mInfo.getUsesAssistStructureScreenContent()) {
+                    modifiedFlags &=
+                            ~VoiceInteractionSession.SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT;
+                }
+            }
+            return modifiedFlags;
         }
 
         @Override
@@ -1143,8 +1221,11 @@ public class VoiceInteractionManagerService extends SystemService {
                     HotwordMetricsLogger.cancelHotwordTriggerToUiLatencySession(mContext);
                 }
                 final long caller = Binder.clearCallingIdentity();
+
+                int modifiedFlags = enforceSessionFlags(flags);
                 try {
-                    return mImpl.showSessionLocked(sessionArgs, flags, attributionTag, null, null);
+                    return mImpl.showSessionLocked(
+                            sessionArgs, modifiedFlags, attributionTag, null, null);
                 } finally {
                     Binder.restoreCallingIdentity(caller);
                 }
@@ -2044,7 +2125,63 @@ public class VoiceInteractionManagerService extends SystemService {
             }
         }
 
-        @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_VOICE_INTERACTION_SERVICE)
+        /**
+         * Returns the default session flags based on the active voice interaction service's
+         * manifest attributes and target SDK version.
+         *
+         * <p>For services targeting {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} or higher,
+         * this method respects the {@code usesAssistData}, {@code usesAssistScreenshots}, and
+         * {@code usesAssistStructureScreenContent} attributes declared in the manifest. If these
+         * attributes are not declared, they default to {@code false}.
+         *
+         * <p>For services targeting older SDKs, it returns a default set of flags that includes
+         * {@link VoiceInteractionSession#SHOW_WITH_ASSIST}, {@link
+         * VoiceInteractionSession#SHOW_WITH_SCREENSHOT}, and {@link
+         * VoiceInteractionSession#SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT}.
+         *
+         * <p>This behavior is controlled by the {@link Flags#enableAssistResourceAttributes()}
+         * feature flag.
+         *
+         * @return The default session flags for the active assistant.
+         */
+        private int getDefaultAssistantFlagsFromInfo() {
+            int sessionFlags = 0;
+
+            if (mImpl == null || mImpl.mInfo == null) {
+                return sessionFlags;
+            }
+
+            // Resource attributes are only respected beyond the CINNAMON_BUN sdk. If the current
+            // VIS service declares a target sdk >= CINNAMON_BUN then use the manifest attributes
+            // (or the defaults if they weren't declared).
+            final boolean changeEnabled =
+                    mPlatformCompat.isChangeEnabled(
+                            ENABLE_RESTRICT_ASSIST_STRUCTURE, mImpl.getApplicationInfo());
+            if (Flags.enableAssistResourceAttributes() && changeEnabled) {
+                if (mImpl.mInfo.getUsesAssistData()) {
+                    sessionFlags |= VoiceInteractionSession.SHOW_WITH_ASSIST;
+                }
+                if (mImpl.mInfo.getUsesAssistScreenshots()) {
+                    sessionFlags |= VoiceInteractionSession.SHOW_WITH_SCREENSHOT;
+                }
+                if (mImpl.mInfo.getUsesAssistStructureScreenContent()) {
+                    sessionFlags |=
+                            VoiceInteractionSession.SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT;
+                }
+                // Otherwise, this is the pre CINNAMON_BUN implicit behavior where the platform
+                // provides these flags as defaults for sessions started via this entry-point.
+            } else {
+                sessionFlags |=
+                        VoiceInteractionSession.SHOW_WITH_ASSIST
+                                | VoiceInteractionSession.SHOW_WITH_SCREENSHOT
+                                | VoiceInteractionSession.SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT;
+            }
+
+            return sessionFlags;
+        }
+
+        @android.annotation.EnforcePermission(
+                android.Manifest.permission.ACCESS_VOICE_INTERACTION_SERVICE)
         @Override
         public boolean showSessionForActiveService(@Nullable Bundle args, int sourceFlags,
                 @Nullable String attributionTag,
@@ -2073,11 +2210,11 @@ public class VoiceInteractionManagerService extends SystemService {
                     // HAL event.
                     HotwordMetricsLogger.cancelHotwordTriggerToUiLatencySession(mContext);
 
-                    return mImpl.showSessionLocked(args,
-                            sourceFlags
-                                    | VoiceInteractionSession.SHOW_WITH_ASSIST
-                                    | VoiceInteractionSession.SHOW_WITH_SCREENSHOT,
-                            attributionTag, showCallback, activityToken);
+                    // Merge the sourceFlags and the declared flags from the assistants VIS manifest
+                    // before starting the session
+                    int flags = sourceFlags | getDefaultAssistantFlagsFromInfo();
+                    return mImpl.showSessionLocked(
+                            args, flags, attributionTag, showCallback, activityToken);
                 } finally {
                     Binder.restoreCallingIdentity(caller);
                 }

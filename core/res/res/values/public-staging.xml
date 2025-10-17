@@ -128,6 +128,12 @@
     <public name="zygotePreloadNativeLib"/>
     <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE) -->
     <public name="zygotePreloadNativeFunc"/>
+    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+    <public name="usesAssistData"/>
+    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+    <public name="usesAssistScreenshots"/>
+    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+    <public name="usesAssistStructureScreenContent"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">

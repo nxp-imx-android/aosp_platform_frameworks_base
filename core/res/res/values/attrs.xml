@@ -9654,6 +9654,18 @@
         <!-- The service that provides {@link android.service.voice.VisualQueryDetectionService}.
              Expect a component name to be provided. @hide @SystemApi -->
         <attr name="visualQueryDetectionService" format="string" />
+        <!-- Flag indicating whether this voice interaction service uses assist data when
+             available. By default, this value is false. -->
+        <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+        <attr name="usesAssistData" format="boolean" />
+        <!-- Flag indicating whether this voice interaction service uses assist screenshots
+             when available. By default, this value is false. -->
+        <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+        <attr name="usesAssistScreenshots" format="boolean" />
+        <!-- Flag indicating whether this voice interaction service uses the assist
+             structure screen content when available. By default, this value is false. -->
+        <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+        <attr name="usesAssistStructureScreenContent" format="boolean" />
 
     </declare-styleable>
 
