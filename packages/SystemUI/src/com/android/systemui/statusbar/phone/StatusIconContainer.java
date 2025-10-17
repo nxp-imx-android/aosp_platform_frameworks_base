@@ -41,7 +41,9 @@ import com.android.systemui.statusbar.notification.stack.ViewState;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A container for Status bar system icons. Limits the number of system icons and handles overflow
@@ -74,7 +76,7 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
     // So we can count and measure properly
     private ArrayList<View> mMeasureViews = new ArrayList<>();
     // Any ignored icon will never be added as a child
-    private ArrayList<String> mIgnoredSlots = new ArrayList<>();
+    private Set<String> mIgnoredSlots = new HashSet<>();
 
     private Configuration mConfiguration;
 
@@ -256,34 +258,26 @@ public class StatusIconContainer extends AlphaOptimizedLinearLayout {
      *     frameworks/base/core/res/res/values/config.xml}.
      */
     public void addIgnoredSlot(String slotName) {
-        boolean added = addIgnoredSlotInternal(slotName);
+        boolean added = mIgnoredSlots.add(slotName);
         if (added) {
             requestLayout();
         }
     }
 
     /**
-     * Adds a list of slots to be ignored.
+     * Adds certain slot names to the list of slots to be ignored.
      *
-     * @param slots The names of the icons to ignore.
+     * @param slotNames The names of the icons to ignore.
      */
-    public void addIgnoredSlots(List<String> slots) {
+    public void addIgnoredSlots(List<String> slotNames) {
         boolean willAddAny = false;
-        for (String slot : slots) {
-            willAddAny |= addIgnoredSlotInternal(slot);
+        for (String slotName : slotNames) {
+            willAddAny |= mIgnoredSlots.add(slotName);
         }
 
         if (willAddAny) {
             requestLayout();
         }
-    }
-
-    private boolean addIgnoredSlotInternal(String slotName) {
-        if (mIgnoredSlots.contains(slotName)) {
-            return false;
-        }
-        mIgnoredSlots.add(slotName);
-        return true;
     }
 
     /**
