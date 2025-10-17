@@ -1176,7 +1176,6 @@ public class NotificationManager {
      * Apps can request this permission by sending the user to the activity that matches the system
      * intent action {@link android.provider.Settings#ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS}.
      */
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean canPostPromotedNotifications() {
         INotificationManager service = service();
         try {
@@ -1191,7 +1190,6 @@ public class NotificationManager {
      * @hide
      */
     @TestApi
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public void setCanPostPromotedNotifications(@NonNull String pkg, int uid, boolean allowed) {
         INotificationManager service = service();
         try {

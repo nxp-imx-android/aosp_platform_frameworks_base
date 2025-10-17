@@ -11922,7 +11922,6 @@ public class NotificationManagerService extends SystemService {
     }
 
     @GuardedBy("mNotificationLock")
-    @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     private @NonNull List<NotificationRecord> findAppNotificationByListLocked(
             ArrayList<NotificationRecord> list, String pkg, int userId) {
         List<NotificationRecord> records = new ArrayList<>();

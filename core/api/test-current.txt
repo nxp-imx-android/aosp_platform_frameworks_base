@@ -376,7 +376,7 @@ package android.app {
     method public boolean removeAutomaticZenRule(@NonNull String, boolean);
     method @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public void requestSystemAdjustments(@NonNull java.util.List<android.service.notification.Adjustment>);
     method public void setAssistantAdjustmentKeyTypeState(int, boolean);
-    method @FlaggedApi("android.app.api_rich_ongoing") public void setCanPostPromotedNotifications(@NonNull String, int, boolean);
+    method public void setCanPostPromotedNotifications(@NonNull String, int, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATION_LISTENERS) public void setNotificationListenerAccessGranted(@NonNull android.content.ComponentName, boolean, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_TOAST_RATE_LIMITING) public void setToastRateLimitingEnabled(boolean);
     method public boolean updateAutomaticZenRule(@NonNull String, @NonNull android.app.AutomaticZenRule, boolean);

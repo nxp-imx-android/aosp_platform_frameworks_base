@@ -795,7 +795,6 @@ public class Notification implements Parcelable
      * <p>Applications cannot set this flag directly, but the posting app and
      * {@link android.service.notification.NotificationListenerService} can read it.
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static final int FLAG_PROMOTED_ONGOING = 0x00040000;
 
     private static final Set<Class<? extends Style>> PLATFORM_STYLE_CLASSES = Set.of(
@@ -3620,7 +3619,6 @@ public class Notification implements Parcelable
      * the notification will be assigned {@link #FLAG_PROMOTED_ONGOING} by the system, but if this
      * returns {@code false}, it will not.
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
         if (Flags.uiRichOngoing()) {
             return isRequestPromotedOngoing()
@@ -4592,7 +4590,6 @@ public class Notification implements Parcelable
      * notification, or {@code null} if this field was not set.
      */
     @Nullable
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public String getShortCriticalText() {
         return extras.getString(EXTRA_SHORT_CRITICAL_TEXT);
     }
@@ -5533,7 +5530,6 @@ public class Notification implements Parcelable
          * notification. Suggested max length is 7 characters, and there is no guarantee how much or
          * how little of this text will be shown.
          */
-        @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
         @NonNull
         public Builder setShortCriticalText(@Nullable String shortCriticalText) {
             mN.extras.putString(EXTRA_SHORT_CRITICAL_TEXT, safeString(shortCriticalText));
@@ -13395,7 +13391,6 @@ public class Notification implements Parcelable
      * </p>
      *
      */
-    @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public static class ProgressStyle extends Notification.Style {
         private static final String KEY_ELEMENT_ID = "id";
         private static final String KEY_ELEMENT_COLOR = "colorInt";
