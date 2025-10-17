@@ -1839,6 +1839,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         capability |= getCpuCapabilitiesFromClient(app, client, cr);
 
+        capability |= getAudioCapabilitiesFromClient(client);
+
         if (cr.notHasFlag(Context.BIND_WAIVE_PRIORITY)) {
             if (cr.hasFlag(Context.BIND_INCLUDE_CAPABILITIES)) {
                 capability |= client.getCurCapability();
@@ -1867,15 +1869,6 @@ public class OomAdjusterImpl extends OomAdjuster {
                     if (cr.hasFlag(Context.BIND_BYPASS_USER_NETWORK_RESTRICTIONS)) {
                         capability |= PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK;
                     }
-                }
-            }
-
-            // Sandbox should be able to control audio only when bound client
-            // has this capability.
-            if ((client.getCurCapability()
-                    & PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL) != 0) {
-                if (app.isSdkSandbox) {
-                    capability |= PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
                 }
             }
 

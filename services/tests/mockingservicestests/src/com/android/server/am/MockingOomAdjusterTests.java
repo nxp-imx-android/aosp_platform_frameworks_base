@@ -19,6 +19,7 @@ package com.android.server.am;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
@@ -1838,6 +1839,7 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
                 IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_BFSL);
+        assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1873,6 +1875,7 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_BOUND_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_DEFAULT);
         assertThatProcess(app).hasImplicitCpuTimeCapability().withExactReasons(
                 IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
+        assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL);
     }
 
     @SuppressWarnings("GuardedBy")
