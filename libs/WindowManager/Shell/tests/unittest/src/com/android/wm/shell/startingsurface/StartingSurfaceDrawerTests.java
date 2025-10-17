@@ -134,11 +134,9 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
         doReturn(metrics).when(mMockWindowManager).getMaximumWindowMetrics();
         doNothing().when(mMockWindowManager).addView(any(), any());
         mTestExecutor = new HandlerExecutor(mTestHandler);
-        mStartingSurfaceDrawer = new StartingSurfaceDrawer(mTestContext, mTestExecutor,
-                mIconProvider, mTransactionPool);
         mStartingSurfaceDrawer = spy(
                 new StartingSurfaceDrawer(mTestContext, mTestExecutor, mIconProvider,
-                        mTransactionPool));
+                        mTransactionPool, 0));
         spyOn(mStartingSurfaceDrawer.mSplashscreenWindowCreator);
         spyOn(mStartingSurfaceDrawer.mWindowRecords);
         spyOn(mStartingSurfaceDrawer.mWindowlessRecords);
