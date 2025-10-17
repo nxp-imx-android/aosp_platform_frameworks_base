@@ -2069,3 +2069,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_notes_role_in_freeform"
+    namespace: "note"
+    description: "Fix issues related to notes role under the freeform environment."
+    bug: "451909067"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
