@@ -55,20 +55,23 @@ object BubbleTestUtils {
         }
 
         // Verify Change
-
-        assertThat(wct.changes[taskToken]).isNotNull()
-        val change = wct.changes[taskToken]!!
-        if (rootTaskToken == null) {
+        if (isAppBubble && com.android.window.flags.Flags.rootTaskForBubble()) {
+            assertThat(wct.changes[rootTaskToken]).isNotNull()
+            val change = wct.changes[rootTaskToken]!!
+            assertThat(change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS)
+                .isEqualTo(1)
+        } else {
+            assertThat(wct.changes[taskToken]).isNotNull()
+            val change = wct.changes[taskToken]!!
+            assertThat(rootTaskToken).isNull()
             assertThat(change.windowingMode)
                 .isEqualTo(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW)
-        }
-        if (rootTaskToken == null && isAppBubble) {
-            assertThat(change.launchNextToBubble).isTrue()
-            assertThat(change.interceptBackPressed).isTrue()
-        } else {
-            assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
-        }
-        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+            if (isAppBubble) {
+                assertThat(change.launchNextToBubble).isTrue()
+                assertThat(change.interceptBackPressed).isTrue()
+            } else {
+                assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
+            }
             assertThat(change.forceExcludedFromRecents).isTrue()
             assertThat(change.disablePip).isTrue()
             assertThat(change.disableLaunchAdjacent).isTrue()

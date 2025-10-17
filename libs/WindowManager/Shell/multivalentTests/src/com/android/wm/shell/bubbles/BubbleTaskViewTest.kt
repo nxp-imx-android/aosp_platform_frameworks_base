@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles
 
+import org.mockito.kotlin.any
 import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
@@ -99,6 +100,9 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
 
     @Test
     fun cleanup_noTaskCreated_removesTask() {
+        bubbleController.stub {
+            on { shouldBeAppBubble(any()) } doReturn true
+        }
         bubbleTaskView.cleanup()
 
         verify(taskView, never()).unregisterTask()
@@ -109,6 +113,9 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     @Test
     fun cleanup_regularBubbleTask_removesTask() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
+        bubbleController.stub {
+            on { shouldBeAppBubble(any()) } doReturn true
+        }
 
         bubbleTaskView.cleanup()
 
@@ -120,6 +127,9 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     @Test
     fun cleanup_regularBubbleTask_unregistersTask() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
+        bubbleController.stub {
+            on { shouldBeAppBubble(any()) } doReturn true
+        }
 
         bubbleTaskView.cleanup()
 
