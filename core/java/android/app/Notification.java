@@ -3570,6 +3570,8 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Returns whether the notification has a title, or a title-like element that can be used in
+     * its place (such as the caller's name for a call notification).
      * @hide
      */
     public boolean hasTitle() {
@@ -3580,6 +3582,11 @@ public class Notification implements Parcelable
         if (isStyle(CallStyle.class)) {
             Person person = extras.getParcelable(EXTRA_CALL_PERSON, Person.class);
             return person != null && !TextUtils.isEmpty(person.getName());
+        }
+        if (Flags.apiMetricStyle() && isStyle(MetricStyle.class)) {
+            // MetricStyle has at least one metric, and their titles will be used as the
+            // notification's "title".
+            return true;
         }
         // non-CallStyle notifications can use EXTRA_TITLE
         if (!TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE))) {
