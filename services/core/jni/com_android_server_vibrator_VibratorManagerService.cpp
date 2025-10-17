@@ -430,6 +430,9 @@ static jobject nativeStartSessionWithCallback(JNIEnv* env, jclass /* clazz */, j
     env->GetIntArrayRegion(vibratorIds, 0, size, reinterpret_cast<jint*>(ids.data()));
     auto status = hal->startSession(ids, config, callback, &session);
     service->processManagerStatus(status, __func__);
+    if (session == nullptr) {
+        return nullptr;
+    }
     return AIBinder_toJavaBinder(env, session->asBinder().get());
 }
 
