@@ -26,37 +26,28 @@ import javax.inject.Inject
 /**
  * Interface for view models concerned with recent tasks.
  *
- * Example Usage:
+ * Example usage in a [HydratedActivatable]:
  * ```
  * class FooViewModel(
- *     private val vm: RecentTasksViewModel,
+ *     viewModelProvider: Provider<RecentTasksViewModel>,
  * ) : HydratedActivatable() {
  *
- *     val recentTasks = vm.targets
+ *     private val viewModel = viewModelProvider.get()
  *
  *     override suspend fun onActivated() {
  *         coroutineScope {
- *             launch { vm.activate() }
+ *             launchTraced("FooTraceName") { viewModel.activate() }
  *         }
  *     }
  * }
  * ```
  *
- * And then in compose:
+ * Example usage in a [Composable][androidx.compose.runtime.Composable]
+ *
  * ```
  * @Composable
- * fun Foo(viewModel: FooViewModel, modelFactory: RecentTaskViewModel.Factory) {
- *     val recentTasks by viewModel.recentTasks
- *     LazyRow {
- *         recentTasks?.let {
- *             items(it) { task ->
- *                 val model by rememberViewModel("FooTraceName", task) {
- *                     modelFactory.create(task)
- *                 }
- *                 // ...
- *             }
- *         }
- *     }
+ * fun Foo(viewModelProvider: Provider<RecentTasksViewModel>) {
+ *     val viewModel = rememberViewModel("FooTraceName") { viewModelProvider.get() }
  * }
  * ```
  */

@@ -31,6 +31,9 @@ interface TargetsViewModel<T : TargetModel> :
     /** Sets the view model for the currently selected target. */
     fun setSelectedTarget(target: TargetViewModel<T>?)
 
-    /** Creates a view model for */
+    /**
+     * Creates a view model for the given [target]. The caller assumes ownership of the returned
+     * [TargetViewModel] and needs to manage its activation.
+     */
     fun createViewModelFor(target: T): TargetViewModel<T>
 }
