@@ -272,7 +272,7 @@ constructor(
                     }
                     .distinctUntilChanged()
             }
-            .traceEmissionCount({ "QuickAfforcances#button${position.toSlotId()}" })
+            .traceEmissionCount({ "QuickAffordances#button${position.toSlotId()}" })
     }
 
     private fun KeyguardQuickAffordanceModel.toViewModel(
