@@ -25,6 +25,7 @@ import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.compose.animation.scene.UserActionResult.ShowOverlay
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
@@ -34,6 +35,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
@@ -113,12 +115,13 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_DUAL_SHADE)
-    fun swipeDownWithTwoFingers_dualShadeEnabled_isNull() =
+    fun swipeDownWithTwoFingers_dualShadeEnabled_goesToQuickSettings() =
         kosmos.runTest {
             val userActions by collectLastValue(underTest.actions)
             enableDualShade()
 
-            assertThat(userActions?.get(swipeDownFromTopWithTwoFingers())).isNull()
+            assertThat(userActions?.get(Swipe.Down(pointerCount = 2)))
+                .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
         }
 
     private fun swipeDownFromTopWithTwoFingers(): UserAction {
