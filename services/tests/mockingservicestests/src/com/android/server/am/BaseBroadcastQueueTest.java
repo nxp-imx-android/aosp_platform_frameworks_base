@@ -398,6 +398,10 @@ public abstract class BaseBroadcastQueueTest {
         private int mCallerAppProcState = ActivityManager.PROCESS_STATE_UNKNOWN;
         private PlatformCompat mPlatformCompat = mock(PlatformCompat.class);
 
+        public BroadcastRecordBuilder setIntentAction(String action) {
+            return setIntent(new Intent(action));
+        }
+
         public BroadcastRecordBuilder setIntent(Intent intent) {
             mIntent = intent;
             return this;
@@ -410,6 +414,16 @@ public abstract class BaseBroadcastQueueTest {
 
         public BroadcastRecordBuilder setAppOp(int appOp) {
             mAppOp = appOp;
+            return this;
+        }
+
+        public BroadcastRecordBuilder setCallingUid(int callingUid) {
+            mCallingUid = callingUid;
+            return this;
+        }
+
+        public BroadcastRecordBuilder setCallerPackage(String callerPackage) {
+            mCallerPackage = callerPackage;
             return this;
         }
 
