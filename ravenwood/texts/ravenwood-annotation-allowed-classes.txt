@@ -270,6 +270,7 @@ android.os.Bundle
 android.os.BundleMerger
 android.os.CancellationSignal
 android.os.ConditionVariable
+android.os.CountDownTimer
 android.os.DeadObjectException
 android.os.DeadSystemException
 android.os.Environment
@@ -574,7 +575,6 @@ android.util.proto.ProtoStream
 android.util.proto.ProtoUtils
 android.util.proto.WireTypeMismatchException
 
-android.view.animation.AnimationUtils
 android.view.Choreographer
 android.view.ContextThemeWrapper
 android.view.Display
@@ -583,6 +583,8 @@ android.view.DisplayEventReceiver
 android.view.DisplayInfo
 android.view.Gravity
 android.view.InflateException
+
+android.view.animation.AnimationUtils
 
 android.view.inputmethod.InputBinding
 
@@ -689,10 +691,12 @@ com.android.server.SystemServiceManager
 com.android.server.am.BinderSession
 com.android.server.am.ConnectionRecord
 com.android.server.am.OomAdjuster
+
 com.android.server.am.psc.AsyncBatchSession
 com.android.server.am.psc.BatchSession
 com.android.server.am.psc.ConnectionRecordInternal
 com.android.server.am.psc.SyncBatchSession
+
 com.android.server.utils.TimingsTraceAndSlog
 
 com.google.android.collect.Lists
