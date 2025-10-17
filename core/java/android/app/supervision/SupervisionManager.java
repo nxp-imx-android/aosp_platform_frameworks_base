@@ -128,6 +128,23 @@ public class SupervisionManager {
             "android.app.supervision.action.DISABLE_SUPERVISION";
 
     /**
+     * Activity Action: Ask the user for supervision approval.
+     *
+     * <p>Matching activities from apps that hold the {@link
+     * android.app.role.RoleManager#ROLE_SUPERVISION} role will be included as alternative approval
+     * options in the activity started by the intent returned from {@link
+     * #createConfirmSupervisionCredentialsIntent()}.
+     *
+     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful supervision
+     * approval confirmation.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_CONFIRM_SUPERVISION_APPROVAL =
+            "android.app.supervision.action.CONFIRM_SUPERVISION_APPROVAL";
+
+    /**
      * SupervisionService's identifier for setting policies or restrictions in {@link
      * DevicePolicyManager}.
      *

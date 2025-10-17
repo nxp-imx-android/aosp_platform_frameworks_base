@@ -55,6 +55,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Bundle;
@@ -347,6 +348,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 });
     }
 
+    @Override
+    public List<ResolveInfo> querySupervisionApprovalActivities(int userId) {
+        // TODO(b/444529979): Implement the querySupervisionApprovalActivities.
+        return List.of();
+    }
+
     private void clearAllPolicies(@UserIdInt int userId) {
         if (!Flags.enableSupervisionManagerPolicyApis()) {
             return;
@@ -374,11 +381,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
         switch (restrictionType) {
             case PackagePolicy.RESTRICTION_TYPE_BLOCKED ->
                     setApplicationHiddenForUser(userId, packageName, policy.isEnabled());
-            default -> Slogf.w(
-                    SupervisionLog.TAG,
-                    "Unsupported restriction type: %s for package: %s",
-                    restrictionType,
-                    packageName);
+            default ->
+                    Slogf.w(
+                            SupervisionLog.TAG,
+                            "Unsupported restriction type: %s for package: %s",
+                            restrictionType,
+                            packageName);
         }
     }
 
