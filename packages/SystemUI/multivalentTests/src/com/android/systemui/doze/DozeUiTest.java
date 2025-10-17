@@ -22,18 +22,21 @@ import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_PAUSED;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_REQUEST_PULSE;
 import static com.android.systemui.doze.DozeMachine.State.INITIALIZED;
 import static com.android.systemui.doze.DozeMachine.State.UNINITIALIZED;
+import static com.android.systemui.Flags.FLAG_DOZE_TIME_TICK_INVALID_STATE_CHECK;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.AlarmManager;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 
 import androidx.test.filters.SmallTest;
@@ -113,6 +116,26 @@ public class DozeUiTest extends SysuiTestCase {
         mDozeUi.transitionTo(DOZE_AOD_PAUSED, DOZE_AOD);
 
         verify(mAlarmManager).setExact(anyInt(), anyLong(), eq("doze_time_tick"), any(), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_DOZE_TIME_TICK_INVALID_STATE_CHECK)
+    public void attemptToScheduleTimeTickWhileInInvalidStateFails() {
+        mDozeUi.transitionTo(UNINITIALIZED, INITIALIZED);
+        mDozeUi.transitionTo(INITIALIZED, DOZE_AOD);
+
+        verify(mAlarmManager).setExact(anyInt(), anyLong(), eq("doze_time_tick"), any(), any());
+        clearInvocations(mAlarmManager);
+
+        // This relys on the fakeExecutor not running so that the unschedule isn't called
+        mDozeUi.transitionTo(DOZE_AOD, DOZE_AOD_PAUSED);
+
+        // Now request an errant time tick while in this invalid state
+        mDozeUi.scheduleTimeTick();
+
+        verify(mDozeLog).traceTimeTickIgnored(DOZE_AOD_PAUSED);
+        verify(mAlarmManager, never())
+                .setExact(anyInt(), anyLong(), eq("doze_time_tick"), any(), any());
     }
 
     @Test
