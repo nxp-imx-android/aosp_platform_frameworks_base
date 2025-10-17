@@ -2255,6 +2255,20 @@ public class NotificationManager {
         }
     }
 
+    /**
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void requestSystemAdjustments(@NonNull List<Adjustment> adjustments) {
+        INotificationManager service = service();
+        try {
+            service.requestSystemAdjustments(adjustments);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     /** @hide */
     @TestApi
     public boolean isNotificationPolicyAccessGrantedForPackage(@NonNull String pkg) {

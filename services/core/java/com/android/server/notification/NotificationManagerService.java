@@ -4700,6 +4700,16 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
+        public void requestSystemAdjustments(List<Adjustment> adjustments) {
+            checkCallerIsSystemOrSystemUiOrShell();
+            if (enablePersonalContextService()) {
+                synchronized (mNotificationLock) {
+                    requestSystemAdjustmentsLocked(adjustments);
+                }
+            }
+        }
+
+        @Override
         public void setAdjustmentTypeSupportedState(INotificationListener token,
                 @Adjustment.Keys String key, boolean supported) {
             final long identity = Binder.clearCallingIdentity();
