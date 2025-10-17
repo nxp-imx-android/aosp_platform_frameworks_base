@@ -103,6 +103,8 @@ class android.provider.Settings exp
 class android.app.ActivityThread exp
 class android.app.ActivityThread$H exp
 class android.app.Instrumentation exp
+    method startActivitySync (Landroid/content/Intent;Landroid/os/Bundle;)Landroid/app/Activity; redirect
+
 class android.app.LoadedApk exp
 class android.hardware.display.DisplayManagerGlobal exp
 
@@ -144,7 +146,3 @@ class android.tracing.perfetto.Producer exp
 
 class android.view.SurfaceControl exp
     method nativeSetTransformHint i #experimental -- ignore native methods
-
-class android.app.Instrumentation
-    method startActivitySync (Landroid/content/Intent)V exp
-    method startActivitySync redirect
