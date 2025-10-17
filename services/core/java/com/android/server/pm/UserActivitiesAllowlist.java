@@ -81,16 +81,33 @@ abstract class GenericAllowlist<E> {
     @VisibleForTesting
     static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
+    /** Used to set mId (on constructor). */
+    private static int sNextId;
 
-    // List of elements that are permanently allowed (i.e., they survive reboots).
-    // If empty, allowlist is disabled (and all elements are allowed).
-    // NOTE: for now it's an array as they're just read from config, but should change to Set
-    // once it supports APIs to change it (for example, from DPM).
+    /**
+     * Used on {@link #toString()}  only, so the allowlist can be uniquely identified (on
+     * {@link #dump(IndentingPrintWriter, String)}).
+     */
+    @VisibleForTesting
+    final int mId;
+
+    /**
+     * List of elements that are permanently allowed (i.e., they survive reboots).
+     *
+     * <p>If empty, allowlist is disabled (and all elements are allowed).
+     *
+     * <p><b>NOTE:</b> for now it's an array as they're just read from config, but should change to
+     * {@code Set} once it supports APIs to change it (for example, from DPM).
+     */
     private final String[] mPermanentAllowlist;
 
-    // List of elements that are temporarily allowed (i.e., until reboot or set back to null)
-    // When set (i.e., not null), it will override the value of mPermanentAllowlist.
-    // If empty, allowlist is disabled (and all elements are allowed).
+    /**
+     * List of elements that are temporarily allowed (i.e., until reboot or set back to
+     * {@code null}).
+     *
+     * <p>When set (i.e., not {@code null}), it will override the value of
+     * {@code mPermanentAllowlist}. If empty, allowlist is disabled (and all elements are allowed).
+     */
     @Nullable
     private volatile CopyOnWriteArrayList<String> mTemporaryAllowlist;
 
@@ -99,6 +116,7 @@ abstract class GenericAllowlist<E> {
 
     protected GenericAllowlist(String singularName, String pluralName,
             String[] permanentNormalizedNames) {
+        mId = ++sNextId;
         mSingularName = singularName;
         mPluralName = pluralName;
         mPermanentAllowlist = getValidElements(permanentNormalizedNames);
@@ -185,6 +203,11 @@ abstract class GenericAllowlist<E> {
         }
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "#" + mId;
+    }
+
     final void dump(PrintWriter writer, String prefix, String header) {
         dump(new IndentingPrintWriter(writer, /* singleIndent=*/ "  ", prefix), header);
     }
@@ -193,6 +216,7 @@ abstract class GenericAllowlist<E> {
         writer.printf("%s:\n", header);
         writer.increaseIndent();
 
+        writer.printf("id: %s\n", toString());
         writer.printf("DEBUG: %b\n", DEBUG);
 
         dumpAllowlistStatus(writer);

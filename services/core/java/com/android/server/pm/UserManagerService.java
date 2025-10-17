@@ -223,6 +223,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -531,7 +532,16 @@ public class UserManagerService extends IUserManager.Stub {
      * <p>It can be {@code null} because it's guarded by the
      * {@code android.multiuser.hsu_allowlist_activities} flag.
      */
-    private final @Nullable ArrayMap<String, UserActivitiesAllowlist> mUserActivitiesAllowlist;
+    private final @Nullable ArrayMap<String, UserActivitiesAllowlist>
+            mPerUserTypeActivitiesAllowlist;
+
+    // TODO(b/412177078): make it non-nullable once flag is gone.
+    /**
+     * Cache of {@link UserActivitiesAllowlist} per user - it's updated when users are started and
+     * stopped.
+     */
+    private final @Nullable ConcurrentHashMap<Integer, UserActivitiesAllowlist>
+            mPerUserActivitiesAllowlist;
 
     /**
      * User restrictions set via UserManager.  This doesn't include restrictions set by
@@ -1076,6 +1086,22 @@ public class UserManagerService extends IUserManager.Stub {
                         // the boot user (e.g., setBootUser could be called later).
                         mUms.setLastEnteredForegroundTimeToNow(user);
                     }
+                    if (mUms.mPerUserActivitiesAllowlist != null) {
+                        final String userType = user.info.userType;
+                        final UserActivitiesAllowlist allowlist =
+                                mUms.getActivitiesAllowlist(userType);
+                        if (allowlist != null) {
+                            final int userId = user.info.id;
+                            final UserActivitiesAllowlist existing =
+                                    mUms.mPerUserActivitiesAllowlist.putIfAbsent(userId, allowlist);
+                            if (existing != null) {
+                                Slogf.w(LOG_TAG,
+                                        "onUserStarting(%d): not adding UserActivitiesAllowlist "
+                                        + "%s because there was one already set for that user (%s)",
+                                        userId, allowlist, existing);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1111,6 +1137,9 @@ public class UserManagerService extends IUserManager.Stub {
                 if (user != null) {
                     user.startRealtime = 0;
                     user.unlockRealtime = 0;
+                    if (mUms.mPerUserActivitiesAllowlist != null) {
+                        mUms.mPerUserActivitiesAllowlist.remove(user.info.id);
+                    }
                 }
             }
         }
@@ -1138,6 +1167,7 @@ public class UserManagerService extends IUserManager.Stub {
                 Environment.getDataDirectory(), /* users= */ null);
     }
 
+    @SuppressWarnings("AndroidFrameworkEfficientCollections") // mPerUserActivitiesAllowlist
     @VisibleForTesting
     UserManagerService(Context context, PackageManagerService pm, UserDataPreparer userDataPreparer,
             UserJourneyLogger userJourneyLogger,  Object packagesLock, File dataDir,
@@ -1171,7 +1201,13 @@ public class UserManagerService extends IUserManager.Stub {
             sInstance = this;
         }
         mSystemPackageInstaller = new UserSystemPackageInstaller(this, mUserTypes);
-        mUserActivitiesAllowlist = buildActivitiesAllowlist(context.getResources(), mUserTypes);
+        mPerUserTypeActivitiesAllowlist =
+                buildActivitiesAllowlist(context.getResources(), mUserTypes);
+        // Most common sizes would be 1-3 (HSU, full user, profile), so setting to 4 as it's the
+        // closed multiple of 2.
+        mPerUserActivitiesAllowlist = Flags.hsuAllowlistActivities()
+                ? new ConcurrentHashMap<>(4)
+                : null;
         LocalServices.addService(UserManagerInternal.class, mLocalService);
         mLockPatternUtils = new LockPatternUtils(mContext);
         mUserStates.put(UserHandle.USER_SYSTEM, UserState.STATE_BOOTING);
@@ -5174,7 +5210,15 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@NonNull String userType) {
-        return mUserActivitiesAllowlist == null ? null : mUserActivitiesAllowlist.get(userType);
+        return mPerUserTypeActivitiesAllowlist == null
+                ? null
+                : mPerUserTypeActivitiesAllowlist.get(userType);
+    }
+
+    private @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@UserIdInt int userId) {
+        return mPerUserActivitiesAllowlist == null
+                ? null
+                : mPerUserActivitiesAllowlist.get(userId);
     }
 
     /** This method is called in the constructor once (hence it's static) */
@@ -8411,7 +8455,7 @@ public class UserManagerService extends IUserManager.Stub {
                     return;
                 case "--activities-allowlist":
                     try (IndentingPrintWriter ipw = new IndentingPrintWriter(pw)) {
-                        dumpActivitiesAllowlist(ipw);
+                        dumpActivitiesAllowlists(ipw);
                     }
                     return;
                 case "--non-compliance":
@@ -8571,7 +8615,7 @@ public class UserManagerService extends IUserManager.Stub {
             // TODO(b/453850625): should always dump, but currently it would break  bedstead's
             // parser, so it's checking for dumpAll (which is passed on bugreport calls)
             if (dumpAll) {
-                dumpActivitiesAllowlist(ipw);
+                dumpActivitiesAllowlists(ipw);
             }
 
             // Dump SystemPackageInstaller info
@@ -8725,13 +8769,18 @@ public class UserManagerService extends IUserManager.Stub {
                 + userData.getIgnorePrepareStorageErrors());
     }
 
-    private void dumpActivitiesAllowlist(IndentingPrintWriter ipw) {
-        ipw.print("Activities allowlist:");
-        if (mUserActivitiesAllowlist == null) {
+    private void dumpActivitiesAllowlists(IndentingPrintWriter ipw) {
+        dumpActivitiesPerUserTypeAllowlist(ipw);
+        dumpActivitiesPerUserAllowlist(ipw);
+    }
+
+    private void dumpActivitiesPerUserTypeAllowlist(IndentingPrintWriter ipw) {
+        ipw.print("Activities per user type allowlist:");
+        if (mPerUserTypeActivitiesAllowlist == null) {
             ipw.println(" not set");
             return;
         }
-        int size = mUserActivitiesAllowlist.size();
+        int size = mPerUserTypeActivitiesAllowlist.size();
         if (size == 0) {
             ipw.println(" none");
             return;
@@ -8739,12 +8788,29 @@ public class UserManagerService extends IUserManager.Stub {
         ipw.println();
 
         for (int i = 0; i < size; i++) {
-            String userType = mUserActivitiesAllowlist.keyAt(i);
-            UserActivitiesAllowlist allowlist = mUserActivitiesAllowlist.valueAt(i);
+            String userType = mPerUserTypeActivitiesAllowlist.keyAt(i);
+            UserActivitiesAllowlist allowlist = mPerUserTypeActivitiesAllowlist.valueAt(i);
             ipw.increaseIndent();
             allowlist.dump(ipw, userType);
             ipw.decreaseIndent();
         }
+    }
+
+    private void dumpActivitiesPerUserAllowlist(IndentingPrintWriter ipw) {
+        ipw.print("Activities per user allowlist:");
+        if (mPerUserActivitiesAllowlist == null) {
+            ipw.println(" not set");
+            return;
+        }
+        ipw.println();
+
+        ipw.increaseIndent();
+        for (var entry : mPerUserActivitiesAllowlist.entrySet()) {
+            int userId = entry.getKey();
+            UserActivitiesAllowlist allowlist = entry.getValue();
+            ipw.printf("user %d: %s\n", userId, allowlist);
+        }
+        ipw.decreaseIndent();
     }
 
     private static void dumpTimeAgo(PrintWriter pw, StringBuilder sb, long nowTime, long time) {
@@ -9302,8 +9368,8 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public UserActivitiesAllowlist getActivitiesAllowlist(String userType) {
-            return UserManagerService.this.getActivitiesAllowlist(userType);
+        public UserActivitiesAllowlist getActivitiesAllowlist(int userId) {
+            return UserManagerService.this.getActivitiesAllowlist(userId);
         }
 
         @Override
@@ -9336,8 +9402,8 @@ public class UserManagerService extends IUserManager.Stub {
      * @param restriction restrictions to check
      * @param userId id of the user
      *
-     * @throws android.os.UserManager.CheckedUserOperationException if user has any of the
-     *      specified restrictions
+     * @throws UserManager.CheckedUserOperationException if user has any of the specified
+     * restrictions
      */
     private void enforceUserRestriction(String restriction, @UserIdInt int userId, String message)
             throws UserManager.CheckedUserOperationException {

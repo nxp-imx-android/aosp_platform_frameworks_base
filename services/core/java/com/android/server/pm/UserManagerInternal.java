@@ -648,12 +648,12 @@ public abstract class UserManagerInternal {
     public abstract boolean isHeadlessSystemUserMode();
 
     /**
-     * Gets the {@link UserActivitiesAllowlist} for the given user type.
+     * Gets the {@link UserActivitiesAllowlist} for the given user.
      *
-     * <p>If the type doesn't have an allowlist it returns {@code null}, meaning any activity can
+     * <p>If the user doesn't have an allowlist it returns {@code null}, meaning any activity can
      * be launched for such type.
      */
-    public abstract @Nullable UserActivitiesAllowlist getActivitiesAllowlist(String userType);
+    public abstract @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@UserIdInt int userId);
 
     // TODO(b/414326600): for now it's only using different methods for launched and blocked
     // activities, but once the allowlist logging mechanism is properly designed, it should pass

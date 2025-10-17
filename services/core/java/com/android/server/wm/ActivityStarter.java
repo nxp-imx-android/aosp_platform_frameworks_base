@@ -1198,22 +1198,20 @@ class ActivityStarter {
         }
 
         if (android.multiuser.Flags.hsuAllowlistActivities() && err == ActivityManager.START_SUCCESS
-                && aInfo != null && mIsHeadlessSystemUserMode && userId == UserHandle.USER_SYSTEM) {
-            // If running in Headless System User Mode, check if the activity is allowlisted.
-            // This check is done as late as possible because it affects a very small number of the
-            // occurrences (as few devices are HSUM, and most of them don't even allow switching to
-            // the system user, so we want to minimize its impact.
-            var userType = UserManager.USER_TYPE_SYSTEM_HEADLESS;
+                && aInfo != null) {
             var compName = intent.getComponent();
             if (compName != null) {
                 var umi = mService.getUserManagerInternal();
-                var allowlist = umi.getActivitiesAllowlist(userType);
+                var allowlist = umi.getActivitiesAllowlist(userId);
                 if (allowlist != null && !allowlist.isAllowed(compName)) {
-                    Slogf.w(TAG, "Activity %s is not allowed for user type %s",
-                            compName.flattenToShortString(), userType);
+                    Slogf.w(TAG, "Activity %s is not allowed for user %d",
+                            compName.flattenToShortString(), userId);
                     // TODO(b/414326600): consolidate with the logLaunchedHsuActivity() on
-                    // handleResult (once the final API for logging is defined)
-                    umi.logBlockedHsuActivity(compName);
+                    // handleResult and/or log for all users (once the final API for logging is
+                    // defined)
+                    if (mIsHeadlessSystemUserMode && userId == UserHandle.USER_SYSTEM) {
+                        umi.logBlockedHsuActivity(compName);
+                    }
                     err = ActivityManager.START_NOT_ALLOWED_FOR_USER;
                 }
             } else {
@@ -1931,8 +1929,8 @@ class ActivityStarter {
 
         if (android.multiuser.Flags.hsuAllowlistActivities()
                 && isStarted && mIsHeadlessSystemUserMode
-                &&  started.mUserId == UserHandle.USER_SYSTEM) {
-            // TODO(b/414326600): for now we're just logging activities launched on HSU, but once
+                && started.mUserId == UserHandle.USER_SYSTEM) {
+            // TODO(b/412177078): for now we're just logging activities launched on HSU, but once
             // the allowlist mechanism is in place, we'll need to change this call to log a
             // successful launch, but also log when it's blocked earlier on (probably before the
             // check for voice session on executeRequest(), as voice interaction is not supported
