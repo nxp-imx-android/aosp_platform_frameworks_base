@@ -80,6 +80,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.util.settings.fakeSettings
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
@@ -143,8 +144,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     @Captor
     private lateinit var keyguardCallbackCaptor: ArgumentCaptor<KeyguardUpdateMonitorCallback>
 
-    @Mock private lateinit var secureSettings: SecureSettings
-
     @Mock private lateinit var commandQueue: CommandQueue
 
     @Mock private lateinit var logger: KeyguardLogger
@@ -155,6 +154,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
     private lateinit var keyguardStatusBarView: KeyguardStatusBarView
     private lateinit var controller: KeyguardStatusBarViewController
+    private lateinit var secureSettings: SecureSettings
     private val fakeExecutor = FakeExecutor(FakeSystemClock())
     private val backgroundExecutor = FakeExecutor(FakeSystemClock())
 
@@ -166,6 +166,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         looper = TestableLooper.get(this)
         kosmos = testKosmos()
         testScope = kosmos.testScope
+        secureSettings = kosmos.fakeSettings
         shadeViewStateProvider = TestShadeViewStateProvider()
 
         whenever(
@@ -745,42 +746,39 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     }
 
     @Test
-    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOff() {
-        val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
+    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOff() =
+        testScope.runTest {
+            val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
 
-        // GIVEN the setting is off
-        whenever(secureSettings.getInt(Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON, 0))
-            .thenReturn(0)
+            // GIVEN the setting is off
+            secureSettings.putInt(Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON, 0)
 
-        // WHEN CollapsedStatusBarFragment builds the blocklist
-        controller.updateBlockedIcons()
+            // WHEN CollapsedStatusBarFragment builds the blocklist
+            controller.updateBlockedIcons()
 
-        // THEN status_bar_volume SHOULD be present in the list
-        val contains = controller.blockedIcons.contains(str)
-        Assert.assertTrue(contains)
-    }
+            // THEN status_bar_volume SHOULD be present in the list
+            val contains = controller.blockedIcons.contains(str)
+            Assert.assertTrue(contains)
+        }
 
     @Test
-    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOn() {
-        val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
+    fun testBlockedIcons_obeysSettingForVibrateIcon_settingOn() =
+        testScope.runTest {
+            val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
 
-        // GIVEN the setting is ON
-        whenever(
-                secureSettings.getIntForUser(
-                    Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON,
-                    0,
-                    UserHandle.USER_CURRENT,
-                )
+            // GIVEN the setting is ON
+            secureSettings.putIntForUser(
+                Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON,
+                1,
+                UserHandle.USER_CURRENT,
             )
-            .thenReturn(1)
+            // WHEN CollapsedStatusBarFragment builds the blocklist
+            controller.updateBlockedIcons()
 
-        // WHEN CollapsedStatusBarFragment builds the blocklist
-        controller.updateBlockedIcons()
-
-        // THEN status_bar_volume SHOULD NOT be present in the list
-        val contains = controller.blockedIcons.contains(str)
-        Assert.assertFalse(contains)
-    }
+            // THEN status_bar_volume SHOULD NOT be present in the list
+            val contains = controller.blockedIcons.contains(str)
+            Assert.assertFalse(contains)
+        }
 
     private fun updateStateToNotKeyguard() {
         updateStatusBarState(StatusBarState.SHADE)
