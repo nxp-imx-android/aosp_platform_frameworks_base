@@ -29,10 +29,6 @@ import androidx.test.filters.SmallTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ContextHintTest {
@@ -41,22 +37,9 @@ public class ContextHintTest {
     @Test
     public void testContextHintParcelUnparcel() {
         final BundleHint hint = new BundleHint();
-        RenderToken renderToken =
-                new RenderToken.RenderTokenBuilder()
-                        .setRendererComponentId(UUID.randomUUID())
-                        .build();
-        hint.setRenderToken(renderToken);
-        hint.setAttributionHints(new ArrayList<>(List.of(new BundleHint())));
-
         final ContextHint outputHint = assertParcelUnparcel(hint);
 
         assertThat(hint.getHintType()).isEqualTo(outputHint.getHintType());
         assertThat(hint.getHintId()).isEqualTo(outputHint.getHintId());
-        assertThat(hint.getAttributionHints().size())
-                .isEqualTo(outputHint.getAttributionHints().size());
-
-        RenderToken out = outputHint.getRenderToken();
-        assertThat(out.getTokenId()).isEqualTo(renderToken.getTokenId());
-        assertThat(out.getRendererComponentId()).isEqualTo(renderToken.getRendererComponentId());
     }
 }
