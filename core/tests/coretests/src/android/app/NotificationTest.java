@@ -285,6 +285,29 @@ public class NotificationTest {
 
     @Test
     @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
+    public void testHasTitle_callStyle() {
+        PendingIntent intent = createPendingIntent("hangUp");
+        Person person = new Person.Builder().setName("A Caller").build();
+        Notification.CallStyle style = Notification.CallStyle.forOngoingCall(person, intent);
+        Notification n = new Notification.Builder(mContext, "test")
+                .setStyle(style)
+                .build();
+        assertThat(n.hasTitle()).isTrue();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_API_METRIC_STYLE})
+    public void testHasTitle_metricStyle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(new Notification.Metric(
+                                new Notification.Metric.FixedInt(1), "Int")))
+                .build();
+        assertThat(n.hasTitle()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testContainsCustomViews_none() {
         Notification np = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
@@ -715,6 +738,20 @@ public class NotificationTest {
                 .setGroupSummary(true)
                 .build();
         assertThat(n.hasPromotableCharacteristics()).isFalse();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_UI_RICH_ONGOING, Flags.FLAG_API_METRIC_STYLE})
+    public void testHasPromotableCharacteristics_metricStyle_noTitle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(new Notification.Metric(
+                                new Notification.Metric.FixedInt(1), "Int")))
+                .setOngoing(true)
+                .setRequestPromotedOngoing(true)
+                .build();
+        assertThat(n.hasPromotableCharacteristics()).isTrue();
     }
 
     @Test
