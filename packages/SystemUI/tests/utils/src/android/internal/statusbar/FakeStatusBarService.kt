@@ -212,6 +212,10 @@ class FakeStatusBarService : IStatusBarService.Stub() {
 
     override fun setIconVisibility(slot: String, visible: Boolean) {}
 
+    override fun getIcon(slot: String): Int {
+        return -1
+    }
+
     override fun removeIcon(slot: String) {}
 
     override fun setImeWindowStatus(

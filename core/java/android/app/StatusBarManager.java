@@ -17,6 +17,8 @@
 package android.app;
 
 import android.Manifest;
+import android.annotation.DrawableRes;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -879,9 +881,23 @@ public class StatusBarManager {
         }
     }
 
-    /** @hide */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public void setIcon(String slot, int iconId, int iconLevel, String contentDescription) {
+    /**
+     * Sets the icon for a given slot in the status bar.
+     *
+     * @param slot the slot to set the icon in. This should be a unique string,
+     * which is recommended to format as "package_name/slot_name" to avoid conflict.
+     * @param iconId the resource ID of the icon to display
+     * @param iconLevel the level for the icon
+     * @see android.graphics.drawable.Drawable#setLevel
+     * @param contentDescription the content description for the icon
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @RequiresPermission(android.Manifest.permission.STATUS_BAR)
+    @SystemApi
+    public void setIcon(@NonNull String slot, @DrawableRes int iconId, int iconLevel,
+            @Nullable String contentDescription) {
         try {
             final IStatusBarService svc = getService();
             if (svc != null) {
@@ -893,9 +909,35 @@ public class StatusBarManager {
         }
     }
 
-    /** @hide */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public void removeIcon(String slot) {
+    /**
+     * Gets the resource id of an icon for the given slot in the status bar.
+     * @param slot the slot to get the resource from. see {@link #setIcon}.
+     * @throws IllegalArgumentException if no icon is found for the specified slot.
+     * @hide
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @RequiresPermission(android.Manifest.permission.STATUS_BAR)
+    @TestApi
+    public @DrawableRes int getIcon(@NonNull String slot) {
+        try {
+            final IStatusBarService svc = getService();
+            return svc.getIcon(slot);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Removes the icon for a given slot in the status bar.
+     *
+     * @param slot the name of the slot to remove the icon from. see {@link #setIcon}.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_RESOLVE_HIDDEN_DEPENDENCIES_TWO)
+    @RequiresPermission(android.Manifest.permission.STATUS_BAR)
+    @SystemApi
+    public void removeIcon(@NonNull String slot) {
         try {
             final IStatusBarService svc = getService();
             if (svc != null) {
@@ -905,6 +947,8 @@ public class StatusBarManager {
             throw ex.rethrowFromSystemServer();
         }
     }
+
+
 
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
