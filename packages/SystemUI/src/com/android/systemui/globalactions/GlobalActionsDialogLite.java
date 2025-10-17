@@ -119,7 +119,6 @@ import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.Flags;
 import com.android.systemui.FontStyles;
-import com.android.systemui.MultiListLayout;
 import com.android.systemui.MultiListLayout.MultiListAdapter;
 import com.android.systemui.animation.DialogCuj;
 import com.android.systemui.animation.DialogTransitionAnimator;
@@ -502,11 +501,11 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
         // get notified of phone state changes
         mTelephonyListenerManager.addServiceStateListener(mPhoneStateListener);
-        mGlobalSettings.registerContentObserverSync(
-                Settings.Global.getUriFor(Settings.Global.AIRPLANE_MODE_ON), true,
-                mAirplaneModeObserver);
-        mGlobalSettings.registerContentObserverSync(
-                Settings.Global.getUriFor(Settings.Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS), true,
+        mGlobalSettings.registerContentObserverAsync(
+                mGlobalSettings.getUriFor(Settings.Global.AIRPLANE_MODE_ON), true,
+                mAirplaneModeObserver, this::onAirplaneModeChanged);
+        mGlobalSettings.registerContentObserverAsync(
+                mGlobalSettings.getUriFor(Settings.Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS), true,
                 mGlobalActionsTimeoutObserver);
 
         mHasVibrator = vibrator.hasVibrator();
@@ -531,8 +530,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     public void destroy() {
         mBroadcastDispatcher.unregisterReceiver(mBroadcastReceiver);
         mTelephonyListenerManager.removeServiceStateListener(mPhoneStateListener);
-        mGlobalSettings.unregisterContentObserverSync(mAirplaneModeObserver);
-        mGlobalSettings.unregisterContentObserverSync(mGlobalActionsTimeoutObserver);
+        mGlobalSettings.unregisterContentObserverAsync(mAirplaneModeObserver);
+        mGlobalSettings.unregisterContentObserverAsync(mGlobalActionsTimeoutObserver);
         mConfigurationController.removeCallback(this);
         if (mShowSilentToggle) {
             mRingerModeTracker.getRingerMode().removeObservers(this);
