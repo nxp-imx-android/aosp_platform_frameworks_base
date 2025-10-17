@@ -188,3 +188,13 @@ flag {
     description: "Track and report device engagement modes, indicating the device's current interaction capabilities (e.g. audio-only)."
     bug: "423990404"
 }
+
+flag {
+    name: "move_user_display_settings_to_de_storage"
+    namespace: "windowing_sdk"
+    description: "Moves non-system user display settings from CE to DE storage to resolve early user setup access issues."
+    bug: "442757820"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
