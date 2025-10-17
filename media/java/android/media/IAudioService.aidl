@@ -608,6 +608,12 @@ interface IAudioService {
     int abandonAudioFocusForTest(in IAudioFocusDispatcher fd, in String clientId,
             in AudioAttributes aa, in String callingPackageName);
 
+    @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
+    boolean enterFocusIsolation(int uid, IBinder cb);
+
+    @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
+    boolean exitFocusIsolation(IBinder cb, int mode);
+
     long getFadeOutDurationOnFocusLossMillis(in AudioAttributes aa);
 
     @EnforcePermission("QUERY_AUDIO_STATE")
