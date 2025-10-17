@@ -19533,13 +19533,19 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onProcStateUpdated(ProcessRecordInternal appInternal, long now,
-                boolean forceUpdatePssTime) {
+                boolean forceUpdatePssTime, boolean doingAll) {
             final ProcessRecord app = (ProcessRecord) appInternal;
 
             synchronized (mAppProfiler.mProfilerLock) {
                 app.mProfile.updateProcState(app);
                 mAppProfiler.updateNextPssTimeLPf(app.getCurProcState(), app.mProfile, now,
                         forceUpdatePssTime);
+            }
+
+            if (!doingAll && app.getSetProcState() != app.getCurProcState()) {
+                synchronized (mProcessStats.mLock) {
+                    setProcessTrackerStateLOSP(app, mProcessStats.getMemFactorLocked());
+                }
             }
         }
 
