@@ -74,9 +74,6 @@ public enum DesktopExperienceFlags {
     ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS(
             Flags::enableAddWindowDecorationToAllTasks, false,
             Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS),
-    ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH(
-            Flags::applyDeskActivationOnUserSwitch, false,
-            Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH),
     ENABLE_APP_HANDLE_POSITION_REPORTING(Flags::enableAppHandlePositionReporting, false,
             Flags.FLAG_ENABLE_APP_HANDLE_POSITION_REPORTING),
     ENABLE_APP_TO_WEB_EDUCATION_ANIMATION(Flags::enableAppToWebEducationAnimation, false,

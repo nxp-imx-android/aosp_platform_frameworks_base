@@ -890,31 +890,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
-    public void testSwitchUser_settingValueIsDisabled_shouldNotMagnify_deskUserSwitchDisabled() {
-        final ContentResolver cr = useFakeSettingsProvider();
-        Settings.Secure.putIntForUser(cr,
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 0, 1);
-
-        mWm.setCurrentUser(1);
-
-        assertFalse(mWm.isMagnifyImeEnabled());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
-    public void testSwitchUser_settingValueIsEnabled_shouldMagnify_deskUserSwitchDisabled() {
-        final ContentResolver cr = useFakeSettingsProvider();
-        Settings.Secure.putIntForUser(cr,
-                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1, 2);
-
-        mWm.setCurrentUser(2);
-
-        assertTrue(mWm.isMagnifyImeEnabled());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
     public void testSwitchUser_settingValueIsDisabled_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putIntForUser(cr,
@@ -926,7 +901,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
     public void testSwitchUser_settingValueIsEnabled_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putIntForUser(cr,

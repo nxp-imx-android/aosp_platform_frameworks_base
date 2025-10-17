@@ -12547,10 +12547,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_userSwitch() {
         val previousUser = DEFAULT_USER_ID
         val newUser = SECONDARY_USER_ID
@@ -12587,10 +12584,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_userSwitch_multipleDisplays() {
         val previousUser = DEFAULT_USER_ID
         val newUser = SECONDARY_USER_ID
