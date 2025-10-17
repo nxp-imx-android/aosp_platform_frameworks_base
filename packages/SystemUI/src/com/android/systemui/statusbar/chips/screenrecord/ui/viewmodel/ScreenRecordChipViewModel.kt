@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel
 
 import android.app.ActivityManager
 import android.content.Context
+import android.view.View
 import androidx.annotation.DrawableRes
 import com.android.internal.jank.Cuj
 import com.android.systemui.animation.DialogCuj
@@ -28,7 +29,11 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
+import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel.Starting.Companion.toCountdownSeconds
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
@@ -66,6 +71,8 @@ constructor(
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     @StatusBarChipsLog private val logger: LogBuffer,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+    private val activityStarter: ActivityStarter,
 ) : OngoingActivityChipViewModel {
     private val instanceId = uiEventLogger.createNewInstanceId()
 
@@ -112,23 +119,15 @@ constructor(
                                 ),
                             colors = ColorsModel.Red,
                             onClickListenerLegacy =
-                                createDialogLaunchOnClickListener(
-                                    { context -> createDelegate(context, state.recordedTask) },
-                                    dialogTransitionAnimator,
-                                    DIALOG_CUJ,
-                                    key = KEY,
-                                    instanceId = instanceId,
-                                    uiEventLogger = uiEventLogger,
-                                    logger = logger,
-                                    tag = TAG,
-                                ),
-                            clickBehavior =
-                                OngoingActivityChipModel.ClickBehavior.ExpandAction(
-                                    createDialogLaunchOnClickCallback(
-                                        dialogDelegateCreator = { context ->
-                                            createDelegate(context, state.recordedTask)
-                                        },
-                                        dialogTransitionAnimator = dialogTransitionAnimator,
+                                if (
+                                    ScreenCaptureRecordFeaturesInteractor
+                                        .isNewScreenRecordToolbarEnabled
+                                ) {
+                                    View.OnClickListener { showScreenRecordingToolbar() }
+                                } else {
+                                    createDialogLaunchOnClickListener(
+                                        { context -> createDelegate(context, state.recordedTask) },
+                                        dialogTransitionAnimator,
                                         DIALOG_CUJ,
                                         key = KEY,
                                         instanceId = instanceId,
@@ -136,6 +135,28 @@ constructor(
                                         logger = logger,
                                         tag = TAG,
                                     )
+                                },
+                            clickBehavior =
+                                OngoingActivityChipModel.ClickBehavior.ExpandAction(
+                                    if (
+                                        ScreenCaptureRecordFeaturesInteractor
+                                            .isNewScreenRecordToolbarEnabled
+                                    ) {
+                                        { showScreenRecordingToolbar() }
+                                    } else {
+                                        createDialogLaunchOnClickCallback(
+                                            dialogDelegateCreator = { context ->
+                                                createDelegate(context, state.recordedTask)
+                                            },
+                                            dialogTransitionAnimator = dialogTransitionAnimator,
+                                            DIALOG_CUJ,
+                                            key = KEY,
+                                            instanceId = instanceId,
+                                            uiEventLogger = uiEventLogger,
+                                            logger = logger,
+                                            tag = TAG,
+                                        )
+                                    }
                                 ),
                             instanceId = instanceId,
                         )
@@ -190,6 +211,16 @@ constructor(
         chipTransitionHelper.onActivityStoppedFromDialog()
         shareToAppChipViewModel.onRecordingStoppedFromDialog()
         interactor.stopRecording()
+    }
+
+    private fun showScreenRecordingToolbar() {
+        activityStarter.executeRunnableDismissingKeyguard(
+            { screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record()) },
+            /* cancelAction= */ null,
+            /* dismissShade = */ true,
+            /* afterKeyguardGone= */ true,
+            /* deferred= */ false,
+        )
     }
 
     companion object {

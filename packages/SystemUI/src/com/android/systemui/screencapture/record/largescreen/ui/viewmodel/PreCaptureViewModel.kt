@@ -169,7 +169,7 @@ constructor(
         closeUi()
 
         backgroundScope.launch {
-            screenRecordingServiceInteractor.startRecording(
+            screenRecordingServiceInteractor.startRecordingDelayed(
                 // TODO(b/437971334): Get options from the UI.
                 ScreenRecordingParameters(
                     captureTarget = null, // Fullscreen.

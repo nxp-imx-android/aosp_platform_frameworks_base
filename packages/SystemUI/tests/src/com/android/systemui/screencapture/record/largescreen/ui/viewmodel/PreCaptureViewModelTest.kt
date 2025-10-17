@@ -41,9 +41,8 @@ import com.android.systemui.screencapture.data.repository.screenCaptureUiReposit
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
-import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
 import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
-import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -65,8 +64,6 @@ import org.mockito.kotlin.whenever
 class PreCaptureViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
-    @Mock
-    private lateinit var mMockScreenRecordingServiceRepository: ScreenRecordingServiceRepository
     @Mock private lateinit var mockBitmap: Bitmap
     @Mock private lateinit var mockWindowMetrics: WindowMetrics
     private val screenBounds = Rect(0, 0, 100, 100)
@@ -77,7 +74,6 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         if (uiParams != null) {
             kosmos.largeScreenCaptureUiParameters = uiParams
         }
-        kosmos.screenRecordingServiceRepository = mMockScreenRecordingServiceRepository
         viewModel = kosmos.preCaptureViewModelFactory.create(displayId)
         viewModel.activateIn(kosmos.testScope)
     }
@@ -376,18 +372,14 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     @Test
     fun beginCapture_forFullScreenRecording_startsRecordingWithCorrectParameters() =
         kosmos.runTest {
+            val status by collectLastValue(screenRecordingServiceRepository.status)
             setupViewModel()
 
             viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
 
             viewModel.beginCapture()
-
-            val paramsCaptor = argumentCaptor<ScreenRecordingParameters>()
-            verify(mMockScreenRecordingServiceRepository, times(1))
-                .startRecording(paramsCaptor.capture())
-            val capturedParams = paramsCaptor.lastValue
-            with(capturedParams) {
+            with((status as ScreenRecordingStatus.Starting).parameters) {
                 assertThat(captureTarget).isNull()
                 assertThat(audioSource).isEqualTo(ScreenRecordingAudioSource.NONE)
                 assertThat(this.displayId).isEqualTo(displayId)
