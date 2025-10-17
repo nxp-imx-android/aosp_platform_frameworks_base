@@ -16,6 +16,8 @@
 
 package com.android.server.media.metrics;
 
+import com.android.media.editing.flags.Flags;
+
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.DataSpace;
@@ -366,6 +368,7 @@ public final class MediaMetricsManagerService extends SystemService {
 
         @Override
         public void reportEditingEndedEvent(String sessionId, EditingEndedEvent event, int userId) {
+            // Editing ended events use the same blocklist as player metrics.
             int level = loggingLevel();
             if (level == LOGGING_LEVEL_BLOCKED) {
                 return;
@@ -418,7 +421,7 @@ public final class MediaMetricsManagerService extends SystemService {
             String outputSecondCodecName =
                     outputCodecNames.size() > 1 ? outputCodecNames.get(1) : "";
             @EditingEndedEvent.OperationType long operationTypes = event.getOperationTypes();
-            StatsEvent statsEvent =
+            StatsEvent.Builder statsEventBuilder =
                     StatsEvent.newBuilder()
                             .setAtomId(798)
                             .writeString(sessionId)
@@ -563,10 +566,12 @@ public final class MediaMetricsManagerService extends SystemService {
                             .writeInt(
                                     getVideoFrameRateEnum(outputMediaItemInfo.getVideoFrameRate()))
                             .writeString(outputFirstCodecName)
-                            .writeString(outputSecondCodecName)
-                            .usePooledBuffer()
-                            .build();
-            StatsLog.write(statsEvent);
+                            .writeString(outputSecondCodecName);
+            if (Flags.addUidToMediaMetricsEditing()) {
+                statsEventBuilder.writeInt(
+                        level == LOGGING_LEVEL_EVERYTHING ? Binder.getCallingUid() : 0);
+            }
+            StatsLog.write(statsEventBuilder.usePooledBuffer().build());
         }
 
         private int loggingLevel() {
