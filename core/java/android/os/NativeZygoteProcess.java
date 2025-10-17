@@ -18,8 +18,14 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.net.LocalSocket;
+import android.net.LocalSocketAddress;
 import android.util.Pair;
 
+import com.android.internal.os.Zygote;
+
+import java.io.FileDescriptor;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -32,12 +38,18 @@ import java.util.Map;
  * @hide
  */
 public class NativeZygoteProcess implements IZygoteProcess {
-    public NativeZygoteProcess() {}
+    private LocalSocketAddress mSocketAddress;
+    private LocalSocket mSocket;
 
-    private static native int nativeStartNativeProcess(
-            int uid, int gid, long startSeq, String packageName,
-            String niceName, int targetSdkVersion, boolean startChildZygote,
-            int runtimeFlags, String seInfo);
+    public NativeZygoteProcess() {
+        mSocketAddress = new LocalSocketAddress(Zygote.NATIVE_SOCKET_NAME,
+                                                LocalSocketAddress.Namespace.RESERVED);
+        mSocket = new LocalSocket(LocalSocket.SOCKET_SEQPACKET);
+    }
+
+    private static native int nativeStartNativeProcess(FileDescriptor fd, int uid, int gid,
+            long startSeq, String packageName, String niceName, int targetSdkVersion,
+            boolean startChildZygote, int runtimeFlags, String seInfo);
 
     @Override
     public final Process.ProcessStartResult start(@NonNull final String processClass,
@@ -63,8 +75,14 @@ public class NativeZygoteProcess implements IZygoteProcess {
                                                   boolean bindOverrideSysprops,
                                                   long startSeq,
                                                   @Nullable String[] zygoteArgs) {
-        int pid = nativeStartNativeProcess(uid, gid, startSeq, packageName, niceName,
-                targetSdkVersion, /*startChildZygote=*/false, runtimeFlags, seInfo);
+        try {
+            mSocket.connect(mSocketAddress);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to connect to socket.");
+        }
+        int pid = nativeStartNativeProcess(mSocket.getFileDescriptor(), uid, gid, startSeq,
+                packageName, niceName, targetSdkVersion, /*startChildZygote=*/false, runtimeFlags,
+                seInfo);
         if (pid == -1) {
             throw new RuntimeException("Failed to fork a native process.");
         }
