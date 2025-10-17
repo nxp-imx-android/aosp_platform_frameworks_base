@@ -458,6 +458,58 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(isDeviceEnteredDirectly).isFalse()
         }
 
+    @Test
+    fun lockNow_authMethodSecure_locksAndSwitchesToLockscreen() =
+        kosmos.runTest {
+            val isUnlocked by collectLastValue(underTest.isUnlocked)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            switchToScene(Scenes.Gone)
+            assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+
+            underTest.lockNow("test")
+
+            assertThat(isUnlocked).isFalse()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun lockNow_swipeAuthMethod_switchesToLockscreen() =
+        kosmos.runTest {
+            val isUnlocked by collectLastValue(underTest.isUnlocked)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            setupSwipeDeviceEntryMethod() // sets auth to None and lockscreen enabled
+            switchToScene(Scenes.Gone)
+            assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+
+            underTest.lockNow("test")
+
+            assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun lockNow_lockscreenDisabled_doesNothing() =
+        kosmos.runTest {
+            val isUnlocked by collectLastValue(underTest.isUnlocked)
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            fakeDeviceEntryRepository.setLockscreenEnabled(false)
+            fakeAuthenticationRepository.setAuthenticationMethod(None)
+            switchToScene(Scenes.Gone)
+            assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+
+            underTest.lockNow("test")
+
+            assertThat(isUnlocked).isTrue()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+        }
+
     private fun Kosmos.setupSwipeDeviceEntryMethod() {
         fakeAuthenticationRepository.setAuthenticationMethod(None)
         fakeDeviceEntryRepository.setLockscreenEnabled(true)

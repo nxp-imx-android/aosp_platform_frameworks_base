@@ -317,5 +317,18 @@ constructor(
     /** Locks the device instantly. */
     fun lockNow(debuggingReason: String) {
         deviceUnlockedInteractor.get().lockNow(debuggingReason)
+
+        applicationScope.launch {
+            // The device unlock interactor can't lock the device if the device has SWIPE as screen
+            // lock, so we need to manually transition to lockscreen in this case.
+            if (isLockscreenEnabled() && !isAuthenticationRequired()) {
+                sceneInteractor
+                    .get()
+                    .changeScene(
+                        toScene = Scenes.Lockscreen,
+                        loggingReason = "lock now with SWIPE auth method, reason: $debuggingReason",
+                    )
+            }
+        }
     }
 }
