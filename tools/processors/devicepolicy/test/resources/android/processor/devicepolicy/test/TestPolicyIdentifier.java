@@ -32,6 +32,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
+/**
+ * This is a test version of PolicyIdentifier which is used to verify the annotation processor.
+ */
 public final class PolicyIdentifier<T> {
     private final String mId;
 
