@@ -1964,8 +1964,8 @@ class DesktopTasksController(
         // Did not close task, because the task has unexpected properties, thus we don't know what
         // the task is.
         NOT_CLOSED_UNKNOWN_TASK,
-        // Closed task in split screen
-        CLOSED_SPLIT_SCREEN,
+        // Close request is sent to SplitScreenController.
+        CLOSE_REQUESTED_SPLIT_SCREEN,
         // Closed task in fullscreen
         CLOSED_FULLSCREEN,
         // Closed task in desktop mode
@@ -1976,7 +1976,8 @@ class DesktopTasksController(
      * Closes a task.
      *
      * If the method returns CloseTaskResult values having the 'CLOSED_' prefix, the task is closed.
-     * Otherwise, the method should be no-op.
+     * If it returns CLOSE_REQUESTED_SPLIT_SCREEN, SplitScreenController determined if it closed the
+     * task. Otherwise, the method should be no-op.
      */
     fun closeTask(task: RunningTaskInfo): CloseTaskResult {
         val taskId = task.taskId
@@ -1999,6 +2000,15 @@ class DesktopTasksController(
             return CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY
         }
         if (splitScreenController.isTaskInSplitScreen(taskId)) {
+            if (Flags.closeSplitTaskInsteadOfMovingToBack()) {
+                splitScreenController.closeTask(taskId)
+                logI(
+                    "closeTask(taskId=%d): %s",
+                    taskId,
+                    CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN,
+                )
+                return CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN
+            }
             if (
                 DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
                     .isTrue() && splitScreenController.isDividerFlinging()
@@ -2022,8 +2032,8 @@ class DesktopTasksController(
                 return CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK
             }
             splitScreenController.moveTaskToFullscreen(otherTask.taskId, EXIT_REASON_DESKTOP_MODE)
-            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSED_SPLIT_SCREEN)
-            return CloseTaskResult.CLOSED_SPLIT_SCREEN
+            logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN)
+            return CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN
         }
         if (isDesktopTask(task)) {
             val wct = WindowContainerTransaction()
