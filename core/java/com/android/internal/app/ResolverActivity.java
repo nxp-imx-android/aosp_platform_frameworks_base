@@ -2170,9 +2170,17 @@ public class ResolverActivity extends Activity implements
                 });
         mOnSwitchOnWorkSelectedListener = () -> {
             final View workTab = tabHost.getTabWidget().getChildAt(1);
+            boolean wasFocusable = workTab.isFocusable();
+            boolean wasFocusableInTouchMode = workTab.isFocusableInTouchMode();
             workTab.setFocusable(true);
             workTab.setFocusableInTouchMode(true);
             workTab.requestFocus();
+            // Reset the focusable-in-touch-mode flag, as taps are processed differently in this
+            // mode. When an unfocused view is tapped, it requests focus first. If the request
+            // succeeds, the rest of the touch event processing logic is ignored (e.g., the
+            // onClickListener is not invoked).
+            workTab.setFocusableInTouchMode(wasFocusableInTouchMode);
+            workTab.setFocusable(wasFocusable);
         };
     }
 
