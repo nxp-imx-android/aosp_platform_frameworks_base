@@ -32,6 +32,8 @@ import static com.android.systemui.keyguard.KeyguardViewMediator.KEYGUARD_LOCK_A
 import static com.android.systemui.keyguard.KeyguardViewMediator.REBOOT_MAINLINE_UPDATE;
 import static com.android.systemui.keyguard.KeyguardViewMediator.SYS_BOOT_REASON_PROP;
 
+import static kotlinx.coroutines.flow.FlowKt.emptyFlow;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -103,6 +105,7 @@ import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.DisableSceneContainer;
 import com.android.systemui.flags.FakeFeatureFlags;
 import com.android.systemui.flags.SystemPropertiesHelper;
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionBootInteractor;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.log.SessionTracker;
@@ -212,6 +215,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     private @Mock ShadeExpansionStateManager mShadeExpansionStateManager;
     private @Mock ShadeInteractor mShadeInteractor;
     private @Mock ShadeWindowLogger mShadeWindowLogger;
+    private @Mock KeyguardInteractor mKeyguardInteractor;
     private @Mock SelectedUserInteractor mSelectedUserInteractor;
     private @Mock UserTracker.Callback mUserTrackerCallback;
     private @Mock KeyguardTransitionBootInteractor mKeyguardTransitionBootInteractor;
@@ -284,6 +288,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 .thenReturn(mock(Flow.class));
         when(mSelectedUserInteractor.getSelectedUserId()).thenReturn(mDefaultUserId);
         when(mProcessWrapper.isSystemUser()).thenReturn(true);
+        when(mKeyguardInteractor.getDozeTimeTick()).thenReturn(emptyFlow());
         mNotificationShadeWindowController = new NotificationShadeWindowControllerImpl(
                 mContext,
                 new FakeWindowRootViewComponent.Factory(mock(WindowRootView.class)),
@@ -851,6 +856,35 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
         // A call to reset the keyguard and bouncer was invoked
         verify(mStatusBarKeyguardViewManager).reset(true);
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    public void resetStateLocked_whenSimPinRequiredDuringGoingAway() {
+        // When showing and provisioned
+        mViewMediator.onSystemReady();
+        when(mUpdateMonitor.isDeviceProvisioned()).thenReturn(true);
+        mViewMediator.setShowingLocked(true, "");
+        processAllMessagesAndBgExecutorMessages();
+
+        setCurrentUser(10, /* isSecure= */false);
+
+        reset(mKeyguardInteractor);
+
+        // Request keyguard going away, as if the user swiped up with an insecure keyguard
+        mViewMediator.hideLocked();
+        processAllMessagesAndBgExecutorMessages();
+
+        // Then SIM becomes locked and requires a PIN
+        mViewMediator.mUpdateCallback.onSimStateChanged(
+                1 /* subId */,
+                0 /* slotId */,
+                TelephonyManager.SIM_STATE_PIN_REQUIRED);
+        processAllMessagesAndBgExecutorMessages();
+
+        assertTrue(mViewMediator.isShowingAndNotOccluded());
+        verify(mKeyguardUnlockAnimationController, never()).notifyFinishedKeyguardExitAnimation(false);
+        verify(mKeyguardInteractor).showKeyguard();
     }
 
     @Test
@@ -1662,7 +1696,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mSystemPropertiesHelper,
                 () -> mock(WindowManagerLockscreenVisibilityManager.class),
                 mSelectedUserInteractor,
-                mKosmos.getKeyguardInteractor(),
+                mKeyguardInteractor,
                 mKeyguardTransitionBootInteractor,
                 mKosmos::getCommunalSceneInteractor,
                 mKosmos::getCommunalSettingsInteractor,
