@@ -77,11 +77,7 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
         // There's either a pin request or an already pinned task is brought to foreground.
         val wct = WindowContainerTransaction()
         if (windowingLayerChange.isLayerPinningRequest() || request.isOpeningPinnedRequest()) {
-            val transitions = mutableSetOf<ActiveTransition>()
-            activeTransitions[transition] = transitions
-
-            wct.merge(getLayerPinnedWct(triggerTask.token), /* transfer= */ true)
-            transitions += ActiveTransition.Pin(triggerTask, windowingLayerChange?.remoteCallback)
+            createPinTransition(transition, triggerTask, windowingLayerChange?.remoteCallback, wct)
         }
 
         // Unpinning can occur as a side-effect of another action, check if a task (not necessary
@@ -95,18 +91,40 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
                 else -> null
             }
         if (isUnpinningNeeded && candidateTaskForUnpin != null) {
-            val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
-            transitions += ActiveTransition.Unpin(candidateTaskForUnpin)
-            wct.merge(
-                getLayerUnpinnedWct(
-                    candidateTaskForUnpin.token,
-                    isMinimizing = request.type != TRANSIT_CLOSE,
-                ),
-                /* transfer= */ true,
-            )
+            createUnpinTransition(transition, candidateTaskForUnpin, wct,
+                isMinimizing = request.type != TRANSIT_CLOSE)
         }
 
         return wct.takeUnless { activeTransitions[transition].isNullOrEmpty() }
+    }
+
+    /** Pins a task and adds it to the active transitions for the given transition token. */
+    private fun createPinTransition(
+        transition: IBinder,
+        task: TaskInfo,
+        remoteCallback: IRemoteCallback?,
+        wct: WindowContainerTransaction,
+    ) {
+        val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
+        transitions += ActiveTransition.Pin(task, remoteCallback)
+        wct.merge(getLayerPinnedWct(task.token), /* transfer= */ true)
+    }
+
+    /**
+     * Unpins a specific task and adds it to the active transitions for the given transition token.
+     */
+    private fun createUnpinTransition(
+        transition: IBinder,
+        task: TaskInfo,
+        wct: WindowContainerTransaction,
+        isMinimizing: Boolean = false,
+    ) {
+        val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
+        transitions += ActiveTransition.Unpin(task)
+        wct.merge(
+            getLayerUnpinnedWct(task.token, isMinimizing),
+            /* transfer= */ true,
+        )
     }
 
     private fun WindowingLayerChange?.isLayerPinningRequest(): Boolean {
