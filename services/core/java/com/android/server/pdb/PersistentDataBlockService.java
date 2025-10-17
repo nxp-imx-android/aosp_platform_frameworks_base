@@ -362,12 +362,14 @@ public class PersistentDataBlockService extends SystemService {
         }
     }
 
-    private void enforceIsAdmin() {
+    private void enforceIsAdminOrSystem() {
         final int userId = UserHandle.getCallingUserId();
-        final boolean isAdmin = UserManager.get(mContext).isUserAdmin(userId);
-        if (!isAdmin) {
+        final boolean isAdminOrSystem =
+                (android.multiuser.Flags.hsuNotAdmin() && userId == UserHandle.USER_SYSTEM)
+                        || UserManager.get(mContext).isUserAdmin(userId);
+        if (!isAdminOrSystem) {
             throw new SecurityException(
-                    "Only the Admin user is allowed to change OEM unlock state");
+                    "Only the Admin or System user is allowed to change OEM unlock state");
         }
     }
 
@@ -1097,7 +1099,7 @@ public class PersistentDataBlockService extends SystemService {
             }
 
             enforceOemUnlockWritePermission();
-            enforceIsAdmin();
+            enforceIsAdminOrSystem();
 
             if (enabled) {
                 // Do not allow oem unlock to be enabled if it's disallowed by a user restriction.
