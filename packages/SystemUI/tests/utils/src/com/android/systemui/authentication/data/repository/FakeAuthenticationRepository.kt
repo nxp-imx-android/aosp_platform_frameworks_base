@@ -115,7 +115,11 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
 
     override suspend fun reportLockoutStarted(durationMs: Int) {
-        _lockoutEndTime = (currentTime + durationMs.milliseconds).takeIf { durationMs > 0 }
+        reportLockoutStarted(durationMs.milliseconds)
+    }
+
+    fun reportLockoutStarted(duration: Duration) {
+        _lockoutEndTime = (currentTime + duration).takeIf { duration.isPositive() }
         hasLockoutOccurred.value = true
         lockoutStartedReportCount++
     }

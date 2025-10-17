@@ -16,6 +16,8 @@
 
 package com.android.systemui.bouncer.shared.model
 
+import android.content.res.Resources
+import android.security.Flags.lockscreenLargerTimeoutTimeUnits
 import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -24,6 +26,26 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pattern
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
 import com.android.systemui.res.R
+
+data class LockoutMessageModel(
+    val primaryMessage: Int,
+    val count: Long,
+    val secondaryMessage: Int,
+) {
+    fun primaryFormatterArgs(): Map<String, Any> = mapOf("count" to count)
+
+    fun secondaryFormatterArgs(resources: Resources): Map<String, Any>? =
+        if (lockscreenTimeoutShortlink()) {
+            mapOf(
+                "shortlink" to
+                    resources.getString(
+                        com.android.internal.R.string.config_lockscreenLockoutShortlink
+                    )
+            )
+        } else {
+            null
+        }
+}
 
 typealias BouncerMessagePair = Pair<Int, Int>
 
@@ -35,6 +57,10 @@ val BouncerMessagePair.secondaryMessage: Int
 
 object BouncerMessageStrings {
     private val EmptyMessage = Pair(0, 0)
+    private const val SECONDS_IN_MINUTE = 60L
+    private const val SECONDS_IN_HOUR = SECONDS_IN_MINUTE * 60L
+    private const val SECONDS_IN_DAY = SECONDS_IN_HOUR * 24L
+    private const val SECONDS_IN_YEAR = SECONDS_IN_DAY * 365L
 
     fun defaultMessage(
         securityMode: AuthenticationMethodModel,
@@ -341,38 +367,72 @@ object BouncerMessageStrings {
         }
     }
 
-    fun primaryAuthLockedOut(securityMode: AuthenticationMethodModel): BouncerMessagePair {
-        return when (securityMode) {
-            Pattern ->
-                Pair(
-                    R.string.kg_too_many_failed_attempts_countdown,
+    fun primaryAuthLockedOut(
+        securityMode: AuthenticationMethodModel,
+        timeoutSeconds: Long,
+    ): LockoutMessageModel {
+        val secondaryId =
+            when (securityMode) {
+                Pattern ->
                     if (lockscreenTimeoutShortlink()) {
                         R.string.kg_primary_auth_locked_out_pattern_shortlink
                     } else {
                         R.string.kg_primary_auth_locked_out_pattern
-                    },
-                )
-            Password ->
-                Pair(
-                    R.string.kg_too_many_failed_attempts_countdown,
+                    }
+                Password ->
                     if (lockscreenTimeoutShortlink()) {
                         R.string.kg_primary_auth_locked_out_password_shortlink
                     } else {
                         R.string.kg_primary_auth_locked_out_password
-                    },
-                )
-            Pin ->
-                Pair(
-                    R.string.kg_too_many_failed_attempts_countdown,
+                    }
+                Pin ->
                     if (lockscreenTimeoutShortlink()) {
                         R.string.kg_primary_auth_locked_out_pin_shortlink
                     } else {
                         R.string.kg_primary_auth_locked_out_pin
-                    },
-                )
-            else -> EmptyMessage
+                    }
+                else -> 0
+            }
+        val (primaryId, count) = determineTimeoutStringAndCount(timeoutSeconds)
+        return LockoutMessageModel(primaryId, count, secondaryId)
+    }
+
+    private fun determineTimeoutStringAndCount(totalSeconds: Long): Pair<Int, Long> {
+        return if (lockscreenLargerTimeoutTimeUnits()) {
+            when {
+                totalSeconds <= 59 ->
+                    Pair(R.string.kg_too_many_failed_attempts_countdown_seconds, totalSeconds)
+
+                totalSeconds <= 90 * SECONDS_IN_MINUTE ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_minutes,
+                        totalSeconds ceilDivide SECONDS_IN_MINUTE,
+                    )
+
+                totalSeconds <= 36 * SECONDS_IN_HOUR ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_hours,
+                        totalSeconds ceilDivide SECONDS_IN_HOUR,
+                    )
+
+                totalSeconds <= 364 * SECONDS_IN_DAY ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_days,
+                        totalSeconds ceilDivide SECONDS_IN_DAY,
+                    )
+
+                else ->
+                    Pair(
+                        R.string.kg_too_many_failed_attempts_countdown_years,
+                        totalSeconds ceilDivide SECONDS_IN_YEAR,
+                    )
+            }
+        } else {
+            R.string.kg_too_many_failed_attempts_countdown to totalSeconds
         }
     }
+
+    private infix fun Long.ceilDivide(divisor: Long): Long = (this + divisor - 1) / divisor
 
     private fun patternDefaultMessage(fingerprintAllowed: Boolean): Int {
         return if (fingerprintAllowed) R.string.kg_unlock_with_pattern_or_fp

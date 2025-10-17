@@ -181,6 +181,13 @@ flag {
 }
 
 flag {
+    name: "lockscreen_larger_timeout_time_units"
+    namespace: "security"
+    description: "Show larger time units than seconds on lockscreen"
+    bug: "443823194"
+}
+
+flag {
     name: "manage_lockout_end_time_in_service"
     namespace: "security"
     description: "Manage lockout end time in LockSettingsService rather than LockPatternUtils"

@@ -20,7 +20,6 @@ import android.content.res.Resources
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
 import android.os.CountDownTimer
-import android.security.Flags.lockscreenTimeoutShortlink
 import android.security.Flags.secureLockDevice
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED
 import com.android.keyguard.KeyguardSecurityModel
@@ -34,6 +33,7 @@ import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.data.repository.BouncerMessageRepository
 import com.android.systemui.bouncer.shared.model.BouncerMessageModel
 import com.android.systemui.bouncer.shared.model.BouncerMessageStrings
+import com.android.systemui.bouncer.shared.model.LockoutMessageModel
 import com.android.systemui.bouncer.shared.model.Message
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -50,7 +50,7 @@ import com.android.systemui.util.kotlin.Nonuple
 import com.android.systemui.util.kotlin.combine
 import dagger.Lazy
 import javax.inject.Inject
-import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -335,24 +335,14 @@ constructor(
                 }
 
                 override fun onTick(millisUntilFinished: Long) {
-                    val secondsRemaining = (millisUntilFinished / 1000.0).roundToInt()
-                    val message =
+                    val secondsRemaining = (millisUntilFinished / 1000.0).roundToLong()
+                    setMessage(
                         BouncerMessageStrings.primaryAuthLockedOut(
-                                currentSecurityMode.toAuthModel()
+                                currentSecurityMode.toAuthModel(),
+                                secondsRemaining,
                             )
                             .toMessage()
-                    message.message?.animate = false
-                    message.message?.formatterArgs =
-                        mutableMapOf<String, Any>(Pair("count", secondsRemaining))
-                    if (lockscreenTimeoutShortlink()) {
-                        val shortlink =
-                            resources.getString(
-                                com.android.internal.R.string.config_lockscreenLockoutShortlink
-                            )
-                        message.secondaryMessage?.formatterArgs =
-                            mutableMapOf<String, Any>(Pair("shortlink", shortlink))
-                    }
-                    setMessage(message)
+                    )
                 }
             }
         countDownTimerUtil.startNewTimer(secondsBeforeLockoutReset * 1000, 1000, callback)
@@ -515,6 +505,23 @@ constructor(
         if (!secureLockDevice()) return
 
         setMessage(defaultMessage)
+    }
+
+    private fun LockoutMessageModel.toMessage(): BouncerMessageModel {
+        return BouncerMessageModel(
+            message =
+                Message(
+                    messageResId = this.primaryMessage,
+                    formatterArgs = this.primaryFormatterArgs(),
+                    animate = false,
+                ),
+            secondaryMessage =
+                Message(
+                    messageResId = this.secondaryMessage,
+                    formatterArgs = this.secondaryFormatterArgs(resources),
+                    animate = false,
+                ),
+        )
     }
 }
 
