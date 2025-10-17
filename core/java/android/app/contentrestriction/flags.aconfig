@@ -4,6 +4,6 @@ container: "system"
 flag {
   name: "content_restriction_api"
   namespace: "content_restriction"
-  description: "Flag to enable the ContentRestrictionService"
+  description: "Flag to enable the ContentRestrictionService and ContentRestrictionAppService"
   bug: "441599653"
 }
