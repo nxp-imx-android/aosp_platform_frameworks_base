@@ -156,7 +156,7 @@ constructor(
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
 
-                    if (!deviceEntryInteractor.isLockscreenEnabled()) {
+                    if (!deviceEntryInteractor.isLockscreenEnabled() && canDismissLockscreen()) {
                         if (!SceneContainerFlag.isEnabled) {
                             startTransitionTo(
                                 KeyguardState.GONE,

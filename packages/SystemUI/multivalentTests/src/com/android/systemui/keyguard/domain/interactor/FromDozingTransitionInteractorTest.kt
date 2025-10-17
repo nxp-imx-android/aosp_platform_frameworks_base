@@ -29,12 +29,14 @@ import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.Flags.FLAG_WAKEFULNESS_FOR_ANIMATIONS
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.communal.data.repository.FakeCommunalSceneRepository
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
@@ -46,6 +48,8 @@ import com.android.systemui.keyguard.util.KeyguardTransitionRepositorySpySubject
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -228,6 +232,26 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
             // No transitions are directly started by this interactor.
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.OCCLUDED)
+        }
+
+    @Test
+    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR, FLAG_SCENE_CONTAINER)
+    fun testTransitionToPrimaryBouncer_onWakeup_withLockscreenNotEnabledButLockscreenIsNotDismissible() =
+        kosmos.runTest {
+            val primaryBouncerShowing by collectLastValue(keyguardInteractor.primaryBouncerShowing)
+            fakeKeyguardRepository.setKeyguardShowing(true)
+            fakeKeyguardBouncerRepository.setPrimaryShow(true)
+            fakeDeviceEntryRepository.setLockscreenEnabled(false)
+            runCurrent()
+            Truth.assertThat(primaryBouncerShowing).isTrue()
+
+            // Device turns on.
+            powerInteractor.setAwakeForTest()
+            advanceTimeBy(100.milliseconds)
+
+            // starts transition to primary bouncer.
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.PRIMARY_BOUNCER)
         }
 
     @Test
