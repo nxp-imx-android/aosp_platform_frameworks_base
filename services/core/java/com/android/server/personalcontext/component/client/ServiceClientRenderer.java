@@ -18,14 +18,19 @@ package com.android.server.personalcontext.component.client;
 
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.IBinder;
+import android.os.ParcelUuid;
+import android.os.RemoteException;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.renderer.IInsightRenderer;
+import android.util.Slog;
 
 import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.component.Renderer;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -33,21 +38,37 @@ import java.util.UUID;
  *
  * @hide
  */
-public class ServiceClientRenderer extends BaseServiceClientComponent implements Renderer {
-    private static final String TAG = "RendererClient";
-
+public class ServiceClientRenderer
+        extends BaseServiceClientComponent<IInsightRenderer> implements Renderer {
     public ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
     }
 
     @Override
-    public Set<ContextInsight> getInterestingInsights() {
-        // TODO: Implement this.
-        return Collections.emptySet();
+    protected IInsightRenderer getServiceWrapper(IBinder binder) {
+        return IInsightRenderer.Stub.asInterface(binder);
+    }
+
+    @Override
+    protected void initializeClient(IInsightRenderer client) throws RemoteException {
+        client.configure(new ParcelUuid(getComponentId()));
+    }
+
+    @Override
+    public boolean isInsightInteresting(ContextInsight insight) {
+        // TODO(b/452425147): Implement this to use a filter in the package's manifest.
+        // For now this runs each insight through every renderer.
+        return true;
     }
 
     @Override
     public void render(@NonNull ContextInsight insight, boolean isFirst) {
-        // TODO: Implement this.
+        runWithBinder(binder -> {
+            try {
+                binder.render(List.of(new ContextInsightWrapper(insight)), isFirst);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to render insight", e);
+            }
+        });
     }
 }

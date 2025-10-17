@@ -24,6 +24,7 @@ import android.annotation.SystemApi;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.ParcelUuid;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
@@ -159,14 +160,14 @@ public abstract class InsightRendererService extends Service {
         }
 
         @Override
-        public RendererFilter onRegister(String componentId) {
+        public void configure(ParcelUuid componentId) {
             final InsightRendererService service = mService.get();
             if (service == null) {
-                return null;
+                return;
             }
 
-            mComponentId = UUID.fromString(componentId);
-            return service.onRegistered();
+            mComponentId = componentId.getUuid();
+            service.onRegistered();
         }
 
         @Override

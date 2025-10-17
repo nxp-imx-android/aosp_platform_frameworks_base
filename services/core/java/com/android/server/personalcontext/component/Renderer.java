@@ -20,8 +20,6 @@ import android.service.personalcontext.insight.ContextInsight;
 
 import androidx.annotation.NonNull;
 
-import java.util.Set;
-
 /**
  * Interface to abstract away in-process / service-based refiners.
  *
@@ -29,7 +27,7 @@ import java.util.Set;
  */
 public interface Renderer extends Component {
     /** Gets the insights this renderer is interested in. */
-    Set<ContextInsight> getInterestingInsights();
+    boolean isInsightInteresting(ContextInsight insight);
 
     /** Renders an insight. */
     void render(@NonNull ContextInsight insight, boolean isFirst);

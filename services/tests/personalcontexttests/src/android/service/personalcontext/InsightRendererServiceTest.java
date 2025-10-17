@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
@@ -101,7 +102,7 @@ public class InsightRendererServiceTest {
         final TestInsightRendererService service = new TestInsightRendererService(monitor);
         final IBinder binder = service.onBind(new Intent(InsightRendererService.SERVICE_INTERFACE));
         final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
-        renderer.onRegister(UUID.randomUUID().toString());
+        renderer.configure(new ParcelUuid(UUID.randomUUID()));
         verify(monitor).onRegistered();
     }
 
@@ -130,7 +131,7 @@ public class InsightRendererServiceTest {
         final IInsightRenderer renderer = IInsightRenderer.Stub.asInterface(binder);
 
         final UUID id = UUID.randomUUID();
-        renderer.onRegister(id.toString());
+        renderer.configure(new ParcelUuid(UUID.randomUUID()));
 
         final RenderToken token = renderer.mintRenderToken();
         assertThat(token.getRendererComponentId()).isEqualTo(id);

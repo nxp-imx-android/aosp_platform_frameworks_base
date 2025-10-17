@@ -18,6 +18,8 @@ package com.android.server.personalcontext.component.client;
 
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.service.personalcontext.insight.ContextInsight;
 
 import androidx.annotation.NonNull;
@@ -34,23 +36,33 @@ import java.util.function.Consumer;
  *
  * @hide
  */
-public class ServiceClientTransformer extends BaseServiceClientComponent implements Transformer {
-    private static final String TAG = "TransformerClient";
-
+public class ServiceClientTransformer
+        extends BaseServiceClientComponent<Object> implements Transformer {
     public ServiceClientTransformer(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
     }
 
     @Override
+    protected Object getServiceWrapper(IBinder binder) {
+        return binder;
+    }
+
+    @Override
+    protected void initializeClient(Object client) throws RemoteException {
+
+    }
+
+    @Override
     public Set<ContextInsight> getInterestingInsights() {
-        // TODO: Implement this.
+        // TODO(b/452425695): Implement this to use a filter in the package's manifest.
+        // For now this ignores all insights.
         return Collections.emptySet();
     }
 
     @Override
     public void transform(@NonNull ContextInsight insight,
             @NonNull Consumer<Set<ContextInsight>> callback) {
-        // TODO: Implement this.
+        // TODO(b/452463713): Implement this.
         callback.accept(Collections.emptySet());
     }
 }
