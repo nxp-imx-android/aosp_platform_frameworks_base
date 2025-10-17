@@ -26,22 +26,21 @@ import android.net.Uri
 import android.os.IBinder
 import android.util.Log
 import android.view.Display
-import androidx.annotation.VisibleForTesting
 import androidx.annotation.WorkerThread
 import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screenrecord.ScreenRecordUxController
-import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
-import com.android.systemui.screenrecord.data.repository.Status.Started
-import com.android.systemui.screenrecord.data.repository.Status.Starting
-import com.android.systemui.screenrecord.data.repository.Status.Stopped
 import com.android.systemui.screenrecord.service.IScreenRecordingService
 import com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback
 import com.android.systemui.screenrecord.service.ScreenRecordingService
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus.Started
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus.Starting
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus.Stopped
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.kotlin.pairwiseBy
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -68,7 +67,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 
-private val defaultRecordingRelay: Duration = 3.seconds
 private val startingStatusUpdateInterval: Duration = 1.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -106,10 +104,11 @@ constructor(
                 null,
             )
 
-    private val statusUpdates = MutableStateFlow<Status>(Status.initial)
+    private val statusUpdates =
+        MutableStateFlow<ScreenRecordingStatus>(Stopped(Stopped.STOP_REASON_NOT_STARTED))
 
-    /** @see Status */
-    val status: StateFlow<Status> =
+    /** @see ScreenRecordingStatus */
+    val status: StateFlow<ScreenRecordingStatus> =
         statusUpdates
             .flatMapLatest { status ->
                 if (status is Starting) {
@@ -126,7 +125,7 @@ constructor(
                 name = "ScreenRecordingServiceInteractor#status",
                 scope = coroutineScope,
                 started = SharingStarted.Eagerly,
-                initialValue = Status.initial,
+                initialValue = Stopped(Stopped.STOP_REASON_NOT_STARTED),
             )
 
     @Deprecated(message = "Use status")
@@ -174,10 +173,7 @@ constructor(
     }
 
     /** Starts the recording after the [delay]. */
-    fun startRecordingDelayed(
-        parameters: ScreenRecordingParameters,
-        delay: Duration = defaultRecordingRelay,
-    ) {
+    fun startRecordingDelayed(parameters: ScreenRecordingParameters, delay: Duration) {
         statusUpdates.update { currentStatus ->
             if (currentStatus is Starting || currentStatus is Started) {
                 currentStatus
@@ -208,19 +204,8 @@ constructor(
         }
     }
 
-    /** Updates shouldShowTaps if there is an ongoing recording */
-    fun updateAudioSource(audioSource: ScreenRecordingAudioSource) {
-        updateParameters { copy(audioSource = audioSource) }
-    }
-
-    /** Updates shouldShowTaps if there is an ongoing recording */
-    fun updateShouldShowTaps(shouldShowTaps: Boolean) {
-        updateParameters { copy(shouldShowTaps = shouldShowTaps) }
-    }
-
-    private fun updateParameters(
-        update: ScreenRecordingParameters.() -> ScreenRecordingParameters
-    ) {
+    /** Update parameters of an ongoing recording */
+    fun updateParameters(update: ScreenRecordingParameters.() -> ScreenRecordingParameters) {
         statusUpdates.update { currentStatus ->
             if (currentStatus is Started) {
                 currentStatus.copy(parameters = currentStatus.parameters.update())
@@ -294,33 +279,10 @@ constructor(
         }
     }
 
-    private data class RecordingContext(val status: Status, val service: RecordingService?)
-}
-
-/**
- * Current status of the recording service: [Starting] (optional for when the start is delayed) ->
- * [Started] -> [Stopped].
- */
-sealed interface Status {
-
-    companion object {
-        @VisibleForTesting val initial = Stopped(Stopped.STOP_REASON_NOT_STARTED)
-    }
-
-    /** @see Status */
-    data class Starting(val untilStarted: Duration, val parameters: ScreenRecordingParameters) :
-        Status
-
-    /** @see Status */
-    data class Started(val parameters: ScreenRecordingParameters) : Status
-
-    /** @see Status */
-    data class Stopped(val reason: Int) : Status {
-
-        companion object {
-            const val STOP_REASON_NOT_STARTED = -1
-        }
-    }
+    private data class RecordingContext(
+        val status: ScreenRecordingStatus,
+        val service: RecordingService?,
+    )
 }
 
 /**

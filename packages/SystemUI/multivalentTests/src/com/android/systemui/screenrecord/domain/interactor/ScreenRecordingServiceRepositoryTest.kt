@@ -31,12 +31,12 @@ import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
-import com.android.systemui.screenrecord.data.repository.Status
 import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
 import com.android.systemui.screenrecord.service.FakeScreenRecordingService
 import com.android.systemui.screenrecord.service.FakeScreenRecordingServiceCallbackWrapper
 import com.android.systemui.screenrecord.service.callbackStatus
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
+import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.seconds
@@ -94,15 +94,15 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testStartRecording_startsRecording() =
         kosmos.runTest {
-            val interactorStatus: Status? by collectLastValue(underTest.status)
-            val serviceStatus: Status? by collectLastValue(service.status)
+            val interactorStatus: ScreenRecordingStatus? by collectLastValue(underTest.status)
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
                 collectLastValue(service.callbackStatus)
 
             underTest.startRecording()
 
-            assertThat(interactorStatus).isInstanceOf(Status.Started::class.java)
-            assertThat(serviceStatus).isInstanceOf(Status.Started::class.java)
+            assertThat(interactorStatus).isInstanceOf(ScreenRecordingStatus.Started::class.java)
+            assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Started::class.java)
             assertThat(callbackStatus)
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
@@ -113,16 +113,18 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testStopRecording_stopsRecording() =
         kosmos.runTest {
-            val interactorStatus: Status? by collectLastValue(underTest.status)
-            val serviceStatus: Status? by collectLastValue(service.status)
+            val interactorStatus: ScreenRecordingStatus? by collectLastValue(underTest.status)
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
                 collectLastValue(service.callbackStatus)
             underTest.startRecording()
 
             underTest.stopRecording(StopReason.STOP_HOST_APP)
 
-            assertThat(interactorStatus).isEqualTo(Status.Stopped(StopReason.STOP_HOST_APP))
-            assertThat(serviceStatus).isEqualTo(Status.Stopped(StopReason.STOP_HOST_APP))
+            assertThat(interactorStatus)
+                .isEqualTo(ScreenRecordingStatus.Stopped(StopReason.STOP_HOST_APP))
+            assertThat(serviceStatus)
+                .isEqualTo(ScreenRecordingStatus.Stopped(StopReason.STOP_HOST_APP))
             assertThat(callbackStatus)
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Interrupted::class
@@ -134,8 +136,8 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testStartRecordingDelayed_startsRecordingAfterDelay() =
         kosmos.runTest {
-            val interactorStatuses: List<Status>? by collectValues(underTest.status)
-            val serviceStatus: Status? by collectLastValue(service.status)
+            val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
                 collectLastValue(service.callbackStatus)
 
@@ -144,14 +146,16 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
 
             assertThat(interactorStatuses)
                 .containsExactly(
-                    Status.initial,
-                    Status.Starting(3.seconds, defaultParams),
-                    Status.Starting(2.seconds, defaultParams),
-                    Status.Starting(1.seconds, defaultParams),
-                    Status.Starting(0.seconds, defaultParams),
-                    Status.Started(defaultParams),
+                    ScreenRecordingStatus.Stopped(
+                        ScreenRecordingStatus.Stopped.STOP_REASON_NOT_STARTED
+                    ),
+                    ScreenRecordingStatus.Starting(3.seconds, defaultParams),
+                    ScreenRecordingStatus.Starting(2.seconds, defaultParams),
+                    ScreenRecordingStatus.Starting(1.seconds, defaultParams),
+                    ScreenRecordingStatus.Starting(0.seconds, defaultParams),
+                    ScreenRecordingStatus.Started(defaultParams),
                 )
-            assertThat(serviceStatus).isInstanceOf(Status.Started::class.java)
+            assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Started::class.java)
             assertThat(callbackStatus)
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
@@ -162,8 +166,8 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testStartRecording_overridesStartWithDelay() =
         kosmos.runTest {
-            val interactorStatuses: List<Status>? by collectValues(underTest.status)
-            val serviceStatus: Status? by collectLastValue(service.status)
+            val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
                 collectLastValue(service.callbackStatus)
 
@@ -172,11 +176,13 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
 
             assertThat(interactorStatuses)
                 .containsExactly(
-                    Status.initial,
-                    Status.Starting(3.seconds, defaultParams),
-                    Status.Started(defaultParams),
+                    ScreenRecordingStatus.Stopped(
+                        ScreenRecordingStatus.Stopped.STOP_REASON_NOT_STARTED
+                    ),
+                    ScreenRecordingStatus.Starting(3.seconds, defaultParams),
+                    ScreenRecordingStatus.Started(defaultParams),
                 )
-            assertThat(serviceStatus).isInstanceOf(Status.Started::class.java)
+            assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Started::class.java)
             assertThat(callbackStatus)
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
@@ -187,8 +193,8 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testStartRecordingDelayed_noOpWhenAlreadyStarted() =
         kosmos.runTest {
-            val interactorStatuses: List<Status>? by collectValues(underTest.status)
-            val serviceStatus: Status? by collectLastValue(service.status)
+            val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
                 collectLastValue(service.callbackStatus)
 
@@ -196,8 +202,13 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
             underTest.startRecordingDelayed()
 
             assertThat(interactorStatuses)
-                .containsExactly(Status.initial, Status.Started(defaultParams))
-            assertThat(serviceStatus).isInstanceOf(Status.Started::class.java)
+                .containsExactly(
+                    ScreenRecordingStatus.Stopped(
+                        ScreenRecordingStatus.Stopped.STOP_REASON_NOT_STARTED
+                    ),
+                    ScreenRecordingStatus.Started(defaultParams),
+                )
+            assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Started::class.java)
             assertThat(callbackStatus)
                 .isInstanceOf(
                     FakeScreenRecordingServiceCallbackWrapper.RecordingStatus.Started::class.java
@@ -208,8 +219,8 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     @Test
     fun testStopRecording_stopsDelayedRecording() =
         kosmos.runTest {
-            val interactorStatuses: List<Status>? by collectValues(underTest.status)
-            val serviceStatus: Status? by collectLastValue(service.status)
+            val interactorStatuses: List<ScreenRecordingStatus>? by collectValues(underTest.status)
+            val serviceStatus: ScreenRecordingStatus? by collectLastValue(service.status)
             val callbackStatus: FakeScreenRecordingServiceCallbackWrapper.RecordingStatus? by
                 collectLastValue(service.callbackStatus)
 
@@ -218,11 +229,13 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
 
             assertThat(interactorStatuses)
                 .containsExactly(
-                    Status.initial,
-                    Status.Starting(3.seconds, defaultParams),
-                    Status.Stopped(StopReason.STOP_HOST_APP),
+                    ScreenRecordingStatus.Stopped(
+                        ScreenRecordingStatus.Stopped.STOP_REASON_NOT_STARTED
+                    ),
+                    ScreenRecordingStatus.Starting(3.seconds, defaultParams),
+                    ScreenRecordingStatus.Stopped(StopReason.STOP_HOST_APP),
                 )
-            assertThat(serviceStatus).isInstanceOf(Status.Stopped::class.java)
+            assertThat(serviceStatus).isInstanceOf(ScreenRecordingStatus.Stopped::class.java)
             assertThat(callbackStatus).isNull()
             assertThat(service.currentCallback).isNull()
         }
