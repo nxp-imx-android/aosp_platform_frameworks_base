@@ -94,7 +94,6 @@ import com.android.wm.shell.compatui.api.CompatUIState;
 import com.android.wm.shell.compatui.components.RestartButtonSpecKt;
 import com.android.wm.shell.compatui.impl.DefaultCompatUIComponentFactory;
 import com.android.wm.shell.compatui.impl.DefaultCompatUIHandler;
-import com.android.wm.shell.compatui.impl.DefaultCompatUIRepository;
 import com.android.wm.shell.compatui.impl.DefaultComponentIdGenerator;
 import com.android.wm.shell.desktopmode.DesktopMode;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
@@ -395,8 +394,8 @@ public abstract class WMShellBaseModule {
     @Provides
     static CompatUIRepository provideCompatUIRepository() {
         // TODO(b/360288344) Integrate Dagger Multibinding
-        final CompatUIRepository repository = new DefaultCompatUIRepository();
-        repository.addSpec(RestartButtonSpecKt.getRestartButtonSpec());
+        final CompatUIRepository repository = new CompatUIRepository();
+        repository.registerSpec(RestartButtonSpecKt.getRestartButtonSpec());
         return repository;
     }
 

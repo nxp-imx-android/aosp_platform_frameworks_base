@@ -26,6 +26,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.compatui.api.CompatUIComponentState
 import com.android.wm.shell.compatui.api.CompatUIInfo
+import com.android.wm.shell.compatui.api.CompatUIRepository
 import com.android.wm.shell.compatui.api.CompatUIState
 import org.junit.Before
 import org.junit.Rule
@@ -44,7 +45,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
 
     @JvmField @Rule val compatUIHandlerRule: CompatUIHandlerRule = CompatUIHandlerRule()
 
-    lateinit var compatUIRepository: FakeCompatUIRepository
+    lateinit var compatUIRepository: CompatUIRepository
     lateinit var compatUIHandler: DefaultCompatUIHandler
     lateinit var compatUIState: CompatUIState
     lateinit var fakeIdGenerator: FakeCompatUIComponentIdGenerator
@@ -56,7 +57,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
     @Before
     fun setUp() {
         shellExecutor = TestShellExecutor()
-        compatUIRepository = FakeCompatUIRepository()
+        compatUIRepository = CompatUIRepository()
         compatUIState = CompatUIState()
         fakeIdGenerator = FakeCompatUIComponentIdGenerator("compId")
         syncQueue = mock<SyncTransactionQueue>()
@@ -81,7 +82,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         val fakeCompatUISpec =
             FakeCompatUISpec(name = "one", lifecycle = fakeLifecycle, layout = fakeCompatUILayout)
                 .getSpec()
-        compatUIRepository.addSpec(fakeCompatUISpec)
+        compatUIRepository.registerSpec(fakeCompatUISpec)
 
         val generatedId = fakeIdGenerator.generatedComponentId
 
@@ -111,7 +112,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         val fakeCompatUISpec =
             FakeCompatUISpec(name = "one", lifecycle = fakeLifecycle, layout = fakeCompatUILayout)
                 .getSpec()
-        compatUIRepository.addSpec(fakeCompatUISpec)
+        compatUIRepository.registerSpec(fakeCompatUISpec)
 
         val generatedId = fakeIdGenerator.generatedComponentId
 
@@ -146,7 +147,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         val fakeCompatUISpec =
             FakeCompatUISpec(name = "one", lifecycle = fakeLifecycle, layout = fakeCompatUILayout)
                 .getSpec()
-        compatUIRepository.addSpec(fakeCompatUISpec)
+        compatUIRepository.registerSpec(fakeCompatUISpec)
 
         val generatedId = fakeIdGenerator.generatedComponentId
 
@@ -181,7 +182,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         val fakeCompatUISpec =
             FakeCompatUISpec(name = "one", lifecycle = fakeLifecycle, layout = fakeCompatUILayout)
                 .getSpec()
-        compatUIRepository.addSpec(fakeCompatUISpec)
+        compatUIRepository.registerSpec(fakeCompatUISpec)
 
         val generatedId = fakeIdGenerator.generatedComponentId
 
@@ -209,7 +210,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
             FakeCompatUILifecyclePredicates(creationReturn = true, removalReturn = true)
         val fakeCompatUILayout = FakeCompatUILayout(viewBuilderReturn = View(mContext))
         val fakeCompatUISpec = FakeCompatUISpec("one", fakeLifecycle, fakeCompatUILayout).getSpec()
-        compatUIRepository.addSpec(fakeCompatUISpec)
+        compatUIRepository.registerSpec(fakeCompatUISpec)
         // Component creation
         fakeIdGenerator.assertGenerateInvocations(0)
         compatUIHandlerRule.postBlocking { compatUIHandler.onCompatInfoChanged(testCompatUIInfo()) }
@@ -226,7 +227,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
             FakeCompatUILifecyclePredicates(creationReturn = true, removalReturn = true)
         val fakeCompatUILayout = FakeCompatUILayout(viewBuilderReturn = View(mContext))
         val fakeCompatUISpec = FakeCompatUISpec("one", fakeLifecycle, fakeCompatUILayout).getSpec()
-        compatUIRepository.addSpec(fakeCompatUISpec)
+        compatUIRepository.registerSpec(fakeCompatUISpec)
 
         compatUIHandlerRule.postBlocking { compatUIHandler.onCompatInfoChanged(testCompatUIInfo()) }
         shellExecutor.flushAll()
