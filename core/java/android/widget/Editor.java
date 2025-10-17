@@ -7053,21 +7053,46 @@ public class Editor {
                     }
 
                     if (isMouse && !isDragAcceleratorActive()) {
-                        final int offset = mTextView.getOffsetForPosition(eventX, eventY);
-                        if (mTextView.hasSelection()
-                                && (!mHaventMovedEnoughToStartDrag || mStartOffset != offset)
-                                && offset >= mTextView.getSelectionStart()
-                                && offset <= mTextView.getSelectionEnd()) {
-                            startDragAndDrop();
-                            break;
-                        }
-
-                        if (mStartOffset != offset) {
-                            // Start character based drag accelerator.
-                            stopTextActionMode();
-                            enterDrag(DRAG_ACCELERATOR_MODE_CHARACTER);
-                            mDiscardNextActionUp = true;
-                            mHaventMovedEnoughToStartDrag = false;
+                        if (Flags.fixSelectionViaMouseDragInEditor()) {
+                            final int lastDownOffset =
+                                    mTextView.getOffsetForPosition(
+                                            mTouchState.getLastDownX(), mTouchState.getLastDownY());
+                            // Start dragging and dropping the selected text if:
+                            // 1. The pointer has moved large enough, and
+                            // 2. The last down event occurred within the selected text area.
+                            if (mTextView.hasSelection()
+                                    && !mHaventMovedEnoughToStartDrag
+                                    && lastDownOffset >= mTextView.getSelectionStart()
+                                    && lastDownOffset <= mTextView.getSelectionEnd()) {
+                                startDragAndDrop();
+                                break;
+                            }
+                            final int eventOffset = mTextView.getOffsetForPosition(eventX, eventY);
+                            // Start the character-based drag accelerator if:
+                            // 1. The pointer has moved large enough, and
+                            // 2. The pointer has crossed a character offset boundary since the last
+                            //    down event.
+                            if (!mHaventMovedEnoughToStartDrag && eventOffset != lastDownOffset) {
+                                stopTextActionMode();
+                                enterDrag(DRAG_ACCELERATOR_MODE_CHARACTER);
+                                mDiscardNextActionUp = true;
+                            }
+                        } else {
+                            final int offset = mTextView.getOffsetForPosition(eventX, eventY);
+                            if (mTextView.hasSelection()
+                                    && (!mHaventMovedEnoughToStartDrag || mStartOffset != offset)
+                                    && offset >= mTextView.getSelectionStart()
+                                    && offset <= mTextView.getSelectionEnd()) {
+                                startDragAndDrop();
+                                break;
+                            }
+                            if (mStartOffset != offset) {
+                                // Start character based drag accelerator.
+                                stopTextActionMode();
+                                enterDrag(DRAG_ACCELERATOR_MODE_CHARACTER);
+                                mDiscardNextActionUp = true;
+                                mHaventMovedEnoughToStartDrag = false;
+                            }
                         }
                     }
 

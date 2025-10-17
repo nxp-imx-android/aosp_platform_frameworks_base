@@ -115,6 +115,16 @@ flag {
 }
 
 flag {
+  name: "fix_selection_via_mouse_drag_in_editor"
+  namespace: "text"
+  description: "Fix the logic for text selection via mouse drag in Editor."
+  bug: "376184128"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "rust_hyphenator"
   namespace: "text"
   description: "Reimplement hyphenator for safe file read"
