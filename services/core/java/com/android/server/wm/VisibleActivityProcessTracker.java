@@ -88,8 +88,7 @@ class VisibleActivityProcessTracker {
      * {@link ActivityRecord#mVisibleRequested} or {@link ActivityRecord#isVisible()} is true.
      */
     boolean hasVisibleNotPinnedActivity(int uid) {
-        return match(uid, wpc -> com.android.window.flags.Flags.balCheckUnpinnedActivities()
-                ? wpc.hasVisibleNotPinnedActivity() : !wpc.inPinnedWindowingMode());
+        return match(uid, wpc -> wpc.hasVisibleNotPinnedActivity());
     }
 
     private boolean match(int uid, Predicate<WindowProcessController> predicate) {
