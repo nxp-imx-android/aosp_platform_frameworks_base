@@ -38,6 +38,8 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -125,6 +127,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
@@ -153,6 +156,19 @@ public class ComputerControlSessionImplTest {
             TARGET_CLASS);
     private static final ComponentName BLOCKED_COMPONENT = new ComponentName(
             UNDECLARED_TARGET_PACKAGE, ".Activity");
+
+    @FunctionalInterface
+    private interface Interactor {
+        void interact(ComputerControlSessionImpl t) throws Exception;
+    }
+
+    private static final List<Interactor> ALL_INTERACTIONS = List.of(
+            (session) -> session.tap(0, 0),
+            (session) -> session.swipe(0, 0, 1, 1),
+            (session) -> session.longPress(0, 0),
+            (session) -> session.performAction(ComputerControlSession.ACTION_GO_BACK),
+            (session) -> session.insertText("text", true, true)
+    );
 
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -920,6 +936,96 @@ public class ComputerControlSessionImplTest {
 
         mActivityListenerArgumentCaptor.getValue().onDisplayEmpty(VIRTUAL_DISPLAY_ID);
         verify(mVirtualDisplay).setSurface(isNull());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void blockedState_updatesDisplaySurface() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        clearInvocations(mVirtualDisplay);
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            verify(mVirtualDisplay).setSurface(not(eq(mClientSurface)));
+        }
+        verify(mVirtualDisplay).setSurface(eq(mClientSurface));
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void activeState_allowsAllInteractions() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        // Enter and exit the blocked state to ensure interactions are re-enabled when active.
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            // Do nothing.
+        }
+
+        final var interactionDevices = List.of(
+                mVirtualDpad,
+                mVirtualKeyboard,
+                mVirtualTouchscreen,
+                mRemoteComputerControlInputConnection
+        );
+
+        for (Interactor interactor : ALL_INTERACTIONS) {
+            interactionDevices.forEach(Mockito::clearInvocations);
+
+            interactor.interact(mSession);
+
+            assertTrue("There were no interactions with any devices in the active state",
+                    interactionDevices.stream()
+                            .map((d) -> Mockito.mockingDetails(d).getInvocations().size())
+                            .anyMatch((i) -> (i > 0)));
+        }
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void blockedState_allowsNoInteractions() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        final var interactionDevices = List.of(
+                mVirtualDpad,
+                mVirtualKeyboard,
+                mVirtualTouchscreen,
+                mRemoteComputerControlInputConnection
+        );
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            for (Interactor interactor : ALL_INTERACTIONS) {
+                interactionDevices.forEach(Mockito::clearInvocations);
+
+                interactor.interact(mSession);
+
+                assertTrue("There was an unexpected interaction with a device in blocked state",
+                        interactionDevices.stream()
+                                .map((d) -> Mockito.mockingDetails(d).getInvocations().size())
+                                .allMatch((i) -> (i == 0)));
+            }
+        }
+    }
+
+    /** A default way to enter the blocked state to test block state functionality. */
+    private class InBlockedState implements AutoCloseable {
+        InBlockedState() throws Exception {
+            verify(mVirtualDevice).addActivityListener(any(),
+                    mActivityListenerArgumentCaptor.capture());
+
+            mActivityListenerArgumentCaptor.getValue().onSecureWindowShown(VIRTUAL_DISPLAY_ID,
+                    TEST_COMPONENT, mUserHandle);
+            verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+            clearInvocations(mLifecycleCallback);
+        }
+
+        @Override
+        public void close() throws Exception {
+            mActivityListenerArgumentCaptor.getValue().onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+            verify(mLifecycleCallback).onActive();
+            clearInvocations(mLifecycleCallback);
+        }
     }
 
     private void createComputerControlSession(ComputerControlSessionParams params) {
