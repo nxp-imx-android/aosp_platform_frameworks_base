@@ -753,4 +753,12 @@
     <dimen name="desktop_windowing_education_promo_height">352dp</dimen>
     <!-- The corner radius of the desktop windowing education promo. -->
     <dimen name="desktop_windowing_education_promo_corner_radius">28dp</dimen>
+
+    <!-- The width of the windowing pill on the layout menu. -->
+    <dimen name="desktop_mode_layout_menu_windowing_pill_width">218dp</dimen>
+    <!-- The height of the windowing pill on the layout menu. -->
+    <dimen name="desktop_mode_layout_menu_windowing_pill_height">52dp</dimen>
+    <!-- The margin between pills of the layout menu in desktop mode. -->
+    <dimen name="desktop_mode_layout_menu_pill_spacing_margin">2dp</dimen>
+
 </resources>

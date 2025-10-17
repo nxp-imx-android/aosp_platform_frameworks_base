@@ -720,6 +720,7 @@ private constructor(
             this.style = calculateMenuStyle(taskInfo)
 
             bindAppInfoPill(style)
+            windowingPillView.isGone = !shouldShowWindowingPill
             if (shouldShowWindowingPill) {
                 windowingPillView.bind(taskInfo)
             }

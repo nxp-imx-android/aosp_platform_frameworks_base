@@ -531,7 +531,9 @@ class AppHeaderController(
                     // TODO(b/409648813): Have handle menus use [CaptionType]
                     layoutResId = R.layout.desktop_mode_app_header,
                     splitScreenController = splitScreenController,
-                    shouldShowWindowingPill = desktopState.canEnterDesktopModeOrShowAppHandle,
+                    shouldShowWindowingPill =
+                        !Flags.enableConsolidatedWindowOptions() &&
+                            desktopState.canEnterDesktopModeOrShowAppHandle,
                     shouldShowNewWindowButton = supportsMultiInstance,
                     shouldShowManageWindowsButton = shouldShowManageWindowsButton,
                     shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton,
