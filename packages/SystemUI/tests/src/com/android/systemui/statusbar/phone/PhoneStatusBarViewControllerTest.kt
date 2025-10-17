@@ -94,6 +94,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -154,16 +155,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         whenever(statusBarContentInsetsProvider.getStatusBarContentInsetsForCurrentRotation())
             .thenReturn(Insets.NONE)
-        whenever(mStatusOverlayHoverListenerFactory.createDarkAwareListener(any()))
-            .thenReturn(mStatusOverlayHoverListener)
         whenever(
-                mStatusOverlayHoverListenerFactory.createDarkAwareListener(
-                    any(),
-                    eq(0),
-                    eq(0),
-                    eq(6),
-                    eq(6),
-                )
+                mStatusOverlayHoverListenerFactory.createDarkAwareListener(any(), anyOrNull<Int>())
             )
             .thenReturn(mStatusOverlayHoverListener)
 
@@ -187,23 +180,12 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun onViewAttachedAndDrawn_addStatusBarConfigurationControllerCallback() {
         attachToWindow(view)
 
         controller = createAndInitController(view)
 
         verify(mStatusBarConfigurationController).addCallback(any())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
-    fun onViewAttachedAndDrawn_doesNotAddStatusBarConfigurationControllerCallback() {
-        attachToWindow(view)
-
-        controller = createAndInitController(view)
-
-        verify(mStatusBarConfigurationController, never()).addCallback(any())
     }
 
     @Test
