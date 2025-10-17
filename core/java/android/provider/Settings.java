@@ -3046,6 +3046,18 @@ public final class Settings {
     public static final String ACTION_APP_PERMISSIONS_SETTINGS =
             "android.settings.APP_PERMISSIONS_SETTINGS";
 
+    /**
+     * Activity Action: Show screen to manage supervision settings.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     */
+    @FlaggedApi(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_SUPERVISION_SETTINGS =
+            "android.settings.SUPERVISION_SETTINGS";
+
     // End of Intent actions for Settings
 
     /**
