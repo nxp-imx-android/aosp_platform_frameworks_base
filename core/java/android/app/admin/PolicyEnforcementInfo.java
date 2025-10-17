@@ -56,10 +56,12 @@ public class PolicyEnforcementInfo {
 
 
     /**
+     * Returns true if the policy is only enforced by system authorities.
      * @hide
      */
     public boolean isOnlyEnforcedBySystem() {
-        return mAllAdmins.stream().allMatch(PolicyEnforcementInfo::isSystemAuthority);
+        return !mAllAdmins.isEmpty() && mAllAdmins.stream().allMatch(
+                PolicyEnforcementInfo::isSystemAuthority);
     }
 
     /**
