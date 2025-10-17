@@ -84,4 +84,10 @@ interface ElementProviderModule {
     fun clockRegionElementProvider(impl: ClockRegionElementProvider): LockscreenElementProvider
 
     @Binds @IntoSet fun mediaElementProvider(impl: MediaElementProvider): LockscreenElementProvider
+
+    @Binds
+    @IntoSet
+    fun ambientIndicationAreaProvider(
+        impl: AmbientIndicationAreaProvider
+    ): LockscreenElementProvider
 }

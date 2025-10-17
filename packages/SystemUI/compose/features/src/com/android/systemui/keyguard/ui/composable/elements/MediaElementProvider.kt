@@ -57,16 +57,16 @@ constructor(
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
+            val viewModel =
+                rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
+
             val horizontalPadding =
-                when (getLayoutType()) {
+                when (getLayoutType(viewModel.shadeMode)) {
                     LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
                     LayoutType.NARROW ->
                         dimensionResource(R.dimen.notification_side_paddings) +
-                            dimensionResource(R.dimen.notification_panel_margin_horizontal)
+                                dimensionResource(R.dimen.notification_panel_margin_horizontal)
                 }
-
-            val viewModel =
-                rememberViewModel("MediaCarouselElement") { mediaViewModelFactory.create() }
 
             AnimatedVisibility(viewModel.isMediaActive && !viewModel.isDozing) {
                 Element(
