@@ -19,6 +19,7 @@ package com.android.wm.shell.scenarios
 import android.graphics.Point
 import android.hardware.display.DisplayManager
 import android.platform.test.annotations.EnableFlags
+import android.tools.traces.ConditionsFactory
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
@@ -60,12 +61,20 @@ abstract class DragAndKeepFocus() : TestScenarioBase() {
     fun setup() {
         val displayId = connectedDisplayRule.setupTestDisplay()
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
-        testAppInMainDisplay.launchViaIntent(wmHelper)
+        testAppInMainDisplay.enterDesktopMode(wmHelper, device)
         testAppInExternalDisplay.launchViaIntent(wmHelper)
+
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
+            .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, DEFAULT_DISPLAY))
+            .waitForAndVerify()
     }
 
     @Test
     open fun dragAndKeepFocus() {
+        val externalDisplayId = connectedDisplayRule.addedDisplays.first()
         val captionBounds =
             checkNotNull(
                 testAppInExternalDisplay.getCaptionForTheApp(wmHelper, device)?.visibleBounds
@@ -96,8 +105,25 @@ abstract class DragAndKeepFocus() : TestScenarioBase() {
             .withAppTransitionIdle(connectedDisplayRule.addedDisplays.first())
             .waitForAndVerify()
 
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
+            .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId))
+            .waitForAndVerify()
+
         // Send minimize via keyboard and observe window to check display focus.
         keyEventHelper.press(KEYCODE_MINUS, META_META_ON)
+
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
+            .add(
+                ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId)
+                    .negate()
+            )
+            .waitForAndVerify()
     }
 
     @After
