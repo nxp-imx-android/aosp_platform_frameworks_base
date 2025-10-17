@@ -16238,7 +16238,7 @@ public class TelephonyManager {
      *
      * @param context Context to use.
      * @return {@link List} of APNs that have been set as overrides.
-     * @throws {@link SecurityException} if the caller is not the system or phone process.
+     * @throws SecurityException if the caller is not the system or phone process.
      * @hide
      */
     @TestApi
@@ -16268,7 +16268,7 @@ public class TelephonyManager {
      *         modify the APN in the future via {@link #modifyDevicePolicyOverrideApn}, or
      *         {@link android.provider.Telephony.Carriers.INVALID_APN_ID} if the override operation
      *         failed.
-     * @throws {@link SecurityException} if the caller is not the system or phone process.
+     * @throws SecurityException if the caller is not the system or phone process.
      * @hide
      */
     @TestApi
@@ -16298,7 +16298,7 @@ public class TelephonyManager {
      *              {@link #addDevicePolicyOverrideApn}
      * @param apnSetting The {@link ApnSetting} describing the updated APN.
      * @return {@code true} if successful, {@code false} otherwise.
-     * @throws {@link SecurityException} if the caller is not the system or phone process.
+     * @throws SecurityException if the caller is not the system or phone process.
      * @hide
      */
     @TestApi

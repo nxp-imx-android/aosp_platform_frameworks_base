@@ -2202,7 +2202,7 @@ public final class ProtoOutputStream extends ProtoStream {
      *    REPEATED      x           false       true        false
      *    PACKED        x           false       true        true
      *
-     * @throws {@link IllegalArgumentException} if it is not.
+     * @throws IllegalArgumentException if it is not.
      *
      * @return The raw ID of that field.
      */
