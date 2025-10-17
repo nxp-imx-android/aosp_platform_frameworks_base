@@ -24,10 +24,12 @@ import java.io.PrintWriter;
  * Handles "adb shell cmd serial expose-pty" and "adb shell cmd serial hide-pty".
  */
 class SerialShellCommand extends ShellCommand {
-    private final SerialManagerService mSerialManagerService;
+    private final SerialManagerService mService;
+    private final SerialDeviceFilter mSerialDeviceFilter;
 
-    SerialShellCommand(SerialManagerService serialManagerService) {
-        mSerialManagerService = serialManagerService;
+    SerialShellCommand(SerialManagerService service, SerialDeviceFilter serialDeviceFilter) {
+        mService = service;
+        mSerialDeviceFilter = serialDeviceFilter;
     }
 
     @Override
@@ -35,13 +37,16 @@ class SerialShellCommand extends ShellCommand {
         if (cmd == null) {
             return handleDefaultCommands(cmd);
         }
-        int result = switch (cmd) {
-            case "expose-pty" -> mSerialManagerService.setExposePty(true);
-            case "hide-pty" -> mSerialManagerService.setExposePty(false);
-            default -> handleDefaultCommands(cmd);
+        switch (cmd) {
+            case "expose-pty" -> mSerialDeviceFilter.setIsPtyExposed(true);
+            case "hide-pty" -> mSerialDeviceFilter.setIsPtyExposed(false);
+            case "clear-user-access" -> mService.clearUserAccess();
+            default -> {
+                return handleDefaultCommands(cmd);
+            }
         };
-        getOutPrintWriter().println(result == 0 ? "Success" : "Failed");
-        return result;
+        getOutPrintWriter().println("Success");
+        return 0;
     }
 
     @Override
@@ -52,6 +57,8 @@ class SerialShellCommand extends ShellCommand {
         pw.println();
         pw.println("cmd serial hide-pty");
         pw.println("    Hide the PTY port from the list of available serial ports");
+        pw.println("cmd serial clear-user-access");
+        pw.println("    Clear all user-granted access permissions for serial ports.");
         pw.println();
     }
 }
