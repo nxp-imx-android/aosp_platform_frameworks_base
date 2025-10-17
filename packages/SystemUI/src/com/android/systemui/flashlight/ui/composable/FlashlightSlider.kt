@@ -47,6 +47,7 @@ fun FlashlightSliderContainer(viewModel: FlashlightSliderViewModel, modifier: Mo
                 SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.primary,
                     activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTickColor = MaterialTheme.colorScheme.outline,
                 ),
         )
     }
