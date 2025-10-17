@@ -4282,6 +4282,7 @@ package android.view.inputmethod {
     method public boolean hasActiveInputConnection(@Nullable android.view.View);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void hideSoftInputFromServerForTest();
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean isCurrentRootView(@NonNull android.view.View);
+    method public boolean isImeBoundForTesting();
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean isInputMethodPickerShown();
     method @NonNull @RequiresPermission(value=android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional=true) public boolean isStylusHandwritingAvailableAsUser(@NonNull android.os.UserHandle);
     method @FlaggedApi("android.view.inputmethod.enforce_device_policy_ime") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setAllowedImesByPolicyForTest(@Nullable java.util.List<java.lang.String>);
