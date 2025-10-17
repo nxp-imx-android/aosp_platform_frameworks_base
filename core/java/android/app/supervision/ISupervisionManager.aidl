@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.SupervisionRecoveryInfo;
 import android.app.supervision.Policy;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
 /**
@@ -40,4 +41,5 @@ interface ISupervisionManager {
     oneway void unregisterSupervisionListener(in ISupervisionListener listener);
     List<Policy> getPolicies(int userId);
     void setPolicy(int userId, in Policy policy);
+    List<ResolveInfo> querySupervisionApprovalActivities(int userId);
 }
