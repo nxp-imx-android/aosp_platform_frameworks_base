@@ -63,7 +63,7 @@ public class TaskSnapshotLowResDisabledTest extends TaskSnapshotPersisterTestBas
     public void setUp() {
         super.setUp();
         MockitoAnnotations.initMocks(this);
-        mCache = new TaskSnapshotCache(mLoader);
+        mCache = new TaskSnapshotCache(mLoader, mWm.mH);
     }
 
     @Test
