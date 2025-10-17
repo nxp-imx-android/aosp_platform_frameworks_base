@@ -14188,6 +14188,49 @@ package android.service.personalcontext {
 
 }
 
+package android.service.personalcontext.embedded {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class InsightSurfaceClient {
+    method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHint> getHints();
+    method @NonNull public java.util.List<android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver> getReceivers();
+  }
+
+  public static final class InsightSurfaceClient.Builder {
+    ctor public InsightSurfaceClient.Builder(@NonNull android.content.Context, @NonNull android.view.SurfaceView);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder addHint(@NonNull android.service.personalcontext.hint.ContextHint);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder addReceiver(@NonNull android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver);
+    method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient build();
+  }
+
+  public static interface InsightSurfaceClient.InsightReceiver {
+    method public boolean onReceive(@NonNull android.service.personalcontext.insight.ContextInsight);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightSurfaceClientInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.content.res.Configuration getConfiguration();
+    method public int getDisplayId();
+    method public int getHeightMeasureSpec();
+    method @NonNull public java.util.UUID getId();
+    method @NonNull public android.window.InputTransferToken getInputTransferToken();
+    method public int getWidthMeasureSpec();
+    method public void onReceiveInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
+    method public void onSurfaceCreated(@NonNull android.view.SurfaceControlViewHost.SurfacePackage);
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.embedded.InsightSurfaceClientInfo> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class InsightSurfaceVisualizerService extends android.app.Service {
+    ctor public InsightSurfaceVisualizerService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onClientConnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
+  }
+
+}
+
 package android.service.personalcontext.refiner {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class HintRefinerService extends android.app.Service {
