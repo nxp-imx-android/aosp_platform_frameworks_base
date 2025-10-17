@@ -9132,8 +9132,40 @@ package android.app.appfunctions {
     field public static final int APP_FUNCTION_STATE_ENABLED = 1; // 0x1
   }
 
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionMetadata {
+    method @NonNull public android.app.appsearch.GenericDocument getMetadataDocument();
+    method @NonNull public android.app.appfunctions.AppFunctionName getName();
+    method @NonNull public android.app.appfunctions.AppFunctionPackageMetadata getPackageMetadata();
+    method @Nullable public android.app.appfunctions.AppFunctionSchemaMetadata getSchemaMetadata();
+    method public boolean isEnabled();
+    field public static final String PROPERTY_ENABLED_BY_DEFAULT = "enabledByDefault";
+    field public static final String PROPERTY_FUNCTION_ID = "id";
+    field public static final String PROPERTY_SCHEMA_CATEGORY = "schemaCategory";
+    field public static final String PROPERTY_SCHEMA_NAME = "schemaName";
+    field public static final String PROPERTY_SCHEMA_VERSION = "schemaVersion";
+  }
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionName {
+    ctor public AppFunctionName(@NonNull String, @NonNull String);
+    method @NonNull public String getFunctionId();
+    method @NonNull public String getPackageName();
+  }
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionPackageMetadata {
+    method @NonNull public android.app.appsearch.GenericDocument getMetadataDocument();
+    method @NonNull public String getPackageName();
+    field public static final String PROPERTY_TOP_LEVEL_DOCUMENTS = "topLevelMetadataDocuments";
+  }
+
   @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public interface AppFunctionRegistration {
     method public void unregister();
+  }
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public class AppFunctionSchemaMetadata {
+    ctor public AppFunctionSchemaMetadata(@NonNull String, @NonNull String, long);
+    method @NonNull public String getCategory();
+    method @NonNull public String getName();
+    method public long getVersion();
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {
