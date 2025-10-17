@@ -27,6 +27,7 @@ aconfig_declarations_group {
         "anomaly-detector-exported-aconfig-flags-lib",
         "android.app.appfunctions.flags-aconfig-java",
         "android.app.assist.flags-aconfig-java",
+        "android.app.contentrestriction.flags-aconfig-java",
         "android.app.contextualsearch.flags-aconfig-java",
         "android.app.flags-aconfig-java",
         "android.app.jank.flags-aconfig-java",
@@ -1278,6 +1279,21 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.view.contentprotection.flags-aconfig-java",
     aconfig_declarations: "android.view.contentprotection.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Content Restriction
+aconfig_declarations {
+    name: "android.app.contentrestriction.flags-aconfig",
+    exportable: true,
+    package: "android.app.contentrestriction.flags",
+    container: "system",
+    srcs: ["core/java/android/app/contentrestriction/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.app.contentrestriction.flags-aconfig-java",
+    aconfig_declarations: "android.app.contentrestriction.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 

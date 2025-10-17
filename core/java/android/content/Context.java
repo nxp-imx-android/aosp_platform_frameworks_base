@@ -7213,6 +7213,18 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.app.contentrestriction.ContentRestrictionManager}.
+     *
+     * @see #getSystemService(String)
+     * @see android.app.contentrestriction.ContentRestrictionManager
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.app.contentrestriction.flags.Flags.FLAG_CONTENT_RESTRICTION_API)
+    public static final String CONTENT_RESTRICTION_SERVICE = "content_restriction";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.app.supervision.SupervisionManager}.
      *
      * @see #getSystemService(String)

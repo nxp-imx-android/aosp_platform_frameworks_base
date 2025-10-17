@@ -164,6 +164,7 @@ import com.android.server.connectivity.PacProxyService;
 import com.android.server.content.ContentService;
 import com.android.server.contentcapture.ContentCaptureManagerInternal;
 import com.android.server.contentcapture.ContentCaptureManagerService;
+import com.android.server.contentrestriction.ContentRestrictionService;
 import com.android.server.contentsuggestions.ContentSuggestionsManagerService;
 import com.android.server.contextualsearch.ContextualSearchManagerService;
 import com.android.server.coverage.CoverageService;
@@ -1676,6 +1677,12 @@ public final class SystemServer implements Dumpable {
                     new RoleServicePlatformHelperImpl(mSystemContext));
             mSystemServiceManager.startService(ROLE_SERVICE_CLASS);
             t.traceEnd();
+
+            if (android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
+                t.traceBegin("StartContentRestrictionService");
+                mSystemServiceManager.startService(ContentRestrictionService.Lifecycle.class);
+                t.traceEnd();
+            }
 
             t.traceBegin("StartSupervisionService");
             mSystemServiceManager.startService(SupervisionService.Lifecycle.class);
