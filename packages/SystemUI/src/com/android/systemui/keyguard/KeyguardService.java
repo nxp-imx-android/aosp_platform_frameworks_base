@@ -129,6 +129,8 @@ public class KeyguardService extends Service {
     private final Lazy<KeyguardStateCallbackStartable> mKeyguardStateCallbackStartableLazy;
     private final KeyguardStateCallbackInteractor mKeyguardStateCallbackInteractor;
     private final Lazy<SecureLockDeviceInteractor> mSecureLockDeviceInteractor;
+    private final Lazy<WindowManagerLockscreenVisibilityManager>
+            mWindowManagerLockscreenVisibilityManager;
 
     private static RemoteAnimationTarget[] wrap(TransitionInfo info, boolean wallpapers,
             SurfaceControl.Transaction t, ArrayMap<SurfaceControl, SurfaceControl> leashMap,
@@ -357,7 +359,9 @@ public class KeyguardService extends Service {
             KeyguardServiceShowLockscreenInteractor keyguardServiceShowLockscreenInteractor,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             ActivityManager activityManager,
-            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor) {
+            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor,
+            Lazy<WindowManagerLockscreenVisibilityManager>
+                    windowManagerLockscreenVisibilityManager) {
         super();
         mKeyguardViewMediator = keyguardViewMediator;
         mKeyguardLifecyclesDispatcher = keyguardLifecyclesDispatcher;
@@ -393,6 +397,7 @@ public class KeyguardService extends Service {
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mActivityManager = activityManager;
         mSecureLockDeviceInteractor = secureLockDeviceInteractor;
+        mWindowManagerLockscreenVisibilityManager = windowManagerLockscreenVisibilityManager;
     }
 
     @Override
@@ -643,6 +648,9 @@ public class KeyguardService extends Service {
             Trace.beginSection("KeyguardService.mBinder#onSystemReady");
             checkPermission();
             mKeyguardViewMediator.onSystemReady();
+            if (SceneContainerFlag.isEnabled()) {
+                mWindowManagerLockscreenVisibilityManager.get().onKeyguardServiceSystemReady();
+            }
             Trace.endSection();
         }
 

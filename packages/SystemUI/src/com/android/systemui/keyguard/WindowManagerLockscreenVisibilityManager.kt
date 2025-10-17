@@ -115,14 +115,20 @@ constructor(
     /**
      * The current user ID when we asked WM to start the keyguard going away animation. This is used
      * for validation when user switching occurs during unlock.
+     *
+     * Null if we haven't yet asked WM to start the keyguard going away animation since boot.
      */
-    private var keyguardGoingAwayRequestedForUserId: Int = -1
+    private var keyguardGoingAwayRequestedForUserId: Int? = null
 
     /** Params for the going away animation, including the callback to use once it is complete. */
     private var goingAwayRemoteAnimationParams: SurfaceTransition.Params? = null
 
     private val enableNewKeyguardShellTransitions: Boolean =
         Flags.ensureKeyguardDoesTransitionStartingBugFix()
+
+    fun onKeyguardServiceSystemReady() {
+        keyguardGoingAwayRequestedForUserId = selectedUserInteractor.getSelectedUserId()
+    }
 
     /**
      * Set the visibility of the surface behind the keyguard, making the appropriate calls to Window
@@ -363,13 +369,25 @@ constructor(
      */
     private fun maybeStartTransitionIfUserSwitchedDuringGoingAway(): Boolean {
         val currentUser = selectedUserInteractor.getSelectedUserId()
-        if (currentUser != keyguardGoingAwayRequestedForUserId) {
+
+        // If we've requested keyguard going away for a specific user ID, make sure it hasn't
+        // changed. If the user ID is still null, that means this is the first going away transition
+        // since boot, and also, that it was started by WM, not requested by us.
+        if (keyguardGoingAwayRequestedForUserId != currentUser) {
             if (lockPatternUtils.isSecure(currentUser)) {
                 keyguardShowWhileAwakeInteractor.onSwitchedToSecureUserWhileKeyguardGoingAway()
             } else {
-                keyguardDismissTransitionInteractor.startDismissKeyguardTransition(
-                    reason = "User switch during keyguard going away, and new user is insecure"
-                )
+                if (SceneContainerFlag.isEnabled) {
+                    deviceEntryInteractor
+                        .get()
+                        .attemptDeviceEntry(
+                            "User switch during keyguard going away, and new user is insecure"
+                        )
+                } else {
+                    keyguardDismissTransitionInteractor.startDismissKeyguardTransition(
+                        reason = "User switch during keyguard going away, and new user is insecure"
+                    )
+                }
             }
 
             return true
