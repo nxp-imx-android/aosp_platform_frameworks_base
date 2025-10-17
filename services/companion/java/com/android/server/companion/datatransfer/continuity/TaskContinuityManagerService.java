@@ -35,7 +35,9 @@ import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
+import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncControllerCache;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffController;
+import com.android.server.companion.datatransfer.continuity.handoff.HandoffControllerCache;
 
 import com.android.server.SystemService;
 
@@ -51,8 +53,8 @@ public final class TaskContinuityManagerService extends SystemService {
 
     private static final String TAG = "TaskContinuityManagerService";
 
-    private TaskSyncController mTaskSyncController;
-    private HandoffController mHandoffController;
+    private final FeatureControllerCache<TaskSyncController> mTaskSyncControllerCache;
+    private final FeatureControllerCache<HandoffController> mHandoffControllerCache;
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskContinuityMessenger mTaskContinuityMessenger;
 
@@ -60,16 +62,22 @@ public final class TaskContinuityManagerService extends SystemService {
         super(context);
 
         mTaskContinuityMessenger = new TaskContinuityMessenger(context);
-        mTaskSyncController = new TaskSyncController(context, mTaskContinuityMessenger);
-        mHandoffController =
-                new HandoffController(context, mTaskContinuityMessenger, mTaskSyncController);
+        mTaskSyncControllerCache = new TaskSyncControllerCache(context, mTaskContinuityMessenger);
+        mHandoffControllerCache =
+                new HandoffControllerCache(
+                        context, mTaskContinuityMessenger, mTaskSyncControllerCache);
+    }
+
+    @Override
+    public void onUserUnlocked(TargetUser user) {
+        int userId = user.getUserIdentifier();
+        mTaskSyncControllerCache.getOrCreateFeatureController(userId).enable();
+        mHandoffControllerCache.getOrCreateFeatureController(userId).enable();
     }
 
     @Override
     public void onStart() {
         mTaskContinuityManagerService = new TaskContinuityManagerServiceImpl();
-        mTaskSyncController.enable();
-        mHandoffController.enable();
         publishBinderService(Context.TASK_CONTINUITY_SERVICE, mTaskContinuityManagerService);
     }
 
@@ -79,7 +87,9 @@ public final class TaskContinuityManagerService extends SystemService {
         public void registerRemoteTaskListener(int userId, @NonNull IRemoteTaskListener listener) {
             registerRemoteTaskListener_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
-            mTaskSyncController.registerTaskListener(Objects.requireNonNull(listener));
+            mTaskSyncControllerCache
+                    .getOrCreateFeatureController(userId)
+                    .registerTaskListener(Objects.requireNonNull(listener));
         }
 
         @Override
@@ -88,7 +98,9 @@ public final class TaskContinuityManagerService extends SystemService {
                 int userId, @NonNull IRemoteTaskListener listener) {
             unregisterRemoteTaskListener_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
-            mTaskSyncController.unregisterTaskListener(Objects.requireNonNull(listener));
+            mTaskSyncControllerCache
+                    .getOrCreateFeatureController(userId)
+                    .unregisterTaskListener(Objects.requireNonNull(listener));
         }
 
         @Override
@@ -105,7 +117,9 @@ public final class TaskContinuityManagerService extends SystemService {
 
             final long ident = Binder.clearCallingIdentity();
             try {
-                mHandoffController.requestHandoff(associationId, remoteTaskId, callback);
+                mHandoffControllerCache
+                        .getOrCreateFeatureController(userId)
+                        .requestHandoff(associationId, remoteTaskId, callback);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
