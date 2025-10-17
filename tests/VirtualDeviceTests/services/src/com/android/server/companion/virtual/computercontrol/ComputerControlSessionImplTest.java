@@ -22,6 +22,8 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
@@ -36,7 +38,6 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
-import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -48,6 +49,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
@@ -69,6 +71,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.gui.DropInputMode;
@@ -148,6 +151,8 @@ public class ComputerControlSessionImplTest {
     private static final long GLOBAL_TIMEOUT_MILLIS = 10000L;
     private static final ComponentName TEST_COMPONENT = new ComponentName(TARGET_PACKAGE_1,
             TARGET_CLASS);
+    private static final ComponentName BLOCKED_COMPONENT = new ComponentName(
+            UNDECLARED_TARGET_PACKAGE, ".Activity");
 
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -197,6 +202,8 @@ public class ComputerControlSessionImplTest {
     private AudioCapture mAudioCapture;
     @Mock
     private UserHandle mUserHandle;
+    @Mock
+    private IntentSender mIntentSender;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -556,12 +563,12 @@ public class ComputerControlSessionImplTest {
         mSession.longPress(100, 200);
         verify(mVirtualTouchscreen).sendTouchEvent(argThat(
                 new MatchesTouchEvent(100, 200, VirtualTouchEvent.ACTION_DOWN)));
-        verify(mVirtualTouchscreen, timeout(TOUCH_EVENT_DELAY_MS * (LONG_PRESS_STEP_COUNT + 1))
-                .times(LONG_PRESS_STEP_COUNT + 1))
+        verify(mVirtualTouchscreen, timeout(TOUCH_EVENT_DELAY_MS * (LONG_PRESS_STEP_COUNT + 1)))
                 .sendTouchEvent(
                         argThat(new MatchesTouchEvent(100, 200, VirtualTouchEvent.ACTION_MOVE)));
-        verify(mVirtualTouchscreen).sendTouchEvent(argThat(
-                new MatchesTouchEvent(100, 200, VirtualTouchEvent.ACTION_UP)));
+        verify(mVirtualTouchscreen, timeout(TOUCH_EVENT_DELAY_MS * (LONG_PRESS_STEP_COUNT + 2)))
+                .sendTouchEvent(argThat(
+                        new MatchesTouchEvent(100, 200, VirtualTouchEvent.ACTION_UP)));
     }
 
     @Test
@@ -748,22 +755,160 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
-    public void blockedState_updatesVirtualDisplaySurface()
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
+    public void onSecureWindowShown_entersBlockedState()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
                 mActivityListenerArgumentCaptor.capture());
-        verify(mVirtualDisplay).setSurface(eq(mClientSurface));
 
         mActivityListenerArgumentCaptor.getValue().onSecureWindowShown(VIRTUAL_DISPLAY_ID,
                 TEST_COMPONENT, mUserHandle);
-        verify(mVirtualDisplay).setSurface(not(eq(mClientSurface)));
-        clearInvocations(mVirtualDisplay);
 
-        mActivityListenerArgumentCaptor.getValue().onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
-        verify(mVirtualDisplay).setSurface(eq(mClientSurface));
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
+    public void onSecureWindowHidden_exitsBlockedState()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+        clearInvocations(mVirtualDisplay, mLifecycleCallback);
+
+        activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+
+        verify(mLifecycleCallback).onActive();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void onActivityLaunchRequested_whenActivityIsBlocked_entersBlockedState()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor.getValue().onActivityLaunchRequested(VIRTUAL_DISPLAY_ID,
+                BLOCKED_COMPONENT, USER_ID);
+
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void onTopActivityChanged_toAllowedPackage_exitsBlockedState() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        clearInvocations(mLifecycleCallback);
+
+        activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+
+        verify(mLifecycleCallback).onActive();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void onTopActivityChanged_toDisallowedPackage_doesNotExitBlockedState()
+            throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+        activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        clearInvocations(mLifecycleCallback);
+
+        activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
+
+        verifyNoInteractions(mLifecycleCallback);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void blockedState_activityBlockReasonIsPreferred() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+
+        // First secure window, then blocked activity.
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+        clearInvocations(mLifecycleCallback);
+
+        activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
+        // onBlocked should be called again with the preferred reason.
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        clearInvocations(mLifecycleCallback);
+
+        // Unblock secure window, should remain blocked.
+        activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+        verifyNoInteractions(mLifecycleCallback);
+
+        // Unblock activity, should be active.
+        activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+        verify(mLifecycleCallback).onActive();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
+    public void blockedState_activityBlockReasonIsPreferred_reverseOrder() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+
+        // First blocked activity, then secure window.
+        activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        clearInvocations(mLifecycleCallback);
+
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        // onBlocked should not be called again.
+        verify(mLifecycleCallback, never()).onBlocked(anyInt());
+        clearInvocations(mLifecycleCallback);
+
+        // Unblock activity, should remain blocked with secure window reason.
+        activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+        verify(mLifecycleCallback, never()).onActive();
+        clearInvocations(mLifecycleCallback);
+
+        // Unblock secure window, should unblock.
+        activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
+        verify(mLifecycleCallback).onActive();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
+    public void cannotEnterBlockedState_afterSessionIsClosed() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+
+        mSession.close();
+        clearInvocations(mLifecycleCallback);
+
+        activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
+        activityListener.onActivityLaunchBlocked(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, mUserHandle,
+                mIntentSender);
+
+        verify(mLifecycleCallback, never()).onBlocked(anyInt());
     }
 
     @Test
