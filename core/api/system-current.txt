@@ -14235,9 +14235,8 @@ package android.service.personalcontext.refiner {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class HintRefinerService extends android.app.Service {
     ctor public HintRefinerService();
-    method @Nullable public final java.util.UUID getComponentId();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method public void onReady();
+    method public void onConnected();
     method public abstract void onRefine(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @NonNull java.util.function.Consumer<java.util.List<android.service.personalcontext.hint.ContextHint>>);
   }
 
@@ -14269,6 +14268,18 @@ package android.service.personalcontext.renderer {
     method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder addValidInsightType(int);
     method @NonNull public android.service.personalcontext.renderer.RendererFilter build();
     method @NonNull public android.service.personalcontext.renderer.RendererFilter.Builder setShouldIncludeRenderedInsights(boolean);
+  }
+
+}
+
+package android.service.personalcontext.understander {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextUnderstanderService extends android.app.Service {
+    ctor public ContextUnderstanderService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public void onConnected();
+    method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method public final void understood(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
   }
 
 }
