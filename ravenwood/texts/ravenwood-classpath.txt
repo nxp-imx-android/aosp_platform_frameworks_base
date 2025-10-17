@@ -11,19 +11,12 @@ hoststubgen-helper-runtime.jar
 # See ravenwood-services.core-platform-compat-config.
 services.core.ravenwood-jarjar.jar
 
-# ICU
-core-icu4j-for-host.ravenwood.jar
+# Mainline modules
+framework-updatable.ravenwood.jar
+
+# ICU data
 icu4j-icudata-jarjar.jar
 icu4j-icutzdata-jarjar.jar
-
-# DeviceConfig
-framework-configinfrastructure.ravenwood.jar
-
-# StatsD
-framework-statsd.ravenwood.jar
-
-# Graphics
-framework-graphics.ravenwood.jar
 
 # Provide runtime versions of ravenwood-utils
 junit.jar
