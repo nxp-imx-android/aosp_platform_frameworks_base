@@ -27,7 +27,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.systemui.Flags
+import com.google.common.math.DoubleMath.roundToLong
 import kotlin.math.absoluteValue
+import kotlin.math.roundToLong
 import kotlinx.coroutines.delay
 
 /** Platform-optimized interface for getting current time */
@@ -54,6 +57,8 @@ class ChronometerState(
     @ElapsedRealtimeLong private val eventTimeMillis: Long,
     private val isEventInFuture: Boolean,
 ) {
+    private val areChronometerFixesEnabled = Flags.statusBarChronometerFixes()
+
     private var currentTimeMillis by mutableLongStateOf(timeSource.getCurrentTime())
     private val elapsedTimeMillis: Long
         get() =
@@ -71,16 +76,55 @@ class ChronometerState(
         if (elapsedTimeMillis < 0) {
             null
         } else {
-            formatElapsedTime(elapsedTimeMillis / 1000)
+            // LINT.IfChange
+            if (areChronometerFixesEnabled) {
+                // This should exactly match the implementation in the framework Chronometer.java.
+                val adjustedMillis =
+                    if (isEventInFuture) {
+                        // Ensure countdown chronometers round down. (e.g. 999ms shows 00:00).
+                        elapsedTimeMillis - 499
+                    } else {
+                        elapsedTimeMillis
+                    }
+                val seconds = (adjustedMillis / 1000f).roundToLong()
+                formatElapsedTime(seconds)
+            } else {
+                formatElapsedTime(elapsedTimeMillis / 1000)
+            }
+            // LINT.ThenChange(/core/java/android/widget/Chronometer.java)
         }
     }
 
     suspend fun run() {
+        // LINT.IfChange
         while (true) {
             currentTimeMillis = timeSource.getCurrentTime()
-            val delaySkewMillis = (eventTimeMillis - currentTimeMillis).absoluteValue % 1000L
-            delay(1000L - delaySkewMillis)
+
+            if (areChronometerFixesEnabled) {
+                // This should exactly match the implementation in the framework Chronometer.java.
+                val periodInMillis = 1000L
+                val delayMillis =
+                    if (isEventInFuture) {
+                        val delay = (eventTimeMillis - currentTimeMillis) % periodInMillis
+                        if (delay <= 0) {
+                            delay + periodInMillis
+                        } else {
+                            delay
+                        }
+                    } else {
+                        periodInMillis -
+                            ((currentTimeMillis - eventTimeMillis).absoluteValue % periodInMillis)
+                    }
+
+                // Aim for 3 milliseconds into the next second so we don't update exactly on the
+                // second.
+                delay(delayMillis + 3)
+            } else {
+                val delaySkewMillis = (eventTimeMillis - currentTimeMillis).absoluteValue % 1000L
+                delay(1000L - delaySkewMillis)
+            }
         }
+        // LINT.ThenChange(/core/java/android/widget/Chronometer.java)
     }
 }
 
