@@ -28,7 +28,9 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import org.junit.After
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -47,9 +49,11 @@ abstract class EnterDesktopWithDragWindowsLimit(
     private val calculatorHelper = CalculatorAppHelper(instrumentation)
     private val messagingApp = MessagingAppHelper(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
 
     @Before
     fun setup() {
+        Assume.assumeTrue(desktopConfig.maxTaskLimit > 0)
         clockDesktopAppHelper.enterDesktopMode(wmHelper, device, shouldUseDragToDesktop = true)
         mailAppHelper.launchViaIntent(wmHelper)
         calculatorHelper.launchViaIntent(wmHelper)
