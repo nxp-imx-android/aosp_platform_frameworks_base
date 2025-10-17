@@ -22,11 +22,12 @@ import android.app.NotificationChannelGroup;
 import android.content.pm.ParceledListSlice;
 import android.os.Bundle;
 import android.os.UserHandle;
-import android.service.notification.NotificationStats;
+import android.service.notification.Adjustment;
 import android.service.notification.IDispatchCompletionListener;
 import android.service.notification.IStatusBarNotificationHolder;
-import android.service.notification.StatusBarNotification;
 import android.service.notification.NotificationRankingUpdate;
+import android.service.notification.NotificationStats;
+import android.service.notification.StatusBarNotification;
 
 /** @hide */
 oneway interface INotificationListener
@@ -44,8 +45,8 @@ oneway interface INotificationListener
             in NotificationRankingUpdate update, in NotificationStats stats, int reason,
             in long dispatchToken);
     void onNotificationRemovedFull(in StatusBarNotification sbn,
-                in NotificationRankingUpdate update, in NotificationStats stats, int reason,
-                in long dispatchToken);
+            in NotificationRankingUpdate update, in NotificationStats stats, int reason,
+            in long dispatchToken);
     void onNotificationRankingUpdate(in NotificationRankingUpdate update, in long dispatchToken);
     void onListenerHintsChanged(int hints, in long dispatchToken);
     void onInterruptionFilterChanged(int interruptionFilter, in long dispatchToken);
@@ -69,5 +70,7 @@ oneway interface INotificationListener
     void onActionClicked(String key, in Notification.Action action, int source);
     void onNotificationClicked(String key);
     void onAllowedAdjustmentsChanged();
-    void onNotificationFeedbackReceived(String key, in NotificationRankingUpdate update, in Bundle feedback);
+    void onNotificationFeedbackReceived(
+            String key, in NotificationRankingUpdate update, in Bundle feedback);
+    void onSystemAdjustmentsRequest(in List<Adjustment> adjustments);
 }

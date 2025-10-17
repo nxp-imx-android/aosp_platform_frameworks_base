@@ -1774,6 +1774,11 @@ public abstract class NotificationListenerService extends Service {
                 Bundle feedback) {
             // no-op in the listener
         }
+
+        @Override
+        public void onSystemAdjustmentsRequest(List<Adjustment> adjustment) {
+            // no-op in the listener
+        }
     }
 
     /**

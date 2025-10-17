@@ -355,6 +355,20 @@ public abstract class NotificationAssistantService extends NotificationListenerS
     }
 
     /**
+     * Implement this method to receive suggested adjustments from the system, merge them with any
+     * other internal adjustments, and notify the system of the merged adjustments via {@link
+     * #adjustNotifications(List)} or {@link #adjustNotification(Adjustment)}. By default, system
+     * adjustments are ignored.
+     *
+     * @param adjustments the adjustments suggested by the system
+     *
+     * @hide
+     */
+    @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void onSystemAdjustmentsRequest(@NonNull List<Adjustment> adjustments) {
+    }
+
+    /**
      * Updates a notification.  N.B. this won’t cause
      * an existing notification to alert, but might allow a future update to
      * this notification to alert.
@@ -576,6 +590,14 @@ public abstract class NotificationAssistantService extends NotificationListenerS
             mHandler.obtainMessage(MyHandler.MSG_ON_NOTIFICATION_FEEDBACK_RECEIVED,
                     args).sendToTarget();
         }
+
+        @Override
+        public void onSystemAdjustmentsRequest(List<Adjustment> adjustments) {
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = adjustments;
+            mHandler.obtainMessage(MyHandler.MSG_ON_SYSTEM_ADJUSTMENTS_REQUEST, args)
+                    .sendToTarget();
+        }
     }
 
     private void setAdjustmentIssuer(@Nullable Adjustment adjustment) {
@@ -598,6 +620,7 @@ public abstract class NotificationAssistantService extends NotificationListenerS
         public static final int MSG_ON_NOTIFICATION_VISIBILITY_CHANGED = 11;
         public static final int MSG_ON_NOTIFICATION_CLICKED = 12;
         public static final int MSG_ON_NOTIFICATION_FEEDBACK_RECEIVED = 13;
+        public static final int MSG_ON_SYSTEM_ADJUSTMENTS_REQUEST = 14;
 
         public MyHandler(Looper looper) {
             super(looper, null, false);
@@ -720,6 +743,14 @@ public abstract class NotificationAssistantService extends NotificationListenerS
                     onNotificationFeedbackReceived(key, ranking, feedback);
                     break;
                 }
+                case MSG_ON_SYSTEM_ADJUSTMENTS_REQUEST:
+                    {
+                        SomeArgs args = (SomeArgs) msg.obj;
+                        List<Adjustment> adjustments = (List<Adjustment>) args.arg1;
+                        args.recycle();
+                        onSystemAdjustmentsRequest(adjustments);
+                        break;
+                    }
             }
         }
     }

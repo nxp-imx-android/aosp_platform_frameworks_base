@@ -8498,6 +8498,16 @@ public class NotificationManagerService extends SystemService {
                 }
             }
         }
+
+        @Override
+        public void requestSystemAdjustments(@NonNull List<Adjustment> adjustments) {
+            checkCallerIsSystem();
+            if (enablePersonalContextService()) {
+                synchronized (mNotificationLock) {
+                    requestSystemAdjustmentsLocked(adjustments);
+                }
+            }
+        }
     };
 
     private static boolean isBigPictureWithBitmapOrIcon(Notification n) {
@@ -11588,6 +11598,36 @@ public class NotificationManagerService extends SystemService {
         });
     }
 
+    @GuardedBy("mNotificationLock")
+    void requestSystemAdjustmentsLocked(@NonNull List<Adjustment> adjustments) {
+        if (adjustments.isEmpty()) {
+            return;
+        }
+
+        // Group the adjustments by notification record.
+        final ArrayMap<NotificationRecord, List<Adjustment>> adjustmentsByRecord = new ArrayMap<>();
+        for (Adjustment adjustment : adjustments) {
+            final NotificationRecord r = mNotificationsByKey.get(adjustment.getKey());
+            if (r == null) {
+                Slog.w(
+                        TAG,
+                        "Cannot find notification to request system adjustment: "
+                                + adjustment.getKey());
+                continue;
+            }
+            adjustmentsByRecord.computeIfAbsent(r, k -> new ArrayList<>()).add(adjustment);
+        }
+
+        // Notify the assistant for each notification record, to ensure the assistant is allowed
+        // to adjust the notification.
+        for (Map.Entry<NotificationRecord, List<Adjustment>> entry :
+                adjustmentsByRecord.entrySet()) {
+            final NotificationRecord r = entry.getKey();
+            final List<Adjustment> recordAdjustments = entry.getValue();
+            mAssistants.notifyAssistantOfSystemAdjustments(r, recordAdjustments);
+        }
+    }
+
     private interface FlagChecker {
         // Returns false if these flags do not pass the defined flag test.
         public boolean apply(int flags);
@@ -12946,6 +12986,36 @@ public class NotificationManagerService extends SystemService {
                     }
                 }
             }
+        }
+
+        @GuardedBy("mNotificationLock")
+        void notifyAssistantOfSystemAdjustments(
+                final NotificationRecord r, List<Adjustment> adjustments) {
+            notifyAssistantLocked(
+                    r.getSbn(),
+                    r.getNotificationType(),
+                    true /* sameUserOnly */,
+                    (assistant, sbnToPost) -> {
+                        try {
+                            // Create a list of all the adjustment keys for logging. We group
+                            // the keys by adjustment, where each adjustment is delimited by "|"
+                            final List<String> adjustmentKeyStrings = new ArrayList<>();
+                            for (Adjustment adjustment : adjustments) {
+                                final Bundle signals = adjustment.getSignals();
+                                if (signals != null && !signals.keySet().isEmpty()) {
+                                    adjustmentKeyStrings.add(TextUtils.join(",", signals.keySet()));
+                                }
+                            }
+                            EventLogTags.writeNotificationSystemAdjustmentsRequested(
+                                    sbnToPost.getKey(), TextUtils.join("|", adjustmentKeyStrings));
+                            assistant.onSystemAdjustmentsRequest(adjustments);
+                        } catch (RemoteException ex) {
+                            Slog.e(
+                                    TAG,
+                                    "unable to notify assistant (system adjustments): " + assistant,
+                                    ex);
+                        }
+                    });
         }
 
         @GuardedBy("mNotificationLock")

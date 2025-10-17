@@ -18122,6 +18122,66 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void testRequestSystemAdjustment_singleNotification() throws Exception {
+        final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        mService.addNotification(r);
+        final StatusBarNotification sbn = r.getSbn();
+
+        Bundle signals = new Bundle();
+        signals.putInt(
+                Adjustment.KEY_USER_SENTIMENT,
+                NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE);
+        List<Adjustment> adjustments =
+                List.of(
+                        new Adjustment(
+                                sbn.getPackageName(), sbn.getKey(), signals, "", sbn.getUserId()));
+
+        mInternalService.requestSystemAdjustments(adjustments);
+
+        verify(mAssistants).notifyAssistantOfSystemAdjustments(eq(r), eq(adjustments));
+    }
+
+    @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void testRequestSystemAdjustment_emptyList() throws Exception {
+        mInternalService.requestSystemAdjustments(List.of());
+
+        verify(mAssistants, never()).notifyAssistantOfSystemAdjustments(any(), any());
+    }
+
+    @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public void testRequestSystemAdjustment_multipleNotifications() throws Exception {
+        final NotificationRecord nr0 =
+                generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        mService.addNotification(nr0);
+        final StatusBarNotification sbn0 = nr0.getSbn();
+
+        final NotificationRecord nr1 =
+                generateNotificationRecord(mTestNotificationChannel, 1, mUserId);
+        mService.addNotification(nr1);
+        final StatusBarNotification sbn1 = nr1.getSbn();
+
+        Bundle signals = new Bundle();
+        signals.putInt(
+                Adjustment.KEY_USER_SENTIMENT,
+                NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE);
+        Adjustment adjustment0 =
+                new Adjustment(
+                        sbn0.getPackageName(), sbn0.getKey(), signals, "", sbn0.getUserId());
+        Adjustment adjustment1 =
+                new Adjustment(
+                        sbn1.getPackageName(), sbn1.getKey(), signals, "", sbn1.getUserId());
+        List<Adjustment> adjustments = List.of(adjustment0, adjustment1);
+
+        mInternalService.requestSystemAdjustments(adjustments);
+
+        verify(mAssistants).notifyAssistantOfSystemAdjustments(eq(nr0), eq(List.of(adjustment0)));
+        verify(mAssistants).notifyAssistantOfSystemAdjustments(eq(nr1), eq(List.of(adjustment1)));
+    }
+
+    @Test
     @EnableFlags(android.service.notification.Flags.FLAG_CALLSTYLE_CALLBACK_API)
     public void testCallNotificationListener_differentPackage_notNotified() throws Exception {
         final String packageName = "package";
