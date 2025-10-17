@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common.ui.compose
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,8 +28,13 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +66,29 @@ fun StyledTooltip(tooltipText: String, content: @Composable () -> Unit) {
             state = tooltipState,
             focusable = false,
             enableUserInput = true,
-            content = content,
+            content = {
+                // Manually show/hide the tooltip to support trackpad pointer hover.
+                // TODO(b/452756010) Remove this custom logic once tooltips support trackpad pointer
+                Box(
+                    modifier =
+                        Modifier.pointerInput(tooltipState) {
+                            coroutineScope {
+                                awaitPointerEventScope {
+                                    while (isActive) {
+                                        val event = awaitPointerEvent()
+                                        when (event.type) {
+                                            PointerEventType.Enter -> launch { tooltipState.show() }
+                                            PointerEventType.Exit ->
+                                                launch { tooltipState.dismiss() }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                ) {
+                    content()
+                }
+            },
         )
     } else {
         content()
