@@ -16,19 +16,24 @@
 
 package com.android.systemui.screencapture.sharescreen.largescreen.ui.viewmodel
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.domain.model.TargetModel
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
-import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import javax.inject.Provider
+import kotlinx.coroutines.coroutineScope
 
 /** Models UI state for the Screen Share feature. */
 class PreShareToolbarViewModel
@@ -37,10 +42,16 @@ constructor(
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
-    @Assisted private val recentTasksViewModel: RecentTasksViewModel,
+    recentTasksViewModelProvider: Provider<RecentTasksViewModel>,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
     var selectedScreenCaptureTarget: ScreenCaptureTarget by
         mutableStateOf(ScreenCaptureTarget.AppContent(contentId = 0))
+
+    private val recentTasksViewModel = recentTasksViewModelProvider.get()
+
+    private val _currentTargetsModel =
+        mutableStateOf<TargetsViewModel<out TargetModel>>(recentTasksViewModel)
+    val currentTargetsModel: State<TargetsViewModel<out TargetModel>> = _currentTargetsModel
 
     fun onCloseClicked() {
         screenCaptureUiInteractor.hide(ScreenCaptureType.SHARE_SCREEN)
@@ -55,8 +66,12 @@ constructor(
         shareScreenPrivacyIndicatorInteractor.showChip()
     }
 
+    override suspend fun onActivated() {
+        coroutineScope { launchTraced("RecentTasksViewModel") { recentTasksViewModel.activate() } }
+    }
+
     @AssistedFactory
     interface Factory {
-        fun create(recentTasksViewModel: RecentTasksViewModel): PreShareToolbarViewModel
+        fun create(): PreShareToolbarViewModel
     }
 }

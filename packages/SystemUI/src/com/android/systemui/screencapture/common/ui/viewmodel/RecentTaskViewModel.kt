@@ -64,7 +64,7 @@ constructor(
     private fun Int?.opaque(): Color = this?.let { Color(it).copy(alpha = 1f) } ?: Color.Black
 
     @AssistedFactory
-    interface Factory : TargetViewModel.Factory<ScreenCaptureRecentTask> {
-        override fun create(model: ScreenCaptureRecentTask): RecentTaskViewModel
+    interface Factory {
+        fun create(model: ScreenCaptureRecentTask): RecentTaskViewModel
     }
 }

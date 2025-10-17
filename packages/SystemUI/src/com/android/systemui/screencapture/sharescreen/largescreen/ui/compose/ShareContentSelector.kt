@@ -47,13 +47,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.domain.model.TargetModel
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
-import com.android.systemui.screencapture.common.ui.viewmodel.RecentTaskViewModel
-import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
 @Composable
-fun ShareContentSelector(recentTasksViewModel: RecentTasksViewModel) {
+fun <T : TargetModel> ShareContentSelector(targetsViewModel: TargetsViewModel<T>) {
     Surface(color = MaterialTheme.colorScheme.surfaceBright, shape = RoundedCornerShape(20.dp)) {
         Column(
             modifier =
@@ -61,7 +62,7 @@ fun ShareContentSelector(recentTasksViewModel: RecentTasksViewModel) {
                     .padding(start = 10.dp, top = 14.dp, end = 10.dp, bottom = 2.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            val selectedItem by recentTasksViewModel.selectedTarget
+            val selectedItem by targetsViewModel.selectedTarget
             Text(
                 text = stringResource(R.string.screen_share_app_window_sharing_title),
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp).height(24.dp).fillMaxWidth(),
@@ -72,7 +73,7 @@ fun ShareContentSelector(recentTasksViewModel: RecentTasksViewModel) {
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp),
             ) {
                 // The sharing content item list.
-                ShareContentList(viewModel = recentTasksViewModel)
+                ShareContentList(viewModel = targetsViewModel)
                 ItemPreview(
                     preview = selectedItem?.thumbnail?.getOrNull()?.asImageBitmap(),
                     modifier = Modifier.weight(1f).height(140.dp).width(230.dp),
@@ -80,7 +81,7 @@ fun ShareContentSelector(recentTasksViewModel: RecentTasksViewModel) {
                 )
             }
             DisclaimerText()
-            AudioSwitch(recentTasksViewModel, selectedItem as RecentTaskViewModel?)
+            AudioSwitch(targetsViewModel, selectedItem)
         }
     }
 }
@@ -127,11 +128,11 @@ private fun DisclaimerText() {
 }
 
 @Composable
-private fun AudioSwitch(
-    recentTasksViewModel: RecentTasksViewModel,
-    selectedRecentTaskViewModel: RecentTaskViewModel?,
+private fun <T : TargetModel> AudioSwitch(
+    targetsViewModel: TargetsViewModel<T>,
+    selectedTargetViewModel: TargetViewModel<T>?,
 ) {
-    val checked by recentTasksViewModel.captureAudio
+    val checked by targetsViewModel.captureAudio
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -141,7 +142,7 @@ private fun AudioSwitch(
         LoadingIcon(
             icon =
                 loadIcon(
-                        viewModel = recentTasksViewModel,
+                        viewModel = targetsViewModel,
                         resId = R.drawable.ic_speaker_on,
                         contentDescription = null,
                     )
@@ -155,8 +156,8 @@ private fun AudioSwitch(
         )
         Switch(
             checked = checked,
-            onCheckedChange = recentTasksViewModel::setCaptureAudio,
-            enabled = selectedRecentTaskViewModel != null,
+            onCheckedChange = targetsViewModel::setCaptureAudio,
+            enabled = selectedTargetViewModel != null,
             thumbContent =
                 if (checked) {
                     {

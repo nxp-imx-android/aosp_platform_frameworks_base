@@ -25,7 +25,7 @@ data class ScreenCaptureAppContent(
     val contentId: Int,
     val label: CharSequence,
     val thumbnail: Bitmap,
-) {
+) : TargetModel {
     constructor(
         packageName: String,
         appContent: MediaProjectionAppContent,
@@ -35,4 +35,6 @@ data class ScreenCaptureAppContent(
         label = appContent.title,
         thumbnail = appContent.thumbnail,
     )
+
+    override val traceTag: String = "AppContent($packageName, $contentId)"
 }

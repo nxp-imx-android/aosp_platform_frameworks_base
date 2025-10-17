@@ -30,7 +30,7 @@ data class ScreenCaptureRecentTask(
     val component: ComponentName?,
     @ColorInt val backgroundColor: Int?,
     val splitBounds: SplitBounds?,
-) {
+) : TargetModel {
     constructor(
         task: RecentTask
     ) : this(
@@ -41,4 +41,6 @@ data class ScreenCaptureRecentTask(
         backgroundColor = task.colorBackground,
         splitBounds = task.splitBounds,
     )
+
+    override val traceTag: String = "RecentTask($taskId)"
 }
