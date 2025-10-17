@@ -16,7 +16,7 @@
 
 package android.processor.devicepolicy.test
 
-import android.processor.devicepolicy.PolicyProcessor
+import android.processor.devicepolicy.DevicePolicyAnnotationProcessor
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
 import com.google.testing.compile.Compilation
@@ -31,9 +31,9 @@ import org.junit.Assert.fail
 import org.junit.Test
 import javax.tools.JavaFileObject
 
-class PolicyProcessorTest {
+class DevicePolicyAnnotationProcessorTest {
     private val mCompilerWithoutProcessor = Compiler.javac()
-    private val mCompiler = Compiler.javac().withProcessors(PolicyProcessor())
+    private val mCompiler = Compiler.javac().withProcessors(DevicePolicyAnnotationProcessor())
 
     private companion object {
         const val RESOURCE_ROOT = "test/resources/android/processor/devicepolicy/test"

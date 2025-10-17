@@ -47,7 +47,7 @@ import javax.tools.StandardLocation
  *
  * Data is exported to `policies.textproto`.
  */
-class PolicyProcessor : AbstractProcessor() {
+class DevicePolicyAnnotationProcessor : AbstractProcessor() {
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latest()
 
     // Define what the annotation we care about are for compiler optimization
