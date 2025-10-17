@@ -162,11 +162,6 @@ public class KeyguardPatternViewController
                                             && response.isCredAlreadyTried());
                         }
 
-                        @Override
-                        public void onChecked(boolean matched, int timeoutMs) {
-                            handleChecked(matched, timeoutMs, false /* assume not a duplicate */);
-                        }
-
                         private void handleChecked(
                                 boolean matched, int timeoutMs, boolean isDuplicate) {
                             mLatencyTracker.onActionEnd(ACTION_CHECK_CREDENTIAL_UNLOCKED);
