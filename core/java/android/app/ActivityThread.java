@@ -1043,8 +1043,7 @@ public final class ActivityThread extends ClientTransactionHandler
         int samplingInterval;
         boolean autoStopProfiler;
         boolean streamingOutput;
-        int mClockType;
-        int mProfilerOutputVersion;
+        int mProfilerFlags;
         boolean profiling;
         boolean handlingProfiling;
         public void setProfiler(ProfilerInfo profilerInfo) {
@@ -1071,8 +1070,7 @@ public final class ActivityThread extends ClientTransactionHandler
             samplingInterval = profilerInfo.samplingInterval;
             autoStopProfiler = profilerInfo.autoStopProfiler;
             streamingOutput = profilerInfo.streamingOutput;
-            mClockType = profilerInfo.clockType;
-            mProfilerOutputVersion = profilerInfo.profilerOutputVersion;
+            mProfilerFlags = profilerInfo.profilerFlags;
         }
         public void startProfiling() {
             if (profileFd == null || profiling) {
@@ -1080,11 +1078,9 @@ public final class ActivityThread extends ClientTransactionHandler
             }
             try {
                 int bufferSize = SystemProperties.getInt("debug.traceview-buffer-size-mb", 8);
-                int flags = 0;
-                flags = mClockType | ProfilerInfo.getFlagsForOutputVersion(mProfilerOutputVersion);
                 VMDebug.startMethodTracing(profileFile, profileFd.getFileDescriptor(),
-                        bufferSize * 1024 * 1024, flags, samplingInterval != 0, samplingInterval,
-                        streamingOutput);
+                        bufferSize * 1024 * 1024, mProfilerFlags, samplingInterval != 0,
+                        samplingInterval, streamingOutput);
                 profiling = true;
             } catch (RuntimeException e) {
                 Slog.w(TAG, "Profiling failed on path " + profileFile, e);
@@ -7852,8 +7848,7 @@ public final class ActivityThread extends ClientTransactionHandler
             mProfiler.samplingInterval = data.initProfilerInfo.samplingInterval;
             mProfiler.autoStopProfiler = data.initProfilerInfo.autoStopProfiler;
             mProfiler.streamingOutput = data.initProfilerInfo.streamingOutput;
-            mProfiler.mClockType = data.initProfilerInfo.clockType;
-            mProfiler.mProfilerOutputVersion = data.initProfilerInfo.profilerOutputVersion;
+            mProfiler.mProfilerFlags = data.initProfilerInfo.profilerFlags;
             if (data.initProfilerInfo.attachAgentDuringBind) {
                 agent = data.initProfilerInfo.agent;
             }
