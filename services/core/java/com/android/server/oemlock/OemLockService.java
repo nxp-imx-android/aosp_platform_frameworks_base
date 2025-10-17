@@ -261,8 +261,12 @@ public class OemLockService extends SystemService {
     private void enforceUserIsAdmin() {
         final int userId = UserHandle.getCallingUserId();
         final long token = Binder.clearCallingIdentity();
+        // TODO(b/443134869): Determine whether non-Admin SYSTEM user should be allowed to call this
+        final boolean isAdminOrSystem =
+                (android.multiuser.Flags.hsuNotAdmin() && userId == UserHandle.USER_SYSTEM)
+                        || UserManager.get(mContext).isUserAdmin(userId);
         try {
-            if (!UserManager.get(mContext).isUserAdmin(userId)) {
+            if (!isAdminOrSystem) {
                 throw new SecurityException("Must be an admin user");
             }
         } finally {
