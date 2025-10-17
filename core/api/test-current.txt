@@ -2655,8 +2655,15 @@ package android.os {
     method @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") @RequiresPermission(android.Manifest.permission.DEVICE_POWER) public void goToSleep(long, int, int);
     method @FlaggedApi("android.os.battery_saver_supported_check_api") public boolean isBatterySaverSupported();
     method public boolean isInteractive(int);
+    method @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") @NonNull @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public android.os.PowerManager.SleepLock newSleepLock(int, @NonNull String) throws java.lang.RuntimeException;
     field public static final String ACTION_ENHANCED_DISCHARGE_PREDICTION_CHANGED = "android.os.action.ENHANCED_DISCHARGE_PREDICTION_CHANGED";
     field @RequiresPermission(android.Manifest.permission.DEVICE_POWER) public static final int SYSTEM_WAKELOCK = -2147483648; // 0x80000000
+  }
+
+  @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") public final class PowerManager.SleepLock {
+    method @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public void acquire(long);
+    method public boolean isHeld();
+    method @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public void release();
   }
 
   public class Process {
