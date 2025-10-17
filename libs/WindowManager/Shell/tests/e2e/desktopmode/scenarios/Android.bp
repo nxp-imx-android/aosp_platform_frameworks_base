@@ -112,6 +112,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.EnterSplitScreenWithDragTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromAllAppsTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromTaskbarTest",
+        "com.android.wm.shell.functional.fundamentals.OpenAppInBrowserTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppsInDesktopModeTest",
         "com.android.wm.shell.functional.fundamentals.OpenUnlimitedAppsTest",
         "com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenTest",
@@ -458,6 +459,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.OpenAppFromTaskbarTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-OpenAppInBrowserTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.OpenAppInBrowserTest"],
 }
 
 test_module_config {

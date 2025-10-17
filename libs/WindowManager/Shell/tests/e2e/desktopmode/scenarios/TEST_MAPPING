@@ -308,6 +308,13 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppInBrowserTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppsInDesktopModeTest",
       "keywords": [
         "device",

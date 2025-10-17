@@ -640,6 +640,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
         // Click on the app handle coordinates.
         device.click(startX, startY)
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
     fun enterDesktopModeFromAppHandleMenu(
@@ -657,7 +658,6 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             device.swipe(startX, startY, startX, endY, 10)
         }
         clickAppHandle(wmHelper, device)
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
         val pill = getDesktopAppViewByRes(PILL_CONTAINER)
         val desktopModeButton =
@@ -783,6 +783,22 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         newWindowButton.click()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
+
+    fun clickOpenAppInBrowserButton(
+        wmHelper: WindowManagerStateHelper,
+        device: UiDevice,
+        isDesktop: Boolean,
+    ) {
+        if (isDesktop) {
+            clickOpenMenuButton(wmHelper)
+        } else {
+            clickAppHandle(wmHelper, device)
+        }
+        val openInBrowserButton = getDesktopAppViewByRes(OPEN_IN_APP_OR_BROWSER_BUTTON)
+        openInBrowserButton.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
     /**
      * Opens a specified number of the same application.
      *
@@ -933,6 +949,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         const val FULL_SCREEN_BUTTON: String = "fullscreen_button"
         const val SPLIT_SCREEN_BUTTON: String = "split_screen_button"
         const val IMMERSIVE_BUTTON_IN_MENU: String = "maximize_menu_immersive_toggle_button"
+        const val OPEN_IN_APP_OR_BROWSER_BUTTON: String = "open_in_app_or_browser_button"
         val caption: BySelector
             get() = By.res(SYSTEMUI_PACKAGE, CAPTION)
 
