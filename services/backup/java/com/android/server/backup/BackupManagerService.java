@@ -364,7 +364,13 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
         }
 
         // Returns false if the user is not a full user.
-        if (!mUserManagerInternal.getUserInfo(userId).isFull()) {
+        UserInfo userInfo = mUserManagerInternal.getUserInfo(userId);
+        if (userInfo == null || !userInfo.isFull()) {
+            return false;
+        }
+
+        // Returns false for guest users.
+        if (userInfo.isGuest()) {
             return false;
         }
 
