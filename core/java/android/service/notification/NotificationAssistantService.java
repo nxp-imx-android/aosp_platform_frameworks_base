@@ -361,8 +361,6 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      * adjustments are ignored.
      *
      * @param adjustments the adjustments suggested by the system
-     *
-     * @hide
      */
     @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public void onSystemAdjustmentsRequest(@NonNull List<Adjustment> adjustments) {

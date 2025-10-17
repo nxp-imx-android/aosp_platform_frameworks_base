@@ -273,4 +273,5 @@ interface INotificationManager
     String[] getAdjustmentDeniedPackages(int userId, String key);
     boolean isAdjustmentSupportedForPackage(int userId, String key, String pkg);
     void setAdjustmentSupportedForPackage(int userId, String key, String pkg, boolean enabled);
+    oneway void requestSystemAdjustments(in List<Adjustment> adjustments);
 }
