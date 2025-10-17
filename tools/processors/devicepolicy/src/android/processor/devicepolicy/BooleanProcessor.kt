@@ -27,7 +27,7 @@ import javax.lang.model.type.TypeMirror
  * Since this annotation holds no data and we don't export any type-specific information, this only
  * contains type-specific checks.
  */
-class BooleanProcessor(processingEnv: ProcessingEnvironment) : Processor<BooleanPolicyDefinition>(processingEnv) {
+class BooleanProcessor(processingEnv: ProcessingEnvironment) : PolicyProcessor<BooleanPolicyDefinition>(processingEnv) {
     private companion object {
         const val SIMPLE_TYPE_BOOLEAN = "java.lang.Boolean"
     }

@@ -33,7 +33,7 @@ import javax.lang.model.type.TypeMirror
 import javax.tools.Diagnostic
 import javax.lang.model.element.Modifier
 
-abstract class Processor<T : Annotation>(protected val processingEnv: ProcessingEnvironment) {
+abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: ProcessingEnvironment) {
     private companion object {
         const val POLICY_IDENTIFIER = "android.app.admin.PolicyIdentifier"
     }
