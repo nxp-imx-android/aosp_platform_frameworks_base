@@ -17,6 +17,7 @@
 package com.android.systemui.plugins;
 
 import android.app.PendingIntent;
+import android.app.WallpaperColors.ColorsHints;
 import android.app.smartspace.SmartspaceAction;
 import android.app.smartspace.SmartspaceTarget;
 import android.app.smartspace.SmartspaceTargetEvent;
@@ -123,6 +124,11 @@ public interface BcSmartspaceDataPlugin extends Plugin {
         default void registerConfigProvider(BcSmartspaceConfigPlugin configProvider) {
             throw new UnsupportedOperationException("Not implemented by " + getClass());
         }
+
+        /**
+         * Background color for non-RemoteViews cards, when high contrast background is enabled.
+         */
+        default void setHighContrastBackgroundColor(@ColorsHints int wallpaperColorHints) {}
 
         /**
          * Primary color for unprotected text
