@@ -35,7 +35,10 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.util.createTaskInfo
+import com.android.wm.shell.apptoweb.data.AppToWebDatastoreRepository
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.TestScope
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -65,6 +68,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
     @Mock private lateinit var mockPackageManager: PackageManager
     @Mock private lateinit var shellTaskOrganizer: ShellTaskOrganizer
     @Mock private lateinit var mockResources: Resources
+    @Mock private lateinit var appToWebDatastoreRepository: AppToWebDatastoreRepository
+    private val testScope = TestScope()
 
     private lateinit var mockInit: AutoCloseable
     private val testExecutor = TestShellExecutor()
@@ -92,6 +97,9 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
             mockContext,
             mockAssistContentRequester,
             mockGenericLinksParser,
+            appToWebDatastoreRepository,
+            testScope,
+            testScope.backgroundScope,
             shellTaskOrganizer,
             shellInit,
         )
@@ -100,6 +108,7 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
 
     @After
     fun tearDown() {
+        testScope.cancel()
         mockInit.close()
     }
 

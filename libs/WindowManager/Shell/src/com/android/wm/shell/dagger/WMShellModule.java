@@ -61,6 +61,7 @@ import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
 import com.android.wm.shell.apptoweb.AppToWebRepository;
 import com.android.wm.shell.apptoweb.AppToWebRepositoryImpl;
 import com.android.wm.shell.apptoweb.AssistContentRequester;
+import com.android.wm.shell.apptoweb.data.AppToWebDatastoreRepository;
 import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.back.BackAnimationController;
 import com.android.wm.shell.bubbles.BubbleController;
@@ -501,10 +502,14 @@ public abstract class WMShellModule {
     static AppToWebRepositoryImpl provideAppToWebRepositoryImpl(
             Context context, AssistContentRequester assistContentRequester,
             AppToWebGenericLinksParser appToWebGenericLinksParser,
+            AppToWebDatastoreRepository appToWebDatastoreRepository,
+            @ShellMainThread CoroutineScope mainScope,
+            @ShellBackgroundThread CoroutineScope bgScope,
             ShellTaskOrganizer shellTaskOrganizer,
             ShellInit shellInit) {
         return new AppToWebRepositoryImpl(context, assistContentRequester,
-                appToWebGenericLinksParser, shellTaskOrganizer, shellInit);
+                appToWebGenericLinksParser, appToWebDatastoreRepository, mainScope, bgScope,
+                shellTaskOrganizer, shellInit);
     }
 
     @WMSingleton
@@ -518,6 +523,13 @@ public abstract class WMShellModule {
             return appToWebRepositoryImpl;
         }
         return desktopModeWindowDecorViewModel.get();
+    }
+
+    @WMSingleton
+    @Provides
+    static AppToWebDatastoreRepository provideAppToWebDatastoreRepository(
+            Context context) {
+        return new AppToWebDatastoreRepository(context);
     }
 
     @Provides
