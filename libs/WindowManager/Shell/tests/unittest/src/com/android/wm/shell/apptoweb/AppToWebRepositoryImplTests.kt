@@ -22,10 +22,12 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.net.Uri
+import android.platform.test.annotations.EnableFlags
 import android.test.mock.MockContext
 import android.testing.AndroidTestingRunner
 import androidx.core.net.toUri
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
@@ -43,6 +45,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Tests for [AppToWebRepositoryImpl].
@@ -180,6 +183,37 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
 
         // Verify task data was cleared
         assertFalse(appToWebRepository.isCapturedLinkAvailable(taskInfo.taskId))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
+    fun firstRunPrompt_isFirstRunPromptShown() {
+        // TaskInfo with the same package as `taskInfo` but with different taskId.
+        val taskInfo2 = createTaskInfo().apply {
+            taskId = taskInfo.taskId + 1
+            baseActivity = taskInfo.baseActivity
+        }
+        assertFalse(appToWebRepository.isFirstRunPromptShown(taskInfo))
+        assertFalse(appToWebRepository.isFirstRunPromptShown(taskInfo2))
+
+        // Show the first-run prompt for `taskInfo`.
+        appToWebRepository.onFirstRunPromptShown(taskInfo)
+
+        assertTrue(appToWebRepository.isFirstRunPromptShown(taskInfo))
+        assertFalse(appToWebRepository.isFirstRunPromptShown(taskInfo2))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
+    fun firstRunPrompt_removedOnTaskVanished() {
+        // Show the first-run prompt for `taskInfo`.
+        appToWebRepository.onFirstRunPromptShown(taskInfo)
+        assertTrue(appToWebRepository.isFirstRunPromptShown(taskInfo))
+
+        // Notify task is vanishing. Data should be cleared
+        appToWebRepository.onTaskVanished(taskInfo)
+
+        assertFalse(appToWebRepository.isFirstRunPromptShown(taskInfo))
     }
 
     private suspend fun assertAppToWebIntent(expectedUri: Uri, isBrowserApp: Boolean = false) {
