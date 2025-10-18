@@ -70,7 +70,6 @@ import com.android.systemui.statusbar.notification.data.repository.activeNotific
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.data.repository.addNotifs
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
@@ -95,10 +94,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 // TODO(b/273205603): add tests for Active chips with hidden=true once actually used.
-/** Tests for [OngoingActivityChipsViewModel] when the [PromotedNotificationUi] flag is enabled. */
+/** Tests for [OngoingActivityChipsViewModel] */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(PromotedNotificationUi.FLAG_NAME)
 class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val systemClock = kosmos.fakeSystemClock

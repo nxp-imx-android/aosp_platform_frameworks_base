@@ -102,13 +102,6 @@ constructor(
         packageContext: Context,
         systemUiContext: Context,
     ): PromotedNotificationContentModels? {
-        if (!PromotedNotificationContentModel.featureFlagEnabled()) {
-            if (LOG_NOT_EXTRACTED) {
-                logger.logExtractionSkipped(entry, "feature flags disabled")
-            }
-            return null
-        }
-
         val notification = entry.sbn.notification
         if (notification == null) {
             if (LOG_NOT_EXTRACTED) {

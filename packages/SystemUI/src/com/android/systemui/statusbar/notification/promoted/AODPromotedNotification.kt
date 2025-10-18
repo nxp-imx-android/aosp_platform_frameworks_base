@@ -91,10 +91,6 @@ fun AODPromotedNotification(
     viewModelFactory: AODPromotedNotificationViewModel.Factory,
     modifier: Modifier = Modifier,
 ) {
-    if (!PromotedNotificationUi.isEnabled) {
-        return
-    }
-
     val viewModel = rememberViewModel(traceName = "$TAG.viewModel") { viewModelFactory.create() }
 
     val content = viewModel.content ?: return

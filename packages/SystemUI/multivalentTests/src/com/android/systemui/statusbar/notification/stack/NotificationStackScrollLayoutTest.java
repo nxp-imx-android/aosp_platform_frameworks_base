@@ -92,7 +92,6 @@ import com.android.systemui.statusbar.notification.data.repository.HeadsUpReposi
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.AvalancheController;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -1285,23 +1284,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    public void testGenerateHeadsUpDisappearEvent_notifChipsFlagOff_statusBarChipNotSet() {
-        // GIVEN NSSL is ready for HUN animations
-        Consumer<Boolean> headsUpAnimatingAwayListener = mock(BooleanConsumer.class);
-        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
-        prepareStackScrollerForHunAnimations(headsUpAnimatingAwayListener);
-
-        mStackScroller.generateHeadsUpAnimation(
-                row, /* isHeadsUp = */ false, /* statusBarChipBounds= */ new RectF(0f, 0f, 1f, 1f));
-
-        verify(row, never()).setHasStatusBarChipDuringHeadsUpAnimation(anyBoolean());
-    }
-
-    @Test
-    @EnableSceneContainer
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    public void testGenerateHeadsUpDisappearEvent_notifChipsFlagOn_statusBarChipSetToFalse() {
+    public void testGenerateHeadsUpDisappearEvent_statusBarChipSetToFalse() {
         // GIVEN NSSL is ready for HUN animations
         Consumer<Boolean> headsUpAnimatingAwayListener = mock(BooleanConsumer.class);
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
@@ -1315,8 +1298,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    public void testGenerateHeadsUpDisappearEvent_notifChipsFlagOn_statusBarChipSetToTrue() {
+    public void testGenerateHeadsUpDisappearEvent_statusBarChipSetToTrue() {
         // GIVEN NSSL is ready for HUN animations
         Consumer<Boolean> headsUpAnimatingAwayListener = mock(BooleanConsumer.class);
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);

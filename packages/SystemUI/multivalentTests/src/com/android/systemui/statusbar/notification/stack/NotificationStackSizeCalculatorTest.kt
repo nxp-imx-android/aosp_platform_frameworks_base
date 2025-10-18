@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.stack
 
 import android.annotation.DimenRes
-import android.platform.test.annotations.EnableFlags
 import android.service.notification.StatusBarNotification
 import android.view.View.VISIBLE
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -33,7 +32,6 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -157,7 +155,6 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun maxKeyguardNotificationsForPromotedOngoing_onLockscreenSpaceForMinHeightButNotIntrinsicHeight_returnsOne() {
         setGapHeight(0f)
         // No divider height since we're testing one element where index = 0
@@ -285,7 +282,6 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun getSpaceNeeded_onLockscreenEnoughSpacePromotedOngoing_intrinsicHeight() {
         setGapHeight(0f)
         // No divider height since we're testing one element where index = 0
@@ -344,7 +340,6 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun getSpaceNeeded_onLockscreenSavingSpacePromotedOngoing_minHeight() {
         setGapHeight(0f)
         // No divider height since we're testing one element where index = 0

@@ -46,7 +46,6 @@ import com.android.systemui.statusbar.notification.data.repository.UnconfinedFak
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
@@ -67,7 +66,6 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(PromotedNotificationUi.FLAG_NAME)
 class NotifChipsViewModelTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().useUnconfinedTestDispatcher().apply {

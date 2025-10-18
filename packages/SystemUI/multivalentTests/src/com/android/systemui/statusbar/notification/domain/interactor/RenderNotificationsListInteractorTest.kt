@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.notification.domain.interactor
 
 import android.app.Notification
-import android.platform.test.annotations.EnableFlags
 import android.service.notification.StatusBarNotification
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -28,7 +27,6 @@ import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.byKey
@@ -119,7 +117,6 @@ class RenderNotificationsListInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun setRenderList_setsPromotionContent() =
         kosmos.runTest {
             val actual by collectLastValue(outputInteractor.topLevelRepresentativeNotifications)

@@ -52,7 +52,6 @@ import com.android.systemui.statusbar.notification.collection.provider.VisualSta
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRowRepository;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.AvalancheReplaceHunWhenCritical;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -616,12 +615,6 @@ public class HeadsUpManagerImpl
             return PinnedStatus.NotPinned;
         }
 
-        if (!PromotedNotificationUi.isEnabled()
-                && requestedPinnedStatus == PinnedStatus.PinnedByUser) {
-            Log.wtf(TAG, "PinnedByUser status not allowed if PromotedNotificationUi flag off");
-            return PinnedStatus.NotPinned;
-        }
-
         return requestedPinnedStatus;
     }
 
@@ -965,9 +958,6 @@ public class HeadsUpManagerImpl
     @Override
     @NonNull
     public PinnedStatus pinnedHeadsUpStatus() {
-        if (!PromotedNotificationUi.isEnabled()) {
-            return mHasPinnedNotification ? PinnedStatus.PinnedBySystem : PinnedStatus.NotPinned;
-        }
         return mPinnedNotificationStatus;
     }
 
@@ -1365,12 +1355,7 @@ public class HeadsUpManagerImpl
 
         /** Sets what pinned status this HUN is requesting. */
         void setRequestedPinnedStatus(PinnedStatus pinnedStatus) {
-            if (!PromotedNotificationUi.isEnabled() && pinnedStatus == PinnedStatus.PinnedByUser) {
-                Log.w(TAG, "PinnedByUser status not allowed if PromotedNotificationUi is disabled");
-                mRequestedPinnedStatus = PinnedStatus.NotPinned;
-            } else {
-                mRequestedPinnedStatus = pinnedStatus;
-            }
+            mRequestedPinnedStatus = pinnedStatus;
         }
 
         PinnedStatus getRequestedPinnedStatus() {
@@ -1426,8 +1411,7 @@ public class HeadsUpManagerImpl
 
                 final long now = mSystemClock.elapsedRealtime();
                 if (updateEarliestRemovalTime) {
-                    if (PromotedNotificationUi.isEnabled()
-                            && mPinnedStatus.getValue() == PinnedStatus.PinnedByUser) {
+                    if (mPinnedStatus.getValue() == PinnedStatus.PinnedByUser) {
                         mEarliestRemovalTime = now + mMinimumDisplayTimeForUserInitiated;
                     } else {
                         mEarliestRemovalTime = now + mMinimumDisplayTimeDefault;
@@ -1456,7 +1440,6 @@ public class HeadsUpManagerImpl
                         // PromotedNotificationUi flag is enabled
                         return 0;
                     }
-                    /* Check if */ PromotedNotificationUi.isUnexpectedlyInLegacyMode();
                     return 0;
                 }
 

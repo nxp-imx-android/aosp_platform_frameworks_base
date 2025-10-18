@@ -319,20 +319,11 @@ public interface NotificationsModule {
     @ClassKey(ZenModesCleanupStartable.class)
     CoreStartable bindsZenModesCleanup(ZenModesCleanupStartable zenModesCleanup);
 
-    /** Provides the default implementation of {@link PromotedNotificationContentExtractor} if at
-     * least one of the relevant feature flags is enabled, or an implementation that always returns
-     * null if none are enabled. */
-    @Provides
+    /** Provides the default implementation of {@link PromotedNotificationContentExtractor}. */
+    @Binds
     @SysUISingleton
-    static PromotedNotificationContentExtractor providesPromotedNotificationContentExtractor(
-            Provider<PromotedNotificationContentExtractorImpl> implProvider) {
-        if (PromotedNotificationContentModel.featureFlagEnabled()) {
-            return implProvider.get();
-        } else {
-            return (entry, recoveredBuilder, redactionType, imageModelProvider,
-                    packageContext, sysUIContext) -> null;
-        }
-    }
+    PromotedNotificationContentExtractor providesPromotedNotificationContentExtractor(
+            PromotedNotificationContentExtractorImpl impl);
 
     /**
      *  Provides the default implementation of {@link ShowPromotedNotificationsOnAOD}

@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppCh
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.util.kotlin.filterValuesNotNull
 import com.android.systemui.util.kotlin.pairwise
@@ -191,11 +190,7 @@ constructor(
                     // Otherwise: Find the next most important chip.
                     val secondaryChip =
                         pickMostImportantChip(primaryChipResult.remainingChips).mostImportantChip
-                    if (
-                        secondaryChip is InternalChipModel.Active &&
-                            PromotedNotificationUi.isEnabled &&
-                            !isWideScreen
-                    ) {
+                    if (secondaryChip is InternalChipModel.Active && !isWideScreen) {
                         // If we have two showing chips and we don't have a ton of room
                         // (!isScreenReasonablyLarge), then we want to make both of them as small as
                         // possible so that we have the highest chance of showing both chips (as
@@ -262,11 +257,7 @@ constructor(
                 incomingChipBundle.map { bundle -> rankChips(bundle) },
                 displayStateInteractor.isWideScreen,
             ) { rankedChips, isWideScreen ->
-                if (
-                    PromotedNotificationUi.isEnabled &&
-                        !isWideScreen &&
-                        rankedChips.active.filter { !it.isHidden }.size >= 2
-                ) {
+                if (!isWideScreen && rankedChips.active.filter { !it.isHidden }.size >= 2) {
                     // If we have at least two showing chips and we don't have a ton of room
                     // (!isWideScreen), then we want to make both of them as small as possible
                     // so that we have the highest chance of showing both chips (as opposed to
@@ -315,17 +306,6 @@ constructor(
     val chipsLegacy: StateFlow<MultipleOngoingActivityChipsModelLegacy> =
         if (StatusBarChipsModernization.isEnabled) {
             MutableStateFlow(MultipleOngoingActivityChipsModelLegacy()).asStateFlow()
-        } else if (!PromotedNotificationUi.isEnabled) {
-            // Multiple chips are only allowed with notification chips. If the flag isn't on, use
-            // just the primary chip.
-            primaryChip
-                .map {
-                    MultipleOngoingActivityChipsModelLegacy(
-                        primary = it,
-                        secondary = OngoingActivityChipModel.Inactive(),
-                    )
-                }
-                .stateIn(scope, SharingStarted.Lazily, MultipleOngoingActivityChipsModelLegacy())
         } else {
             internalChips
                 .pairwise(initialValue = DEFAULT_MULTIPLE_INTERNAL_INACTIVE_MODEL)

@@ -36,7 +36,6 @@ import com.android.systemui.statusbar.chips.notification.domain.interactor.statu
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.fake
 import com.android.systemui.statusbar.notification.promoted.showPromotedNotificationsOnAOD
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
@@ -52,7 +51,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(PromotedNotificationUi.FLAG_NAME)
 @EnableChipsModernization
 class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

@@ -53,7 +53,6 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderImpl.DecisionImpl
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType
 import com.android.systemui.statusbar.notification.logKey
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -125,11 +124,9 @@ constructor(
             mRemoteInputManager.addActionPressListener(mActionPressListener)
         }
 
-        if (PromotedNotificationUi.isEnabled) {
-            applicationScope.launch {
-                statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent.collect {
-                    onPromotedNotificationChipTapEvent(it)
-                }
+        applicationScope.launch {
+            statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent.collect {
+                onPromotedNotificationChipTapEvent(it)
             }
         }
     }
@@ -141,8 +138,6 @@ constructor(
      * Must be run on the main thread.
      */
     private fun onPromotedNotificationChipTapEvent(key: String) {
-        PromotedNotificationUi.unsafeAssertInNewMode()
-
         val entry = notifCollection.getEntry(key)
         if (entry == null) {
             mLogger.logPromotedNotificationForHeadsUpNotFound(key)
@@ -503,7 +498,7 @@ constructor(
                     if (posted.isHeadsUpEntry) {
                         val pinnedStatus =
                             if (posted.shouldHeadsUpAgain) {
-                                if (PromotedNotificationUi.isEnabled && posted.isPinnedByUser) {
+                                if (posted.isPinnedByUser) {
                                     PinnedStatus.PinnedByUser
                                 } else {
                                     PinnedStatus.PinnedBySystem
@@ -554,7 +549,7 @@ constructor(
     }
 
     private fun bindForAsyncHeadsUp(posted: PostedEntry) {
-        val isPinnedByUser = PromotedNotificationUi.isEnabled && posted.isPinnedByUser
+        val isPinnedByUser = posted.isPinnedByUser
         // TODO: Add a guarantee to bindHeadsUpView of some kind of callback if the bind is
         //  cancelled so that we don't need to have this sad timeout hack.
         mEntriesBindingUntil[posted.key] = mNow + BIND_TIMEOUT

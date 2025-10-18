@@ -60,7 +60,6 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSc
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.model.ShadeMode
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import javax.inject.Inject
 
 @SysUISingleton
@@ -114,9 +113,7 @@ constructor(
             modifier: Modifier = Modifier
         ) {
             Column(modifier) {
-                if (PromotedNotificationUi.isEnabled) {
-                    LockscreenElement(Notifications.AOD.Promoted, Modifier.padding(bottom = 4.dp))
-                }
+                LockscreenElement(Notifications.AOD.Promoted, Modifier.padding(bottom = 4.dp))
                 LockscreenElement(Notifications.AOD.IconShelf)
             }
         }

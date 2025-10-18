@@ -27,7 +27,6 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_UI;
-import static android.app.Flags.FLAG_UI_RICH_ONGOING;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
 import static android.app.Notification.EXTRA_PICTURE_ICON;
@@ -15484,31 +15483,26 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_permissionAllowed() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mTestNotificationChannel, true);
     }
 
     @Test
-    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_permissionDenied() throws Exception {
         testPromotion(PermissionManager.PERMISSION_SOFT_DENIED, mTestNotificationChannel, false);
     }
 
     @Test
-    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_bundledNotification() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mNewsChannel, false);
     }
 
     @Test
-    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_silentChannel() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mSilentChannel, true);
     }
 
     @Test
-    @EnableFlags({FLAG_UI_RICH_ONGOING})
     public void testPromotion_minimizedChannel() throws Exception {
         testPromotion(PermissionManager.PERMISSION_GRANTED, mMinChannel, false);
     }
@@ -18761,14 +18755,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags({FLAG_UI_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
-    public void testSetCanBePromoted_granted_noui() throws Exception {
-        testSetCanBePromoted_granted();
-    }
-
-    @Test
-    @EnableFlags({FLAG_UI_RICH_ONGOING})
     @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
+    // TODO(b/450242013): change this test to work when the flag is *enabled*.
     public void testSetCanBePromoted_granted_ui() throws Exception {
         // UI flag includes permission enforcement via PermissionMgr/AppOps
         preparePermissionManagerFake();
@@ -18862,14 +18850,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags({FLAG_UI_RICH_ONGOING, FLAG_API_RICH_ONGOING_PERMISSION})
-    public void testSetCanBePromoted_granted_onlyNotifiesOnce_noui() throws Exception {
-        testSetCanBePromoted_granted_onlyNotifiesOnce();
-    }
-
-    @Test
-    @EnableFlags({FLAG_UI_RICH_ONGOING})
     @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
+    // TODO(b/450242013): change this test to work when the flag is *enabled*.
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
         // UI flag includes permission enforcement via PermissionMgr/AppOps
         preparePermissionManagerFake();
@@ -18997,14 +18979,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION, FLAG_UI_RICH_ONGOING})
-    public void testPostPromotableNotification_noPermission_preferences() throws Exception {
-        mBinderService.setCanBePromoted(mPkg, mUid, false, true);
-        postAndVerifyPromotableNotification(false);
-    }
-
-
-    @Test
     @EnableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testPostPromotableNotification_noPermission_appOps() throws Exception {
         when(mPermissionManager.checkPermissionForPreflight(
@@ -19071,15 +19045,14 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     private Notification createPromotableNotification(
             boolean addFlagManually, NotificationChannel channel) {
-        boolean newEligibilityCriteria = android.app.Flags.uiRichOngoing();
         // create a qualifying notification
         Notification n = new Notification.Builder(mContext, channel.getId())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setStyle(new Notification.BigTextStyle().setBigContentTitle("BIG"))
                 .setColor(Color.WHITE)
-                .setRequestPromotedOngoing(newEligibilityCriteria)
+                .setRequestPromotedOngoing(true)
                 .setOngoing(true)
-                .setColorized(!newEligibilityCriteria)
+                .setColorized(false)
                 .setFlag(FLAG_PROMOTED_ONGOING, addFlagManually) // used if we're skipping post
                 .build();
         // validate that the test notification does qualify for promotion
