@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 import android.content.Context
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
@@ -51,8 +50,6 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
-import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
-import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -62,7 +59,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -1274,36 +1270,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    @DisableChipsModernization
-    fun chips_chipsModernizationDisabled_clickingChipNotifiesInteractor() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chips)
-            val latestChipTapKey by
-                collectLastValue(
-                    kosmos.statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent
-                )
-            val key = "clickTest"
-
-            setNotifs(
-                listOf(
-                    activeNotificationModel(
-                        key,
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentBuilder(key).build(),
-                    )
-                )
-            )
-            val chip = latest!![0]
-
-            chip.onClickListenerLegacy!!.onClick(mock<View>())
-
-            assertThat(latestChipTapKey).isEqualTo(key)
-        }
-
-    @Test
-    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
-    @EnableChipsModernization
-    fun chips_chipsModernizationEnabled_clickingChipNotifiesInteractor() =
+    fun chips_clickingChipNotifiesInteractor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
             val latestChipTapKey by

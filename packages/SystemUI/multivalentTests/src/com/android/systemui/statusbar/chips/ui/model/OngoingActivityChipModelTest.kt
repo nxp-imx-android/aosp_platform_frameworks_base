@@ -22,8 +22,8 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.res.R
-import org.junit.Assert.assertThrows
 import kotlin.test.Test
+import org.junit.Assert.assertThrows
 import org.junit.runner.RunWith
 
 @SmallTest
@@ -37,7 +37,6 @@ class OngoingActivityChipModelTest : SysuiTestCase() {
                 content = OngoingActivityChipModel.Content.IconOnly,
                 key = "test",
                 colors = ColorsModel.SystemThemed,
-                onClickListenerLegacy = null,
                 clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
             )
         }
@@ -48,7 +47,6 @@ class OngoingActivityChipModelTest : SysuiTestCase() {
         assertThrows(IllegalArgumentException::class.java) {
             OngoingActivityChipModel.Active(
                 content = OngoingActivityChipModel.Content.Countdown(secondsUntilStarted = 2),
-                onClickListenerLegacy = {},
                 icon = null,
                 key = "test",
                 colors = ColorsModel.SystemThemed,
@@ -63,7 +61,6 @@ class OngoingActivityChipModelTest : SysuiTestCase() {
             OngoingActivityChipModel.Active(
                 content = OngoingActivityChipModel.Content.Countdown(secondsUntilStarted = 2),
                 clickBehavior = OngoingActivityChipModel.ClickBehavior.ExpandAction {},
-                onClickListenerLegacy = null,
                 icon = null,
                 key = "test",
                 colors = ColorsModel.SystemThemed,
@@ -77,14 +74,15 @@ class OngoingActivityChipModelTest : SysuiTestCase() {
             OngoingActivityChipModel.Active(
                 content = OngoingActivityChipModel.Content.Countdown(secondsUntilStarted = 2),
                 icon =
-                OngoingActivityChipModel.ChipIcon.SingleColorIcon(
-                    Icon.Resource(
-                        R.drawable.ic_present_to_all,
-                        ContentDescription.Resource(R.string.share_to_app_chip_accessibility_label),
-                    )
-                ),
+                    OngoingActivityChipModel.ChipIcon.SingleColorIcon(
+                        Icon.Resource(
+                            R.drawable.ic_present_to_all,
+                            ContentDescription.Resource(
+                                R.string.share_to_app_chip_accessibility_label
+                            ),
+                        )
+                    ),
                 clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
-                onClickListenerLegacy = null,
                 key = "test",
                 colors = ColorsModel.SystemThemed,
             )

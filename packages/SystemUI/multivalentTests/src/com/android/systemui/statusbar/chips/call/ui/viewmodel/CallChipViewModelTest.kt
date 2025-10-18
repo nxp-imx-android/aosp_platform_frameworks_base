@@ -51,8 +51,6 @@ import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
-import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.callPromotedContentBuilder
@@ -282,7 +280,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_twoCallNotifs_earlierIsUsed() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -317,7 +314,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     @DisableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
     @EnableFlags(StatusBarCallChipUseIsHidden.FLAG_NAME)
-    @EnableChipsModernization
     fun chipLegacy_useIsHidden_inCallWithVisibleApp_zeroStartTime_isHiddenAsIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -334,7 +330,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
-    @EnableChipsModernization
     fun chipWithReturnAnimation_inCallWithVisibleApp_zeroStartTime_isHiddenAsIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -360,7 +355,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
-    @EnableChipsModernization
     fun chipWithReturnAnimation_inCallWithVisibleApp_negativeStartTime_isHiddenAsIconOnly() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -375,7 +369,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarCallChipUseIsHidden.FLAG_NAME)
-    @EnableChipsModernization
     @DisableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
     fun chipLegacy_useIsHidden_animationsDisabled_negativeStartTime_isHiddenAsIconOnly() =
         kosmos.runTest {
@@ -404,7 +397,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
-    @EnableChipsModernization
     fun chipWithReturnAnimation_inCallWithVisibleApp_positiveStartTime_isHiddenAsTimer() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -419,7 +411,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarCallChipUseIsHidden.FLAG_NAME)
-    @EnableChipsModernization
     @DisableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
     fun chipLegacy_useIsHidden_animationsDisabled_positiveStartTime_isHiddenAsTimer() =
         kosmos.runTest {
@@ -646,7 +637,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_inCall_nullIntent_chipsModFlagOn_clickingChipNotifiesInteractor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -670,7 +660,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_inCall_positiveStartTime_validIntent_chipsModFlagOn_clickingChipNotifiesInteractor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -698,7 +687,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_inCall_zeroStartTime_validIntent_chipsModFlagOn_clickingChipNotifiesInteractor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -722,7 +710,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_inCall_noHun_clickBehaviorIsShowHun() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -738,7 +725,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_inCall_hunPinnedBySystem_clickBehaviorIsShowHun() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -759,7 +745,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_inCall_hunPinnedByUser_forDifferentChip_clickBehaviorIsShowHun() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -780,7 +765,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableChipsModernization
     fun chip_inCall_hunPinnedByUser_forThisChip_clickBehaviorIsHideHun() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
@@ -803,7 +787,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     // We don't have any custom launch animation, we only have the return animation.
     @Test
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
-    @EnableChipsModernization
     fun chipWithReturnAnimation_updatesCorrectly_withStateAndTransitionState() =
         kosmos.runTest {
             val pendingIntent = mock<PendingIntent>()
@@ -898,7 +881,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
-    @EnableChipsModernization
     fun chipWithReturnAnimation_updatesCorrectly_whenAppIsLaunchedAndClosedWithoutAnimation() =
         kosmos.runTest {
             val pendingIntent = mock<PendingIntent>()
@@ -979,7 +961,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
-    @EnableChipsModernization
     fun chipWithReturnAnimation_chipDataChangesMidTransition() =
         kosmos.runTest {
             val pendingIntent = mock<PendingIntent>()
@@ -1063,7 +1044,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
-    @EnableChipsModernization
     fun chipWithReturnAnimation_chipDisappearsMidTransition() =
         kosmos.runTest {
             val pendingIntent = mock<PendingIntent>()
@@ -1148,7 +1128,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                     FlagsParameterization.allCombinationsOf(
                         StatusBarCallChipUseIsHidden.FLAG_NAME,
                         StatusBarRootModernization.FLAG_NAME,
-                        StatusBarChipsModernization.FLAG_NAME,
                         StatusBarChipsReturnAnimations.FLAG_NAME,
                     )
                 )

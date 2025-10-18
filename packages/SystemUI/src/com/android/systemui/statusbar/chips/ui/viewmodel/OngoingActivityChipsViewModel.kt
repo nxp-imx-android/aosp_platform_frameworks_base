@@ -32,18 +32,14 @@ import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChips
 import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
-import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.util.kotlin.filterValuesNotNull
-import com.android.systemui.util.kotlin.pairwise
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -150,76 +146,6 @@ constructor(
             // See b/347726238.
             .stateIn(scope, SharingStarted.Lazily, ChipBundle())
 
-    private val internalChip: Flow<InternalChipModel> =
-        incomingChipBundle.map { bundle -> pickMostImportantChip(bundle).mostImportantChip }
-
-    /**
-     * A flow modeling the primary chip that should be shown in the status bar after accounting for
-     * possibly multiple ongoing activities and animation requirements.
-     *
-     * [com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment] is responsible for
-     * actually displaying the chip.
-     */
-    val primaryChip: StateFlow<OngoingActivityChipModel> =
-        internalChip
-            .pairwise(initialValue = DEFAULT_INTERNAL_INACTIVE_MODEL)
-            .map { (old, new) -> createOutputModel(old, new) }
-            .stateIn(scope, SharingStarted.Lazily, OngoingActivityChipModel.Inactive())
-
-    /**
-     * Equivalent to [MultipleOngoingActivityChipsModelLegacy] but using the internal models to do
-     * some state tracking before we get the final output.
-     */
-    @Deprecated("Since StatusBarChipsModernization, this isn't used anymore")
-    private data class InternalMultipleOngoingActivityChipsModel(
-        val primary: InternalChipModel,
-        val secondary: InternalChipModel,
-    )
-
-    private val internalChips: Flow<InternalMultipleOngoingActivityChipsModel> =
-        combine(incomingChipBundle, displayStateInteractor.isWideScreen) { bundle, isWideScreen ->
-            // First: Find the most important chip.
-            val primaryChipResult = pickMostImportantChip(bundle)
-            when (val primaryChip = primaryChipResult.mostImportantChip) {
-                is InternalChipModel.Inactive -> {
-                    // If the primary chip is hidden, the secondary chip will also be hidden, so
-                    // just pass the same Hidden model for both.
-                    InternalMultipleOngoingActivityChipsModel(primaryChip, primaryChip)
-                }
-                is InternalChipModel.Active -> {
-                    // Otherwise: Find the next most important chip.
-                    val secondaryChip =
-                        pickMostImportantChip(primaryChipResult.remainingChips).mostImportantChip
-                    if (secondaryChip is InternalChipModel.Active && !isWideScreen) {
-                        // If we have two showing chips and we don't have a ton of room
-                        // (!isScreenReasonablyLarge), then we want to make both of them as small as
-                        // possible so that we have the highest chance of showing both chips (as
-                        // opposed to showing the primary chip with a lot of text and completely
-                        // hiding the secondary chip).
-                        // TODO(b/392895330): If StatusBarChipsModernization is enabled, do the
-                        // squishing in Compose instead, and be smart about it (e.g. if we have
-                        // room for the first chip to show text and the second chip to be icon-only,
-                        // do that instead of always squishing both chips.)
-                        InternalMultipleOngoingActivityChipsModel(
-                            primaryChip.squish(),
-                            secondaryChip.squish(),
-                        )
-                    } else {
-                        InternalMultipleOngoingActivityChipsModel(primaryChip, secondaryChip)
-                    }
-                }
-            }
-        }
-
-    /** Squishes the chip down to the smallest content possible. */
-    private fun InternalChipModel.Active.squish(): InternalChipModel.Active {
-        return if (model.shouldSquish()) {
-            InternalChipModel.Active(this.type, this.model.toIconOnly())
-        } else {
-            this
-        }
-    }
-
     private fun OngoingActivityChipModel.Active.shouldSquish(): Boolean {
         if (this.icon == null) {
             // If there's no icon, we can't squish the chip to be icon-only
@@ -252,37 +178,33 @@ constructor(
      * bar after accounting for possibly multiple ongoing activities and animation requirements.
      */
     private val unrefinedChips =
-        if (StatusBarChipsModernization.isEnabled) {
-            combine(
-                incomingChipBundle.map { bundle -> rankChips(bundle) },
-                displayStateInteractor.isWideScreen,
-            ) { rankedChips, isWideScreen ->
-                if (!isWideScreen && rankedChips.active.filter { !it.isHidden }.size >= 2) {
-                    // If we have at least two showing chips and we don't have a ton of room
-                    // (!isWideScreen), then we want to make both of them as small as possible
-                    // so that we have the highest chance of showing both chips (as opposed to
-                    // showing the first chip with a lot of text and completely hiding the other
-                    // chips).
-                    val squishedActiveChips =
-                        rankedChips.active.map {
-                            if (!it.isHidden && it.shouldSquish()) {
-                                it.toIconOnly()
-                            } else {
-                                it
-                            }
+        combine(
+            incomingChipBundle.map { bundle -> rankChips(bundle) },
+            displayStateInteractor.isWideScreen,
+        ) { rankedChips, isWideScreen ->
+            if (!isWideScreen && rankedChips.active.filter { !it.isHidden }.size >= 2) {
+                // If we have at least two showing chips and we don't have a ton of room
+                // (!isWideScreen), then we want to make both of them as small as possible
+                // so that we have the highest chance of showing both chips (as opposed to
+                // showing the first chip with a lot of text and completely hiding the other
+                // chips).
+                val squishedActiveChips =
+                    rankedChips.active.map {
+                        if (!it.isHidden && it.shouldSquish()) {
+                            it.toIconOnly()
+                        } else {
+                            it
                         }
+                    }
 
-                    MultipleOngoingActivityChipsModel(
-                        active = squishedActiveChips,
-                        overflow = rankedChips.overflow,
-                        inactive = rankedChips.inactive,
-                    )
-                } else {
-                    rankedChips
-                }
+                MultipleOngoingActivityChipsModel(
+                    active = squishedActiveChips,
+                    overflow = rankedChips.overflow,
+                    inactive = rankedChips.inactive,
+                )
+            } else {
+                rankedChips
             }
-        } else {
-            MutableStateFlow(MultipleOngoingActivityChipsModel())
         }
 
     val chips: StateFlow<MultipleOngoingActivityChipsModel> =
@@ -294,37 +216,7 @@ constructor(
             }
             .stateIn(scope, SharingStarted.Lazily, MultipleOngoingActivityChipsModel())
 
-    /**
-     * A flow modeling the primary chip that should be shown in the status bar after accounting for
-     * possibly multiple ongoing activities and animation requirements.
-     *
-     * [com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment] is responsible for
-     * actually displaying the chip.
-     *
-     * Deprecated: since StatusBarChipsModernization, use the new [chips] instead.
-     */
-    val chipsLegacy: StateFlow<MultipleOngoingActivityChipsModelLegacy> =
-        if (StatusBarChipsModernization.isEnabled) {
-            MutableStateFlow(MultipleOngoingActivityChipsModelLegacy()).asStateFlow()
-        } else {
-            internalChips
-                .pairwise(initialValue = DEFAULT_MULTIPLE_INTERNAL_INACTIVE_MODEL)
-                .map { (old, new) ->
-                    val correctPrimary = createOutputModel(old.primary, new.primary)
-                    val correctSecondary = createOutputModel(old.secondary, new.secondary)
-                    MultipleOngoingActivityChipsModelLegacy(correctPrimary, correctSecondary)
-                }
-                .stateIn(scope, SharingStarted.Lazily, MultipleOngoingActivityChipsModelLegacy())
-        }
-
-    private val activeChips =
-        if (StatusBarChipsModernization.isEnabled) {
-            chips.map { it.active }
-        } else {
-            chipsLegacy.map {
-                listOf(it.primary, it.secondary).filterIsInstance<OngoingActivityChipModel.Active>()
-            }
-        }
+    private val activeChips = chips.map { it.active }
 
     /** Stores the latest on-screen bounds for each of the chips. */
     // Note: This will also store bounds for chips that have been removed. We may want to clear the
@@ -436,140 +328,8 @@ constructor(
         return MultipleOngoingActivityChipsModel(activeChips, overflowChips, inactiveChips)
     }
 
-    /** A data class representing the return result of [pickMostImportantChip]. */
-    private data class MostImportantChipResult(
-        val mostImportantChip: InternalChipModel,
-        val remainingChips: ChipBundle,
-    )
-
-    /**
-     * Finds the most important chip from the given [bundle].
-     *
-     * This function returns that most important chip, and it also returns any remaining chips that
-     * still want to be shown after filtering out the most important chip.
-     */
-    private fun pickMostImportantChip(bundle: ChipBundle): MostImportantChipResult {
-        // This `when` statement shows the priority order of the chips.
-        return when {
-            bundle.screenRecord is OngoingActivityChipModel.Active ->
-                MostImportantChipResult(
-                    mostImportantChip =
-                        InternalChipModel.Active(ChipType.ScreenRecord, bundle.screenRecord),
-                    remainingChips =
-                        bundle.copy(
-                            screenRecord = OngoingActivityChipModel.Inactive(),
-                            // Screen recording also activates the media projection APIs, which
-                            // means that whenever the screen recording chip is active, the
-                            // share-to-app chip would also be active. (Screen recording is a
-                            // special case of share-to-app, where the app receiving the share is
-                            // specifically System UI.)
-                            // We want only the screen-recording-specific chip to be shown in this
-                            // case. If we did have screen recording as the primary chip, we need to
-                            // suppress the share-to-app chip to make sure they don't both show.
-                            // See b/296461748.
-                            shareToApp = OngoingActivityChipModel.Inactive(),
-                        ),
-                )
-            bundle.shareToApp is OngoingActivityChipModel.Active ->
-                MostImportantChipResult(
-                    mostImportantChip =
-                        InternalChipModel.Active(ChipType.ShareToApp, bundle.shareToApp),
-                    remainingChips = bundle.copy(shareToApp = OngoingActivityChipModel.Inactive()),
-                )
-            bundle.castToOtherDevice is OngoingActivityChipModel.Active ->
-                MostImportantChipResult(
-                    mostImportantChip =
-                        InternalChipModel.Active(
-                            ChipType.CastToOtherDevice,
-                            bundle.castToOtherDevice,
-                        ),
-                    remainingChips =
-                        bundle.copy(castToOtherDevice = OngoingActivityChipModel.Inactive()),
-                )
-            bundle.call is OngoingActivityChipModel.Active ->
-                MostImportantChipResult(
-                    mostImportantChip = InternalChipModel.Active(ChipType.Call, bundle.call),
-                    remainingChips = bundle.copy(call = OngoingActivityChipModel.Inactive()),
-                )
-            bundle.notifs.isNotEmpty() ->
-                MostImportantChipResult(
-                    mostImportantChip =
-                        InternalChipModel.Active(ChipType.Notification, bundle.notifs.first()),
-                    remainingChips =
-                        bundle.copy(notifs = bundle.notifs.subList(1, bundle.notifs.size)),
-                )
-            else -> {
-                // We should only get here if all chip types are hidden
-                check(bundle.screenRecord is OngoingActivityChipModel.Inactive)
-                check(bundle.shareToApp is OngoingActivityChipModel.Inactive)
-                check(bundle.castToOtherDevice is OngoingActivityChipModel.Inactive)
-                check(bundle.call is OngoingActivityChipModel.Inactive)
-                check(bundle.notifs.isEmpty())
-                MostImportantChipResult(
-                    mostImportantChip =
-                        InternalChipModel.Inactive(
-                            screenRecord = bundle.screenRecord,
-                            shareToApp = bundle.shareToApp,
-                            castToOtherDevice = bundle.castToOtherDevice,
-                            call = bundle.call,
-                            notifs = OngoingActivityChipModel.Inactive(),
-                        ),
-                    // All the chips are already hidden, so no need to filter anything out of the
-                    // bundle.
-                    remainingChips = bundle,
-                )
-            }
-        }
-    }
-
-    private fun createOutputModel(
-        old: InternalChipModel,
-        new: InternalChipModel,
-    ): OngoingActivityChipModel {
-        return if (old is InternalChipModel.Active && new is InternalChipModel.Inactive) {
-            // If we're transitioning from showing the chip to hiding the chip, different
-            // chips require different animation behaviors. For example, the screen share
-            // chips shouldn't animate if the user stopped the screen share from the dialog
-            // (see b/353249803#comment4), but the call chip should always animate.
-            //
-            // This `when` block makes sure that when we're transitioning from Active to
-            // Inactive, we check what chip type was previously showing and we use that chip
-            // type's hide animation behavior.
-            return when (old.type) {
-                ChipType.ScreenRecord -> new.screenRecord
-                ChipType.ShareToApp -> new.shareToApp
-                ChipType.CastToOtherDevice -> new.castToOtherDevice
-                ChipType.Call -> new.call
-                ChipType.Notification -> new.notifs
-            }
-        } else if (new is InternalChipModel.Active) {
-            // If we have a chip to show, always show it.
-            new.model
-        } else {
-            // In the Hidden -> Hidden transition, it shouldn't matter which hidden model we
-            // choose because no animation should happen regardless.
-            OngoingActivityChipModel.Inactive()
-        }
-    }
-
     companion object {
         private val TAG = "ChipsViewModel".pad()
-
-        private val DEFAULT_INTERNAL_INACTIVE_MODEL =
-            InternalChipModel.Inactive(
-                screenRecord = OngoingActivityChipModel.Inactive(),
-                shareToApp = OngoingActivityChipModel.Inactive(),
-                castToOtherDevice = OngoingActivityChipModel.Inactive(),
-                call = OngoingActivityChipModel.Inactive(),
-                notifs = OngoingActivityChipModel.Inactive(),
-            )
-
-        private val DEFAULT_MULTIPLE_INTERNAL_INACTIVE_MODEL =
-            InternalMultipleOngoingActivityChipsModel(
-                primary = DEFAULT_INTERNAL_INACTIVE_MODEL,
-                secondary = DEFAULT_INTERNAL_INACTIVE_MODEL,
-            )
-
         private const val MAX_VISIBLE_CHIPS = 3
     }
 }

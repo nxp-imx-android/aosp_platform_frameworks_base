@@ -76,8 +76,8 @@ import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.Me
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.assertIsCallChip
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.assertIsScreenRecordChip
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsWithNotifsViewModelTest.Companion.assertIsCallChip
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsWithNotifsViewModelTest.Companion.assertIsScreenRecordChip
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.model.StatusBarMode
