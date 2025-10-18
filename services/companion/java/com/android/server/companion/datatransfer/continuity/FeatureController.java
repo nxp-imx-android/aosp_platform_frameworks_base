@@ -42,9 +42,13 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
     @GuardedBy("this")
     private boolean mEnabled = false;
 
+    protected final int mUserId;
+
     private final TaskContinuityMessenger mTaskContinuityMessenger;
 
-    protected FeatureController(@NonNull TaskContinuityMessenger taskContinuityMessenger) {
+    protected FeatureController(
+            int userId, @NonNull TaskContinuityMessenger taskContinuityMessenger) {
+        this.mUserId = userId;
         this.mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
     }
 

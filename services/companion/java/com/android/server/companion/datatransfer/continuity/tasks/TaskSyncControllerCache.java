@@ -47,6 +47,7 @@ public class TaskSyncControllerCache extends FeatureControllerCache<TaskSyncCont
     @Override
     protected TaskSyncController createFeatureControllerForUser(int userId) {
         return new TaskSyncController(
+                userId,
                 mTaskContinuityMessenger,
                 new TaskBroadcaster(mTaskContinuityMessenger, new RunningTaskFetcher(mContext)),
                 new RemoteTaskStore(),

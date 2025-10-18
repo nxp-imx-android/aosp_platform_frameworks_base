@@ -39,8 +39,8 @@ class FakeFeatureController extends FeatureController {
     public List<HandoffRequestMessage> mHandoffRequestMessages = new ArrayList<>();
     public List<HandoffRequestResultMessage> mHandoffRequestResultMessages = new ArrayList<>();
 
-    public FakeFeatureController(TaskContinuityMessenger messenger) {
-        super(messenger);
+    public FakeFeatureController(int userId, TaskContinuityMessenger messenger) {
+        super(userId, messenger);
     }
 
     @Override

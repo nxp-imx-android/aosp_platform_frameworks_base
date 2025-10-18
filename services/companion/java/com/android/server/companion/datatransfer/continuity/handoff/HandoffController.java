@@ -37,11 +37,12 @@ public class HandoffController extends FeatureController {
     private final OutboundHandoffRequestHandler mOutboundHandoffRequestHandler;
 
     public HandoffController(
+            int userId,
             @NonNull TaskContinuityMessenger taskContinuityMessenger,
             @NonNull TaskSyncController taskSyncController,
             @NonNull InboundHandoffRequestHandler inboundHandoffRequestHandler,
             @NonNull OutboundHandoffRequestHandler outboundHandoffRequestHandler) {
-        super(Objects.requireNonNull(taskContinuityMessenger));
+        super(userId, Objects.requireNonNull(taskContinuityMessenger));
         this.mTaskSyncController = Objects.requireNonNull(taskSyncController);
         this.mInboundHandoffRequestHandler = Objects.requireNonNull(inboundHandoffRequestHandler);
         this.mOutboundHandoffRequestHandler = Objects.requireNonNull(outboundHandoffRequestHandler);

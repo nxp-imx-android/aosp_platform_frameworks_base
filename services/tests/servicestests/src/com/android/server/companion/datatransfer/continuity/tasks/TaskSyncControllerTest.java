@@ -50,6 +50,8 @@ import java.util.ArrayList;
 @RunWith(AndroidTestingRunner.class)
 public class TaskSyncControllerTest {
 
+    private static final int USER_ID = 1;
+
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private TaskBroadcaster mMockTaskBroadcaster;
     @Mock private RemoteTaskStore mMockRemoteTaskStore;
@@ -63,6 +65,7 @@ public class TaskSyncControllerTest {
         MockitoAnnotations.initMocks(this);
         mTaskSyncController =
                 new TaskSyncController(
+                        USER_ID,
                         mMockTaskContinuityMessenger,
                         mMockTaskBroadcaster,
                         mMockRemoteTaskStore,

@@ -44,6 +44,7 @@ public class HandoffControllerCache extends FeatureControllerCache<HandoffContro
     @Override
     protected HandoffController createFeatureControllerForUser(int userId) {
         return new HandoffController(
+                userId,
                 mTaskContinuityMessenger,
                 mTaskSyncControllerCache.getOrCreateFeatureController(userId),
                 new InboundHandoffRequestHandler(mTaskContinuityMessenger),

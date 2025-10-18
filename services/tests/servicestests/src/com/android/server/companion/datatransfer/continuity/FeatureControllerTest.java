@@ -44,13 +44,15 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidTestingRunner.class)
 public class FeatureControllerTest {
 
+    public static final int USER_ID = 1;
+
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     FakeFeatureController mFakeFeatureController;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mFakeFeatureController = new FakeFeatureController(mMockTaskContinuityMessenger);
+        mFakeFeatureController = new FakeFeatureController(USER_ID, mMockTaskContinuityMessenger);
     }
 
     @Test
