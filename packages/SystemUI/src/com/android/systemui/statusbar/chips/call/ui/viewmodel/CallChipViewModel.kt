@@ -226,7 +226,6 @@ constructor(
         val intent = state.intent
         val instanceId = state.notificationInstanceId
 
-        // This block mimics OngoingCallController#updateChip.
         val content =
             when {
                 state.startTimeMs <= 0L -> {

@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.promoted.domain.interactor
 
 import android.app.Notification
 import android.content.applicationContext
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -38,7 +37,6 @@ import com.android.systemui.statusbar.notification.collection.buildPromotedOngoi
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.fake
 import com.android.systemui.statusbar.notification.promoted.showPromotedNotificationsOnAOD
-import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.policy.domain.interactor.sensitiveNotificationProtectionInteractor
 import com.android.systemui.statusbar.policy.mockSensitiveNotificationProtectionController
 import com.android.systemui.testKosmos
@@ -51,7 +49,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableChipsModernization
 class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

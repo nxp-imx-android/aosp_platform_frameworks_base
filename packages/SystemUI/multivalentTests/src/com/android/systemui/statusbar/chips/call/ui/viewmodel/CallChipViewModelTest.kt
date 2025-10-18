@@ -22,7 +22,6 @@ import android.content.Intent
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId
 import com.android.systemui.SysuiTestCase
@@ -83,15 +82,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     private val chipBackgroundView = mock<ChipBackgroundContainer>()
-    private val chipView =
-        mock<View>().apply {
-            whenever(
-                    this.requireViewById<ChipBackgroundContainer>(
-                        R.id.ongoing_activity_chip_background
-                    )
-                )
-                .thenReturn(chipBackgroundView)
-        }
     private val mockExpandable: Expandable =
         mock<Expandable>().apply { whenever(dialogTransitionController(any())).thenReturn(mock()) }
 
@@ -660,7 +650,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    fun chip_inCall_positiveStartTime_validIntent_chipsModFlagOn_clickingChipNotifiesInteractor() =
+    fun chip_inCall_positiveStartTime_validIntent_clickingChipNotifiesInteractor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
             val latestChipTapKey by
@@ -687,7 +677,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    fun chip_inCall_zeroStartTime_validIntent_chipsModFlagOn_clickingChipNotifiesInteractor() =
+    fun chip_inCall_zeroStartTime_validIntent_clickingChipNotifiesInteractor() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
             val latestChipTapKey by

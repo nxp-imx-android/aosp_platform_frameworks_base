@@ -43,19 +43,6 @@ class OngoingActivityChipModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun contentCountdown_withClickListenerLegacyNotNull_throws() {
-        assertThrows(IllegalArgumentException::class.java) {
-            OngoingActivityChipModel.Active(
-                content = OngoingActivityChipModel.Content.Countdown(secondsUntilStarted = 2),
-                icon = null,
-                key = "test",
-                colors = ColorsModel.SystemThemed,
-                clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
-            )
-        }
-    }
-
-    @Test
     fun contentCountdown_withClickListenerNotNone_throws() {
         assertThrows(IllegalArgumentException::class.java) {
             OngoingActivityChipModel.Active(
