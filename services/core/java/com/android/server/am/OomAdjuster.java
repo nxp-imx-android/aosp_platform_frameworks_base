@@ -525,6 +525,9 @@ public abstract class OomAdjuster {
 
         /** The previous process that showed an activity. */
         @Nullable ProcessRecordInternal getPreviousProcess();
+
+        /** Checks whether the debugging messages should be reported for the given process's UID. */
+        boolean isDebugEnabled(ProcessRecordInternal app);
     }
 
     boolean isChangeEnabled(@CachedCompatChangeId int cachedCompatChangeId,
@@ -2057,7 +2060,7 @@ public abstract class OomAdjuster {
         final UidRecordInternal uidRec = state.getUidRecord();
 
         final boolean reportDebugMsgs = DEBUG_SWITCH || DEBUG_OOM_ADJ
-                        || mService.mCurOomAdjUid == state.getApplicationUid();
+                        || mGlobalState.isDebugEnabled(state);
 
         if (state.getCurRawAdj() != state.getSetRawAdj()) {
             state.setSetRawAdj(state.getCurRawAdj());

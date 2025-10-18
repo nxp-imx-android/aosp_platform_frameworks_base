@@ -118,7 +118,7 @@ public final class PhantomProcessRecord {
                 Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                         "killPhantom/" + mProcessName + "/" + reason);
             }
-            if (noisy || mUid == mService.mCurOomAdjUid) {
+            if (noisy || mUid == mService.mProcessStateController.getDebugUid()) {
                 mService.reportUidInfoMessageLocked(TAG,
                         "Killing " + toString() + ": " + reason, mUid);
             }

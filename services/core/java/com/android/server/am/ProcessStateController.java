@@ -322,6 +322,8 @@ public class ProcessStateController {
         private ProcessRecordInternal mHeavyWeightProcess = null;
         private ProcessRecordInternal mShowingUiWhileDozingProcess = null;
         private ProcessRecordInternal mPreviousProcess = null;
+        private static final int NONE_DEBUG_UID = -1;
+        private volatile int mDebugUid = NONE_DEBUG_UID;
 
         private void commitStagedState() {
             mUnlocking = mUnlockingStaged;
@@ -375,6 +377,10 @@ public class ProcessStateController {
         @Nullable
         public ProcessRecordInternal getPreviousProcess() {
             return mPreviousProcess;
+        }
+
+        public boolean isDebugEnabled(ProcessRecordInternal app) {
+            return app.getApplicationUid() == mDebugUid;
         }
     }
 
@@ -461,6 +467,27 @@ public class ProcessStateController {
     @GuardedBy("mLock")
     public void setIsLastMemoryLevelNormal(boolean isMemoryNormal) {
         mGlobalState.mIsLastMemoryLevelNormal = isMemoryNormal;
+    }
+
+    /**
+     * Sets the UID for which OOM adjustment debugging messages should be reported.
+     */
+    public void setDebugUid(int uid) {
+        mGlobalState.mDebugUid = uid;
+    }
+
+    /**
+     * Clears the UID for which OOM adjustment debugging messages are reported.
+     */
+    public void clearDebugUid() {
+        mGlobalState.mDebugUid = GlobalState.NONE_DEBUG_UID;
+    }
+
+    /**
+     * Returns the UID for which OOM adjustment debugging messages are currently being reported.
+     */
+    public int getDebugUid() {
+        return mGlobalState.mDebugUid;
     }
 
     /***************************** UID State Events ****************************/
