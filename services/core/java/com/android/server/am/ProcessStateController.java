@@ -145,10 +145,7 @@ public class ProcessStateController {
      */
     public SyncBatchSession startServiceBatchSession(@OomAdjReason int reason) {
         if (!Flags.pscBatchServiceUpdates()) return null;
-
-        final SyncBatchSession batchSession = getBatchSession();
-        batchSession.start(reason);
-        return batchSession;
+        return startBatchSession(reason);
     }
 
     /**
@@ -157,8 +154,6 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public SyncBatchSession startBatchSession(@OomAdjReason int reason) {
-        if (!Flags.pscBatchUpdate()) return null;
-
         final SyncBatchSession batchSession = getBatchSession();
         batchSession.start(reason);
         return batchSession;
