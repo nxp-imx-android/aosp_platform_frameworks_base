@@ -19,6 +19,7 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.FeatureControllerCache;
@@ -33,6 +34,7 @@ public class TaskSyncControllerCache extends FeatureControllerCache<TaskSyncCont
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    private final PackageManager mPackageManager;
 
     public TaskSyncControllerCache(
             @NonNull Context context, @NonNull TaskContinuityMessenger taskContinuityMessenger) {
@@ -42,6 +44,7 @@ public class TaskSyncControllerCache extends FeatureControllerCache<TaskSyncCont
                 Objects.requireNonNull(context.getSystemService(ActivityTaskManager.class));
         mActivityTaskManagerInternal =
                 Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class));
+        mPackageManager = Objects.requireNonNull(context.getPackageManager());
     }
 
     @Override
@@ -49,7 +52,13 @@ public class TaskSyncControllerCache extends FeatureControllerCache<TaskSyncCont
         return new TaskSyncController(
                 userId,
                 mTaskContinuityMessenger,
-                new TaskBroadcaster(mTaskContinuityMessenger, new RunningTaskFetcher(mContext)),
+                new TaskBroadcaster(
+                        mTaskContinuityMessenger,
+                        new RunningTaskFetcher(
+                                userId,
+                                mActivityTaskManager,
+                                mActivityTaskManagerInternal,
+                                mPackageManager)),
                 new RemoteTaskStore(),
                 mActivityTaskManager,
                 mActivityTaskManagerInternal);

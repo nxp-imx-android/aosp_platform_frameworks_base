@@ -21,7 +21,6 @@ import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.content.pm.PackageManager;
-import android.content.Context;
 import android.content.Intent;
 import android.util.Slog;
 
@@ -44,25 +43,32 @@ public class RunningTaskFetcher {
 
     private static final String TAG = "RunningTaskFetcher";
 
+    private final int mUserId;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final PackageManager mPackageManager;
     private final PackageMetadataCache mPackageMetadataCache;
 
-    public RunningTaskFetcher(@NonNull Context context) {
+    public RunningTaskFetcher(
+            int userId,
+            @NonNull ActivityTaskManager activityTaskManager,
+            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
+            @NonNull PackageManager packageManager) {
         this(
-                Objects.requireNonNull(context).getSystemService(ActivityTaskManager.class),
-                Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class)),
-                Objects.requireNonNull(context).getPackageManager(),
-                new PackageMetadataCache(Objects.requireNonNull(context).getPackageManager()));
+                userId,
+                Objects.requireNonNull(activityTaskManager),
+                Objects.requireNonNull(activityTaskManagerInternal),
+                Objects.requireNonNull(packageManager),
+                new PackageMetadataCache(Objects.requireNonNull(packageManager)));
     }
 
     public RunningTaskFetcher(
+            int userId,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
             @NonNull PackageManager packageManager,
             @NonNull PackageMetadataCache packageMetadataCache) {
-
+        mUserId = userId;
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mPackageManager = Objects.requireNonNull(packageManager);
@@ -136,6 +142,11 @@ public class RunningTaskFetcher {
 
     private boolean shouldTaskBeSynced(@Nullable RunningTaskInfo taskInfo) {
         if (taskInfo == null) {
+            return false;
+        }
+
+        if (taskInfo.userId != mUserId) {
+            Slog.v(TAG, "Task " + taskInfo.taskId + " is not in user " + mUserId);
             return false;
         }
 

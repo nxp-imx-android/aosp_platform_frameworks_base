@@ -49,6 +49,7 @@ import java.util.List;
 public class RunningTaskFetcherTest {
 
     private static final String LAUNCHER_PACKAGE_NAME = "com.example.launcher";
+    private static final int USER_ID = 0;
 
     @Mock private ActivityTaskManager mockActivityTaskManager;
     @Mock private ActivityTaskManagerInternal mockActivityTaskManagerInternal;
@@ -68,6 +69,7 @@ public class RunningTaskFetcherTest {
 
         runningTaskFetcher =
                 new RunningTaskFetcher(
+                        USER_ID,
                         mockActivityTaskManager,
                         mockActivityTaskManagerInternal,
                         mockPackageManager,
@@ -78,11 +80,33 @@ public class RunningTaskFetcherTest {
     public void testGetRunningTasks_returnsRunningTasks() {
         FakeTask[] tasks = {
             new FakeTask(
-                    1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0]), true),
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new PackageMetadata("app1", new byte[0]),
+                    true),
             new FakeTask(
-                    2, "com.example.app2", 200, new PackageMetadata("app2", new byte[0]), false),
+                    2,
+                    USER_ID,
+                    "com.example.app2",
+                    200,
+                    new PackageMetadata("app2", new byte[0]),
+                    false),
             new FakeTask(
-                    3, LAUNCHER_PACKAGE_NAME, 300, new PackageMetadata("app3", new byte[0]), true)
+                    3,
+                    USER_ID,
+                    LAUNCHER_PACKAGE_NAME,
+                    300,
+                    new PackageMetadata("app3", new byte[0]),
+                    true),
+            new FakeTask(
+                    4,
+                    1000,
+                    "com.example.app4",
+                    400,
+                    new PackageMetadata("app4", new byte[0]),
+                    true),
         };
         setupRunningTasks(tasks);
 
@@ -99,8 +123,13 @@ public class RunningTaskFetcherTest {
     public void testGetRunningTasks_filtersTasksWithoutPackageMetadata() {
         FakeTask[] tasks = {
             new FakeTask(
-                    1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0]), true),
-            new FakeTask(2, "com.example.app2", 200, null, true),
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new PackageMetadata("app1", new byte[0]),
+                    true),
+            new FakeTask(2, USER_ID, "com.example.app2", 200, null, true),
         };
         setupRunningTasks(tasks);
 
@@ -115,9 +144,19 @@ public class RunningTaskFetcherTest {
     public void testGetRunningTaskById_returnsRunningTask() {
         FakeTask[] tasks = {
             new FakeTask(
-                    1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0]), true),
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new PackageMetadata("app1", new byte[0]),
+                    true),
             new FakeTask(
-                    2, "com.example.app2", 200, new PackageMetadata("app2", new byte[0]), false),
+                    2,
+                    USER_ID,
+                    "com.example.app2",
+                    200,
+                    new PackageMetadata("app2", new byte[0]),
+                    false),
         };
         setupRunningTasks(tasks);
 
@@ -130,9 +169,19 @@ public class RunningTaskFetcherTest {
     public void testGetRunningTaskById_taskNotFound_returnsNull() {
         FakeTask[] tasks = {
             new FakeTask(
-                    1, "com.example.app1", 100, new PackageMetadata("app1", new byte[0]), true),
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    100,
+                    new PackageMetadata("app1", new byte[0]),
+                    true),
             new FakeTask(
-                    2, "com.example.app2", 200, new PackageMetadata("app2", new byte[0]), false),
+                    2,
+                    USER_ID,
+                    "com.example.app2",
+                    200,
+                    new PackageMetadata("app2", new byte[0]),
+                    false),
         };
         setupRunningTasks(tasks);
 
@@ -144,7 +193,7 @@ public class RunningTaskFetcherTest {
     @Test
     public void testGetRunningTaskById_taskWithoutPackageMetadata_returnsNull() {
         FakeTask[] tasks = {
-            new FakeTask(2, "com.example.app2", 200, null, true),
+            new FakeTask(2, USER_ID, "com.example.app2", 200, null, true),
         };
         setupRunningTasks(tasks);
 
@@ -158,6 +207,7 @@ public class RunningTaskFetcherTest {
         FakeTask[] tasks = {
             new FakeTask(
                     1,
+                    USER_ID,
                     LAUNCHER_PACKAGE_NAME,
                     200,
                     new PackageMetadata("launcher", new byte[0]),
@@ -172,6 +222,7 @@ public class RunningTaskFetcherTest {
 
     private record FakeTask(
             int taskId,
+            int userId,
             String packageName,
             long lastActiveTime,
             PackageMetadata packageMetadata,
@@ -199,6 +250,7 @@ public class RunningTaskFetcherTest {
     private RunningTaskInfo setupTask(FakeTask task) {
         RunningTaskInfo taskInfo = new RunningTaskInfo();
         taskInfo.taskId = task.taskId;
+        taskInfo.userId = task.userId;
         taskInfo.baseActivity = new ComponentName(task.packageName, "com.example.app.MainActivity");
         taskInfo.lastActiveTime = task.lastActiveTime;
         when(mockPackageMetadataCache.getMetadataForPackage(task.packageName))
