@@ -31,7 +31,7 @@ import com.android.app.tracing.traceSection
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
-import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2
 import com.android.wm.shell.windowdecor.WindowDecorationActions
@@ -54,13 +54,13 @@ class AppPinnedController(
     private val onGenericMotionEventListener: View.OnGenericMotionListener,
     private val windowDecorationActions: WindowDecorationActions,
     taskOrganizer: ShellTaskOrganizer,
-    @ShellMainThread mainScope: CoroutineScope,
+    @ShellBackgroundThread bgScope: CoroutineScope,
 ) :
     CaptionController<WindowDecorLinearLayout>(
         taskInfo,
         windowDecorViewHostSupplier,
         taskOrganizer,
-        mainScope,
+        bgScope,
     ) {
 
     companion object {

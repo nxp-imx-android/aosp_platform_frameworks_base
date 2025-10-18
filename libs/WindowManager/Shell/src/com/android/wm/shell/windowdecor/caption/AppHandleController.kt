@@ -51,6 +51,7 @@ import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -99,7 +100,8 @@ class AppHandleController(
     private val decorationSurface: SurfaceControl,
     @ShellMainThread private val mainHandler: Handler,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
-    @ShellMainThread mainScope: CoroutineScope,
+    @ShellMainThread private val mainScope: CoroutineScope,
+    @ShellBackgroundThread bgScope: CoroutineScope,
     private val windowManagerWrapper: WindowManagerWrapper,
     private val multiInstanceHelper: MultiInstanceHelper,
     private val windowDecorHandleRepository: WindowDecorCaptionRepository,
@@ -124,7 +126,7 @@ class AppHandleController(
         taskInfo,
         windowDecorViewHostSupplier,
         taskOrganizer,
-        mainScope,
+        bgScope,
         surfaceControlBuilderSupplier,
         surfaceControlViewHostFactory,
     ),

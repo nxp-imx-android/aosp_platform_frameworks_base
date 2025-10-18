@@ -111,6 +111,7 @@ constructor(
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
     @ShellBackgroundThread private val bgExecutor: ShellExecutor,
+    @ShellBackgroundThread private val bgScope: CoroutineScope,
     private val transitions: Transitions,
     private val choreographer: Choreographer,
     private val syncQueue: SyncTransactionQueue,
@@ -906,6 +907,7 @@ constructor(
                     mainExecutor = mainExecutor,
                     mainDispatcher = mainDispatcher,
                     mainScope = mainScope,
+                    bgScope = bgScope,
                     syncQueue = syncQueue,
                     rootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
                     windowManagerWrapper = windowManagerWrapper,
@@ -942,6 +944,7 @@ constructor(
                     handler,
                     mainDispatcher,
                     mainScope,
+                    bgScope,
                     windowManagerWrapper,
                     multiInstanceHelper,
                     windowDecorCaptionRepository,
@@ -965,7 +968,7 @@ constructor(
                     onGenericMotionEventListener = onGenericMotionListener,
                     windowDecorationActions,
                     taskOrganizer,
-                    mainScope,
+                    bgScope,
                 )
             }
 
