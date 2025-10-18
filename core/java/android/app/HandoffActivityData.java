@@ -44,7 +44,7 @@ import java.util.Objects;
  * off. It is also possible to simply specify a fallback URI, rather than specifying a component
  * name.
  */
-@FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+@FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
 public final class HandoffActivityData implements Parcelable {
 
     private final @Nullable ComponentName mComponentName;
@@ -163,7 +163,7 @@ public final class HandoffActivityData implements Parcelable {
     /**
      * Builder for {@link HandoffActivityData}.
      */
-    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public final static class Builder {
         @NonNull private ComponentName mComponentName;
         @NonNull private PersistableBundle mExtras;

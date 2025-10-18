@@ -276,7 +276,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testRegisterHandoffEnablementListener_notifiesListenerOnChange() {
         ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
                 mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
@@ -292,7 +292,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testUnregisterHandoffEnablementListener_doesNotNotifyListenerOnChange() {
         ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
                 mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
@@ -317,7 +317,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testIsHandoffEnabledForTask_returnsTrueIfHandoffEnabled() {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
@@ -334,7 +334,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testIsHandoffEnabledForTask_returnsFalseIfNoSuchTask() {
         assertFalse(mAtm.getAtmInternal().isHandoffEnabledForTask(1000));
     }
@@ -355,7 +355,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
                 HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_DEVICE);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_failsIfNoTaskWithId() {
         // Setup a fake receiver to receive the result.
@@ -368,7 +368,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         receiver.verifyFailed(0, HandoffFailureCode.HANDOFF_FAILURE_UNKNOWN_TASK);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_failsIfNoActivityInTask() {
         // Create a test task.
@@ -386,7 +386,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
             HandoffFailureCode.HANDOFF_FAILURE_EMPTY_TASK);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_failsIfHandoffDisabledForActivity() {
         // Create a test task.
@@ -406,7 +406,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
             HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_TASK);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_succeedsWithActivityInForeground()
         throws Exception{
@@ -449,7 +449,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_succeedsWithActivityInBackground()
         throws Exception{
@@ -476,7 +476,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         receiver.verifySucceeded(task.getRootTaskId(), handoffActivityData);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_failsIfNoDataReturned()
         throws Exception{
@@ -518,7 +518,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
             HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_failsMismatchedComponentNameInBacground()
             throws Exception {
@@ -551,7 +551,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
                 HandoffFailureCode.HANDOFF_FAILURE_APP_DID_NOT_REPORT_HANDOFF_DATA);
     }
 
-    @EnableFlags(android.companion.Flags.FLAG_ENABLE_TASK_CONTINUITY)
+    @EnableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     @Test
     public void testRequestHandoffTaskData_failsMismatchedComponentNameRunningActivity()
             throws Exception {

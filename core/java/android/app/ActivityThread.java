@@ -6344,7 +6344,7 @@ public final class ActivityThread extends ClientTransactionHandler
         stopInfo.setActivity(r);
         stopInfo.setState(r.state);
         stopInfo.setPersistentState(r.persistentState);
-        if (android.companion.Flags.enableTaskContinuity()) {
+        if (android.companion.Flags.taskContinuity()) {
             stopInfo.setHandoffActivityData(r.handoffActivityData);
         }
 
@@ -6893,7 +6893,7 @@ public final class ActivityThread extends ClientTransactionHandler
         r.state = new Bundle();
         r.state.setAllowFds(false);
 
-        if (android.companion.Flags.enableTaskContinuity() && r.activity.isHandoffEnabled()) {
+        if (android.companion.Flags.taskContinuity() && r.activity.isHandoffEnabled()) {
             final HandoffActivityDataRequestInfo requestInfo
                     = new HandoffActivityDataRequestInfo(false /* isActiveRequest */);
             r.handoffActivityData = r.activity.onHandoffActivityDataRequested(requestInfo);
