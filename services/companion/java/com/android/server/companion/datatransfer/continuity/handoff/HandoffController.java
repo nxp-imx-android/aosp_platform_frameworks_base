@@ -17,7 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.handoff;
 
 import android.annotation.NonNull;
-import android.content.Context;
 import android.companion.datatransfer.continuity.TaskContinuityManager;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.os.RemoteException;
@@ -36,20 +35,6 @@ public class HandoffController extends FeatureController {
     private final TaskSyncController mTaskSyncController;
     private final InboundHandoffRequestHandler mInboundHandoffRequestHandler;
     private final OutboundHandoffRequestHandler mOutboundHandoffRequestHandler;
-
-    public HandoffController(
-            @NonNull Context context,
-            @NonNull TaskContinuityMessenger taskContinuityMessenger,
-            @NonNull TaskSyncController taskSyncController) {
-        this(
-                Objects.requireNonNull(taskContinuityMessenger),
-                Objects.requireNonNull(taskSyncController),
-                new InboundHandoffRequestHandler(taskContinuityMessenger),
-                new OutboundHandoffRequestHandler(
-                        Objects.requireNonNull(context),
-                        taskContinuityMessenger,
-                        taskSyncController));
-    }
 
     public HandoffController(
             @NonNull TaskContinuityMessenger taskContinuityMessenger,

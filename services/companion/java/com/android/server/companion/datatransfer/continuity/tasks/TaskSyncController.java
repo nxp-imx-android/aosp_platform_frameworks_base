@@ -20,7 +20,6 @@ import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.AssociationInfo;
-import android.content.Context;
 import android.util.Slog;
 
 import com.android.server.LocalServices;
@@ -47,17 +46,6 @@ public class TaskSyncController extends FeatureController {
     private final RemoteTaskStore mRemoteTaskStore;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
-
-    public TaskSyncController(
-            @NonNull Context context, @NonNull TaskContinuityMessenger messenger) {
-        this(
-                Objects.requireNonNull(messenger),
-                new TaskBroadcaster(
-                        Objects.requireNonNull(messenger), new RunningTaskFetcher(context)),
-                new RemoteTaskStore(),
-                context.getSystemService(ActivityTaskManager.class),
-                LocalServices.getService(ActivityTaskManagerInternal.class));
-    }
 
     public TaskSyncController(
             @NonNull TaskContinuityMessenger messenger,
