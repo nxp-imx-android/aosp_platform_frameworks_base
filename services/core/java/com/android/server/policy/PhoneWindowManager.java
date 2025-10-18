@@ -6447,6 +6447,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     @Override
+    public boolean getDismissImeOnBackKeyPressed() {
+        return mDismissImeOnBackKeyPressed;
+    }
+
+    @Override
     public void setCurrentUserLw(int newUserId) {
         mCurrentUserId = newUserId;
         if (mKeyguardDelegate != null) {
