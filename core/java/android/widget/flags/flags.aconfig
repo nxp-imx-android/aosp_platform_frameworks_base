@@ -27,3 +27,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+    name: "location_button_enabled"
+    namespace: "permissions"
+    description: "Whether location button (rendered by a system process) is enabled"
+    bug: "413293601"
+}
