@@ -48,12 +48,13 @@ public class TaskSyncController extends FeatureController {
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
     public TaskSyncController(
+            int userId,
             @NonNull TaskContinuityMessenger messenger,
             @NonNull TaskBroadcaster taskBroadcaster,
             @NonNull RemoteTaskStore remoteTaskStore,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal) {
-        super(Objects.requireNonNull(messenger));
+        super(userId, Objects.requireNonNull(messenger));
         mTaskBroadcaster = Objects.requireNonNull(taskBroadcaster);
         mRemoteTaskStore = Objects.requireNonNull(remoteTaskStore);
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);

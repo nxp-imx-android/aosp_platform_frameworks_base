@@ -40,7 +40,7 @@ public class FeatureControllerCacheTest {
         @Override
         protected FakeFeatureController createFeatureControllerForUser(int userId) {
             mCreateFeatureControllerForUserCallCount++;
-            return new FakeFeatureController(mMockTaskContinuityMessenger);
+            return new FakeFeatureController(userId, mMockTaskContinuityMessenger);
         }
     }
 

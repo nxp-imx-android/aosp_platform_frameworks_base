@@ -47,6 +47,8 @@ import org.junit.runner.RunWith;
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class HandoffControllerTest {
 
+    private static final int USER_ID = 1;
+
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private TaskSyncController mMockTaskSyncController;
     @Mock private InboundHandoffRequestHandler mMockInboundHandoffRequestHandler;
@@ -59,6 +61,7 @@ public class HandoffControllerTest {
         MockitoAnnotations.initMocks(this);
         mHandoffController =
                 new HandoffController(
+                        USER_ID,
                         mMockTaskContinuityMessenger,
                         mMockTaskSyncController,
                         mMockInboundHandoffRequestHandler,
