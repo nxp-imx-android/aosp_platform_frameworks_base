@@ -31,6 +31,7 @@ import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.app.ActivityManager;
 import android.app.AppGlobals;
 import android.app.ondeviceintelligence.DownloadCallback;
 import android.app.ondeviceintelligence.Feature;
@@ -85,9 +86,11 @@ import android.util.Slog;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
+import com.android.server.FgThread;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.SystemService;
 import com.android.server.ondeviceintelligence.callbacks.ListenableDownloadCallback;
@@ -97,9 +100,12 @@ import com.android.server.ondeviceintelligence.executors.IntelligenceServiceExec
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -148,12 +154,33 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
 
     private final Context mContext;
     protected final Object mLock = new Object();
+    private final Object mPriorityBindingLock = new Object();
 
     private final InferenceInfoStore mInferenceInfoStore;
     private RemoteOnDeviceSandboxedInferenceService mRemoteInferenceService;
     private RemoteOnDeviceIntelligenceService mRemoteOnDeviceIntelligenceService;
     volatile boolean mIsServiceEnabled;
 
+    /**
+     * A map tracking the number of active inference jobs per calling UID.
+     * The key is the UID of the application, and the value is the number of ongoing
+     * inference requests initiated by that UID.
+     */
+    @GuardedBy("mPriorityBindingLock")
+    private final java.util.Map<Integer, Integer> mJobCountsByUid = new HashMap<>();
+    /**
+     * A shared connection to the inference service with {@link Context.BIND_SCHEDULE_LIKE_TOP_APP},
+     * used when at least one UID has an active job and is in the foreground.
+     */
+    @GuardedBy("mPriorityBindingLock")
+    private RemoteOnDeviceSandboxedInferenceService mHighPriorityConnection;
+    /**
+     * A set tracking the UIDs that have at least one active inference job and are in the foreground.
+     * This is used to determine whether to create a high-priority connection to the inference
+     * service.
+     */
+    @GuardedBy("mPriorityBindingLock")
+    private final java.util.Set<Integer> mHighPriorityUids = new HashSet<>();
     @GuardedBy("mLock")
     private int remoteInferenceServiceUid = -1;
 
@@ -165,6 +192,20 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private String mBroadcastPackageName = SYSTEM_PACKAGE;
     @GuardedBy("mLock")
     private String mTemporaryConfigNamespace;
+
+
+    private ActivityManager mActivityManager;
+    private final ActivityManager.OnUidImportanceListener mUidImportanceListener =
+            (uid, importance) -> {
+            // Post to the foreground thread to avoid blocking the main thread.
+            FgThread.getHandler().post(() -> {
+                synchronized (mPriorityBindingLock) {
+                    if (mJobCountsByUid.containsKey(uid)) {
+                        updateUidPriority(uid, importance);
+                    }
+                }
+                });
+            };
 
     private final DeviceConfig.OnPropertiesChangedListener mOnPropertiesChangedListener =
             this::sendUpdatedConfig;
@@ -232,6 +273,11 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     BackgroundThread.getExecutor(),
                     (properties) -> onDeviceConfigChange(properties.getKeyset()));
             mIsServiceEnabled = isServiceEnabled();
+            mActivityManager = mContext.getSystemService(ActivityManager.class);
+            if (mActivityManager != null) {
+                mActivityManager.addOnUidImportanceListener(mUidImportanceListener,
+                        ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
+            }
         }
     }
 
@@ -576,10 +622,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 return future.orTimeout(getIdleTimeoutMs(),
                                         TimeUnit.MILLISECONDS);
                             });
-                    if (result != null) {
-                        result.whenCompleteAsync((c, e) -> BundleUtil.tryCloseResource(request),
-                                resourceClosingExecutor);
-                    }
+                    trackInferenceJob(callerUid, request, result);
                 } finally {
                     if (result == null) {
                         resourceClosingExecutor.execute(() -> BundleUtil.tryCloseResource(request));
@@ -639,10 +682,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 return future.orTimeout(getIdleTimeoutMs(),
                                         TimeUnit.MILLISECONDS);
                             });
-                    if (result != null) {
-                        result.whenCompleteAsync((c, e) -> BundleUtil.tryCloseResource(request),
-                                resourceClosingExecutor);
-                    }
+                    trackInferenceJob(callerUid, request, result);
                 } finally {
                     if (result == null) {
                         resourceClosingExecutor.execute(() -> BundleUtil.tryCloseResource(request));
@@ -705,10 +745,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 // streaming might take long, we fail early if there is no progress
                                 // callbacks
                             });
-                    if (result != null) {
-                        result.whenCompleteAsync((c, e) -> BundleUtil.tryCloseResource(request),
-                                resourceClosingExecutor);
-                    }
+                    trackInferenceJob(callerUid, request, result);
                 } finally {
                     if (result == null) {
                         resourceClosingExecutor.execute(() -> BundleUtil.tryCloseResource(request));
@@ -733,11 +770,11 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 writer.println(prefix + "Configurations:");
                 final String configPrefix = prefix + "  ";
                 try {
-                    String[] serviceNames = getServiceNames();
                     writer.println(
-                            configPrefix + "OnDeviceIntelligenceService: " + serviceNames[0]);
+                            configPrefix + "OnDeviceIntelligenceService: "
+                                    + getOnDeviceIntelligenceServiceName());
                     writer.println(configPrefix + "OnDeviceSandboxedInferenceService: "
-                            + serviceNames[1]);
+                            + getSandboxedInferenceServiceName());
                 } catch (Resources.NotFoundException e) {
                     writer.println(configPrefix + "Could not get service names: " + e);
                 }
@@ -756,6 +793,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 writer.println(prefix + "Lifecycle Listeners:");
                 mLifecycleListeners.dump(writer, prefix + "  ");
             }
+
             @Override
             public void registerInferenceServiceLifecycleListener(ILifecycleListener listener)
                     throws RemoteException {
@@ -770,6 +808,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 }
                 mLifecycleListeners.register(listener);
             }
+
             @Override
             public void unregisterInferenceServiceLifecycleListener(ILifecycleListener listener)
                     throws RemoteException {
@@ -800,7 +839,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 return true;
             }
             try {
-                String serviceName = getServiceNames()[0];
+                String serviceName = getOnDeviceIntelligenceServiceName();
                 Binder.withCleanCallingIdentity(
                         () -> validateServiceElevated(serviceName, false));
                 mRemoteOnDeviceIntelligenceService = new RemoteOnDeviceIntelligenceService(
@@ -894,7 +933,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 return true;
             }
             try {
-                String serviceName = getServiceNames()[1];
+                String serviceName = getSandboxedInferenceServiceName();
                 Binder.withCleanCallingIdentity(
                         () -> validateServiceElevated(serviceName, true));
                 mRemoteInferenceService = new RemoteOnDeviceSandboxedInferenceService(
@@ -1142,8 +1181,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     @Nullable
     public String getRemoteConfiguredPackageName() {
         try {
-            String[] serviceNames = getServiceNames();
-            ComponentName componentName = ComponentName.unflattenFromString(serviceNames[1]);
+            ComponentName componentName =
+                    ComponentName.unflattenFromString(getSandboxedInferenceServiceName());
             if (componentName != null) {
                 return componentName.getPackageName();
             }
@@ -1152,6 +1191,15 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
         }
         return null;
     }
+
+    private String getOnDeviceIntelligenceServiceName() throws Resources.NotFoundException {
+        return getServiceNames()[0];
+    }
+
+    private String getSandboxedInferenceServiceName() throws Resources.NotFoundException {
+        return getServiceNames()[1];
+    }
+
     protected String[] getServiceNames() throws Resources.NotFoundException {
         // TODO 329240495 : Consider a small class with explicit field names for the two services
         synchronized (mLock) {
@@ -1357,5 +1405,104 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     /** Returns the remote intelligence service connector. */
     public RemoteOnDeviceIntelligenceService getRemoteOnDeviceIntelligenceService() {
         return mRemoteOnDeviceIntelligenceService;
+    }
+
+    private void trackInferenceJob(int callerUid, Bundle request, AndroidFuture<?> result) {
+        if (result != null) {
+            trackJobElevated(callerUid);
+            result.whenCompleteAsync(
+                    (c, e) -> {
+                        BundleUtil.tryCloseResource(request);
+                        untrackJobElevated(callerUid);
+                    },
+                    resourceClosingExecutor);
+        }
+    }
+
+    /**
+     * Tracks a job for a given UID. This method handles its own binder identity clearing
+     * and should be used when acting on behalf of a caller.
+     */
+    @VisibleForTesting
+    void trackJobElevated(int uid) {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            synchronized (mPriorityBindingLock) {
+                int jobCount = mJobCountsByUid.getOrDefault(uid, 0);
+                mJobCountsByUid.put(uid, jobCount + 1);
+                if (mActivityManager != null) {
+                    updateUidPriority(uid, mActivityManager.getUidImportance(uid));
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    /**
+     * Untracks a job for a given UID. This method handles its own binder identity clearing
+     * and should be used when acting on behalf of a caller.
+     */
+    @VisibleForTesting
+    void untrackJobElevated(int uid) {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            synchronized (mPriorityBindingLock) {
+                Integer jobCount = mJobCountsByUid.get(uid);
+                if (jobCount != null) {
+                    if (jobCount == 1) {
+                        mJobCountsByUid.remove(uid);
+                        releaseHighPriorityBinding(uid);
+                    } else {
+                        mJobCountsByUid.put(uid, jobCount - 1);
+                    }
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    private void updateUidPriority(int uid, int importance) {
+        if (importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+            ensureHighPriorityBinding(uid);
+        } else {
+            releaseHighPriorityBinding(uid);
+        }
+    }
+
+    private void ensureHighPriorityBinding(int uid) {
+        synchronized (mPriorityBindingLock) {
+            if (!mJobCountsByUid.containsKey(uid)) {
+                // If the UID is not tracking any jobs, we don't need to create a high priority
+                // binding.
+                return;
+            }
+            mHighPriorityUids.add(uid);
+            if (mHighPriorityConnection == null && mRemoteInferenceService != null) {
+                try {
+                    Slog.d(TAG, "Adding shared high priority binding for UID " + uid);
+                    String serviceName = getSandboxedInferenceServiceName();
+                    ComponentName componentName = ComponentName.unflattenFromString(serviceName);
+                    mHighPriorityConnection = new RemoteOnDeviceSandboxedInferenceService(mContext,
+                            componentName, UserHandle.SYSTEM.getIdentifier(),
+                            Context.BIND_SCHEDULE_LIKE_TOP_APP);
+                } catch (Resources.NotFoundException e) {
+                    Slog.e(TAG, "Could not find service to bind for high priority", e);
+                }
+            }
+        }
+    }
+
+    private void releaseHighPriorityBinding(int uid) {
+        synchronized (mPriorityBindingLock) {
+            mHighPriorityUids.remove(uid);
+            if (mHighPriorityUids.isEmpty() && mHighPriorityConnection != null) {
+                Slog.d(TAG, "Removing shared high priority binding as no more UIDs are +"
+                + " in foreground.");
+                mHighPriorityConnection.unbind();
+                mHighPriorityConnection = null;
+            }
+        }
     }
 }

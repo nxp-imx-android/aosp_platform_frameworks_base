@@ -50,9 +50,15 @@ public class RemoteOnDeviceSandboxedInferenceService extends
      */
     RemoteOnDeviceSandboxedInferenceService(Context context, ComponentName serviceName,
             int userId) {
+        this(context, serviceName, userId,
+                BIND_FOREGROUND_SERVICE | BIND_INCLUDE_CAPABILITIES);
+    }
+
+    RemoteOnDeviceSandboxedInferenceService(Context context, ComponentName serviceName,
+            int userId, int bindingFlags) {
         super(context, new Intent(
                         OnDeviceSandboxedInferenceService.SERVICE_INTERFACE).setComponent(serviceName),
-                BIND_FOREGROUND_SERVICE | BIND_INCLUDE_CAPABILITIES, userId,
+                bindingFlags, userId,
                 IOnDeviceSandboxedInferenceService.Stub::asInterface);
 
         // Bind right away
