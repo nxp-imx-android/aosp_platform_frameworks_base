@@ -309,6 +309,7 @@ filegroup {
 
 aidl_interface {
     name: "android.os.hintmanager_aidl",
+    host_supported: true,
     defaults: [
         "android.hardware.power-aidl",
     ],
