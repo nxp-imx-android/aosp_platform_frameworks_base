@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Düzdür!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Bir də cəhd edin"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Bir daha cəhd et"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Kiliddən çıxarmaq üçün klikləyin"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Kiliddən çıxarmaq üçün istənilən düyməyə basın"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Bütün funksiyalar və data üçün kiliddən çıxarın"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Üz ilə Kiliddən Açma cəhdləriniz bitdi"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM yoxdur"</string>
@@ -1800,10 +1798,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Hər iki səs səviyyəsi düyməsinə bir neçə saniyə basıb saxladıqda əlçatımlılıq funksiyası olan <xliff:g id="SERVICE">%1$s</xliff:g> aktiv olur. Cihazınızın işləmə qaydasını dəyişə bilər.\n\nAyarlar və Əlçatımlılıq bölməsində bu qısayolu başqa bir funksiyaya dəyişə bilərsiniz."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Aktiv edin"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Aktiv etməyin"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Aktiv"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Deaktiv"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> xidmətinin cihaza tam nəzarət etməsinə icazə verilsin?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Tam nəzarət icazəsi xüsusi imkanlara dair yardım edən tətbiqlərə lazımdır, digər tətbiqlərə lazım deyil."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Baxış və nəzarət ekranı"</string>
@@ -1817,16 +1813,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Funksiyanı istifadə etmək üçün onun üzərinə toxunun:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Xüsusi imkanlar düyməsinin köməyilə işə salınacaq funksiyaları seçin"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Səs səviyyəsi düyməsinin qısayolu ilə istifadə edəcəyiniz funksiyaları seçin"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"xüsusi imkanlar düyməsi"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"səs düymələri"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"jest"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"sürətli ayarlar"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"üç dəfə toxunun"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> deaktiv edilib"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Qısayolları redaktə edin"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Hazırdır"</string>

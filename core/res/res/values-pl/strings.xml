@@ -1800,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Przytrzymanie obu klawiszy głośności przez kilka sekund włącza usługę <xliff:g id="SERVICE">%1$s</xliff:g>, stanowiącą ułatwienie dostępu. Może to zmienić sposób działania urządzenia.\n\nAby zmienić ten skrót i wskazać inną funkcję, kliknij Ustawienia &gt; Ułatwienia dostępu."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Włącz"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Nie włączaj"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Wł."</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Wył."</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Pozwolić usłudze <xliff:g id="SERVICE">%1$s</xliff:g> na pełną kontrolę nad urządzeniem?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Pełna kontrola jest odpowiednia dla aplikacji, które ułatwiają Ci dostęp, ale nie należy jej przyznawać wszystkim aplikacjom."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Wyświetlaj i kontroluj ekran"</string>
@@ -1817,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Wybierz funkcję, aby zacząć z niej korzystać:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Wybierz funkcje, których chcesz używać z przyciskiem ułatwień dostępu"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Wybierz funkcje, do których chcesz używać skrótu z przyciskami głośności"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"przycisk ułatwień dostępu"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"przyciski głośności"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gest"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"szybkie ustawienia"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"kliknij trzykrotnie"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Usługa <xliff:g id="SERVICE_NAME">%s</xliff:g> została wyłączona"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Edytuj skróty"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"OK"</string>

@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"صحیح است!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"دوباره امتحان کنید"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"دوباره امتحان کنید"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"برای باز کردن قفل، کلیک کنید"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"برای باز کردن قفل، کلیدی را فشار دهید"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"باز کردن قفل تمام قابلیت‌ها و داده‌ها"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"دفعات تلاش برای «قفل‌گشایی با چهره» از حداکثر مجاز بیشتر شد"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"سیم‌کارتی وجود ندارد"</string>
@@ -1184,7 +1182,7 @@
     <string name="oneMonthDurationPast" msgid="4538030857114635777">"۱ ماه قبل"</string>
     <string name="beforeOneMonthDurationPast" msgid="8315149541372065392">"قبل از ۱ ماه گذشته"</string>
     <string name="last_num_days" msgid="2393660431490280537">"{count,plural, =1{# روز گذشته}one{# روز گذشته}other{# روز گذشته}}"</string>
-    <string name="last_month" msgid="1528906781083518683">"ماه گذشته"</string>
+    <string name="last_month" msgid="1528906781083518683">"ماه پیش"</string>
     <string name="older" msgid="1645159827884647400">"قدیمی‌تر"</string>
     <string name="preposition_for_date" msgid="2780767868832729599">"در <xliff:g id="DATE">%s</xliff:g>"</string>
     <string name="preposition_for_time" msgid="4336835286453822053">"در <xliff:g id="TIME">%s</xliff:g>"</string>
@@ -1800,10 +1798,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"با پایین نگه داشتن هردو کلید میزان صدا به‌مدت چند ثانیه، <xliff:g id="SERVICE">%1$s</xliff:g> (یکی از ویژگی‌های دسترس‌پذیری) روشن می‌شود. با این کار نحوه عملکرد دستگاهتان تغییر می‌کند.\n\nمی‌توانید در «تنظیمات &gt; دسترس‌پذیری»،‌این میان‌بر را به ویژگی دیگری تغییر دهید."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"روشن شود"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"روشن نکردن"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"روشن"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"خاموش"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"به <xliff:g id="SERVICE">%1$s</xliff:g> اجازه می‌دهید بر دستگاهتان کنترل کامل داشته باشد؟"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"کنترل کامل برای بیشتر برنامه‌ها مناسب نیست، به‌جز برنامه‌هایی که به شما در زمینه نیازهای دسترس‌پذیری کمک می‌کند."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"مشاهده و کنترل صفحه"</string>
@@ -1817,16 +1813,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"برای استفاده از ویژگی، روی آن تک‌ضرب بزنید:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"انتخاب ویژگی‌های موردنظر برای استفاده با دکمه دسترس‌پذیری"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"انتخاب کنید کدام ویژگی‌ها با میان‌بر کلیدهای میزان صدا استفاده شود"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"دکمه دسترس‌پذیری"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"کلیدهای میزان صدا"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"اشاره"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"تنظیمات فوری"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"سه تک‌ضرب زدن"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> خاموش شده است"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"ویرایش میان‌برها"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"تمام"</string>

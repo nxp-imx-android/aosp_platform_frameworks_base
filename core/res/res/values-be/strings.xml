@@ -1056,10 +1056,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Правільна!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Паўтарыце спробу"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Паўтарыце спробу"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Каб разблакіраваць, націсніце ў любым месцы"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Каб разблакіраваць, націсніце любую клавішу"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Разблакіраваць для ўсіх функцый і даных"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Перавышана максімальная колькасць спроб разблакоўкі праз распазнаванне твару"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Няма SIM-карты"</string>
@@ -1802,10 +1800,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Утрымліванне націснутымі абедзвюх клавіш гучнасці на працягу некалькіх секунд уключае службу \"<xliff:g id="SERVICE">%1$s</xliff:g>\", якая з’яўляецца спецыяльнай магчымасцю. У выніку ваша прылада можа пачаць працаваць па-іншаму.\n\nВы можаце задаць гэта спалучэнне клавіш для іншай функцыі ў меню \"Налады &gt; Спецыяльныя магчымасці\"."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Уключыць"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Не ўключаць"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Уключана"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Выключана"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Дазволіць сэрвісу \"<xliff:g id="SERVICE">%1$s</xliff:g>\" мець поўны кантроль над вашай прыладай?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Поўны кантроль прызначаны для сэрвісаў спецыяльных магчымасцей, аднак не падыходзіць для большасці праграм."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Прагляд экрана і кіраванне ім"</string>
@@ -1819,16 +1815,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Каб пачаць выкарыстоўваць функцыю, націсніце на яе:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Выберыце функцыі, якія будзеце выкарыстоўваць з кнопкай спецыяльных магчымасцей"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Выберыце функцыі для выкарыстання з клавішамі гучнасці"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"кнопка спецыяльных магчымасцей"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"клавішы гучнасці"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"жэст"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"хуткія налады"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"трайны дотык"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Сэрвіс \"<xliff:g id="SERVICE_NAME">%s</xliff:g>\" выключаны"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Змяніць ярлыкі"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Гатова"</string>
