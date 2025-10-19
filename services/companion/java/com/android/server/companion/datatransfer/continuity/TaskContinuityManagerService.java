@@ -53,8 +53,8 @@ public final class TaskContinuityManagerService extends SystemService {
 
     private static final String TAG = "TaskContinuityManagerService";
 
-    private final FeatureControllerCache<TaskSyncController> mTaskSyncControllerCache;
-    private final FeatureControllerCache<HandoffController> mHandoffControllerCache;
+    private final MultiUserResourceCache<TaskSyncController> mTaskSyncControllerCache;
+    private final MultiUserResourceCache<HandoffController> mHandoffControllerCache;
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskContinuityMessenger mTaskContinuityMessenger;
 
@@ -71,8 +71,8 @@ public final class TaskContinuityManagerService extends SystemService {
     @Override
     public void onUserUnlocked(TargetUser user) {
         int userId = user.getUserIdentifier();
-        mTaskSyncControllerCache.getOrCreateFeatureController(userId).enable();
-        mHandoffControllerCache.getOrCreateFeatureController(userId).enable();
+        mTaskSyncControllerCache.getOrCreateResource(userId).enable();
+        mHandoffControllerCache.getOrCreateResource(userId).enable();
     }
 
     @Override
@@ -88,7 +88,7 @@ public final class TaskContinuityManagerService extends SystemService {
             registerRemoteTaskListener_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
             mTaskSyncControllerCache
-                    .getOrCreateFeatureController(userId)
+                    .getOrCreateResource(userId)
                     .registerTaskListener(Objects.requireNonNull(listener));
         }
 
@@ -99,7 +99,7 @@ public final class TaskContinuityManagerService extends SystemService {
             unregisterRemoteTaskListener_enforcePermission();
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
             mTaskSyncControllerCache
-                    .getOrCreateFeatureController(userId)
+                    .getOrCreateResource(userId)
                     .unregisterTaskListener(Objects.requireNonNull(listener));
         }
 
@@ -118,7 +118,7 @@ public final class TaskContinuityManagerService extends SystemService {
             final long ident = Binder.clearCallingIdentity();
             try {
                 mHandoffControllerCache
-                        .getOrCreateFeatureController(userId)
+                        .getOrCreateResource(userId)
                         .requestHandoff(associationId, remoteTaskId, callback);
             } finally {
                 Binder.restoreCallingIdentity(ident);

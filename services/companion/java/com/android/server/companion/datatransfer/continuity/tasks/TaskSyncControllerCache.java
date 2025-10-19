@@ -22,13 +22,13 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 
 import com.android.server.LocalServices;
-import com.android.server.companion.datatransfer.continuity.FeatureControllerCache;
+import com.android.server.companion.datatransfer.continuity.MultiUserResourceCache;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.util.Objects;
 
-public class TaskSyncControllerCache extends FeatureControllerCache<TaskSyncController> {
+public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncController> {
 
     private final Context mContext;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
@@ -48,7 +48,7 @@ public class TaskSyncControllerCache extends FeatureControllerCache<TaskSyncCont
     }
 
     @Override
-    protected TaskSyncController createFeatureControllerForUser(int userId) {
+    protected TaskSyncController createResourceForUser(int userId) {
         return new TaskSyncController(
                 userId,
                 mTaskContinuityMessenger,

@@ -29,16 +29,16 @@ import org.mockito.MockitoAnnotations;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
-public class FeatureControllerCacheTest {
+public class MultiUserResourceCacheTest {
 
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
 
-    private class FakeFeatureControllerCache extends FeatureControllerCache<FakeFeatureController> {
+    private class FakeMultiUserResourceCache extends MultiUserResourceCache<FakeFeatureController> {
 
         public int mCreateFeatureControllerForUserCallCount = 0;
 
         @Override
-        protected FakeFeatureController createFeatureControllerForUser(int userId) {
+        protected FakeFeatureController createResourceForUser(int userId) {
             mCreateFeatureControllerForUserCallCount++;
             return new FakeFeatureController(userId, mMockTaskContinuityMessenger);
         }
@@ -50,22 +50,22 @@ public class FeatureControllerCacheTest {
     }
 
     @Test
-    public void testGetOrCreateFeatureController_onlyCreatesOneFeatureControllerPerUser() {
+    public void testgetOrCreateResource_onlyCreatesOneFeatureControllerPerUser() {
         int userId = 1;
-        FakeFeatureControllerCache cache = new FakeFeatureControllerCache();
-        FakeFeatureController featureController1 = cache.getOrCreateFeatureController(userId);
-        FakeFeatureController featureController2 = cache.getOrCreateFeatureController(userId);
+        FakeMultiUserResourceCache cache = new FakeMultiUserResourceCache();
+        FakeFeatureController featureController1 = cache.getOrCreateResource(userId);
+        FakeFeatureController featureController2 = cache.getOrCreateResource(userId);
         assertThat(featureController1).isSameInstanceAs(featureController2);
         assertThat(cache.mCreateFeatureControllerForUserCallCount).isEqualTo(1);
     }
 
     @Test
-    public void testGetOrCreateFeatureController_createsFeatureControllerForDifferentUsers() {
+    public void testgetOrCreateResource_createsFeatureControllerForDifferentUsers() {
         int userId1 = 1;
         int userId2 = 2;
-        FakeFeatureControllerCache cache = new FakeFeatureControllerCache();
-        FakeFeatureController featureController1 = cache.getOrCreateFeatureController(userId1);
-        FakeFeatureController featureController2 = cache.getOrCreateFeatureController(userId2);
+        FakeMultiUserResourceCache cache = new FakeMultiUserResourceCache();
+        FakeFeatureController featureController1 = cache.getOrCreateResource(userId1);
+        FakeFeatureController featureController2 = cache.getOrCreateResource(userId2);
         assertThat(featureController1).isNotSameInstanceAs(featureController2);
         assertThat(cache.mCreateFeatureControllerForUserCallCount).isEqualTo(2);
     }
