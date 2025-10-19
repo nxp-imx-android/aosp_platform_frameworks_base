@@ -18641,6 +18641,12 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    String getBroadcastConstant(@NonNull String key) {
+        Objects.requireNonNull(key);
+        enforceCallingPermission(permission.DUMP, "getBroadcastConstant()");
+        return mBroadcastQueue.getBroadcastConstant(key);
+    }
+
     boolean shouldIgnoreDeliveryGroupPolicy(@Nullable String broadcastAction) {
         if (broadcastAction == null) {
             return false;

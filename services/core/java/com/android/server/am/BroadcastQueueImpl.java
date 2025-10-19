@@ -803,10 +803,18 @@ class BroadcastQueueImpl extends BroadcastQueue {
                         r.callingUid);
                 if (oldestPendingTime > SystemClock.uptimeMillis() - DateUtils.HOUR_IN_MILLIS) {
                     final StringBuilder sb = new StringBuilder();
-                    sb.append("Too many pending broadcasts from uid ").append(r.callingUid)
-                            .append("; dropping ").append(r).append(".");
+                    sb.append("Too many enqueued broadcasts from uid ")
+                            .append(r.callingUid)
+                            .append(".");
                     mHistory.appendPendingBroadcastsSummaryForUid(sb, r.callingUid);
                     Slog.wtf(TAG, sb.toString());
+                    if (!UserHandle.isCore(r.callingUid) && r.callerApp != null) {
+                        r.callerApp.killLocked("Too many enqueued broadcasts",
+                                ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
+                                ApplicationExitInfo.SUBREASON_EXCESSIVE_ENQUEUED_BROADCASTS_COUNT,
+                                true /* noisy */);
+                        return;
+                    }
                 }
             }
         }
@@ -2436,6 +2444,11 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     r.userId,
                     userType);
         }
+    }
+
+    @Nullable
+    public String getBroadcastConstant(String key) {
+        return String.valueOf(mConstants.getValue(key));
     }
 
     @Override

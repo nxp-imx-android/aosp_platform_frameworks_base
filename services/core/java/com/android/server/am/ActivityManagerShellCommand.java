@@ -460,6 +460,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     return runSetMediaForegroundService(pw);
                 case "clear-bad-process":
                     return runClearBadProcess(pw);
+                case "get-broadcast-constant":
+                    return runGetBroadcastConstant(pw);
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -4657,6 +4659,17 @@ final class ActivityManagerShellCommand extends ShellCommand {
 
         pw.println("Clearing '" + processName + "' in u" + userId + " from bad processes list");
         mInternal.mAppErrors.clearBadProcessForUser(processName, userId);
+        return 0;
+    }
+
+    int runGetBroadcastConstant(PrintWriter pw) {
+        final String key = getNextArgRequired();
+        try {
+            pw.println(mInternal.getBroadcastConstant(key));
+        } catch (IllegalArgumentException e) {
+            getErrPrintWriter().println("Error: " + e.getMessage());
+            return -1;
+        }
         return 0;
     }
 
