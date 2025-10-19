@@ -161,8 +161,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pausatu"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Desaktibatu audioa"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Aktibatu audioa"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IKT saileko administratzaileak pantaila-kapturak blokeatu ditu"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Atera pantaila osoaren pantaila-argazki bat"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Grabatu pantaila osoko edukia"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Atera hautatutako eremuaren pantaila-argazki bat"</string>
@@ -428,10 +427,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Igortzen"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Izenik gabeko gailua"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Ez dago gailurik erabilgarri"</string>
-    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
-    <skip />
-    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
-    <skip />
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"Igorri pantaila gailura"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"Gailuak bilatzen…"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Ez dago wifi edo Ethernet bidezko konexiorik"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Deskonektatu"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Oraingo mikrofonoa:"</string>
@@ -713,6 +710,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Isila"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Jakinarazpenak"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Elkarrizketak"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Garbitu soinurik gabeko jakinarazpen guztiak"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Ireki jakinarazpen-ezarpenak"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Ez dago jakinarazpenik}=1{Modu honek jakinarazpenak pausatu ditu: {mode}}=2{Modu honek eta beste modu batek jakinarazpenak pausatu dituzte: {mode}}other{Modu honek eta beste # moduk jakinarazpenak pausatu dituzte: {mode}}}"</string>
@@ -1476,8 +1475,17 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Gailuaren funtzionamendua hobetzeko, aplikazioek eta zerbitzuek wifi-sareak bilatzen jarraituko dute, baita wifi-konexioa desaktibatuta dagoenean ere. Aukera hori aldatzeko, joan wifi-sareak bilatzeko eginbidearen ezarpenetara. "<annotation id="link">"Aldatu"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Desaktibatu hegaldi modua"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> aplikazioak lauza hau gehitu nahi du Ezarpen bizkorrak menuan:"</string>
+    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
+    <skip />
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Gehitu lauza"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Ez gehitu lauza"</string>
+    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Hautatu erabiltzaile bat"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikazio aktibo dago}other{# aplikazio aktibo daude}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Informazio berria"</string>
@@ -1720,8 +1728,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Jakinarazpenak irekitzeko, pasatu hatza pantailaren goiko ezkerreko izkinatik"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Ezarpen bizkorrak irekitzeko, pasatu hatza pantailaren goiko eskuineko izkinatik"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Atzera"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Erabilerraztasuna"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Aurrekoa"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Hurrengoa"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"joan hurrengo orrira"</string>

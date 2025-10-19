@@ -87,7 +87,7 @@
     <string name="screenshot_failed_to_save_text" msgid="7232739948999195960">"Не може да се зачува слика од екранот"</string>
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Апликацијата или вашата организација не дозволува снимање слики од екранот"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"Зачувувањето слики од екранот е блокирано од IT-администраторот"</string>
-    <string name="screenshot_edit_label" msgid="8754981973544133050">"Измени"</string>
+    <string name="screenshot_edit_label" msgid="8754981973544133050">"Изменете"</string>
     <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
     <skip />
     <string name="screenshot_share_label" msgid="1653061117238861559">"Сподели"</string>
@@ -161,8 +161,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Паузирај"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Исклучи звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Вклучи звук"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT-администраторот го блокирал снимањето на екранот"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Направете слика од целиот екран"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Снимај го целиот екран"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Направете слика од екранот на избрана област"</string>
@@ -428,10 +427,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Емитување"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Неименуван уред"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Нема достапни уреди"</string>
-    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
-    <skip />
-    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
-    <skip />
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"Емитување екран на уред"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"Се пребаруваат уреди…"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Нема Wi‑Fi или Ethernet-врска"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Прекини ја врската"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Тековниот микрофон е"</string>
@@ -713,6 +710,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Безгласно"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Известувања"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Разговори"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Избриши ги сите бесчујни известувања"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Отвори ги поставките за известувања"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Нема известувања}=1{Известувањата ги паузираше {mode}}=2{Известувањата ги паузираа {mode} и уште еден режим}one{Известувањата ги паузираа {mode} и уште # режим}other{Известувањата ги паузираа {mode} и уште # режими}}"</string>
@@ -1305,7 +1304,7 @@
     <string name="accessibility_floating_button_action_move_out_edge_and_show" msgid="8354760891651663326">"Премести над работ и прикажи"</string>
     <string name="accessibility_floating_button_action_remove_menu" msgid="6730432848162552135">"Отстрани"</string>
     <string name="accessibility_floating_button_action_double_tap_to_toggle" msgid="7976492639670692037">"вклучување/исклучување"</string>
-    <string name="accessibility_floating_button_action_edit" msgid="1688227814600463987">"Измени"</string>
+    <string name="accessibility_floating_button_action_edit" msgid="1688227814600463987">"Изменете"</string>
     <string name="quick_controls_title" msgid="6839108006171302273">"Контроли за уредите"</string>
     <string name="controls_providers_title" msgid="6879775889857085056">"Изберете апликација за да додадете контроли"</string>
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{Додадена е # контрола.}one{Додадени се # контрола.}other{Додадени се # контроли.}}"</string>
@@ -1476,8 +1475,17 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"За да се подобри доживувањето на уредот, апликациите и услугите може сѐ уште да скенираат за Wi‑Fi мрежи во секое време, дури и кога Wi‑Fi е исклучено. Може да го промените ова во поставките за „Скенирање за Wi-Fi“. "<annotation id="link">"Промени"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Исклучи „Авионски режим“"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> сака да ја додаде следнава плочка на „Брзите поставки“"</string>
+    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
+    <skip />
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Додајте плочка"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Не додавајте плочка"</string>
+    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Изберете корисник"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{Активна е # апликација}one{Активни се # апликација}other{Активни се # апликации}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Нови информации"</string>
@@ -1498,7 +1506,7 @@
     <string name="clipboard_editor" msgid="2971197550401892843">"Уредувач на привремена меморија"</string>
     <string name="clipboard_overlay_window_name" msgid="6450043652167357664">"Привремена меморија"</string>
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Преглед на сликата"</string>
-    <string name="clipboard_edit" msgid="4500155216174011640">"измени"</string>
+    <string name="clipboard_edit" msgid="4500155216174011640">"изменете"</string>
     <string name="add" msgid="81036585205287996">"Додај"</string>
     <string name="manage_users" msgid="1823875311934643849">"Управувајте со корисниците"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Известувањево не поддржува влечење на поделен екран"</string>
@@ -1720,8 +1728,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Повлечете од горниот лев агол за да ги отворите известувањата"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Повлечете од горниот десен агол за да ги отворите „Брзите поставки“"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Пристапност"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Претходно"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Следно"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"да одите на следната страница"</string>

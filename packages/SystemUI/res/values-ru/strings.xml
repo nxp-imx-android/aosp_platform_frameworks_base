@@ -161,8 +161,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Приостановить"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Отключить звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Включить звук"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Запись экрана заблокирована администратором."</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Сделать скриншот всего экрана"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Скриншот всего экрана"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Сделать скриншот выбранной области"</string>
@@ -384,7 +383,7 @@
     <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Нажмите, чтобы подключить или отключить устройство."</string>
     <string name="pair_new_bluetooth_devices" msgid="4601767620843349645">"Подключить устройство"</string>
     <string name="see_all_bluetooth_devices" msgid="1761596816620200433">"Все"</string>
-    <string name="turn_on_bluetooth" msgid="5681370462180289071">"Использовать"</string>
+    <string name="turn_on_bluetooth" msgid="5681370462180289071">"Использовать Bluetooth"</string>
     <string name="quick_settings_bluetooth_device_connected" msgid="7884777006729260996">"Подключено"</string>
     <string name="quick_settings_bluetooth_device_audio_sharing" msgid="1496358082943301670">"Передача аудио"</string>
     <string name="quick_settings_bluetooth_device_audio_sharing_or_switch_active" msgid="8680997711431098238">"Поддерживает передачу аудио"</string>
@@ -428,10 +427,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Передача изображения"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Безымянное устройство"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Нет доступных устройств"</string>
-    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
-    <skip />
-    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
-    <skip />
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"Трансляция экрана"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"Поиск устройств…"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Нет подключения по Wi‑Fi или через Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Отключить"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Текущий микрофон:"</string>
@@ -713,6 +710,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Без звука"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Уведомления"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Разговоры"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Отклонить все беззвучные уведомления"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Открыть настройки уведомлений"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Уведомлений нет}=1{Режим \"{mode}\" приостанавливает уведомления}=2{Режим \"{mode}\" и ещё один режим приостанавливают уведомления}one{Режим \"{mode}\" и ещё # режим приостанавливают уведомления}few{Режим \"{mode}\" и ещё # режима приостанавливают уведомления}many{Режим \"{mode}\" и ещё # режимов приостанавливают уведомления}other{Режим \"{mode}\" и ещё # режима приостанавливают уведомления}}"</string>
@@ -1466,7 +1465,7 @@
     <string name="non_carrier_network_unavailable" msgid="770049357024492372">"Нет других доступных сетей"</string>
     <string name="all_network_unavailable" msgid="4112774339909373349">"Нет доступных сетей"</string>
     <string name="turn_on_wifi" msgid="1308379840799281023">"Wi-Fi"</string>
-    <string name="tap_a_network_to_connect" msgid="1565073330852369558">"Чтобы подключиться к сети, нажмите на ее название"</string>
+    <string name="tap_a_network_to_connect" msgid="1565073330852369558">"Чтобы подключиться к сети, нажмите на ее название."</string>
     <string name="unlock_to_view_networks" msgid="5072880496312015676">"Разблокируйте, чтобы посмотреть сети Wi-Fi."</string>
     <string name="wifi_empty_list_wifi_on" msgid="3864376632067585377">"Поиск сетей…"</string>
     <string name="wifi_failed_connect_message" msgid="4161863112079000071">"Не удалось подключиться к сети"</string>
@@ -1476,8 +1475,17 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Чтобы улучшать работу устройства, приложения и сервисы могут искать беспроводные сети в любое время, даже если вы отключили Wi‑Fi. Чтобы запретить это, отключите поиск сетей Wi‑Fi. "<annotation id="link">"Открыть настройки"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Отключить режим полета"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"Приложение \"<xliff:g id="APPNAME">%1$s</xliff:g>\" хочет добавить в быстрые настройки следующий параметр:"</string>
+    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
+    <skip />
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Добавить параметр"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Не добавлять"</string>
+    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Выберите профиль"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# приложение активно}one{# приложение активно}few{# приложения активны}many{# приложений активно}other{# приложения активно}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Новая информация"</string>
@@ -1720,8 +1728,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Чтобы открыть уведомления, проведите вниз от левого верхнего угла экрана"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Чтобы открыть быстрые настройки, проведите вниз от правого верхнего угла экрана"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Специальные возможности"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Назад"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Далее"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"перейти к следующей странице"</string>
