@@ -2,7 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="accessibility_menu_service_name" msgid="730136711554740131">"యాక్సెసిబిలిటీ మెనూ"</string>
-    <string name="accessibility_menu_intro" msgid="3164193281544042394">"మీ పరికరాన్ని కంట్రోల్ చేయడానికి యాక్సెసిబిలిటీ మెనూ, స్క్రీన్‌పై పెద్ద మెనూను అందిస్తుంది. మీరు మీ పరికరాన్ని లాక్ చేయవచ్చు, వాల్యూమ్‌ను, బ్రైట్‌నెస్‌ను కంట్రోల్ చేయవచ్చు, స్క్రీన్‌షాట్‌లు తీసుకోవచ్చు, మరిన్ని చేయవచ్చు."</string>
+    <string name="accessibility_menu_intro" msgid="3164193281544042394">"మీ డివైజ్‌ను కంట్రోల్ చేయడానికి యాక్సెసిబిలిటీ మెనూ, స్క్రీన్‌పై పెద్ద మెనూను అందిస్తుంది. మీరు మీ డివైజ్‌ను లాక్ చేయవచ్చు, వాల్యూమ్‌ను, బ్రైట్‌నెస్‌ను కంట్రోల్ చేయవచ్చు, స్క్రీన్‌షాట్‌లు తీసుకోవచ్చు, మరిన్ని చేయవచ్చు."</string>
     <string name="assistant_label" msgid="6796392082252272356">"Assistant"</string>
     <string name="assistant_utterance" msgid="65509599221141377">"Assistant"</string>
     <string name="a11y_settings_label" msgid="3977714687248445050">"యాక్సెసిబిలిటీ సెట్టింగ్‌లు"</string>
