@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.featurepods.assistant.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -72,6 +73,8 @@ fun AssistantIconSharedModel.toPopupChipModel(startAssistant: () -> Unit): Popup
             chipText = null,
             showPopup = startAssistant,
             hoverBehavior = HoverBehavior.None,
+            contentDescription =
+                ContentDescription.Resource(R.string.accessibility_status_bar_assistant_icon),
             isPopupShown = isAssistShown,
         )
     }

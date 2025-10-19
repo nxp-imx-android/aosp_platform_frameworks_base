@@ -853,6 +853,9 @@
     <!-- Accessibility text describing the notification bell. [CHAR LIMIT=NONE] -->
     <string name="accessibility_notification_bell">Notifications</string>
 
+    <!-- Accessibility text describing the status bar assistant icon. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_status_bar_assistant_icon">Assistant</string>
+
     <!-- The overflow indicator shown when a group has more notification inside the group than the visible ones. An example is "+ 3" [CHAR LIMIT=5] -->
     <string name="notification_group_overflow_indicator">+ <xliff:g id="number" example="3">%s</xliff:g></string>
 
