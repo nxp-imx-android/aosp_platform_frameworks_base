@@ -158,9 +158,6 @@ public class TouchState {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
                 mInjectedPointersDown &= ~pointerFlag;
-                if (mInjectedPointersDown == 0) {
-                    mLastInjectedDownEventTime = 0;
-                }
                 break;
             case MotionEvent.ACTION_HOVER_ENTER:
             case MotionEvent.ACTION_HOVER_MOVE:
