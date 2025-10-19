@@ -19,6 +19,8 @@ package com.android.server.companion.virtual.computercontrol;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
@@ -288,9 +290,7 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
-    public void createSessionWithoutDisplaySurface_appliesCorrectParams() throws Exception {
+    public void createSession_appliesCorrectParams() throws Exception {
         createComputerControlSession(mDefaultParams);
 
         verify(mVirtualDeviceFactory).createVirtualDevice(
@@ -301,7 +301,11 @@ public class ComputerControlSessionImplTest {
                 .getDevicePolicy(POLICY_TYPE_RECENTS))
                 .isEqualTo(DEVICE_POLICY_DEFAULT);
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
-                .getAllowedUsers()).isEqualTo(Set.of(UserHandle.of(USER_ID)));
+                .getDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
+        assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
+                .getDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS))
+                .isEqualTo(DEVICE_POLICY_CUSTOM);
 
         verify(mVirtualDevice).createVirtualDisplay(
                 mVirtualDisplayConfigArgumentCaptor.capture(), any(), any());
@@ -313,7 +317,7 @@ public class ComputerControlSessionImplTest {
         assertThat(virtualDisplayConfig.getWidth()).isEqualTo(DISPLAY_WIDTH);
         assertThat(virtualDisplayConfig.getSurface()).isNull();
 
-        int expectedDisplayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+        final int expectedDisplayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
         assertThat(virtualDisplayConfig.getFlags()).isEqualTo(expectedDisplayFlags);
@@ -326,14 +330,6 @@ public class ComputerControlSessionImplTest {
         assertThat(virtualDpadConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
         assertThat(virtualDpadConfig.getInputDeviceName()).contains(mDefaultParams.getName());
         assertThat(virtualDpadConfig.getProductId()).isEqualTo(PRODUCT_ID_DPAD);
-
-        verify(mVirtualDevice).createVirtualKeyboard(
-                mVirtualKeyboardConfigArgumentCaptor.capture());
-        VirtualKeyboardConfig virtualKeyboardConfig =
-                mVirtualKeyboardConfigArgumentCaptor.getValue();
-        assertThat(virtualKeyboardConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
-        assertThat(virtualKeyboardConfig.getInputDeviceName()).contains(mDefaultParams.getName());
-        assertThat(virtualKeyboardConfig.getProductId()).isEqualTo(PRODUCT_ID_KEYBOARD);
 
         verify(mVirtualDevice).createVirtualTouchscreen(
                 mVirtualTouchscreenConfigArgumentCaptor.capture());
@@ -348,6 +344,55 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
+    public void createSession_setsAllowedUsers() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mVirtualDeviceFactory).createVirtualDevice(
+                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
+        assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
+                .getAllowedUsers()).isEqualTo(Set.of(UserHandle.of(USER_ID)));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
+    public void createSession_blockInputAndScreenshots_doesNotSetAllowedUsers() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mVirtualDeviceFactory).createVirtualDevice(
+                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
+        assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
+                .getAllowedUsers()).isEmpty();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void createSession_createsKeyboard() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mVirtualDeviceFactory).createVirtualDevice(
+                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
+        verify(mVirtualDevice).createVirtualKeyboard(
+                mVirtualKeyboardConfigArgumentCaptor.capture());
+        VirtualKeyboardConfig virtualKeyboardConfig =
+                mVirtualKeyboardConfigArgumentCaptor.getValue();
+        assertThat(virtualKeyboardConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
+        assertThat(virtualKeyboardConfig.getInputDeviceName()).contains(mDefaultParams.getName());
+        assertThat(virtualKeyboardConfig.getProductId()).isEqualTo(PRODUCT_ID_KEYBOARD);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
+    public void createSession_doesNotCreateKeyboard() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mVirtualDeviceFactory).createVirtualDevice(
+                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
+        verify(mVirtualDevice, never()).createVirtualKeyboard(any());
+    }
+
+    @Test
     public void createSession_canCloseSessionBeforeInitializing() throws Exception {
         createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS);
         mSession.close();
@@ -356,26 +401,37 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
+    @DisableFlags({Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT,
+            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void createSession_noActivityPolicy() throws Exception {
         createComputerControlSession(mDefaultParams);
-        verify(mVirtualDevice, never()).setDevicePolicy(eq(POLICY_TYPE_ACTIVITY), anyInt());
 
+        verify(mVirtualDevice, never()).setDevicePolicy(eq(POLICY_TYPE_ACTIVITY), anyInt());
         verify(mVirtualDevice).addActivityPolicyExemption(
                 argThat(new MatchesActivityPolicyExemption(PERMISSION_CONTROLLER_PACKAGE)));
     }
 
     @Test
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
     public void createSession_strictActivityPolicy() throws Exception {
         createComputerControlSession(mDefaultParams);
 
         verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-
         for (String expected : TARGET_PACKAGE_NAMES) {
             verify(mVirtualDevice).addActivityPolicyExemption(
                     argThat(new MatchesActivityPolicyExemption(expected)));
         }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
+    public void createSession_blockInputAndScreenshots_noActivityPolicy() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mVirtualDevice, never()).setDevicePolicy(eq(POLICY_TYPE_ACTIVITY), anyInt());
+        verify(mVirtualDevice, never()).addActivityPolicyExemption(
+                any(ActivityPolicyExemption.class));
     }
 
     @Test
@@ -426,6 +482,7 @@ public class ComputerControlSessionImplTest {
 
     @Test
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
     public void launchApplication_strictActivityPolicy_addsExemption() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
@@ -435,6 +492,20 @@ public class ComputerControlSessionImplTest {
 
         verify(mVirtualDevice).addActivityPolicyExemption(
                 argThat(new MatchesActivityPolicyExemption(UNDECLARED_TARGET_PACKAGE)));
+        assertLaunchedApplication(UNDECLARED_TARGET_PACKAGE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
+    public void launchApplication_doesNotAddExemption() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        when(mOwnerPackageManager.queryIntentActivities(any(), any()))
+                .thenReturn(List.of(new ResolveInfo()));
+
+        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS);
+
+        verify(mVirtualDevice, never()).addActivityPolicyExemption(
+                any(ActivityPolicyExemption.class));
         assertLaunchedApplication(UNDECLARED_TARGET_PACKAGE);
     }
 

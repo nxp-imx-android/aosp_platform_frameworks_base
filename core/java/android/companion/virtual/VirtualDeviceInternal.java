@@ -89,13 +89,11 @@ public class VirtualDeviceInternal {
     private final Object mActivityListenersLock = new Object();
     @GuardedBy("mActivityListenersLock")
     private final ArrayMap<VirtualDeviceManager.ActivityListener, ActivityListenerDelegate>
-            mActivityListeners =
-            new ArrayMap<>();
+            mActivityListeners = new ArrayMap<>();
     private final Object mIntentInterceptorListenersLock = new Object();
     @GuardedBy("mIntentInterceptorListenersLock")
     private final ArrayMap<VirtualDeviceManager.IntentInterceptorCallback,
-            IntentInterceptorDelegate> mIntentInterceptorListeners =
-            new ArrayMap<>();
+            IntentInterceptorDelegate> mIntentInterceptorListeners = new ArrayMap<>();
     private final Object mSoundEffectListenersLock = new Object();
     @GuardedBy("mSoundEffectListenersLock")
     private final ArrayMap<VirtualDeviceManager.SoundEffectListener, SoundEffectListenerDelegate>
@@ -175,6 +173,22 @@ public class VirtualDeviceInternal {
                         synchronized (mActivityListenersLock) {
                             for (int i = 0; i < mActivityListeners.size(); i++) {
                                 mActivityListeners.valueAt(i).onSecureWindowHidden(displayId);
+                            }
+                        }
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
+                    }
+                }
+
+                @Override
+                public void onActivityLaunchRequested(int displayId,
+                        @NonNull ComponentName componentName, @UserIdInt int userId) {
+                    final long token = Binder.clearCallingIdentity();
+                    try {
+                        synchronized (mActivityListenersLock) {
+                            for (int i = 0; i < mActivityListeners.size(); i++) {
+                                mActivityListeners.valueAt(i).onActivityLaunchRequested(displayId,
+                                        componentName, userId);
                             }
                         }
                     } finally {
@@ -598,7 +612,7 @@ public class VirtualDeviceInternal {
      * A wrapper for {@link VirtualDeviceManager.ActivityListener} that executes callbacks on the
      * given executor.
      */
-    private static class ActivityListenerDelegate {
+    private static class ActivityListenerDelegate implements VirtualDeviceManager.ActivityListener {
         @NonNull private final VirtualDeviceManager.ActivityListener mActivityListener;
         @NonNull private final Executor mExecutor;
 
@@ -608,35 +622,48 @@ public class VirtualDeviceInternal {
             mExecutor = executor;
         }
 
-        public void onTopActivityChanged(int displayId, ComponentName topActivity) {
+        @Override
+        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {
             mExecutor.execute(() -> mActivityListener.onTopActivityChanged(displayId, topActivity));
         }
 
-        public void onTopActivityChanged(int displayId, ComponentName topActivity,
+        @Override
+        public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity,
                 @UserIdInt int userId) {
             mExecutor.execute(() ->
                     mActivityListener.onTopActivityChanged(displayId, topActivity, userId));
         }
 
+        @Override
         public void onDisplayEmpty(int displayId) {
             mExecutor.execute(() -> mActivityListener.onDisplayEmpty(displayId));
         }
 
-        public void onActivityLaunchBlocked(int displayId, ComponentName componentName,
-                UserHandle user, IntentSender intentSender) {
+        @Override
+        public void onActivityLaunchBlocked(int displayId, @NonNull ComponentName componentName,
+                @NonNull UserHandle user, IntentSender intentSender) {
             mExecutor.execute(() ->
                     mActivityListener.onActivityLaunchBlocked(
                             displayId, componentName, user, intentSender));
         }
 
-        public void onSecureWindowShown(int displayId, ComponentName componentName,
-                UserHandle user) {
+        @Override
+        public void onSecureWindowShown(int displayId, @NonNull ComponentName componentName,
+                @NonNull UserHandle user) {
             mExecutor.execute(() ->
                     mActivityListener.onSecureWindowShown(displayId, componentName, user));
         }
 
+        @Override
         public void onSecureWindowHidden(int displayId) {
             mExecutor.execute(() -> mActivityListener.onSecureWindowHidden(displayId));
+        }
+
+        @Override
+        public void onActivityLaunchRequested(int displayId, @NonNull ComponentName componentName,
+                @UserIdInt int userId) {
+            mExecutor.execute(() -> mActivityListener.onActivityLaunchRequested(displayId,
+                    componentName, userId));
         }
     }
 
@@ -649,8 +676,8 @@ public class VirtualDeviceInternal {
                 mIntentInterceptorCallback;
         @NonNull private final Executor mExecutor;
 
-        private IntentInterceptorDelegate(Executor executor,
-                VirtualDeviceManager.IntentInterceptorCallback interceptorCallback) {
+        private IntentInterceptorDelegate(@NonNull Executor executor,
+                @NonNull VirtualDeviceManager.IntentInterceptorCallback interceptorCallback) {
             mExecutor = executor;
             mIntentInterceptorCallback = interceptorCallback;
         }
@@ -674,8 +701,8 @@ public class VirtualDeviceInternal {
         @NonNull private final VirtualDeviceManager.SoundEffectListener mSoundEffectListener;
         @NonNull private final Executor mExecutor;
 
-        private SoundEffectListenerDelegate(Executor executor,
-                VirtualDeviceManager.SoundEffectListener soundEffectCallback) {
+        private SoundEffectListenerDelegate(@NonNull Executor executor,
+                @NonNull VirtualDeviceManager.SoundEffectListener soundEffectCallback) {
             mSoundEffectListener = soundEffectCallback;
             mExecutor = executor;
         }

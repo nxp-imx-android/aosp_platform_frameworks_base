@@ -106,6 +106,16 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
          */
         void onRunningAppsChanged(int displayId,
                 @NonNull ArraySet<Pair<Integer, String>> uidPackagePairs);
+
+        /**
+         * Called when an activity launch is requested on the given display for the given user.
+         *
+         * @param displayId The display ID on which the activity launch is requested.
+         * @param componentName The component name of the activity whose launch is requested.
+         * @param userId The user ID associated with the activity whose launch is requested.
+         */
+        void onActivityLaunchRequested(int displayId, @NonNull ComponentName componentName,
+                @UserIdInt int userId);
     }
 
     /**
@@ -296,6 +306,10 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
             @Nullable Intent intent, @WindowConfiguration.WindowingMode int windowingMode,
             int launchingFromDisplayId, boolean isNewTask, boolean isResultExpected,
             @Nullable Supplier<IntentSender> intentSender) {
+        mHandler.post(() -> mActivityListener.onActivityLaunchRequested(
+                mDisplayId, activityInfo.getComponentName(),
+                UserHandle.getUserId(activityInfo.applicationInfo.uid)));
+
         if (intent != null && mActivityListener.shouldInterceptIntent(intent)) {
             logActivityLaunchBlocked("Virtual device intercepting intent");
             return false;
@@ -408,7 +422,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
         final int displayId = waitAndGetDisplayId();
         // Don't send onTopActivityChanged() callback when topActivity is null because it's defined
         // as @NonNull in ActivityListener interface. Sends onDisplayEmpty() callback instead when
-        // there is no activity running on virtual display.
+        // there is no activity running on the virtual display.
         if (topActivity == null || displayId == INVALID_DISPLAY) {
             return;
         }

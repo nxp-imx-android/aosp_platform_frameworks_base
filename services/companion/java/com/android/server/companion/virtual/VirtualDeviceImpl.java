@@ -420,6 +420,17 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 mCameraAccessController.blockCameraAccessIfNeeded(runningUids);
             }
         }
+
+        @Override
+        public void onActivityLaunchRequested(int displayId, @NonNull ComponentName componentName,
+                @UserIdInt int userId) {
+            try {
+                mActivityListener.onActivityLaunchRequested(displayId, componentName, userId);
+            } catch (RemoteException e) {
+                Slog.w(TAG, "Unable to call mActivityListener for activity launch request: "
+                        + componentName, e);
+            }
+        }
     }
 
     VirtualDeviceImpl(
