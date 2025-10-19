@@ -98,7 +98,7 @@
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Subukan ulit sa # segundo.}one{Subukan ulit sa # segundo.}other{Subukan ulit sa # na segundo.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{Subukan ulit sa loob ng # segundo.}one{Subukan ulit sa loob ng # segundo.}other{Subukan ulit sa loob ng # na segundo.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{Subukan ulit sa loob ng # minuto.}one{Subukan ulit sa loob ng # minuto.}other{Subukan ulit sa loob ng # na minuto.}}"</string>
-    <string name="kg_too_many_failed_attempts_countdown_hours" msgid="4895375498917738857">"{count,plural, =1{Subukan ulit sa loob ng # oras.}one{Subukan ulit sa loob ng # oras.}other{Subukan ulit sa loob ng # na oras.}}"</string>
+    <string name="kg_too_many_failed_attempts_countdown_hours" msgid="4895375498917738857">"{count,plural, =1{Subukan ulit sa loob ng # oras.}one{Subukan ulit sa loob ng # na oras.}other{Subukan ulit sa loob ng # na oras.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_days" msgid="5427787465019979593">"{count,plural, =1{Subukan ulit sa loob ng # araw}one{Subukan ulit sa loob ng # araw}other{Subukan ulit sa loob ng # na araw}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_years" msgid="7115333753941425268">"{count,plural, =1{Subukan ulit sa loob ng # taon}one{Subukan ulit sa loob ng # taon}other{Subukan ulit sa loob ng # na taon}}"</string>
     <string name="kg_sim_pin_instructions" msgid="1942424305184242951">"Ilagay ang PIN ng SIM."</string>
