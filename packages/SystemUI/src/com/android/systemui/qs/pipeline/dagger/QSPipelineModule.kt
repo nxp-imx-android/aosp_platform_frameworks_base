@@ -17,7 +17,6 @@
 package com.android.systemui.qs.pipeline.dagger
 
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags.resetTilesRemovesCustomTiles
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
@@ -41,14 +40,12 @@ import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.qs.tiles.base.domain.interactor.DisabledByPolicyInteractor
 import com.android.systemui.qs.tiles.base.domain.interactor.DisabledByPolicyInteractorImpl
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.Multibinds
-import java.util.Optional
 
 @Module(includes = [QSAutoAddModule::class, RestoreProcessorsModule::class])
 abstract class QSPipelineModule {
@@ -94,6 +91,10 @@ abstract class QSPipelineModule {
         impl: MinimumTilesResourceRepository
     ): MinimumTilesRepository
 
+    @Binds
+    @IntoSet
+    abstract fun bindTileDbUpgradeToV2(impl: RemoveAlreadyRemovedTiles): CustomTileAddedUpgrade
+
     companion object {
         /**
          * Provides a logging buffer for all logs related to the new Quick Settings pipeline to log
@@ -104,14 +105,6 @@ abstract class QSPipelineModule {
         @QSTileListLog
         fun provideQSTileListLogBuffer(factory: LogBufferFactory): LogBuffer {
             return factory.create(QSPipelineLogger.TILE_LIST_TAG, maxSize = 700, systrace = false)
-        }
-
-        @Provides
-        @IntoSet
-        fun bindTileDbUpgradeToV2(
-            impl: Lazy<RemoveAlreadyRemovedTiles>
-        ): Optional<CustomTileAddedUpgrade> {
-            return if (resetTilesRemovesCustomTiles()) Optional.of(impl.get()) else Optional.empty()
         }
 
         @Provides
