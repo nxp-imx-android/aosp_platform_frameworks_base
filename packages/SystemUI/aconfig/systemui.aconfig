@@ -724,13 +724,6 @@ flag {
 }
 
 flag {
-   name: "shaderlib_loading_effect_refactor"
-   namespace: "systemui"
-   description: "Extend shader library to provide the common loading effects."
-   bug: "282007590"
-}
-
-flag {
     name: "hearing_aids_qs_tile_dialog"
     namespace: "systemui"
     description: "Show a dialog when clicking on hearing aids quick settings tile."

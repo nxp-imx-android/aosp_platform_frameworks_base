@@ -37,7 +37,6 @@ import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.os.Bundle
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
@@ -1819,7 +1818,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADERLIB_LOADING_EFFECT_REFACTOR)
     fun playTurbulenceNoise_newLoadingEffect_finishesAfterDuration() {
         val semanticActions =
             MediaButton(
@@ -1874,7 +1872,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SHADERLIB_LOADING_EFFECT_REFACTOR)
     fun playTurbulenceNoise_newLoadingEffect_whenPlaybackStateIsNotPlaying_doesNotPlayTurbulence() {
         val semanticActions =
             MediaButton(
