@@ -234,6 +234,13 @@ public class Bubble implements BubbleViewProvider {
     private boolean mIsPendingRemoval;
 
     /**
+     * Indicates whether clean up of the views associated with this bubble should be deferred.
+     *
+     * <p>The caller is responsible for clearing this field after the views are cleaned up.
+     */
+    private boolean mIsCleanupDeferred = false;
+
+    /**
      * Create a bubble with limited information based on given {@link ShortcutInfo}.
      * Note: Currently this is only being used when the bubble is persisted to disk.
      */
@@ -659,6 +666,7 @@ public class Bubble implements BubbleViewProvider {
     }
 
     private void cleanupExpandedView(boolean cleanupTaskView) {
+        setIsCleanupDeferred(false);
         if (mExpandedView != null) {
             mExpandedView.cleanUpExpandedState();
             mExpandedView = null;
@@ -807,6 +815,7 @@ public class Bubble implements BubbleViewProvider {
     }
 
     void setViewInfo(BubbleViewInfoTask.BubbleViewInfo info) {
+        setIsCleanupDeferred(false);
         if (!isInflated()) {
             mIconView = info.imageView;
             mExpandedView = info.expandedView;
@@ -1017,6 +1026,16 @@ public class Bubble implements BubbleViewProvider {
 
     boolean isPendingRemoval() {
         return mIsPendingRemoval;
+    }
+
+    /** Sets whether cleaning up views is deferred. */
+    void setIsCleanupDeferred(boolean isCleanupDeferred) {
+        mIsCleanupDeferred = isCleanupDeferred;
+    }
+
+    /** Whether cleaning up views is deferred. */
+    boolean isCleanupDeferred() {
+        return mIsCleanupDeferred;
     }
 
     /**
@@ -1337,6 +1356,7 @@ public class Bubble implements BubbleViewProvider {
         pw.println("  bubbleMetadataFlagListener null?: " + (mBubbleMetadataFlagListener == null));
         pw.println("  mCurrentTransition null?: " + (mCurrentTransition == null));
         pw.println("  isConvertingToBar: " + isConvertingToBar());
+        pw.println("  isCleanupDeferred: " + mIsCleanupDeferred);
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");
         }

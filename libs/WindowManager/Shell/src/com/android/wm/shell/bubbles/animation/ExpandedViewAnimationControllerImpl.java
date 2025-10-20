@@ -298,8 +298,11 @@ public class ExpandedViewAnimationControllerImpl implements ExpandedViewAnimatio
         if (mBackToExpandedAnimation != null) {
             mBackToExpandedAnimation.cancel();
         }
-        mExpandedView.setContentAlpha(1);
-        mExpandedView.setBackgroundAlpha(1);
+        // if this expanded view is being cleaned up, don't reset its visibility state
+        if (!mExpandedView.isCleanupDeferred()) {
+            mExpandedView.setContentAlpha(1);
+            mExpandedView.setBackgroundAlpha(1);
+        }
         mExpandedView.setManageButtonAlpha(1);
         setCollapsedAmount(0);
         mExpandedView.setBottomClip(0);

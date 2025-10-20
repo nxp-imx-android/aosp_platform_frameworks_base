@@ -1012,6 +1012,11 @@ public class BubbleExpandedView extends LinearLayout {
         return ((LinearLayout.LayoutParams) mManageButton.getLayoutParams()).getMarginStart();
     }
 
+    /** Whether the bubble associated with this expanded view is being cleaned up. */
+    public boolean isCleanupDeferred() {
+        return mBubble != null && mBubble.isCleanupDeferred();
+    }
+
     /** Hide the task view. */
     public void cleanUpExpandedState() {
         if (mTaskView != null) {
