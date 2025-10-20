@@ -687,7 +687,9 @@ private val DEBUG_BOX_COLOR = Color(0f, 1f, 0f, 0.2f)
 private fun LayoutCoordinates.rawBoundsInWindow(): android.graphics.RectF {
     val root = findRootCoordinates()
 
-    val bounds = root.localBoundingBoxOf(this)
+    // Explicitly set clipBounds=false to ensure we get the raw, unclipped bounds, as the default
+    // (true) would clip if any layout between sourceCoordinates and root has clip enabled.
+    val bounds = root.localBoundingBoxOf(sourceCoordinates = this, clipBounds = false)
     val boundsLeft = bounds.left
     val boundsTop = bounds.top
     val boundsRight = bounds.right
