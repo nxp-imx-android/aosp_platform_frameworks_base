@@ -26,7 +26,6 @@ import com.android.keyguard.KeyguardSecurityModel
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
-import com.android.systemui.Flags
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.biometrics.data.repository.FacePropertyRepository
 import com.android.systemui.biometrics.shared.model.SensorStrength
@@ -327,7 +326,6 @@ constructor(
             }
 
     fun onPrimaryAuthLockedOut(secondsBeforeLockoutReset: Long) {
-        if (!Flags.revampedBouncerMessages()) return
         val callback =
             object : CountDownTimerCallback {
                 override fun onFinish() {
@@ -345,11 +343,10 @@ constructor(
                     )
                 }
             }
-        countDownTimerUtil.startNewTimer(secondsBeforeLockoutReset * 1000, 1000, callback)
+        countDownTimerUtil.startTimer(secondsBeforeLockoutReset * 1000, 1000, callback)
     }
 
     fun onPrimaryAuthIncorrectAttempt(isDuplicate: Boolean) {
-        if (!Flags.revampedBouncerMessages()) return
         setMessage(
             BouncerMessageStrings.incorrectSecurityInput(
                     currentSecurityMode.toAuthModel(),
@@ -362,7 +359,6 @@ constructor(
     }
 
     fun setFingerprintAcquisitionMessage(value: String?) {
-        if (!Flags.revampedBouncerMessages()) return
         setMessage(
             defaultMessage(
                 securityMode = currentSecurityMode,
@@ -376,7 +372,6 @@ constructor(
     }
 
     fun setUnlockToContinueMessage(value: String) {
-        if (!Flags.revampedBouncerMessages()) return
         setMessage(
             defaultMessage(
                 securityMode = currentSecurityMode,
@@ -388,7 +383,6 @@ constructor(
     }
 
     fun setFaceAcquisitionMessage(value: String?) {
-        if (!Flags.revampedBouncerMessages()) return
         setMessage(
             defaultMessage(
                 securityMode = currentSecurityMode,
@@ -402,8 +396,6 @@ constructor(
     }
 
     fun setCustomMessage(value: String?) {
-        if (!Flags.revampedBouncerMessages()) return
-
         setMessage(
             defaultMessage(
                 securityMode = currentSecurityMode,
@@ -436,7 +428,6 @@ constructor(
     }
 
     fun onPrimaryBouncerUserInput() {
-        if (!Flags.revampedBouncerMessages()) return
         setMessage(defaultMessage)
     }
 
@@ -534,22 +525,33 @@ interface CountDownTimerCallback {
 @SysUISingleton
 open class CountDownTimerUtil @Inject constructor() {
 
+    private var instance: CountDownTimer? = null
+
     /**
-     * Start a new count down timer that runs for [millisInFuture] with a tick every
-     * [millisInterval]
+     * Start a count down timer that runs for [millisInFuture] with a tick every [millisInterval],
+     * only if another isn't already active.
      */
-    fun startNewTimer(
+    fun startTimer(
         millisInFuture: Long,
         millisInterval: Long,
         callback: CountDownTimerCallback,
     ): CountDownTimer {
-        return object : CountDownTimer(millisInFuture, millisInterval) {
-                override fun onFinish() = callback.onFinish()
+        synchronized(this) {
+            if (instance == null) {
+                instance =
+                    object : CountDownTimer(millisInFuture, millisInterval) {
+                            override fun onFinish() {
+                                instance = null
+                                callback.onFinish()
+                            }
 
-                override fun onTick(millisUntilFinished: Long) =
-                    callback.onTick(millisUntilFinished)
+                            override fun onTick(millisUntilFinished: Long) =
+                                callback.onTick(millisUntilFinished)
+                        }
+                        .start()
             }
-            .start()
+            return instance!!
+        }
     }
 }
 
