@@ -2534,6 +2534,10 @@
                 android:protectionLevel="dangerous" />
 
     <!-- Required to be able to advertise and connect to local network devices.
+         <p>A local network refers to an IP network that utilizes a broadcast-capable
+         network interface, such as Wi-Fi or Ethernet, but excludes cellular (WWAN) or VPN
+         connections.
+         @see https://developer.android.com/privacy-and-security/local-network-definition
          @FlaggedApi(android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
          <p>Protection level: dangerous -->
     <permission android:name="android.permission.ACCESS_LOCAL_NETWORK"
