@@ -87,19 +87,18 @@ class PolicyHandlerTest {
     // A sample enum policy that can be used in the tests.
     object EnumPolicy {
         val name = "theEnumPolicy"
-        val permission = "thePermissionForTheEnumPolicy"
-        val crossUserPermission = "theCrossUserPermissionForTheEnumPolicy"
         const val VALUE_1 = 1
         const val VALUE_2 = 2
         val key = PolicyIdentifier<Int>(name)
         val metadata =
             EnumPolicyMetadata(
                 key,
-                setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
-                RESOURCE_PER_USER,
-                permission,
-                crossUserPermission,
-                setOf(VALUE_1, VALUE_2),
+                /*allowedScopes=*/setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                /*affectedResource=*/RESOURCE_PER_USER,
+                /*requiredPermission=*/null,
+                /*requiredCrossUserPermission=*/null,
+                /*allowedDpcTypes=*/setOf(),
+                /*allowedValues=*/setOf(VALUE_1, VALUE_2),
             )
         val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
 
@@ -174,6 +173,7 @@ class PolicyHandlerTest {
         affectedResource: Int? = null,
         requiredPermission: String? = null,
         requiredCrossUserPermission: String? = null,
+        allowedDpcTypes: Set<Int>? = null,
         allowedValues: Set<Int>? = null,
     ): EnumPolicyMetadata {
         return EnumPolicyMetadata(
@@ -182,6 +182,7 @@ class PolicyHandlerTest {
             affectedResource ?: source.affectedResource,
             requiredPermission ?: source.requiredPermission,
             requiredCrossUserPermission ?: source.requiredCrossUserPermission,
+            allowedDpcTypes ?: source.allowedDpcTypes,
             allowedValues ?: source.allowedValues,
         )
     }
@@ -375,7 +376,6 @@ class PolicyHandlerTest {
 
             verify(mockPolicyStorage)
                 .storePolicy(theCaller, theKey, scope, IntegerPolicyValue(theValue))
-
             verifyNoMoreInteractions(mockPolicyStorage)
         }
     }

@@ -89,6 +89,161 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "TEST_DEFAULT_DEVICE_OWNER_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of DEFAULT_DEVICE_OWNER allowed. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_DEFAULT_DEVICE_OWNER
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_FINANCED_DEVICE_OWNER_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of FINANCED_DEVICE_OWNER allowed. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_FINANCED_DEVICE_OWNER
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE allowed. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_PROFILE_OWNER_ON_USER_0_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER_0 allowed. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER_0
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_PROFILE_OWNER_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of PROFILE_OWNER allowed. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_PROFILE_OWNER_ON_USER_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER allowed. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of AFFILIATED_PROFILE_OWNER_ON_USER allowed. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER
+}
+policy_metadata {
+  identifier {
+    field_name: "TEST_MULTIPLE_DPC_TYPES_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying processing of multiple allowed DPC types. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  allowed_dpc_types: DPC_TYPE_DEFAULT_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER
+}
+policy_metadata {
+  identifier {
     field_name: "SIMPLE_STRING_POLICY"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"

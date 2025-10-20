@@ -60,6 +60,7 @@ class PolicyProcessor : AbstractProcessor() {
 
         // Only processed to report errors.
         add(PolicyDefinition::class.java.name)
+        add(AllowedDpcTypes::class.java.name)
     }
 
     override fun process(
@@ -92,6 +93,10 @@ class PolicyProcessor : AbstractProcessor() {
     private fun reportUnexpectedAnnotations(roundEnvironment: RoundEnvironment) {
         roundEnvironment.getElementsAnnotatedWith(PolicyDefinition::class.java).forEach {
             printError(it, "@PolicyDefinition can not be applied to any element, use a type-specific annotation such as @EnumPolicyDefinition instead")
+        }
+
+        roundEnvironment.getElementsAnnotatedWith(AllowedDpcTypes::class.java).forEach {
+            printError(it, "@AllowedDpcTypes can only be used inside @PolicyDefinition")
         }
     }
 

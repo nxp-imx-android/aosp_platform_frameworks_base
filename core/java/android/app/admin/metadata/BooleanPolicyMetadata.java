@@ -33,13 +33,15 @@ public class BooleanPolicyMetadata extends PolicyMetadata<Boolean> {
             @NonNull Set<Integer> allowedScopes,
             int affectedResource,
             @Nullable String requiredPermission,
-            @Nullable String requiredCrossUserPermission) {
+            @Nullable String requiredCrossUserPermission,
+            @NonNull Set<Integer> allowedDpcTypes) {
         super(
                 id,
                 allowedScopes,
                 affectedResource,
                 requiredPermission,
-                requiredCrossUserPermission
+                requiredCrossUserPermission,
+                allowedDpcTypes
         );
     }
 }

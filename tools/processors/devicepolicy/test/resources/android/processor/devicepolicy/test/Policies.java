@@ -21,6 +21,14 @@ import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY;
+import static android.app.admin.PolicyIdentifier.TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_DEFAULT_DEVICE_OWNER_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_FINANCED_DEVICE_OWNER_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_MULTIPLE_DPC_TYPES_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER_0_ALLOWED;
+import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER_ALLOWED;
 
 import android.app.admin.PolicyIdentifier;
 import java.lang.String;
@@ -45,7 +53,8 @@ public class Policies {
             ),
             /* affectedResource= */ 2,
             /* requiredPermission= */ "android.permission.MANAGE_POLICY_SIMPLE_BOOLEAN",
-            /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
+            /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL",
+            /* allowedDpcTypes= */ Set.of()
         ));
         policies.add(new EnumPolicyMetadata(
             /* id= */ SIMPLE_ENUM_POLICY,
@@ -56,6 +65,7 @@ public class Policies {
             /* affectedResource= */ 1,
             /* requiredPermission= */ "android.permission.MANAGE_POLICY_SIMPLE_ENUM",
             /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
+            /* allowedDpcTypes= */ Set.of(),
             /* allowedValues= */ Set.of(
                 0,
                 1,
@@ -69,7 +79,107 @@ public class Policies {
             ),
             /* affectedResource= */ 1,
             /* requiredPermission= */ null,
-            /* requiredCrossUserPermission= */ null
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of()
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_DEFAULT_DEVICE_OWNER_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                1  // DEFAULT_DEVICE_OWNER
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_FINANCED_DEVICE_OWNER_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                2  // FINANCED_DEVICE_OWNER
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                3  // PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_PROFILE_OWNER_ON_USER_0_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                4  // PROFILE_OWNER_ON_USER_0
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_PROFILE_OWNER_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                5  // PROFILE_OWNER
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_PROFILE_OWNER_ON_USER_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                6  // PROFILE_OWNER_ON_USER
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_AFFILIATED_PROFILE_OWNER_ON_USER_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                7  // AFFILIATED_PROFILE_OWNER_ON_USER
+            )
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ TEST_MULTIPLE_DPC_TYPES_ALLOWED,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(
+                1, // DEFAULT_DEVICE_OWNER
+                3, // PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+                5, // PROFILE_OWNER
+                7  // AFFILIATED_PROFILE_OWNER_ON_USER
+            )
         ));
         policies.add(new StringPolicyMetadata(
             /* id= */ SIMPLE_STRING_POLICY,
@@ -79,6 +189,7 @@ public class Policies {
             /* affectedResource= */ 1,
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(),
             /* emptyStringAllowed= */ false
         ));
         policies.add(new ListPolicyMetadata<String>(
@@ -91,6 +202,7 @@ public class Policies {
                 /* affectedResource= */ 1,
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ null,
+                /* allowedDpcTypes= */ Set.of(),
                 /* emptyStringAllowed= */ true
             ),
             /* emptyListAllowed= */ false
