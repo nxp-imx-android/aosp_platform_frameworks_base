@@ -262,6 +262,7 @@ public class PolicyDefinitionMap {
         }
     }
 
+    @SuppressWarnings("unchecked")
     static PolicyDefinition<Boolean> getPolicyDefinitionForUserRestriction(
             @UserManager.UserRestrictionKey String restriction) {
         String key = DevicePolicyIdentifiers.getIdentifierForUserRestriction(restriction);
