@@ -261,10 +261,12 @@ class InsetsStateController {
     void onRequestedVisibleTypesChanged(@NonNull InsetsTarget caller, @InsetsType int changedTypes,
             @Nullable ImeTracker.Token statsToken) {
         boolean changed = false;
+        boolean hasImeProvider = false;
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
             final @InsetsType int type = provider.getSource().getType();
             final boolean isImeProvider = type == WindowInsets.Type.ime();
+            hasImeProvider |= isImeProvider;
             if ((type & changedTypes) != 0) {
                 changed |= provider.updateClientVisibility(caller,
                         isImeProvider ? statsToken : null)
@@ -275,6 +277,11 @@ class InsetsStateController {
                 ImeTracker.forLogging().onCancelled(statsToken,
                         ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
             }
+        }
+        if ((WindowInsets.Type.ime() & changedTypes) != 0 && !hasImeProvider) {
+            // The ImeInsetsSourceProvider was not created yet (e.g. no IME window was set).
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
         }
         if (changed) {
             notifyInsetsChanged();
