@@ -3182,11 +3182,14 @@ public final class DisplayManagerService extends SystemService {
                 enabledHdrOutputTypes = null;
             } else {
                 // HDR_CONVERSION_FORCE with HDR_TYPE_INVALID is used to represent forcing SDR type.
-                // But, internally SDR is forced by using passthrough mode and not reporting any
-                // HDR capabilities to apps.
                 if (conversionMode == HdrConversionMode.HDR_CONVERSION_FORCE
                         && preferredHdrType == HDR_TYPE_INVALID) {
-                    conversionMode = HdrConversionMode.HDR_CONVERSION_PASSTHROUGH;
+                    if (!com.android.graphics.surfaceflinger.flags.Flags.forceSdrInvalidHdrType()) {
+                        // But, internally SDR is forced by using passthrough mode and not reporting
+                        // any HDR capabilities to apps.
+                        conversionMode = HdrConversionMode.HDR_CONVERSION_PASSTHROUGH;
+                    }
+                    // Force SDR by not reporting any HDR capabilities to apps.
                     mLogicalDisplayMapper.forEachLocked(
                             logicalDisplay -> {
                                 if (logicalDisplay.setIsForceSdr(true)) {
