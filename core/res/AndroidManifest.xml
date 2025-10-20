@@ -9596,6 +9596,17 @@
         android:protectionLevel="signature"
         android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
 
+    <!-- Sets the allowlist for content protection.
+        <p>Intended to be used by the holder of SYSTEM_APP_PROTECTION_SERVICE role only.
+        <p>Protection level: signature|role
+        @SystemApi
+        @FlaggedApi(android.view.contentprotection.flags.Flags.FLAG_SET_CONTENT_PROTECTION_ALLOWLIST_ENABLED)
+        @hide
+    -->
+    <permission android:name="android.permission.SET_CONTENT_PROTECTION_ALLOWLIST"
+        android:protectionLevel="signature|role"
+        android:featureFlag="android.view.contentprotection.flags.set_content_protection_allowlist_enabled" />
+
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
     <!-- Attribution for Country Detector. -->

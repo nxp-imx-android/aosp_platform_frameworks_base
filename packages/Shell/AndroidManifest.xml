@@ -287,6 +287,8 @@
     <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
     <uses-permission android:name="android.permission.MANAGE_AUTO_FILL" />
     <uses-permission android:name="android.permission.MANAGE_CONTENT_CAPTURE" />
+    <uses-permission android:name="android.permission.SET_CONTENT_PROTECTION_ALLOWLIST"
+        android:featureFlag="android.view.contentprotection.flags.set_content_protection_allowlist_enabled" />
     <uses-permission android:name="android.permission.MANAGE_CONTENT_SUGGESTIONS" />
     <uses-permission android:name="android.permission.MANAGE_APP_PREDICTIONS" />
     <uses-permission android:name="android.permission.MANAGE_LOW_POWER_STANDBY" />

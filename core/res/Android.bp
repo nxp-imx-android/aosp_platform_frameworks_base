@@ -176,6 +176,7 @@ android_app {
         "android.os.vibrator.flags-aconfig",
         "android.media.tv.flags-aconfig",
         "android.security.flags-aconfig",
+        "android.view.contentprotection.flags-aconfig",
         "android.view.inputmethod.flags-aconfig",
         "device_policy_aconfig_flags",
         "devicelock-aconfig-flags",
