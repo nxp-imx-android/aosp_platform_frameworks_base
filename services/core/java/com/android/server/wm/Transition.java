@@ -1804,7 +1804,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      */
     private void updateImeForVisibleTransientLaunch(@NonNull DisplayContent dc) {
         final WindowState imeLayeringTarget = dc.computeImeLayeringTarget(true /* update */);
-        final WindowState imeWindow = dc.mInputMethodWindow;
+        final WindowState imeWindow = dc.getImeWindow();
         if (imeWindow == null || imeLayeringTarget == null
                 || !mController.hasCollectingRotationChange(dc, dc.getRotation())) {
             return;

@@ -5404,8 +5404,8 @@ final class ActivityRecord extends WindowToken {
             final InputTarget imeInputTarget = mDisplayContent.getImeInputTarget();
             mLastImeShown = imeInputTarget != null && imeInputTarget.getWindowState() != null
                     && imeInputTarget.getWindowState().mActivityRecord == this
-                    && mDisplayContent.mInputMethodWindow != null
-                    && mDisplayContent.mInputMethodWindow.isVisible();
+                    && mDisplayContent.getImeWindow() != null
+                    && mDisplayContent.getImeWindow().isVisible();
             finishOrAbortReplacingWindow();
             if (!firstWindowDrawn && task != null && task.mSharedStartingData != null) {
                 final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
@@ -8822,8 +8822,8 @@ final class ActivityRecord extends WindowToken {
             final InputTarget imeInputTarget = mDisplayContent.getImeInputTarget();
             mLastImeShown = imeInputTarget != null && imeInputTarget.getWindowState() != null
                     && imeInputTarget.getWindowState().mActivityRecord == this
-                    && mDisplayContent.mInputMethodWindow != null
-                    && mDisplayContent.mInputMethodWindow.isVisible();
+                    && mDisplayContent.getImeWindow() != null
+                    && mDisplayContent.getImeWindow().isVisible();
         }
         // Do not waiting for translucent activity if it is going to relaunch.
         final Task rootTask = getRootTask();

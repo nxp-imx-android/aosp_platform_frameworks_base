@@ -806,8 +806,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 WindowState win = mWmService.mDestroySurface.get(i);
                 win.mDestroying = false;
                 final DisplayContent displayContent = win.getDisplayContent();
-                if (displayContent.mInputMethodWindow == win) {
-                    displayContent.setInputMethodWindowLocked(null);
+                if (displayContent.getImeWindow() == win) {
+                    displayContent.setImeWindow(null /* win */);
                 }
                 if (displayContent.mWallpaperController.isWallpaperTarget(win)) {
                     displayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
@@ -1119,11 +1119,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
      * Get current topmost focused IME window in system.
      * Will look on all displays in current Z-order.
      */
-    WindowState getCurrentInputMethodWindow() {
+    @Nullable
+    WindowState getCurrentImeWindow() {
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final DisplayContent displayContent = mChildren.get(i);
-            if (displayContent.mInputMethodWindow != null) {
-                return displayContent.mInputMethodWindow;
+            final WindowState imeWindow = displayContent.getImeWindow();
+            if (imeWindow != null) {
+                return imeWindow;
             }
         }
         return null;

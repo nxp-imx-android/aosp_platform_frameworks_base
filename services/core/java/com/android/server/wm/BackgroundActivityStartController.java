@@ -1227,8 +1227,7 @@ public class BackgroundActivityStartController {
 
         final int callingAppId = UserHandle.getAppId(state.mCallingUid);
         // IME should always be allowed to start activity, like IME settings.
-        final WindowState imeWindow =
-                getService().mRootWindowContainer.getCurrentInputMethodWindow();
+        final WindowState imeWindow = getService().mRootWindowContainer.getCurrentImeWindow();
         if (imeWindow != null && callingAppId == imeWindow.mOwnerUid) {
             return new BalVerdict(BAL_ALLOW_ALLOWLISTED_COMPONENT, "Active ime").allowNewTask();
         }

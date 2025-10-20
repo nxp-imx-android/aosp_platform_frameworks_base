@@ -343,7 +343,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         }
         if (addAll || ArrayUtils.contains(requestedWindows, W_INPUT_METHOD)) {
             mImeWindow = createCommonWindow(null, TYPE_INPUT_METHOD, "mImeWindow");
-            mDisplayContent.mInputMethodWindow = mImeWindow;
+            mDisplayContent.setImeWindowForTesting(mImeWindow);
         }
         if (addAll || ArrayUtils.contains(requestedWindows, W_INPUT_METHOD_DIALOG)) {
             mImeDialogWindow = createCommonWindow(null, TYPE_INPUT_METHOD_DIALOG,

@@ -1039,16 +1039,16 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // Set current IME window on default display, make sure the IME layering target is appWin1
         // and null on the secondary display.
-        mDisplayContent.setInputMethodWindowLocked(mImeWindow);
-        secondaryDisplay.setInputMethodWindowLocked(null /* win */);
+        mDisplayContent.setImeWindow(mImeWindow);
+        secondaryDisplay.setImeWindow(null /* win */);
         assertEquals("default display IME layering target",
                 appWin1, mDisplayContent.getImeLayeringTarget());
         assertNull("secondary display IME layering target",
                 secondaryDisplay.getImeLayeringTarget());
 
         // Switch IME window on new display and make sure the IME layering target also switched.
-        secondaryDisplay.setInputMethodWindowLocked(mImeWindow);
-        mDisplayContent.setInputMethodWindowLocked(null /* win */);
+        secondaryDisplay.setImeWindow(mImeWindow);
+        mDisplayContent.setImeWindow(null /* win */);
         assertNull("default display IME layering target",
                 mDisplayContent.getImeLayeringTarget());
         assertEquals("secondary display IME layering target", appWin2,
@@ -1239,7 +1239,7 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testComputeImeParent_app() {
         final DisplayContent dc = createNewDisplay();
-        dc.setInputMethodWindowLocked(mImeWindow);
+        dc.setImeWindow(mImeWindow);
         final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).setDisplay(dc).build();
         dc.setImeInputTarget(appWin);
         dc.setImeLayeringTarget(appWin);
@@ -1251,7 +1251,7 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testComputeImeParent_app_notFullscreen() {
         final DisplayContent dc = createNewDisplay();
-        dc.setInputMethodWindowLocked(mImeWindow);
+        dc.setImeWindow(mImeWindow);
         final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).setDisplay(dc)
                 .setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW).build();
         dc.setImeInputTarget(appWin);
@@ -1275,7 +1275,7 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testComputeImeParent_noApp() {
         final DisplayContent dc = createNewDisplay();
-        dc.setInputMethodWindowLocked(mImeWindow);
+        dc.setImeWindow(mImeWindow);
         final var statusBar = newWindowBuilder("statusBar", TYPE_STATUS_BAR).setDisplay(dc).build();
         dc.setImeInputTarget(statusBar);
         dc.setImeLayeringTarget(statusBar);
@@ -1352,7 +1352,7 @@ public class DisplayContentTests extends WindowTestsBase {
         assertNull("IME parent should be null when IME Layering Target is null",
                 mDisplayContent.computeImeParent());
 
-        mDisplayContent.setInputMethodWindowLocked(null /* win */);
+        mDisplayContent.setImeWindow(null /* win */);
         assertEquals("IME parent should be non-null when IME window is null",
                 mDisplayContent.getImeContainer().getParent(), mDisplayContent.computeImeParent());
     }
@@ -1405,12 +1405,12 @@ public class DisplayContentTests extends WindowTestsBase {
         // Verify IME window can get up-to-date secure flag update when the IME input target
         // set before setCanScreenshot called.
         final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION).build();
-        SurfaceControl.Transaction t = mDisplayContent.mInputMethodWindow.getPendingTransaction();
+        SurfaceControl.Transaction t = mDisplayContent.getImeWindow().getPendingTransaction();
         spyOn(t);
         mDisplayContent.setImeInputTarget(appWin);
-        mDisplayContent.mInputMethodWindow.setCanScreenshot(t, false /* canScreenshot */);
+        mDisplayContent.getImeWindow().setCanScreenshot(t, false /* canScreenshot */);
 
-        verify(t).setSecure(eq(mDisplayContent.mInputMethodWindow.mSurfaceControl), eq(true));
+        verify(t).setSecure(eq(mDisplayContent.getImeWindow().mSurfaceControl), eq(true));
     }
 
     @SetupWindows(addWindows = W_ACTIVITY)
@@ -2399,7 +2399,7 @@ public class DisplayContentTests extends WindowTestsBase {
         mDisplayContent.computeImeLayeringTarget(true /* update */);
         assertEquals(appWin1, mDisplayContent.getImeLayeringTarget());
         mDisplayContent.setImeInputTarget(appWin1);
-        makeWindowVisible(mDisplayContent.mInputMethodWindow);
+        makeWindowVisible(mDisplayContent.getImeWindow());
         mDisplayContent.getInsetsStateController().getImeSourceProvider().setImeShowing(true);
 
         // Test step 2: Simulate launching appWin2 and appWin1 is in app transition.
@@ -2432,7 +2432,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
         mDisplayContent.setImeInputTarget(appWin);
         mDisplayContent.setImeLayeringTarget(appWin);
-        makeWindowVisible(mDisplayContent.mInputMethodWindow);
+        makeWindowVisible(mDisplayContent.getImeWindow());
         mDisplayContent.getInsetsStateController().getImeSourceProvider().setImeShowing(true);
 
         // Verify that when the timing of 2 showImeScreenshot invocations are very close, it will
@@ -2454,7 +2454,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final ActivityRecord activity = createActivityRecord(mDisplayContent, task);
         final var appWin = newWindowBuilder("appWin", TYPE_BASE_APPLICATION)
                 .setWindowToken(activity).build();
-        makeWindowVisible(mDisplayContent.mInputMethodWindow);
+        makeWindowVisible(mDisplayContent.getImeWindow());
 
         mDisplayContent.setImeInputTarget(appWin);
         mDisplayContent.setImeLayeringTarget(appWin);
@@ -2477,7 +2477,7 @@ public class DisplayContentTests extends WindowTestsBase {
         final WindowState app = newWindowBuilder("app", TYPE_BASE_APPLICATION).setDisplay(dc)
                 .build();
         app.mAttrs.flags |= FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
-        dc.setInputMethodWindowLocked(mImeWindow);
+        dc.setImeWindow(mImeWindow);
 
         assertEquals("app became the IME layering target", app,
                 dc.getImeLayeringTarget());
@@ -2487,7 +2487,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 eq(false) /* removed */, eq(dc.mDisplayId));
 
         // Removing IME window updates IME layering target to null
-        dc.setInputMethodWindowLocked(null /* win */);
+        dc.setImeWindow(null /* win */);
         assertNotEquals("app is no longer the IME layering target after IME was removed",
                 app, dc.getImeLayeringTarget());
         assertFalse("app is no longer an IME overlay layering target after IME was removed",
@@ -2509,7 +2509,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setDisplay(dc).build();
         app1.mAttrs.flags |= FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
         app2.mActivityRecord.setVisibleRequested(false);
-        dc.setInputMethodWindowLocked(mImeWindow);
+        dc.setImeWindow(mImeWindow);
 
         assertEquals("app1 became the IME layering target", app1,
                 dc.getImeLayeringTarget());
@@ -2537,7 +2537,7 @@ public class DisplayContentTests extends WindowTestsBase {
         spyOn(wmService);
         final WindowState app1 = newWindowBuilder("app1", TYPE_BASE_APPLICATION)
                 .setDisplay(dc).build();
-        dc.setInputMethodWindowLocked(mImeWindow);
+        dc.setImeWindow(mImeWindow);
 
         assertEquals("app1 became the IME layering target", app1,
                 dc.getImeLayeringTarget());
@@ -2925,7 +2925,7 @@ public class DisplayContentTests extends WindowTestsBase {
     private void doTestImeWindowFocusWhenImeParentChanged(@NonNull WindowState window) {
         makeWindowVisibleAndDrawn(window, mImeWindow);
         assertTrue("Window canReceiveKeys", window.canReceiveKeys());
-        mDisplayContent.setInputMethodWindowLocked(mImeWindow);
+        mDisplayContent.setImeWindow(mImeWindow);
 
         // Verify window can be focused if the IME parent is visible and the IME is visible.
         final var imeAppTarget = newWindowBuilder("imeAppTarget", TYPE_BASE_APPLICATION).build();

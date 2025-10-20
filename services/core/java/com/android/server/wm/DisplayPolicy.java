@@ -1577,7 +1577,7 @@ public class DisplayPolicy {
 
         if (win.mImeInsetsConsumed != mImeInsetsConsumed) {
             win.mImeInsetsConsumed = mImeInsetsConsumed;
-            final WindowState imeWin = mDisplayContent.mInputMethodWindow;
+            final WindowState imeWin = mDisplayContent.getImeWindow();
             if (win.isReadyToDispatchInsetsState() && imeWin != null && imeWin.isVisible()) {
                 win.notifyInsetsChanged();
             }
@@ -2620,10 +2620,10 @@ public class DisplayPolicy {
             // the intermediate state to system UI. Otherwise, it might trigger redundant effects.
             return;
         }
+        final WindowState imeWin = mDisplayContent.getImeWindow();
         final WindowState navColorWin = chooseNavigationColorWindowLw(mNavBarColorWindowCandidate,
-                mDisplayContent.mInputMethodWindow, mHasBottomNavigationBar);
-        final boolean isNavbarColorManagedByIme =
-                navColorWin != null && navColorWin == mDisplayContent.mInputMethodWindow;
+                imeWin, mHasBottomNavigationBar);
+        final boolean isNavbarColorManagedByIme = navColorWin != null && navColorWin == imeWin;
         final int appearance = updateLightNavigationBarLw(win != null
                         ? win.mAttrs.insetsFlags.appearance
                         : 0, navColorWin)
@@ -2922,7 +2922,7 @@ public class DisplayPolicy {
             boolean freeformRootTaskVisible) {
         final WindowState navBackgroundWin = chooseNavigationBackgroundWindow(
                 mNavBarBackgroundWindowCandidate,
-                mDisplayContent.mInputMethodWindow,
+                mDisplayContent.getImeWindow(),
                 mHasBottomNavigationBar);
         final boolean drawBackground = navBackgroundWin != null
                 // There is no app window showing underneath nav bar. (e.g., The screen is locked.)
