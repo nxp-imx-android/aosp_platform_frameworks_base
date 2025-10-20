@@ -23,7 +23,6 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
-import static android.window.DesktopModeFlags.EXCLUDE_CAPTION_FROM_APP_BOUNDS;
 
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
@@ -70,10 +69,6 @@ class AppCompatSandboxingPolicy {
      */
     void sandboxBoundsIfNeeded(@NonNull Configuration resolvedConfig,
             @WindowingMode int windowingMode) {
-        if (!EXCLUDE_CAPTION_FROM_APP_BOUNDS.isTrue()) {
-            return;
-        }
-
         if (isInDesktopMode(mActivityRecord.mAtmService.mContext, windowingMode)) {
             Rect appBounds = resolvedConfig.windowConfiguration.getAppBounds();
             if (appBounds == null || appBounds.isEmpty()) {

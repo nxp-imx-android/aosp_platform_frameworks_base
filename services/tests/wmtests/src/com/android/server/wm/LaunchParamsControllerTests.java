@@ -44,7 +44,6 @@ import android.app.ActivityOptions;
 import android.content.ComponentName;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.graphics.Rect;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
 import android.util.SparseArray;
@@ -53,7 +52,6 @@ import androidx.test.filters.MediumTest;
 
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -557,7 +555,6 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
      * Ensures that app bounds are set to exclude freeform caption if window is in freeform.
      */
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     public void testLayoutTaskBoundsFreeformAppBounds() {
         final Rect expected = new Rect(10, 20, 30, 40);
 

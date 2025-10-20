@@ -1711,16 +1711,6 @@ flag {
 }
 
 flag {
-  name: "exclude_caption_from_app_bounds"
-  namespace: "lse_desktop_experience"
-  description: "Whether caption insets are excluded from app bounds in freeform"
-  bug: "388014743"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "exclude_desk_roots_from_desktop_tasks"
   namespace: "lse_desktop_experience"
   description: "Do not include desk root tasks in freeform/desktop tasks"

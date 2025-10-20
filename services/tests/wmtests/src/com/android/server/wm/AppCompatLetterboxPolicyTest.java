@@ -232,7 +232,6 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     public void testGetRoundedCornersRadius_letterboxBoundsMatchHeightInFreeform_notRounded() {
         runTestScenario((robot) -> {
             robot.conf().setLetterboxActivityCornersRadius(15);
@@ -255,7 +254,6 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     public void testGetRoundedCornersRadius_letterboxBoundsNotMatchHeightInFreeform_rounded() {
         runTestScenario((robot) -> {
             robot.conf().setLetterboxActivityCornersRadius(15);

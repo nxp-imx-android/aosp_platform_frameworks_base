@@ -401,7 +401,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_resizeable_false() {
         assertFalse(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(
@@ -410,7 +409,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_nonResizeable_true() {
         assertTrue(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(
@@ -419,7 +417,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     @EnableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     fun testShouldExcludeCaptionFromAppBounds_nonResizeable_sdk35_false() {
         assertFalse(desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(
@@ -429,7 +426,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     @DisableCompatChanges(ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
     @EnableCompatChanges(ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS)
     fun testShouldExcludeCaptionFromAppBounds_resizeable_overridden_true() {

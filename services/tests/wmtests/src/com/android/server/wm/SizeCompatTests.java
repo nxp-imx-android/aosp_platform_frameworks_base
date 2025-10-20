@@ -4485,7 +4485,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
     @DisableCompatChanges({ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
     public void testInFreeform_boundsSandboxedToAppBounds() {
         allowDesktopMode();
