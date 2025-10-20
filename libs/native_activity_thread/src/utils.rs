@@ -13,16 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use bitflags::bitflags;
 use libc::mallopt;
-use nix::{errno::Errno, unistd::getuid};
+use nix::{
+    errno::Errno,
+    sys::resource::{getrlimit, setrlimit, Resource},
+    unistd::getuid,
+};
+use rustutils::android::system_properties;
 use time_bindgen::tzset;
 
-use std::ffi::c_int;
+use std::ffi::{c_int, c_ulong};
 use std::io::Error;
 
 const AID_APP_START: u32 = 10000;
+
+static PROP_ZYGOTE_CORE_DUMP: &str = "persist.zygote.core_dump";
 
 /// A safe wrapper around tzset()
 pub fn reset_time_zone() {
@@ -68,6 +75,14 @@ impl RuntimeFlags {
     pub fn is_native_heap_zero_init_enabled(&self) -> bool {
         self.contains(Self::NATIVE_HEAP_ZERO_INIT_ENABLED)
     }
+
+    pub fn is_ptrace_enabled(&self) -> bool {
+        self.contains(Self::DEBUG_ENABLE_PTRACE)
+    }
+
+    pub fn is_profileable_from_shell(&self) -> bool {
+        self.contains(Self::PROFILE_FROM_SHELL)
+    }
 }
 
 pub fn apply_runtime_flags(runtime_flags: u32) {
@@ -78,6 +93,18 @@ pub fn apply_runtime_flags(runtime_flags: u32) {
             return;
         }
     };
+
+    // Set process properties to enable debugging if required.
+    if flags.is_ptrace_enabled() {
+        if let Err(e) = enable_debugger() {
+            log::warn!("Failed to enable debbuger: {e}");
+        }
+    }
+
+    if flags.is_profileable_from_shell() {
+        // simpleperf needs the process to be dumpable to profile it.
+        prctl_set_dumpable(Dumpable::ByUser).expect("prctl(PR_SET_DUMPABLE) failed");
+    }
 
     if !flags.is_native_heap_zero_init_enabled() {
         // SAFETY: Setting configuration with valid argument (0 = disable).
@@ -138,7 +165,8 @@ fn prctl_get_dumpable() -> nix::Result<Dumpable> {
     if res == -1 {
         return Err(Errno::last());
     }
-    Ok(Dumpable::try_from(res).expect("prctl(PR_GET_DUMPABLE) returned an unexpected value: {res}"))
+    Ok(Dumpable::try_from(res)
+        .unwrap_or_else(|_| panic!("prctl(PR_GET_DUMPABLE) returned an unexpected value: {res}")))
 }
 
 // TODO(b/450462991): Use nix::sys::prctl::set_dumpable once `prctl` module is available to
@@ -153,11 +181,49 @@ fn prctl_set_dumpable(dumpable: Dumpable) -> nix::Result<()> {
     Ok(())
 }
 
+fn prctl_set_ptracer(pid: c_ulong) -> nix::Result<()> {
+    // SAFETY: Trivially safe. See `man PR_SET_PTRACER`.
+    let res = unsafe { libc::prctl(libc::PR_SET_PTRACER, pid) };
+    if res == -1 {
+        return Err(Errno::last());
+    }
+    Ok(())
+}
+
 pub fn setup_process_dumpability() -> Result<()> {
     if prctl_get_dumpable().context("prctl(PR_GET_DUMPABLE) failed")? == Dumpable::ByRoot
         && getuid().as_raw() >= AID_APP_START
     {
         prctl_set_dumpable(Dumpable::Disable).context("prctl(PR_SET_DUMPABLE) failed")?;
     }
+    Ok(())
+}
+
+fn enable_debugger() -> Result<()> {
+    // To let a non-privileged gdbserver attach to this process,
+    // we must set our dumpable flag.
+    prctl_set_dumpable(Dumpable::ByUser).context("prctl(PR_SET_DUMPABLE) failed")?;
+
+    // A non-privileged native debugger should be able to attach to the debuggable app,
+    // even if Yama is enabled (see kernel/Documentation/security/Yama.txt).
+    if let Err(errno) = prctl_set_ptracer(libc::PR_SET_PTRACER_ANY) {
+        // if Yama is off prctl(PR_SET_PTRACER) returns EINVAL -
+        // don't log in this case since it's expected behaviour.
+        if errno != Errno::EINVAL {
+            bail!("prctl(PR_SET_TRACER, PR_SET_PTRACER_ANY) failed: {errno}");
+        }
+    }
+
+    // Set the core dump size to zero unless wanted
+    // (see also coredump_setup in build/envsetup.sh).
+    if system_properties::read_bool(PROP_ZYGOTE_CORE_DUMP, false)
+        .with_context(|| format!("Failed to read {PROP_ZYGOTE_CORE_DUMP}"))?
+    {
+        // Set the soft limit on core dump size to 0 without changing the hard limit.
+        let (_, hard_limit) =
+            getrlimit(Resource::RLIMIT_CORE).context("getrlimit(RLIMIT_CORE) failed")?;
+        setrlimit(Resource::RLIMIT_CORE, 0, hard_limit).context("setrlimit(RLIMIT_CORE) failed")?;
+    }
+
     Ok(())
 }
