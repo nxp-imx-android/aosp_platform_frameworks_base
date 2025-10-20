@@ -672,13 +672,12 @@ constructor(
                     reinflating = reInflateFlags and FLAG_CONTENT_VIEW_CONTRACTED != 0,
                 )
 
+            logger.logAsyncTaskProgress(
+                entry.logKey,
+                "extracting promoted notification content",
+            )
+            val imageModelProvider = rowImageInflater.useForContentModel()
             val promotedContent =
-                if (PromotedNotificationContentModel.featureFlagEnabled()) {
-                    logger.logAsyncTaskProgress(
-                        entry.logKey,
-                        "extracting promoted notification content",
-                    )
-                    val imageModelProvider = rowImageInflater.useForContentModel()
                     promotedNotificationContentExtractor
                         .extractContent(
                             entry,
@@ -694,9 +693,6 @@ constructor(
                                 "extracted promoted notification content: ${it?.toRedactedString()}",
                             )
                         }
-                } else {
-                    null
-                }
 
             // process conversations and extract the messaging style
             val messagingStyle =
@@ -1534,9 +1530,7 @@ constructor(
             row.mImageModelIndex = result.rowImageInflater.getNewImageIndex()
 
             entry.setContentModel(result.contentModel)
-            if (PromotedNotificationContentModel.featureFlagEnabled()) {
-                entry.promotedNotificationContentModels = result.promotedContent
-            }
+            entry.promotedNotificationContentModels = result.promotedContent
 
             result.inflatedSmartReplyState?.let { row.privateLayout.setInflatedSmartReplyState(it) }
 

@@ -47,7 +47,6 @@ import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
 import com.android.systemui.statusbar.notification.footer.ui.viewbinder.FooterViewBinder
 import com.android.systemui.statusbar.notification.footer.ui.viewmodel.FooterViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerShelfViewBinder
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
@@ -148,11 +147,9 @@ constructor(
                     }
                 }
 
-                if (PromotedNotificationUi.isEnabled) {
-                    launch {
-                        viewModel.visibleStatusBarNotificationChips.collect { chips ->
-                            viewController.updateVisibleStatusBarNotificationChips(chips)
-                        }
+                launch {
+                    viewModel.visibleStatusBarNotificationChips.collect { chips ->
+                        viewController.updateVisibleStatusBarNotificationChips(chips)
                     }
                 }
 

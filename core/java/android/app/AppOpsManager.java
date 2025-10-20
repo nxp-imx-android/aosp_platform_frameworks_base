@@ -2949,8 +2949,7 @@ public class AppOpsManager {
             OP_MEDIA_ROUTING_CONTROL,
             OP_READ_SYSTEM_GRAMMATICAL_GENDER,
             OP_WRITE_SYSTEM_PREFERENCES,
-            android.app.Flags.uiRichOngoing()
-                    ? OP_POST_PROMOTED_NOTIFICATIONS : OP_NONE,
+            OP_POST_PROMOTED_NOTIFICATIONS,
             com.android.media.projection.flags.Flags.recordingOverlay()
                     ? OP_SYSTEM_APPLICATION_OVERLAY : OP_NONE,
     };
@@ -3481,8 +3480,7 @@ public class AppOpsManager {
                 .build(),
         new AppOpInfo.Builder(OP_POST_PROMOTED_NOTIFICATIONS, OPSTR_POST_PROMOTED_NOTIFICATIONS,
                 "POST_PROMOTED_NOTIFICATIONS")
-                .setPermission(android.app.Flags.uiRichOngoing()
-                        ? Manifest.permission.POST_PROMOTED_NOTIFICATIONS : null)
+                .setPermission(Manifest.permission.POST_PROMOTED_NOTIFICATIONS)
                 .build(),
         new AppOpInfo.Builder(OP_SYSTEM_APPLICATION_OVERLAY, OPSTR_SYSTEM_APPLICATION_OVERLAY,
                 "SYSTEM_APPLICATION_OVERLAY")

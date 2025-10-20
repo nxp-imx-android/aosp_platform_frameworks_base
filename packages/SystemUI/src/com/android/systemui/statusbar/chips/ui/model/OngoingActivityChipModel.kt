@@ -32,7 +32,6 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.ui.viewmodel.TimeSource
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 
 /** Model representing the display of an ongoing activity as a chip in the status bar. */
 sealed class OngoingActivityChipModel {
@@ -183,10 +182,6 @@ sealed class OngoingActivityChipModel {
              */
             val timeSource: TimeSource = TimeSource { System.currentTimeMillis() },
         ) : Content() {
-            init {
-                /* check if */ PromotedNotificationUi.isUnexpectedlyInLegacyMode()
-            }
-
             override val logName = "ShortTimeDelta(time=$time)"
         }
 

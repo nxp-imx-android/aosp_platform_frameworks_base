@@ -42,7 +42,6 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingOut
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.RunningChipAnim
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
@@ -148,52 +147,7 @@ constructor(
                     }
                 }
 
-                if (!PromotedNotificationUi.isEnabled && !StatusBarChipsModernization.isEnabled) {
-                    val primaryChipViewBinding =
-                        OngoingActivityChipBinder.createBinding(primaryChipView)
-
-                    launch {
-                        combine(
-                                viewModel.primaryOngoingActivityChip,
-                                viewModel.canShowOngoingActivityChips,
-                                ::Pair,
-                            )
-                            .distinctUntilChanged()
-                            .collect { (primaryChipModel, areChipsAllowed) ->
-                                OngoingActivityChipBinder.bind(
-                                    primaryChipModel,
-                                    primaryChipViewBinding,
-                                    iconViewStore,
-                                )
-
-                                if (StatusBarRootModernization.isEnabled) {
-                                    bindLegacyPrimaryOngoingActivityChipWithVisibility(
-                                        areChipsAllowed,
-                                        primaryChipModel,
-                                        primaryChipViewBinding,
-                                    )
-                                } else {
-                                    when (primaryChipModel) {
-                                        is OngoingActivityChipModel.Active ->
-                                            listener?.onOngoingActivityStatusChanged(
-                                                hasPrimaryOngoingActivity = true,
-                                                hasSecondaryOngoingActivity = false,
-                                                shouldAnimate = true,
-                                            )
-
-                                        is OngoingActivityChipModel.Inactive ->
-                                            listener?.onOngoingActivityStatusChanged(
-                                                hasPrimaryOngoingActivity = false,
-                                                hasSecondaryOngoingActivity = false,
-                                                shouldAnimate = primaryChipModel.shouldAnimate,
-                                            )
-                                    }
-                                }
-                            }
-                    }
-                }
-
-                if (PromotedNotificationUi.isEnabled && !StatusBarChipsModernization.isEnabled) {
+                if (!StatusBarChipsModernization.isEnabled) {
                     // Create view bindings here so we don't keep re-fetching child views each time
                     // the chip model changes.
                     val primaryChipViewBinding =
@@ -322,30 +276,6 @@ constructor(
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-
-    /** Bind the (legacy) single primary ongoing activity chip with the status bar visibility */
-    private fun bindLegacyPrimaryOngoingActivityChipWithVisibility(
-        areChipsAllowed: Boolean,
-        primaryChipModel: OngoingActivityChipModel,
-        primaryChipViewBinding: OngoingActivityChipViewBinding,
-    ) {
-        if (!areChipsAllowed) {
-            primaryChipViewBinding.rootView.hide(shouldAnimateChange = false)
-        } else {
-            when (primaryChipModel) {
-                is OngoingActivityChipModel.Active -> {
-                    primaryChipViewBinding.rootView.show(shouldAnimateChange = true)
-                }
-
-                is OngoingActivityChipModel.Inactive -> {
-                    primaryChipViewBinding.rootView.hide(
-                        state = View.GONE,
-                        shouldAnimateChange = primaryChipModel.shouldAnimate,
-                    )
                 }
             }
         }

@@ -61,7 +61,6 @@ import com.android.systemui.statusbar.disableflags.DisableFlagsLogger;
 import com.android.systemui.statusbar.events.SystemStatusAnimationCallback;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.phone.NotificationIconContainer;
 import com.android.systemui.statusbar.phone.PhoneStatusBarView;
 import com.android.systemui.statusbar.phone.StatusBarHideIconsForBouncerManager;
@@ -670,8 +669,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         boolean showClock = externalModel.getShowClock();
 
         boolean showPrimaryOngoingActivityChip = mHasPrimaryOngoingActivity;
-        boolean showSecondaryOngoingActivityChip =
-                PromotedNotificationUi.isEnabled() && mHasSecondaryOngoingActivity;
+        boolean showSecondaryOngoingActivityChip = mHasSecondaryOngoingActivity;
 
         return new StatusBarVisibilityModel(
                 showClock,
@@ -711,9 +709,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         }
 
         boolean showSecondaryOngoingActivityChip =
-                // Secondary chips are only supported when RONs are enabled.
-                PromotedNotificationUi.isEnabled()
-                        && visibilityModel.getShowSecondaryOngoingActivityChip()
+                visibilityModel.getShowSecondaryOngoingActivityChip()
                         && !disableNotifications;
         if (showSecondaryOngoingActivityChip) {
             showSecondaryOngoingActivityChip(animate);
@@ -841,7 +837,6 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     }
 
     private void showSecondaryOngoingActivityChip(boolean animate) {
-        PromotedNotificationUi.unsafeAssertInNewMode();
         StatusBarRootModernization.assertInLegacyMode();
         animateShow(mSecondaryOngoingActivityChip, animate);
     }

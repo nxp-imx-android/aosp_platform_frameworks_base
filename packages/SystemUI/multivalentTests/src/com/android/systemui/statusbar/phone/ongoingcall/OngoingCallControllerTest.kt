@@ -41,7 +41,6 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
@@ -73,7 +72,6 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper
 @DisableFlags(
     StatusBarChipsModernization.FLAG_NAME,
-    PromotedNotificationUi.FLAG_NAME,
     PerDisplayOngoingCallStatusBarVisibility.FLAG_NAME,
 )
 class OngoingCallControllerTest : SysuiTestCase() {

@@ -70,7 +70,6 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewMod
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.icon.domain.interactor.StatusBarNotificationIconsInteractor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor
@@ -648,10 +647,8 @@ constructor(
     private val hasOngoingActivityChips =
         if (StatusBarChipsModernization.isEnabled) {
             chipsVisibilityModel.map { it.chips.active.any { chip -> !chip.isHidden } }
-        } else if (PromotedNotificationUi.isEnabled) {
-            ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
         } else {
-            primaryOngoingActivityChip.map { it is OngoingActivityChipModel.Active }
+            ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
         }
 
     private val isAnyChipVisible =

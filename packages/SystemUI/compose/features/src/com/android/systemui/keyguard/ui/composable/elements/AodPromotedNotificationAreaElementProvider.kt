@@ -41,7 +41,6 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.promoted.AODPromotedNotification
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
@@ -65,9 +64,7 @@ constructor(
 
         @Composable
         override fun LockscreenScope<ElementContentScope>.LockscreenElement() {
-            if (PromotedNotificationUi.isEnabled) {
-                AodPromotedNotificationArea()
-            }
+            AodPromotedNotificationArea()
         }
     }
 

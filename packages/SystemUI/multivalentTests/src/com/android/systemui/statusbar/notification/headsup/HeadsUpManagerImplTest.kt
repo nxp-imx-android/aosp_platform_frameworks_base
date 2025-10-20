@@ -46,7 +46,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.createRow
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
@@ -198,18 +197,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun pinnedHeadsUpStatuses_pinnedByUser_butFlagOff_returnsNotPinned() {
-        val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
-        entry.row = kosmos.createRow()
-        assertLogsWtfs { underTest.showNotification(entry, isPinnedByUser = true) }
-        assertThat(underTest.hasPinnedHeadsUp()).isFalse()
-        assertThat(underTest.pinnedHeadsUpStatus()).isEqualTo(PinnedStatus.NotPinned)
-    }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun pinnedHeadsUpStatuses_pinnedByUser_flagOn() {
+    fun pinnedHeadsUpStatuses_pinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         entry.row = kosmos.createRow()
         underTest.showNotification(entry, isPinnedByUser = true)
@@ -250,7 +238,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testShowNotification_isPinnedByUser_addsEntry() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -272,7 +259,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testShowNotification_isPinnedByUser_autoDismisses() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -299,7 +285,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_isPinnedByUser_removeDeferred() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -328,7 +313,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_isPinnedByUser_forceRemove() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -341,7 +325,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testReleaseAllImmediately() {
         for (i in 0 until 4) {
             val entry = HeadsUpManagerTestUtil.createEntry(i, mContext)
@@ -366,7 +349,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testCanRemoveImmediately_notShownLongEnough_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
 
@@ -459,7 +441,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_beforeMinimumDisplayTime_forUserInitiatedHun() {
         useAccessibilityTimeout(false)
 
@@ -484,7 +465,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testRemoveNotification_afterMinimumDisplayTime_forUserInitiatedHun() {
         useAccessibilityTimeout(false)
 
@@ -536,7 +516,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testSnooze_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         underTest.showNotification(entry, isPinnedByUser = true)
@@ -564,7 +543,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testSwipedOutNotification_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         underTest.showNotification(entry, isPinnedByUser = true)
@@ -616,7 +594,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testExtendHeadsUp_isPinnedByUser() {
         val entry = HeadsUpManagerTestUtil.createEntry(/* id= */ 0, mContext)
         underTest.showNotification(entry, isPinnedByUser = true)
@@ -734,14 +711,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun testIsSticky_promotedAndExpanded_promotedUiFlagOff_true() {
-        assertThat(getIsSticky_promotedAndExpanded()).isTrue()
-    }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun testIsSticky_promotedAndExpanded_promotedUiFlagOn_false() {
+    fun testIsSticky_promotedAndExpanded_false() {
         assertThat(getIsSticky_promotedAndExpanded()).isFalse()
     }
 
@@ -1114,7 +1084,6 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 addAll(
                     FlagsParameterization.allCombinationsOf(
                             NotificationThrottleHun.FLAG_NAME,
-                            PromotedNotificationUi.FLAG_NAME,
                         )
                         .andSceneContainer()
                 )

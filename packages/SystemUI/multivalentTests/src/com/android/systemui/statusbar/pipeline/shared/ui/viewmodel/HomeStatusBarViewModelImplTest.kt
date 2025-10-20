@@ -96,7 +96,6 @@ import com.android.systemui.statusbar.notification.data.repository.UnconfinedFak
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.getPopulatedActiveNotificationsStore
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
@@ -931,7 +930,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @EnableChipsModernization
     fun ongoingActivityChips_followsChipsViewModel() =
         kosmos.runTest {
@@ -1001,7 +999,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun isClockVisible_allowedByDisableFlags_hunPinnedByUser_visible() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isClockVisible)
@@ -1082,28 +1079,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun isNotificationIconContainerVisible_anyChipShowing_promotedNotifsOn() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
-            transitionKeyguardToGone()
-
-            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
-
-            assertThat(latest!!.visibility).isEqualTo(View.GONE)
-
-            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.DoingNothing
-
-            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
-        }
-
-    @Test
-    @DisableFlags(
-        PromotedNotificationUi.FLAG_NAME,
-        StatusBarRootModernization.FLAG_NAME,
-        StatusBarChipsModernization.FLAG_NAME,
-    )
-    fun isNotificationIconContainerVisible_anyChipShowing_chipsModernizationAndPromotedNotifsOff() =
+    fun isNotificationIconContainerVisible_anyChipShowing() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()

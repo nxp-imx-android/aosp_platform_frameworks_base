@@ -3620,34 +3620,13 @@ public class Notification implements Parcelable
      * returns {@code false}, it will not.
      */
     public boolean hasPromotableCharacteristics() {
-        if (Flags.uiRichOngoing()) {
-            return isRequestPromotedOngoing()
-                    && isOngoingEvent()
-                    && hasTitle()
-                    && hasPromotableStyle()
-                    && !isGroupSummary()
-                    && !containsCustomViews()
-                    && !isColorizedRequested();
-        } else {
-            // Original promotable specs:
-            if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
-                return false;
-            }
-            // Only "Ongoing CallStyle" notifications are promotable without EXTRA_COLORIZED
-            if (isOngoingCallStyle()) {
-                return true;
-            }
-            return isColorizedRequested() && hasPromotableStyle();
-        }
-    }
-
-    /** Returns whether the notification is CallStyle.forOngoingCall(). */
-    private boolean isOngoingCallStyle() {
-        if (!isStyle(CallStyle.class)) {
-            return false;
-        }
-        int callType = extras.getInt(EXTRA_CALL_TYPE, CallStyle.CALL_TYPE_UNKNOWN);
-        return callType == CallStyle.CALL_TYPE_ONGOING;
+        return isRequestPromotedOngoing()
+                && isOngoingEvent()
+                && hasTitle()
+                && hasPromotableStyle()
+                && !isGroupSummary()
+                && !containsCustomViews()
+                && !isColorizedRequested();
     }
 
     /**
@@ -6574,9 +6553,6 @@ public class Notification implements Parcelable
 
         private void updateHeaderBackgroundColor(RemoteViews contentView,
                 StandardTemplateParams p) {
-            if (!Flags.uiRichOngoing()) {
-                return;
-            }
             if (isBackgroundColorized(p)) {
                 contentView.setInt(R.id.notification_header, "setBackgroundColor",
                         getBackgroundColor(p));
@@ -6693,7 +6669,7 @@ public class Notification implements Parcelable
             final float contentMarginDp = resources.getDimension(
                     R.dimen.notification_content_margin_end) / density;
             float spaceForExpanderDp;
-            if (Flags.uiRichOngoing() && mN.isPromotedOngoing() && !mParams.mHeaderless) {
+            if (mN.isPromotedOngoing() && !mParams.mHeaderless) {
                 // No expander is shown in promoted notifications
                 spaceForExpanderDp = 0;
             } else {
@@ -6770,10 +6746,8 @@ public class Notification implements Parcelable
                 contentView.setImageViewIcon(R.id.right_icon, rightIcon);
                 contentView.setIntTag(R.id.right_icon, R.id.tag_keep_when_showing_left_icon,
                         isPromotedPicture ? 1 : 0);
-                if (notificationsRedesignTemplates() || Flags.uiRichOngoing()) {
-                    contentView.setViewLayoutMargin(R.id.right_icon,
-                            RemoteViews.MARGIN_END, getLargeIconMarginEnd(p), COMPLEX_UNIT_PX);
-                }
+                contentView.setViewLayoutMargin(R.id.right_icon,
+                        RemoteViews.MARGIN_END, getLargeIconMarginEnd(p), COMPLEX_UNIT_PX);
 
                 processLargeLegacyIcon(rightIcon, contentView, p);
             } else {
@@ -6788,7 +6762,7 @@ public class Notification implements Parcelable
         int getLargeIconMarginEnd(@NonNull StandardTemplateParams p) {
             Resources res = mContext.getResources();
 
-            if (Flags.uiRichOngoing() && mN.isPromotedOngoing() && !p.mHeaderless) {
+            if (mN.isPromotedOngoing() && !p.mHeaderless) {
                 // Promoted notifications don't need space for the expand button
                 if (notificationsRedesignTemplates()) {
                     return res.getDimensionPixelSize(R.dimen.notification_2025_margin);
@@ -8688,14 +8662,12 @@ public class Notification implements Parcelable
     /**
      * Returns whether this notification is a promoted ongoing notification.
      *
-     * <p>This requires the Notification.FLAG_PROMOTED_ONGOING flag to be set (which may be true
-     * once the api_rich_ongoing feature flag is enabled), and requires that the ui_rich_ongoing
-     * feature flag is enabled.
+     * <p>This requires the Notification.FLAG_PROMOTED_ONGOING flag to be set.
      *
      * @hide
      */
     public boolean isPromotedOngoing() {
-        return Flags.uiRichOngoing() && (flags & Notification.FLAG_PROMOTED_ONGOING) != 0;
+        return (flags & Notification.FLAG_PROMOTED_ONGOING) != 0;
     }
 
     /**
@@ -17263,23 +17235,14 @@ public class Notification implements Parcelable
                 } else {
                     mBackgroundColor = rawColor;
                 }
-                if (Flags.uiRichOngoing()) {
-                    boolean isBgDark = Notification.Builder.isColorDark(mBackgroundColor);
-                    int onSurfaceColorExtreme = isBgDark ? Color.WHITE : Color.BLACK;
-                    mPrimaryTextColor = ContrastColorUtil.ensureContrast(
-                            ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.9f),
-                            mBackgroundColor, isBgDark, 4.5);
-                    mSecondaryTextColor = ContrastColorUtil.ensureContrast(
-                            ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.8f),
-                            mBackgroundColor, isBgDark, 4.5);
-                } else {
-                    mPrimaryTextColor = ContrastColorUtil.findAlphaToMeetContrast(
-                            ContrastColorUtil.resolvePrimaryColor(ctx, mBackgroundColor, nightMode),
-                            mBackgroundColor, 4.5);
-                    mSecondaryTextColor = ContrastColorUtil.findAlphaToMeetContrast(
-                            ContrastColorUtil.resolveSecondaryColor(ctx,
-                                    mBackgroundColor, nightMode), mBackgroundColor, 4.5);
-                }
+                boolean isBgDark = Notification.Builder.isColorDark(mBackgroundColor);
+                int onSurfaceColorExtreme = isBgDark ? Color.WHITE : Color.BLACK;
+                mPrimaryTextColor = ContrastColorUtil.ensureContrast(
+                        ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.9f),
+                        mBackgroundColor, isBgDark, 4.5);
+                mSecondaryTextColor = ContrastColorUtil.ensureContrast(
+                        ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.8f),
+                        mBackgroundColor, isBgDark, 4.5);
                 mContrastColor = mPrimaryTextColor;
                 mPrimaryAccentColor = mPrimaryTextColor;
                 mSecondaryAccentColor = mSecondaryTextColor;

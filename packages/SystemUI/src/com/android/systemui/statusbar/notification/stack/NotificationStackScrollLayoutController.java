@@ -115,7 +115,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper.HeadsUpNotificationViewController;
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.notification.init.NotificationsController;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
@@ -1715,13 +1714,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     }
 
     public void generateHeadsUpAnimation(NotificationEntry entry, boolean isHeadsUp) {
-        RectF chipBounds;
-        if (PromotedNotificationUi.isEnabled()) {
-            chipBounds = mVisibleStatusBarNotificationChips.getOrDefault(entry.getKey(), null);
-        } else {
-            chipBounds = null;
-        }
-
+        RectF chipBounds = mVisibleStatusBarNotificationChips.getOrDefault(entry.getKey(), null);
         mView.generateHeadsUpAnimation(entry, isHeadsUp, chipBounds);
     }
 

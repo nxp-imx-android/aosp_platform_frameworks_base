@@ -110,15 +110,6 @@ data class ActiveNotificationModel(
     /** The visual style of the notification, containing additional data relevant to that style. */
     val style: NotifStyle?,
 ) : ActiveNotificationEntryModel() {
-    init {
-        if (!PromotedNotificationContentModel.featureFlagEnabled()) {
-            if (promotedContent != null) {
-                // TODO(b/401018545): convert to Log.wtf and fix tests (see: ag/32114199)
-                Log.e(TAG, "passing non-null promoted content without feature flag enabled")
-            }
-        }
-    }
-
     companion object {
         private const val TAG = "ActiveNotificationEntryModel"
     }

@@ -23,7 +23,6 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.OngoingCallRepository
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallInteractor
@@ -56,11 +55,7 @@ constructor(
                 repository.ongoingCallState
             })
             .map { state ->
-                if (
-                    PromotedNotificationUi.isEnabled &&
-                        state is OngoingCallModel.InCall &&
-                        state.requestedPromotion
-                ) {
+                if (state is OngoingCallModel.InCall && state.requestedPromotion) {
                     // If this notification requested promotion, then the promoted notification
                     // chips will handle everything and we don't ever need to show a call chip. See
                     // b/414830065.

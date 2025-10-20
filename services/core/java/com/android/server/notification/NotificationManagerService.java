@@ -4831,34 +4831,28 @@ public class NotificationManagerService extends SystemService {
 
             final boolean changed;
 
-            if (android.app.Flags.uiRichOngoing()) {
-                // Use permission backend for allowing promotion per app
+            // Use permission backend for allowing promotion per app
 
-                if (!fromUser) {
-                    Log.e(TAG, "Use PackageManager directly to interact with permission"
-                            + "without direct user input");
-                    return;
-                }
+            if (!fromUser) {
+                Log.e(TAG, "Use PackageManager directly to interact with permission"
+                        + "without direct user input");
+                return;
+            }
 
-                boolean wasPromoted = checkPostPromotedNotificationPermission(pkg, uid);
+            boolean wasPromoted = checkPostPromotedNotificationPermission(pkg, uid);
 
-                int mode = promote ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_IGNORED;
+            int mode = promote ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_IGNORED;
 
-                final long identity = Binder.clearCallingIdentity();
-                try {
-                    mAppOps.setUidMode(OP_POST_PROMOTED_NOTIFICATIONS, uid, mode);
-                    mPackageManagerClient.updatePermissionFlags(POST_PROMOTED_NOTIFICATIONS, pkg,
-                            FLAG_PERMISSION_USER_SET, FLAG_PERMISSION_USER_SET,
-                            getUserHandleForUid(uid));
-                    Log.i(TAG, "Set promoted permission: " + pkg + ", " + uid + "," + mode);
-                    changed = wasPromoted != promote;
-                } finally {
-                    Binder.restoreCallingIdentity(identity);
-                }
-
-            } else {
-                // Use preferences backend for allowing promotion per app
-                changed = mPreferencesHelper.setCanBePromoted(pkg, uid, promote, fromUser);
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                mAppOps.setUidMode(OP_POST_PROMOTED_NOTIFICATIONS, uid, mode);
+                mPackageManagerClient.updatePermissionFlags(POST_PROMOTED_NOTIFICATIONS, pkg,
+                        FLAG_PERMISSION_USER_SET, FLAG_PERMISSION_USER_SET,
+                        getUserHandleForUid(uid));
+                Log.i(TAG, "Set promoted permission: " + pkg + ", " + uid + "," + mode);
+                changed = wasPromoted != promote;
+            } finally {
+                Binder.restoreCallingIdentity(identity);
             }
 
             // Update any notifications that are queued or shown
@@ -9192,17 +9186,12 @@ public class NotificationManagerService extends SystemService {
         if (isPromotable(notification, channel)) {
             // Check permission last - after we make sure this is actually an attempted usage
             // of promotion - since AppOps tracks usage attempts.
-            boolean canPostPromoted;
-            if (android.app.Flags.uiRichOngoing()) {
-                final AttributionSource attributionSource =
-                        new AttributionSource.Builder(notificationUid)
-                                .setPackageName(pkg).build();
-                canPostPromoted = mPermissionManager.checkPermissionForDataDelivery(
-                        permission.POST_PROMOTED_NOTIFICATIONS, attributionSource,
-                        /* message= */ null) == PermissionManager.PERMISSION_GRANTED;
-            } else {
-                canPostPromoted = mPreferencesHelper.canBePromoted(pkg, notificationUid);
-            }
+            final AttributionSource attributionSource =
+                    new AttributionSource.Builder(notificationUid)
+                            .setPackageName(pkg).build();
+            final boolean canPostPromoted = mPermissionManager.checkPermissionForDataDelivery(
+                    permission.POST_PROMOTED_NOTIFICATIONS, attributionSource,
+                    /* message= */ null) == PermissionManager.PERMISSION_GRANTED;
             if (canPostPromoted) {
                 notification.flags |= FLAG_PROMOTED_ONGOING;
             }
@@ -9287,17 +9276,12 @@ public class NotificationManagerService extends SystemService {
 
     private boolean checkPostPromotedNotificationPermission(
             String pkg, int uid) {
-        if (!android.app.Flags.uiRichOngoing()) {
-            return mPreferencesHelper.canBePromoted(pkg, uid);
-        } else {
-            final AttributionSource attributionSource =
-                    new AttributionSource.Builder(uid).setPackageName(pkg).build();
-            final int permissionResult;
-            permissionResult = mPermissionManager.checkPermissionForPreflight(
-                    permission.POST_PROMOTED_NOTIFICATIONS, attributionSource);
-            return permissionResult == PermissionManager.PERMISSION_GRANTED;
-        }
-
+        final AttributionSource attributionSource =
+                new AttributionSource.Builder(uid).setPackageName(pkg).build();
+        final int permissionResult;
+        permissionResult = mPermissionManager.checkPermissionForPreflight(
+                permission.POST_PROMOTED_NOTIFICATIONS, attributionSource);
+        return permissionResult == PermissionManager.PERMISSION_GRANTED;
     }
 
 

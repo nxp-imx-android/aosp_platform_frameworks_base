@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipView
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -137,8 +136,6 @@ constructor(
     private fun PrunedNotificationChipModel.toActivityChipModel(
         headsUpState: TopPinnedState
     ): OngoingActivityChipModel.Active {
-        PromotedNotificationUi.unsafeAssertInNewMode()
-
         val contentDescription = getContentDescription(this.appName)
         val icon =
             if (this.statusBarChipIconView != null) {

@@ -117,7 +117,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimationEvent
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
@@ -3736,8 +3735,7 @@ public class NotificationStackScrollLayout
             AnimationEvent event = new AnimationEvent(row, type);
             event.headsUpFromBottom = onBottom;
 
-            boolean hasStatusBarChip =
-                    PromotedNotificationUi.isEnabled() && headsUpEvent.getHasStatusBarChip();
+            boolean hasStatusBarChip = headsUpEvent.getHasStatusBarChip();
             event.headsUpHasStatusBarChip = hasStatusBarChip;
             // TODO(b/283084712) remove this and update the HUN filters at creation
             event.filter.animateHeight = false;
@@ -5516,9 +5514,7 @@ public class NotificationStackScrollLayout
                     setHeadsUpAnimatingAway(true);
                 }
             }
-            if (PromotedNotificationUi.isEnabled()) {
-                row.setHasStatusBarChipDuringHeadsUpAnimation(hasStatusBarChip);
-            }
+            row.setHasStatusBarChipDuringHeadsUpAnimation(hasStatusBarChip);
             requestChildrenUpdate();
         }
     }
