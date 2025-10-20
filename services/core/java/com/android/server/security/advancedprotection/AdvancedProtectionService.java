@@ -302,6 +302,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB;
             case AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE:
                 return AdvancedProtectionProtoEnums.FEATURE_ID_ENABLE_MTE;
+            case AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN;
             default:
                 return AdvancedProtectionProtoEnums.FEATURE_ID_UNKNOWN;
         }

@@ -13182,6 +13182,7 @@ package android.security.advancedprotection {
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public java.util.List<android.security.advancedprotection.AdvancedProtectionFeature> getAdvancedProtectionFeatures();
     method @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public void setAdvancedProtectionEnabled(boolean);
     field public static final int FEATURE_ID_DISALLOW_CELLULAR_2G = 0; // 0x0
+    field @FlaggedApi("android.security.aapm_feature_disable_insecure_wifi_autojoin") public static final int FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN = 5; // 0x5
     field public static final int FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES = 1; // 0x1
     field public static final int FEATURE_ID_DISALLOW_USB = 2; // 0x2
     field public static final int FEATURE_ID_DISALLOW_WEP = 3; // 0x3
