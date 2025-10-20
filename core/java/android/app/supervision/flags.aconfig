@@ -78,9 +78,9 @@ flag {
 
 flag {
   name: "enable_supervision_settings_ui_updates"
-  is_exported: false
+  is_exported: true
   namespace: "supervision"
-  description: "Flag that enables supervision settings phase 2 UI updates"
+  description: "Flag that enables supervision settings UI updates to support a unified experience for supervision apps"
   bug: "444303437"
 }
 
