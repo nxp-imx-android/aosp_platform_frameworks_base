@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.domain.interactor
 
 import com.android.internal.logging.uiEventLogger
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 
 val Kosmos.screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcutInteractor by
@@ -24,5 +25,6 @@ val Kosmos.screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcu
         ScreenCaptureKeyboardShortcutInteractor(
             screenCaptureUiInteractor = screenCaptureUiInteractor,
             uiEventLogger = uiEventLogger,
+            keyguardInteractor = keyguardInteractor,
         )
     }

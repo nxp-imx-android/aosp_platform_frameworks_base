@@ -21,6 +21,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screencapture.ScreenCaptureEvent
@@ -45,12 +46,26 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun attemptPartialRegionScreenshot_showsScreenCaptureUi() =
+    fun attemptPartialRegionScreenshot_keyguardShowing_doesNotShowScreenCaptureUi() =
         kosmos.runTest {
             val uiState by
                 collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
 
+            fakeKeyguardRepository.setKeyguardShowing(true)
+            underTest.attemptPartialRegionScreenshot()
+
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+        }
+
+    @Test
+    fun attemptPartialRegionScreenshot_keyguardNotShowing_showsScreenCaptureUi() =
+        kosmos.runTest {
+            val uiState by
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            fakeKeyguardRepository.setKeyguardShowing(false)
             underTest.attemptPartialRegionScreenshot()
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Visible::class.java)
