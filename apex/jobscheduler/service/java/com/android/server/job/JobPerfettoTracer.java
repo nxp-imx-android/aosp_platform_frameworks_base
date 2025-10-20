@@ -19,17 +19,30 @@ package com.android.server.job;
 import android.os.PerfettoTrace;
 import android.os.PerfettoTrackEventExtra;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.dev.perfetto.sdk.PerfettoTrackEventBuilder;
 
 /**
- * Wrapper interface for Perfetto tracing to abstract away the v3 and non-v3 APIs.
+ * Wrapper class for Perfetto tracing to abstract away the v3 and non-v3 APIs.
  */
-interface JobPerfettoTracer {
+public abstract class JobPerfettoTracer {
     /**
      * The field ID for the JobSchedulerJob message in the Perfetto trace.
      * See {@code external/perfetto/protos/perfetto/trace/android/android_track_event.proto}.
      */
-    final long JOB_SCHEDULER_JOB_FIELD_ID = 2006L;
+    static final long JOB_SCHEDULER_JOB_FIELD_ID = 2006L;
+
+    /**
+     * Creates a new instance of the appropriate {@link JobPerfettoTracer} implementation.
+     */
+    public static JobPerfettoTracer create() {
+        if (!Flags.usePerfettoSdkForTracing()) {
+            return new JobPerfettoTracerNoOp();
+        }
+        return PerfettoTrace.IS_USE_SDK_TRACING_API_V3
+                ? new JobPerfettoTracer.JobPerfettoTracerV3()
+                : new JobPerfettoTracer.JobPerfettoTracerLegacy();
+    }
 
     /**
      * Starts a new instant event trace for a job.
@@ -37,7 +50,7 @@ interface JobPerfettoTracer {
      * @param eventName The name of the event.
      * @return this The builder to add fields to the trace.
      */
-    JobPerfettoTracer startEvent(String eventName);
+    public abstract JobPerfettoTracer startEvent(String eventName);
 
     /**
      * Adds a field to the trace event.
@@ -47,33 +60,44 @@ interface JobPerfettoTracer {
      * @param value The value of the field.
      * @return this The builder to add more fields to the trace.
      */
-    JobPerfettoTracer addField(long fieldId, int value);
-
-    /**
-     * Adds a field to the trace event.
-     *
-     * @param fieldId The ID of the field from {@code
-     *     external/perfetto/protos/perfetto/trace/android/android_track_event.proto}.
-     * @param value The value of the field.
-     * @return this The builder to add more fields to the trace.
-     */
-    JobPerfettoTracer addField(long fieldId, long value);
+    public abstract JobPerfettoTracer addField(long fieldId, long value);
 
     /**
      * Emits the trace event to the Perfetto buffer.
      */
-    void emit();
+    public abstract void emit();
 
     /**
-     * Creates a new instance of the appropriate {@link JobPerfettoTracer} implementation.
+     * Returns whether the JobScheduler Perfetto category is enabled.
      */
-    static JobPerfettoTracer create() {
-        return PerfettoTrace.IS_USE_SDK_TRACING_API_V3
-                ? new JobPerfettoTracer.JobPerfettoTracerV3()
-                : new JobPerfettoTracer.JobPerfettoTracerLegacy();
+    @VisibleForTesting
+    protected boolean isTraceEnabled() {
+        return PerfettoTrace.isJobSchedulerCategoryEnabled();
     }
 
-    final class JobPerfettoTracerV3 implements JobPerfettoTracer {
+    static final class JobPerfettoTracerNoOp extends JobPerfettoTracer {
+        @Override
+        public JobPerfettoTracer startEvent(String eventName) {
+            return this;
+        }
+
+        @Override
+        public JobPerfettoTracer addField(long fieldId, long value) {
+            return this;
+        }
+
+        @Override
+        public void emit() {
+            // No-op
+        }
+
+        @Override
+        protected boolean isTraceEnabled() {
+            return false;
+        }
+    }
+
+    static final class JobPerfettoTracerV3 extends JobPerfettoTracer {
         private PerfettoTrackEventBuilder mBuilder;
 
         @Override
@@ -84,12 +108,6 @@ interface JobPerfettoTracer {
                                     eventName)
                             .beginProto()
                             .beginNested(JOB_SCHEDULER_JOB_FIELD_ID);
-            return this;
-        }
-
-        @Override
-        public JobPerfettoTracer addField(long fieldId, int value) {
-            mBuilder.addField(fieldId, (long) value);
             return this;
         }
 
@@ -105,7 +123,7 @@ interface JobPerfettoTracer {
         }
     }
 
-    final class JobPerfettoTracerLegacy implements JobPerfettoTracer {
+    static final class JobPerfettoTracerLegacy extends JobPerfettoTracer {
         private PerfettoTrackEventExtra.Builder mBuilder;
 
         @Override
@@ -116,12 +134,6 @@ interface JobPerfettoTracer {
                                     eventName)
                             .beginProto()
                             .beginNested(JOB_SCHEDULER_JOB_FIELD_ID);
-            return this;
-        }
-
-        @Override
-        public JobPerfettoTracer addField(long fieldId, int value) {
-            mBuilder.addField(fieldId, (long) value);
             return this;
         }
 
