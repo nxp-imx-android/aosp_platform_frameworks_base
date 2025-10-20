@@ -28,21 +28,7 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-DisableDisplayMirroringSwitchTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-DragMoveWindowToNextDisplayTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-EnableDisplayMirroringSwitchTest",
       "keywords": [
         "device",
         "desktop"
@@ -120,6 +106,20 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-OpenTrampolineAppInDesktopModeTaskLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-SettingsToggleMirroringSwitchTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-SettingsUpdateRotationTest",
       "keywords": [
         "device",
         "desktop"
