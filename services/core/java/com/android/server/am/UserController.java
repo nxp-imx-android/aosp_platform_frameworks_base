@@ -881,7 +881,7 @@ class UserController implements Handler.Callback {
                 .logUserLifecycleEvent(userId, USER_LIFECYCLE_EVENT_UNLOCKING_USER,
                 EVENT_STATE_BEGIN);
         // If the user's CE storage hasn't been unlocked yet, we cannot proceed.
-        if (!StorageManager.isCeStorageUnlocked(userId)) return false;
+        if (!mInjector.isCeStorageUnlocked(userId)) return false;
         synchronized (mLock) {
             // Do not proceed if unexpected state or a stale user
             if (mStartedUsers.get(userId) != uss || uss.state != STATE_RUNNING_LOCKED) {
@@ -896,7 +896,7 @@ class UserController implements Handler.Callback {
 
         // Call onBeforeUnlockUser on a worker thread that allows disk I/O
         FgThread.getHandler().post(() -> {
-            if (!StorageManager.isCeStorageUnlocked(userId)) {
+            if (!mInjector.isCeStorageUnlocked(userId)) {
                 Slogf.w(TAG, "User's CE storage got locked unexpectedly, leaving user locked.");
                 return;
             }
@@ -932,7 +932,7 @@ class UserController implements Handler.Callback {
         final int userId = uss.mHandle.getIdentifier();
         EventLog.writeEvent(EventLogTags.UC_FINISH_USER_UNLOCKED, userId);
         // Only keep marching forward if the user's CE storage is unlocked.
-        if (!StorageManager.isCeStorageUnlocked(userId)) return;
+        if (!mInjector.isCeStorageUnlocked(userId)) return;
         synchronized (mLock) {
             // Bail if we ended up with a stale user
             if (mStartedUsers.get(uss.mHandle.getIdentifier()) != uss) return;
@@ -1019,7 +1019,7 @@ class UserController implements Handler.Callback {
             return;
         }
         // Only keep marching forward if the user's CE storage is unlocked.
-        if (!StorageManager.isCeStorageUnlocked(userId)) return;
+        if (!mInjector.isCeStorageUnlocked(userId)) return;
 
         // Remember that we logged in
         mInjector.getUserManager().onUserLoggedIn(userId);
@@ -2490,7 +2490,7 @@ class UserController implements Handler.Callback {
         }
 
         UserState uss;
-        if (!StorageManager.isCeStorageUnlocked(userId)) {
+        if (!mInjector.isCeStorageUnlocked(userId)) {
             // We always want to try to unlock CE storage, even if the user is not started yet.
             mLockPatternUtils.unlockUserKeyIfUnsecured(userId);
         }
@@ -3668,7 +3668,7 @@ class UserController implements Handler.Callback {
                 // In the stopping/shutdown state, return unlock state of the user's CE storage.
                 case UserState.STATE_STOPPING:
                 case UserState.STATE_SHUTDOWN:
-                    return StorageManager.isCeStorageUnlocked(userId);
+                    return mInjector.isCeStorageUnlocked(userId);
                 default:
                     return false;
             }
@@ -3680,7 +3680,7 @@ class UserController implements Handler.Callback {
                 // In the stopping/shutdown state, return unlock state of the user's CE storage.
                 case UserState.STATE_STOPPING:
                 case UserState.STATE_SHUTDOWN:
-                    return StorageManager.isCeStorageUnlocked(userId);
+                    return mInjector.isCeStorageUnlocked(userId);
                 default:
                     return false;
             }
@@ -4811,5 +4811,8 @@ class UserController implements Handler.Callback {
             return lmk != null && lmk >= 0 ? lmk : -1;
         }
 
+        boolean isCeStorageUnlocked(@UserIdInt int userId) {
+            return StorageManager.isCeStorageUnlocked(userId);
+        }
     }
 }
