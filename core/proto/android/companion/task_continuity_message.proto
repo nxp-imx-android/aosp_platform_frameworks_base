@@ -66,6 +66,11 @@ message HandoffRequestResultMessage {
     repeated HandoffActivityData activities = 3;
 }
 
+message HandoffActivityDataMessage {
+    HandoffActivityData activity = 1;
+    repeated bytes signature_digests = 2;
+}
+
 message HandoffActivityData {
     string componentName = 1;
     string fallbackUri = 2;
