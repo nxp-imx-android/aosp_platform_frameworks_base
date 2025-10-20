@@ -41,7 +41,6 @@ val Kosmos.statusBarRootFactory by
             darkIconManagerFactory = mock(),
             tintedIconManagerFactory = mock(),
             iconController = statusBarIconController,
-            ongoingCallController = mock(),
             eventAnimationInteractor = systemStatusEventAnimationInteractor,
             mediaHierarchyManager = mediaHierarchyManager,
             mediaHost = qsMediaHost,

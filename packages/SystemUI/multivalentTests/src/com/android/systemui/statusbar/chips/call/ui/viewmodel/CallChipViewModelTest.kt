@@ -39,7 +39,6 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.plugins.activityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
@@ -52,7 +51,6 @@ import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
-import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
@@ -68,7 +66,6 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
@@ -646,71 +643,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                         .startTimeMs
                 )
                 .isEqualTo(499_000)
-        }
-
-    @Test
-    @DisableChipsModernization
-    fun chip_inCall_nullIntent_chipsModFlagOff_clickingChipNotifiesInteractor() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chip)
-            val latestChipTapKey by
-                collectLastValue(
-                    statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent
-                )
-
-            addOngoingCallState(key = "fakeCallKey", contentIntent = null)
-
-            val clickListener = (latest as OngoingActivityChipModel.Active).onClickListenerLegacy
-            assertThat(clickListener).isNotNull()
-
-            clickListener!!.onClick(chipView)
-
-            assertThat(latestChipTapKey).isEqualTo("fakeCallKey")
-        }
-
-    @Test
-    @DisableChipsModernization
-    fun chip_inCall_positiveStartTime_validIntent_chipsModFlagOff_clickingChipNotifiesInteractor() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chip)
-            val latestChipTapKey by
-                collectLastValue(
-                    statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent
-                )
-
-            val pendingIntent = mock<PendingIntent>()
-            addOngoingCallState(
-                key = "fakeCallKey",
-                startTimeMs = 1000,
-                contentIntent = pendingIntent,
-            )
-            val clickListener = (latest as OngoingActivityChipModel.Active).onClickListenerLegacy
-            assertThat(clickListener).isNotNull()
-
-            clickListener!!.onClick(chipView)
-
-            assertThat(latestChipTapKey).isEqualTo("fakeCallKey")
-        }
-
-    @Test
-    @DisableChipsModernization
-    fun chip_inCall_zeroStartTime_validIntent_chipsModFlagOff_clickingChipNotifiesInteractor() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.chip)
-            val latestChipTapKey by
-                collectLastValue(
-                    statusBarNotificationChipsInteractor.promotedNotificationChipTapEvent
-                )
-
-            val pendingIntent = mock<PendingIntent>()
-            addOngoingCallState(key = "fakeCallKey", startTimeMs = 0, contentIntent = pendingIntent)
-            val clickListener = (latest as OngoingActivityChipModel.Active).onClickListenerLegacy
-
-            assertThat(clickListener).isNotNull()
-
-            clickListener!!.onClick(chipView)
-
-            assertThat(latestChipTapKey).isEqualTo("fakeCallKey")
         }
 
     @Test
