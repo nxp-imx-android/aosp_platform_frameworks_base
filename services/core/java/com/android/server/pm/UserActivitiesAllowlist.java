@@ -18,9 +18,6 @@ package com.android.server.pm;
 
 import android.annotation.Nullable;
 import android.content.ComponentName;
-import android.content.Context;
-import android.util.ArraySet;
-import android.util.Dumpable;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 
@@ -31,32 +28,33 @@ import com.android.internal.util.NamedLock;
 import com.android.server.utils.Slogf;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-// TODO(b/412177078): rename to UserAllowlistsMediator or UserTypesAllowlistsMediator
 /**
- * Class responsible for managing allowlists associated with the HSU (Headless System User).
+ * Class responsible for managing allowlists associated with a {@code UserType}.
  *
  * <p>This class is thread safe.
  */
-final class HsuAllowlistsMediator implements Dumpable {
+final class UserActivitiesAllowlist {
 
-    private static final String TAG = HsuAllowlistsMediator.class.getSimpleName();
+    private static final String TAG = UserActivitiesAllowlist.class.getSimpleName();
 
     @VisibleForTesting
     static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
-    private final Object mLock = NamedLock.create(HsuAllowlistsMediator.class.getSimpleName());
+    private final Object mLock = NamedLock.create(UserActivitiesAllowlist.class.getSimpleName());
 
     // List of activities that are permanently allowed (i.e., they survive reboots).
     // If empty, allowlist is disabled (and all activities are allowed).
     // NOTE: for now it's an array as they're just read from config, but should change to Set
     // once it supports APIs to change it (for example, from DPM).
-    private final String[] mPermanentActivitiesAllowlist;
+    private final String[] mPermanentAllowlist;
 
     // List of activities that are temporarily allowed (i.e., until reboot or set back to null)
     // When set (i.e., not null), it will override the value of mPermanentActivitiesAllowlist.
@@ -65,29 +63,22 @@ final class HsuAllowlistsMediator implements Dumpable {
     // on critical path, so we don't need to optimize and use a ArraySet)
     @Nullable
     @GuardedBy("mLock")
-    private String[] mTemporaryActivitiesAllowlist;
+    private String[] mTemporaryAllowlist;
 
-    HsuAllowlistsMediator(Context context) {
-        mPermanentActivitiesAllowlist = getValidComponentNames(context.getResources()
-                .getStringArray(com.android.internal.R.array.config_hsu_allowlist_activitivies));
+    UserActivitiesAllowlist(String[] permanentActivities) {
+        mPermanentAllowlist = getValidComponentNames(permanentActivities);
     }
 
-    // Called by 'cmd user', which needs to "build" the temporary allowlist based on incremental
-    // actions (like add or remove an activity)
-    Set<ComponentName> getEffectiveActivitiesAllowlist() {
-        ArraySet<ComponentName> allowlist = new ArraySet<>();
-        String[] normalizedNames;
+    // NOTE: only called by 'cmd user' (which needs to "build" the temporary allowlist based on
+    // incremental actions, like add or remove an activity) and unit tests, so we don't have to
+    // worry about performance (like caching the result or not using streams)
+    List<ComponentName> getEffectiveAllowlist() {
         synchronized (mLock) {
-            if (mTemporaryActivitiesAllowlist != null) {
-                normalizedNames = mTemporaryActivitiesAllowlist;
-            } else {
-                normalizedNames = mPermanentActivitiesAllowlist;
-            }
-            for (String name : normalizedNames) {
-                allowlist.add(ComponentName.unflattenFromString(name));
-            }
+            return Arrays
+                    .stream(mTemporaryAllowlist != null ? mTemporaryAllowlist : mPermanentAllowlist)
+                    .map(ComponentName::unflattenFromString)
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
-        return allowlist;
     }
 
     /**
@@ -97,14 +88,14 @@ final class HsuAllowlistsMediator implements Dumpable {
     * list is empty, then allowlisting is disabled and all activities (except {@code null}) are
     * allowed.
     */
-    public boolean isActivityAllowed(ComponentName activity) {
+    public boolean isAllowed(ComponentName activity) {
         Objects.requireNonNull(activity, "activity cannot be null");
         String normalizedName = activity.flattenToShortString();
 
         // Checks the temporary list first...
         synchronized (mLock) {
-            if (mTemporaryActivitiesAllowlist != null) {
-                if (mTemporaryActivitiesAllowlist.length == 0) {
+            if (mTemporaryAllowlist != null) {
+                if (mTemporaryAllowlist.length == 0) {
                     if (DEBUG) {
                         Slogf.d(TAG, "isActivityAllowed(%s): returning true because temporary "
                                 + "allowlist overrides permanent allowlist and is empty, so any "
@@ -114,14 +105,14 @@ final class HsuAllowlistsMediator implements Dumpable {
                 }
                 if (DEBUG) {
                     Slogf.d(TAG, "isActivityAllowed(%s): checking temporary list (%s)",
-                            normalizedName, Arrays.toString(mTemporaryActivitiesAllowlist));
+                            normalizedName, Arrays.toString(mTemporaryAllowlist));
                 }
-                return ArrayUtils.contains(mTemporaryActivitiesAllowlist, normalizedName);
+                return ArrayUtils.contains(mTemporaryAllowlist, normalizedName);
             }
         }
 
         // ...then the permanent one.
-        if (mPermanentActivitiesAllowlist.length == 0) {
+        if (mPermanentAllowlist.length == 0) {
             if (DEBUG) {
                 Slogf.d(TAG, "isActivityAllowed(%s): returning true because permanent allowlist"
                         + "is empty, so any activity is allowed", normalizedName);
@@ -130,65 +121,58 @@ final class HsuAllowlistsMediator implements Dumpable {
         }
         if (DEBUG) {
             Slogf.d(TAG, "isActivityAllowed(%s): checking permanent list (%s)", normalizedName,
-                    Arrays.toString(mPermanentActivitiesAllowlist));
+                    Arrays.toString(mPermanentAllowlist));
         }
-        return ArrayUtils.contains(mPermanentActivitiesAllowlist, normalizedName);
+        return ArrayUtils.contains(mPermanentAllowlist, normalizedName);
     }
 
     /** Sets the temporary allowlist (or resets it when passed with {@code null}. */
-    public void setTemporaryActivitiesAllowlist(@Nullable
-            Collection<ComponentName> componentNames) {
+    public void setTemporaryAllowlist(@Nullable Collection<ComponentName> componentNames) {
         if (DEBUG) {
             Slogf.d(TAG, "setTemporaryAllowList(%s)", componentNames);
         }
         synchronized (mLock) {
             if (componentNames == null) {
-                mTemporaryActivitiesAllowlist = null;
+                mTemporaryAllowlist = null;
                 return;
             }
-            mTemporaryActivitiesAllowlist = new String[componentNames.size()];
+            mTemporaryAllowlist = new String[componentNames.size()];
             int i = 0;
             for (var component : componentNames) {
-                mTemporaryActivitiesAllowlist[i++] = component.flattenToShortString();
+                mTemporaryAllowlist[i++] = component.flattenToShortString();
             }
             if (DEBUG) {
                 Slogf.d(TAG, "setTemporaryAllowList(): set as %s",
-                        Arrays.toString(mTemporaryActivitiesAllowlist));
+                        Arrays.toString(mTemporaryAllowlist));
             }
         }
     }
 
-    @Override
-    public void dump(PrintWriter writer, String[] args) {
-        if (writer instanceof IndentingPrintWriter) {
-            dump((IndentingPrintWriter) writer);
-            return;
-        }
-        dump(new IndentingPrintWriter(writer));
+    void dump(PrintWriter writer, String prefix, String header) {
+        dump(new IndentingPrintWriter(writer, /* singleIndent=*/ "  ", prefix), header);
     }
 
-    private void dump(IndentingPrintWriter writer) {
-        writer.println("HsuAllowlistsMediator (HAM)");
+    private void dump(IndentingPrintWriter writer, String header) {
+        writer.printf("%s:\n", header);
         writer.increaseIndent();
 
         writer.printf("DEBUG: %b\n", DEBUG);
 
-        // Activities allowlist
-        dumpActivitiesAllowlistStatus(writer);
+        dumpAllowlistStatus(writer);
 
-        dumpActivitiesAllowlist(writer, "permanent", mPermanentActivitiesAllowlist);
+        dumpAllowlist(writer, "permanent", mPermanentAllowlist);
         synchronized (mLock) {
-            dumpActivitiesAllowlist(writer, "temporary", mTemporaryActivitiesAllowlist);
+            dumpAllowlist(writer, "temporary", mTemporaryAllowlist);
         }
 
         writer.decreaseIndent();
     }
 
-    private void dumpActivitiesAllowlistStatus(IndentingPrintWriter writer) {
+    private void dumpAllowlistStatus(IndentingPrintWriter writer) {
         writer.print("activities allowlist status: ");
         synchronized (mLock) {
-            if (mTemporaryActivitiesAllowlist != null) {
-                if (mTemporaryActivitiesAllowlist.length == 0) {
+            if (mTemporaryAllowlist != null) {
+                if (mTemporaryAllowlist.length == 0) {
                     writer.println("allowlisting disabled");
                 } else {
                     writer.println("using temporary allowlist");
@@ -196,15 +180,14 @@ final class HsuAllowlistsMediator implements Dumpable {
                 return;
             }
         }
-        if (mPermanentActivitiesAllowlist.length == 0) {
+        if (mPermanentAllowlist.length == 0) {
             writer.println("allowlisting disabled");
         } else {
             writer.println("using permanent allowlist");
         }
     }
 
-    private void dumpActivitiesAllowlist(IndentingPrintWriter writer, String name,
-            @Nullable String[] list) {
+    private void dumpAllowlist(IndentingPrintWriter writer, String name, @Nullable String[] list) {
         if (list == null) {
             writer.printf("%s activities allowlist is not set.\n", name);
             return;

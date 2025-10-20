@@ -465,7 +465,10 @@ public final class UserTypeFactory {
                 .setDefaultUserInfoPropertyFlags(FLAG_PRIMARY
                         | (android.multiuser.Flags.hsuNotAdmin() ? 0 : FLAG_ADMIN))
                 .setMaxAllowed(1)
-                .setDefaultRestrictions(getDefaultHeadlessSystemUserRestrictions());
+                .setDefaultRestrictions(getDefaultHeadlessSystemUserRestrictions())
+                .setActivitiesAllowlist(android.multiuser.Flags.hsuAllowlistActivities()
+                        ? com.android.internal.R.array.config_hsu_allowlist_activitivies
+                        : Resources.ID_NULL);
     }
 
     /** Gets the deprecated config_defaultFirstUserRestrictions as system default restrictions. */
