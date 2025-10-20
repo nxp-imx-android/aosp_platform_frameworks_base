@@ -19,6 +19,7 @@ package android.companion.virtual.computercontrol;
 import static android.companion.virtual.computercontrol.LifecycleState.ACTIVE;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.companion.virtual.computercontrol.LifecycleState.Active;
 import android.companion.virtual.computercontrol.LifecycleState.Blocked;
 import android.companion.virtual.computercontrol.LifecycleState.Closed;
@@ -102,7 +103,7 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
     private void notifyCallback(ComputerControlSession.LifecycleCallback callback) {
         switch (mState) {
             case Active active -> callback.onActive();
-            case Blocked blocked -> callback.onBlocked(blocked.reason);
+            case Blocked blocked -> callback.onBlocked(blocked.reason, blocked.blockingPackage);
             case Closed closed -> callback.onClosed(closed.reason);
         }
     }
@@ -113,8 +114,9 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
     }
 
     @Override
-    public void onBlocked(@ComputerControlSession.SessionBlockReason int initialBlockReason) {
-        transitionTo(new Blocked(initialBlockReason));
+    public void onBlocked(@ComputerControlSession.SessionBlockReason int initialBlockReason,
+            @Nullable String blockingPackage) {
+        transitionTo(new Blocked(initialBlockReason, blockingPackage));
     }
 
     @Override

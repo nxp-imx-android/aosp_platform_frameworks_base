@@ -472,9 +472,11 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
                 }
 
                 @Override
-                public void onBlocked(@SessionBlockReason int reason) {
+                public void onBlocked(@SessionBlockReason int reason,
+                        @Nullable String blockingPackage) {
                     Binder.withCleanCallingIdentity(
-                            () -> executor.execute(() -> callback.onBlocked(reason)));
+                            () -> executor.execute(
+                                    () -> callback.onBlocked(reason, blockingPackage)));
                 }
 
                 @Override
@@ -511,9 +513,9 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     }
 
     @Override
-    public void onBlocked(@SessionBlockReason int reason) {
+    public void onBlocked(@SessionBlockReason int reason, @Nullable String blockingPackage) {
         synchronized (mLifecycle) {
-            mLifecycle.onBlocked(reason);
+            mLifecycle.onBlocked(reason, blockingPackage);
         }
     }
 
@@ -679,8 +681,10 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
          *
          * @param reason the reason that the session initially entered the blocked
          *               state.
+         * @param blockingPackage the package name of the application that blocked the session,
+         *                        or null if the blocking package is not known.
          */
-        void onBlocked(@SessionBlockReason int reason);
+        void onBlocked(@SessionBlockReason int reason, @Nullable String blockingPackage);
 
         /**
          * Called when the computer control session is closed. This marks the end of the session's

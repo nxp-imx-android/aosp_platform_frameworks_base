@@ -156,7 +156,6 @@ public class ComputerControlSessionImplTest {
             TARGET_CLASS);
     private static final ComponentName BLOCKED_COMPONENT = new ComponentName(
             UNDECLARED_TARGET_PACKAGE, ".Activity");
-
     @FunctionalInterface
     private interface Interactor {
         void interact(ComputerControlSessionImpl t) throws Exception;
@@ -781,7 +780,7 @@ public class ComputerControlSessionImplTest {
         mActivityListenerArgumentCaptor.getValue().onSecureWindowShown(VIRTUAL_DISPLAY_ID,
                 TEST_COMPONENT, mUserHandle);
 
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TARGET_PACKAGE_1);
     }
 
     @Test
@@ -793,7 +792,7 @@ public class ComputerControlSessionImplTest {
                 mActivityListenerArgumentCaptor.capture());
         final var activityListener = mActivityListenerArgumentCaptor.getValue();
         activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TARGET_PACKAGE_1);
         clearInvocations(mVirtualDisplay, mLifecycleCallback);
 
         activityListener.onSecureWindowHidden(VIRTUAL_DISPLAY_ID);
@@ -813,7 +812,8 @@ public class ComputerControlSessionImplTest {
         mActivityListenerArgumentCaptor.getValue().onActivityLaunchRequested(VIRTUAL_DISPLAY_ID,
                 BLOCKED_COMPONENT, USER_ID);
 
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+                UNDECLARED_TARGET_PACKAGE);
     }
 
     @Test
@@ -825,7 +825,8 @@ public class ComputerControlSessionImplTest {
                 mActivityListenerArgumentCaptor.capture());
         final var activityListener = mActivityListenerArgumentCaptor.getValue();
         activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+                UNDECLARED_TARGET_PACKAGE);
         clearInvocations(mLifecycleCallback);
 
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
@@ -843,7 +844,8 @@ public class ComputerControlSessionImplTest {
                 mActivityListenerArgumentCaptor.capture());
         final var activityListener = mActivityListenerArgumentCaptor.getValue();
         activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+                UNDECLARED_TARGET_PACKAGE);
         clearInvocations(mLifecycleCallback);
 
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
@@ -862,12 +864,13 @@ public class ComputerControlSessionImplTest {
 
         // First secure window, then blocked activity.
         activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TARGET_PACKAGE_1);
         clearInvocations(mLifecycleCallback);
 
         activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
         // onBlocked should be called again with the preferred reason.
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+                UNDECLARED_TARGET_PACKAGE);
         clearInvocations(mLifecycleCallback);
 
         // Unblock secure window, should remain blocked.
@@ -890,17 +893,18 @@ public class ComputerControlSessionImplTest {
 
         // First blocked activity, then secure window.
         activityListener.onActivityLaunchRequested(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, USER_ID);
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
+                UNDECLARED_TARGET_PACKAGE);
         clearInvocations(mLifecycleCallback);
 
         activityListener.onSecureWindowShown(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, mUserHandle);
         // onBlocked should not be called again.
-        verify(mLifecycleCallback, never()).onBlocked(anyInt());
+        verify(mLifecycleCallback, never()).onBlocked(anyInt(), any());
         clearInvocations(mLifecycleCallback);
 
         // Unblock activity, should remain blocked with secure window reason.
         activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
-        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TARGET_PACKAGE_1);
         verify(mLifecycleCallback, never()).onActive();
         clearInvocations(mLifecycleCallback);
 
@@ -924,7 +928,7 @@ public class ComputerControlSessionImplTest {
         activityListener.onActivityLaunchBlocked(VIRTUAL_DISPLAY_ID, BLOCKED_COMPONENT, mUserHandle,
                 mIntentSender);
 
-        verify(mLifecycleCallback, never()).onBlocked(anyInt());
+        verify(mLifecycleCallback, never()).onBlocked(anyInt(), any());
     }
 
     @Test
@@ -1016,7 +1020,7 @@ public class ComputerControlSessionImplTest {
 
             mActivityListenerArgumentCaptor.getValue().onSecureWindowShown(VIRTUAL_DISPLAY_ID,
                     TEST_COMPONENT, mUserHandle);
-            verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT);
+            verify(mLifecycleCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TARGET_PACKAGE_1);
             clearInvocations(mLifecycleCallback);
         }
 
