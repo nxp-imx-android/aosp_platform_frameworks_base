@@ -21,10 +21,12 @@ import android.app.WindowConfiguration
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.view.Display
 import android.view.WindowManager
+import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE
 import com.android.internal.policy.DesktopModeCompatPolicy
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity.Companion.isWallpaperTask
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -32,39 +34,61 @@ import com.android.wm.shell.splitscreen.SplitScreenController
 import java.util.Optional
 
 /**
- * Resolves whether, given a task and its associated display that it is currently on, to show the
- * app handle/header or not.
+ * Resolves whether, given a task and its associated display that it is currently on, to create the
+ * app's caption or not.
  */
-class AppHandleAndHeaderVisibilityHelper(
+class CaptionVisibilityHelper(
     private val displayController: DisplayController,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val desktopState: DesktopState,
     private val bubbleController: Optional<BubbleController>,
+    private val lockTaskChangeListener: LockTaskChangeListener,
 ) {
     var splitScreenController: SplitScreenController? = null
 
     /**
-     * Returns, given a task's attribute and its display attribute, whether the app handle/header
-     * should show or not for this task.
+     * Returns, given a task's attribute and its display attribute, whether the app caption should
+     * be created or not for this task.
      */
-    fun shouldShowAppHandleOrHeader(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
+    fun shouldCreateCaption(
+        taskInfo: ActivityManager.RunningTaskInfo,
+        isKeyguardVisAndOccluded: Boolean,
+    ): Boolean {
 
         // If DisplayController doesn't have it tracked, it could be a private/managed display, so
         // return false if display is null
         val display = displayController.getDisplay(taskInfo.displayId) ?: return false
 
         if (!ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue) {
-            return allowedForTask(taskInfo, display)
+            return allowedForTask(taskInfo, display, isKeyguardVisAndOccluded)
         }
-        return allowedForTask(taskInfo, display) && allowedForDisplay(display)
+        return allowedForTask(taskInfo, display, isKeyguardVisAndOccluded) &&
+            allowedForDisplay(display)
     }
 
     private fun allowedForTask(
         taskInfo: ActivityManager.RunningTaskInfo,
         display: Display,
+        isKeyguardVisibleAndOccluded: Boolean,
     ): Boolean {
         if (taskInfo.windowingMode == WINDOWING_MODE_FREEFORM) {
             return true
+        }
+
+        if (
+            DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue &&
+                lockTaskChangeListener.isTaskLocked
+        ) {
+            // Return false if task is in kiosk mode
+            return false
+        }
+
+        if (
+            DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue &&
+                isKeyguardVisibleAndOccluded
+        ) {
+            // Return false if task is showing on top of keyguard
+            return false
         }
 
         if (splitScreenController?.isTaskRootOrStageRoot(taskInfo.taskId) == true) {
@@ -77,7 +101,7 @@ class AppHandleAndHeaderVisibilityHelper(
 
         // TODO (b/382023296): Remove once we no longer rely on
         //  DesktopModeFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE as it is taken care of in
-        // #allowedForDisplay
+        //  #allowedForDisplay
         val isOnLargeScreen =
             display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
         if (

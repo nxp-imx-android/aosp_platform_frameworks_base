@@ -143,7 +143,7 @@ import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
-import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
+import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.InputPilfererImpl;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
@@ -212,7 +212,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final WindowDecorCaptionRepository mWindowDecorCaptionRepository;
     private final Optional<DesktopTasksLimiter> mDesktopTasksLimiter;
     private final AppHandleEducationController mAppHandleEducationController;
-    private final AppHandleAndHeaderVisibilityHelper mAppHandleAndHeaderVisibilityHelper;
+    private final CaptionVisibilityHelper mCaptionVisibilityHelper;
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
     private final AppHandleViewHolder.Factory mAppHandleViewHolderFactory;
     private final DesksOrganizer mDesksOrganizer;
@@ -312,7 +312,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             MultiInstanceHelper multiInstanceHelper,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
-            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
+            CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
@@ -366,7 +366,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 interactionJankMonitor,
                 desktopTasksLimiter,
                 appHandleEducationController,
-                appHandleAndHeaderVisibilityHelper,
+                captionVisibilityHelper,
                 windowDecorCaptionRepository,
                 activityOrientationChangeHandler,
                 new TaskPositionerFactory(),
@@ -424,7 +424,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             InteractionJankMonitor interactionJankMonitor,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
-            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
+            CaptionVisibilityHelper captionVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             TaskPositionerFactory taskPositionerFactory,
@@ -479,7 +479,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mInteractionJankMonitor = interactionJankMonitor;
         mDesktopTasksLimiter = desktopTasksLimiter;
         mAppHandleEducationController = appHandleEducationController;
-        mAppHandleAndHeaderVisibilityHelper = appHandleAndHeaderVisibilityHelper;
+        mCaptionVisibilityHelper = captionVisibilityHelper;
         mWindowDecorCaptionRepository = windowDecorCaptionRepository;
         mActivityOrientationChangeHandler = activityOrientationChangeHandler;
         mAssistContentRequester = assistContentRequester;
@@ -599,7 +599,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     @Override
     public void setSplitScreenController(SplitScreenController splitScreenController) {
         mSplitScreenController = splitScreenController;
-        mAppHandleAndHeaderVisibilityHelper.setSplitScreenController(splitScreenController);
+        mCaptionVisibilityHelper.setSplitScreenController(splitScreenController);
     }
 
     @Override
@@ -608,7 +608,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT) {
-        if (!shouldShowWindowDecor(taskInfo)) return false;
+        if (!shouldCreateWindowDecor(taskInfo)) return false;
         createWindowDecoration(taskInfo, taskSurface, startT, finishT);
         return true;
     }
@@ -658,7 +658,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             SurfaceControl.Transaction startT,
             SurfaceControl.Transaction finishT) {
         final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(taskInfo.taskId);
-        if (!shouldShowWindowDecor(taskInfo)) {
+        if (!shouldCreateWindowDecor(taskInfo)) {
             if (decoration != null) {
                 destroyWindowDecoration(taskInfo);
             }
@@ -1675,8 +1675,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
     }
 
-    private boolean shouldShowWindowDecor(RunningTaskInfo taskInfo) {
-        return mAppHandleAndHeaderVisibilityHelper.shouldShowAppHandleOrHeader(taskInfo);
+    private boolean shouldCreateWindowDecor(RunningTaskInfo taskInfo) {
+        if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue()
+                && DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue()) {
+            return true;
+        }
+        return mCaptionVisibilityHelper.shouldCreateCaption(taskInfo,
+                /* isKeyguardVisAndOccluded */ false);
     }
 
     private void createWindowDecoration(
@@ -1724,6 +1729,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mDesktopConfig,
                     mWindowDecorationActions,
                     mAppToWebRepository,
+                    mCaptionVisibilityHelper,
                     mLockTaskChangeListener,
                     mPinnedLayerController);
             windowDecoration =

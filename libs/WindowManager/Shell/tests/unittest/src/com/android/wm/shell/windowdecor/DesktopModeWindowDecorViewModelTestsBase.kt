@@ -90,7 +90,7 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeKeyguardChangeListener
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeOnInsetsChangedListener
-import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper
+import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
@@ -197,7 +197,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     internal lateinit var desktopModeOnKeyguardChangedListener: DesktopModeKeyguardChangeListener
     protected lateinit var desktopModeWindowDecorViewModel: DesktopModeWindowDecorViewModel
     protected lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
-    protected lateinit var appHandleAndHeaderVisibilityHelper: AppHandleAndHeaderVisibilityHelper
+    protected lateinit var captionVisibilityHelper: CaptionVisibilityHelper
 
     @Before
     fun earlySetUp() {
@@ -222,13 +222,15 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mockDesktopRepository)
         whenever(mockUserProfileContexts[anyInt()]).thenReturn(spyContext)
         whenever(mockUserProfileContexts.getOrCreate(anyInt())).thenReturn(spyContext)
+        whenever(mockLockTaskChangeListener.isTaskLocked).thenReturn(false)
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
-        appHandleAndHeaderVisibilityHelper =
-            AppHandleAndHeaderVisibilityHelper(
+        captionVisibilityHelper =
+            CaptionVisibilityHelper(
                 displayController = mockDisplayController,
                 desktopModeCompatPolicy = desktopModeCompatPolicy,
                 desktopState = desktopState,
                 bubbleController = Optional.of(mockBubbleController),
+                lockTaskChangeListener = mockLockTaskChangeListener,
             )
         desktopModeWindowDecorViewModel =
             DesktopModeWindowDecorViewModel(
@@ -267,7 +269,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mockInteractionJankMonitor,
                 Optional.of(mockTasksLimiter),
                 mockAppHandleEducationController,
-                appHandleAndHeaderVisibilityHelper,
+                captionVisibilityHelper,
                 mockCaptionHandleRepository,
                 Optional.of(mockActivityOrientationChangeHandler),
                 mockTaskPositionerFactory,

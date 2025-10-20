@@ -71,6 +71,9 @@ public enum DesktopExperienceFlags {
     ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
             Flags::enableActivityEmbeddingSupportForConnectedDisplays, true,
             Flags.FLAG_ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS),
+    ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS(
+            Flags::enableAddWindowDecorationToAllTasks, false,
+            Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS),
     ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH(
             Flags::applyDeskActivationOnUserSwitch, false,
             Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH),
