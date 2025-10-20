@@ -1267,6 +1267,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         mDeviceStateController = deviceStateController;
 
+        // If the display cannot host task, make sure there is no system decoration initially.
+        // This needs to be applied before the DisplayPolicy is created, as this is where it is
+        // first used.
+        if (!display.canHostTasks()) {
+            // Using the internal version as the DisplayPolicy hasn't been created yet.
+            mWmService.mDisplayWindowSettings.setShouldShowSystemDecorsInternalLocked(this, false);
+        }
+
         mAppCompatCameraPolicy = new AppCompatCameraPolicy(mWmService, this);
         mDisplayPolicy = new DisplayPolicy(mWmService, this);
         mDisplayRotation = new DisplayRotation(mWmService, this, mDisplayInfo.address,
@@ -5895,6 +5903,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * also check {@link #isSystemDecorationsSupported()} to avoid breaking any security policy.
      */
     boolean isPublicSecondaryDisplayWithDesktopModeForceEnabled() {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+            return false;
+        }
         if (!mWmService.mForceDesktopModeOnExternalDisplays || isDefaultDisplay || isPrivate()) {
             return false;
         }
