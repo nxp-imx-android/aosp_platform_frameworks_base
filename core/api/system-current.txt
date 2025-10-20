@@ -2251,6 +2251,13 @@ package android.app.compat {
 
 }
 
+package android.app.contentrestriction {
+
+  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
+  }
+
+}
+
 package android.app.contentsuggestions {
 
   public final class ClassificationsRequest implements android.os.Parcelable {
@@ -4089,6 +4096,7 @@ package android.content {
     field @Deprecated public static final int BIND_ALLOW_FOREGROUND_SERVICE_STARTS_FROM_BACKGROUND = 262144; // 0x40000
     field @FlaggedApi("com.android.server.telecom.flags.telecom_mainline_blocked_numbers_manager") public static final String BLOCKED_NUMBERS_SERVICE = "blocked_numbers";
     field public static final String CLOUDSEARCH_SERVICE = "cloudsearch";
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final String CONTENT_RESTRICTION_SERVICE = "content_restriction";
     field public static final String CONTENT_SUGGESTIONS_SERVICE = "content_suggestions";
     field public static final String CONTEXTHUB_SERVICE = "contexthub";
     field public static final String CONTEXTUAL_SEARCH_SERVICE = "contextual_search";
