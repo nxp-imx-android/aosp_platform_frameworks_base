@@ -506,10 +506,11 @@ public abstract class WMShellModule {
             @ShellMainThread CoroutineScope mainScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             ShellTaskOrganizer shellTaskOrganizer,
+            LauncherApps launcherApps,
             ShellInit shellInit) {
         return new AppToWebRepositoryImpl(context, assistContentRequester,
                 appToWebGenericLinksParser, appToWebDatastoreRepository, mainScope, bgScope,
-                shellTaskOrganizer, shellInit);
+                shellTaskOrganizer, launcherApps, shellInit);
     }
 
     @WMSingleton

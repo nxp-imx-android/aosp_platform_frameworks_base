@@ -136,6 +136,7 @@ class AppHeaderControllerTests : ShellTestCase() {
                 mainCoroutineScope = testScope,
                 bgCoroutineScope = testScope.backgroundScope,
                 shellTaskOrganizer = mockTaskOrganizer,
+                launcherApps = mock(),
                 shellInit = shellInit,
             )
         whenever(mockAssistContentRequester.requestAssistContent(anyInt(), any())).thenAnswer {

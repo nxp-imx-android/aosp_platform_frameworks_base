@@ -20,7 +20,9 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.assist.AssistContent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.LauncherApps
 import android.net.Uri
+import android.os.UserHandle
 import android.util.IndentingPrintWriter
 import android.util.SparseArray
 import androidx.core.net.toUri
@@ -63,14 +65,53 @@ class AppToWebRepositoryImpl(
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
     @ShellBackgroundThread private val bgCoroutineScope: CoroutineScope,
     private val shellTaskOrganizer: ShellTaskOrganizer,
+    private val launcherApps: LauncherApps,
     shellInit: ShellInit,
 ) : TaskVanishedListener, AppToWebRepository {
     private var appToWebDataByTask = SparseArray<TaskAppToWebData>()
     private val firstRunPromptShownByTaskId = mutableSetOf<Int>()
-
-    // TODO(b/451777807) - Remove an entry when its package is uninstalled.
     private var firstRunPromptShownPackagesByUserId: MutableMap<Int, MutableSet<String>> =
         mutableMapOf()
+
+    private val launcherAppsCallback = object : LauncherApps.Callback() {
+        override fun onPackageRemoved(packageName: String, user: UserHandle) {
+            val userId = user.identifier
+            val packageRemoved = firstRunPromptShownPackagesByUserId[userId]?.remove(packageName)
+            if (packageRemoved == true) {
+                persistFirstRunPromptShownPackages()
+            }
+        }
+
+        override fun onPackageAdded(packageName: String, user: UserHandle) {}
+
+        override fun onPackageChanged(packageName: String, user: UserHandle) {}
+
+        override fun onPackagesAvailable(
+            packageNames: Array<out String>,
+            user: UserHandle,
+            replacing: Boolean
+        ) {}
+
+        override fun onPackagesUnavailable(
+            packageNames: Array<out String>,
+            user: UserHandle,
+            replacing: Boolean
+        ) {
+            if (replacing) {
+                return
+            }
+            val userId = user.identifier
+            var packageRemoved = false
+            packageNames.forEach { packageName ->
+                if (firstRunPromptShownPackagesByUserId[userId]?.remove(packageName) == true) {
+                    packageRemoved = true
+                }
+            }
+            if (packageRemoved) {
+                persistFirstRunPromptShownPackages()
+            }
+        }
+    }
 
     init {
         shellInit.addInitCallback(::onInit, this)
@@ -80,6 +121,7 @@ class AppToWebRepositoryImpl(
         shellTaskOrganizer.addTaskVanishedListener(this)
 
         if (Flags.enableEnhancedAppToWebTransition()) {
+            launcherApps.registerCallback(launcherAppsCallback)
             mainCoroutineScope.launch {
                 val appToWebProto = appToWebDatastoreRepository.getAppToWebProto() ?: return@launch
                 appToWebProto.appToWebRepoByUserMap.forEach { (userId, userRepo) ->
@@ -227,6 +269,10 @@ class AppToWebRepositoryImpl(
         checkNotNull(firstRunPromptShownPackagesByUserId[taskInfo.userId]) {
             "firstRunPromptShownPackagesByUserId must be non-null for userId ${taskInfo.userId}"
         }.add(packageName)
+        persistFirstRunPromptShownPackages()
+    }
+
+    private fun persistFirstRunPromptShownPackages() {
         bgCoroutineScope.launch {
             try {
                 appToWebDatastoreRepository.updateFirstRunPromptShownPackages(
