@@ -173,10 +173,16 @@ class AppCompatAspectRatioOverrides {
     }
 
     boolean isSystemOverrideToFullscreenEnabled(@Nullable DisplayContent dc) {
+        if (com.android.window.flags.Flags.optOutOverrideOrientationToUser()
+                && (dc == null || !dc.isLargeScreen())) {
+            // According to the definition of OVERRIDE_ANY_ORIENTATION_TO_USER, it only applies
+            // on large screen devices.
+            return false;
+        }
         if (mIsSystemFullscreenOverrideEnabled != null) {
             return mIsSystemFullscreenOverrideEnabled;
         }
-        final boolean baseOverride = isSystemFullscreenOverrideEnabled(dc);
+        final boolean baseOverride = isSystemFullscreenOverrideEnabled();
         if (dc != null) {
             // If attached to display, cache full-screen override to maintain consistent
             // override behaviour when activity is moved between displays.
@@ -189,13 +195,7 @@ class AppCompatAspectRatioOverrides {
         return baseOverride;
     }
 
-    private boolean isSystemFullscreenOverrideEnabled(@Nullable DisplayContent dc) {
-        if (com.android.window.flags.Flags.optOutOverrideOrientationToUser()
-                && (dc == null || !dc.isLargeScreen())) {
-            // According to the definition of OVERRIDE_ANY_ORIENTATION_TO_USER, it only applies
-            // on large screen devices.
-            return false;
-        }
+    private boolean isSystemFullscreenOverrideEnabled() {
         if (!isChangeEnabled(mActivityRecord, OVERRIDE_ANY_ORIENTATION_TO_USER)) {
             return false;
         }

@@ -92,9 +92,13 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         runTestScenarioWithActivity((robot) -> {
             robot.applyOnActivity((a) -> {
                 a.setDisplayId(DEFAULT_DISPLAY);
-                a.setOnLargeScreen();
                 a.createActivityWithComponent();
             });
+
+            robot.checkOverrideOrientation(/* candidate */ SCREEN_ORIENTATION_PORTRAIT,
+                    /* expected */ SCREEN_ORIENTATION_PORTRAIT);
+
+            robot.applyOnActivity(AppCompatActivityRobot::setOnLargeScreen);
 
             robot.checkOverrideOrientation(/* candidate */ SCREEN_ORIENTATION_PORTRAIT,
                     /* expected */ SCREEN_ORIENTATION_USER);
