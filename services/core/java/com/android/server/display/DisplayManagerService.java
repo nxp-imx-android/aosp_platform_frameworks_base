@@ -4724,7 +4724,8 @@ public final class DisplayManagerService extends SystemService {
                 if (extraLogging(mPackageName)) {
                     Slog.i(TAG,
                             "Not sending displayEvent: " + eventsToString(oldEventMask)
-                                    + " due to mask:" + mInternalEventFlagsMask);
+                                    + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
+                                    + " pid " + mPid);
                 }
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
                     Trace.instant(Trace.TRACE_TAG_POWER,
@@ -4746,12 +4747,27 @@ public final class DisplayManagerService extends SystemService {
                         && !mPendingDisplayEvents.isEmpty())) {
                     // The client is interested in the eventMask but is not ready to receive it.
                     // Put the new events on the pending list.
+                    if (extraLogging(mPackageName)) {
+                        Slog.i(TAG,
+                                "Not sending displayEvent: " + eventsToString(eventMask)
+                                        + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
+                                        + " pid " + mPid + " ready state " + isReadyLocked()
+                                        + " pendingDisplayEvents list "
+                                        + (mPendingDisplayEvents != null
+                                        && !mPendingDisplayEvents.isEmpty()));
+                    }
                     return addDisplayEvents(displayId, eventMask);
                 }
             }
 
             if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
                 // The client is not visible to the user and is not a system service, so do nothing.
+                if (extraLogging(mPackageName)) {
+                    Slog.i(TAG,
+                            "Not sending displayEvent: " + eventsToString(eventMask)
+                                    + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
+                                    + " pid " + mPid + " is in the background");
+                }
                 return 0;
             }
 
