@@ -3648,6 +3648,17 @@
     <permission android:name="android.permission.MANAGE_DEVICE_POLICY_CALLS"
                 android:protectionLevel="internal|role" />
 
+    <!-- Allows an application to manage policy to set or get content restriction apps.
+        <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL} is required to call
+        APIs protected by this permission on users different to the calling user.
+        <p>Protection level: internal|role
+        <p>Intended for use by the DEVICE_POLICY_MANAGEMENT role only.
+        @FlaggedApi(android.app.contentrestriction.flags.Flags.FLAG_CONTENT_RESTRICTION_API)
+    -->
+    <permission android:name="android.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS"
+        android:protectionLevel="internal|role"
+        android:featureFlag="android.app.contentrestriction.flags.content_restriction_api"/>
+
     <!-- Allows an application to manage debugging features policy.
         <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL} is required to call
         APIs protected by this permission on users different to the calling user.
