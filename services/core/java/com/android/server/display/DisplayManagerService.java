@@ -4723,13 +4723,13 @@ public final class DisplayManagerService extends SystemService {
             if (eventMask == 0) {
                 if (extraLogging(mPackageName)) {
                     Slog.i(TAG,
-                            "Not sending displayEvent: " + eventsToString(eventMask)
+                            "Not sending displayEvent: " + eventsToString(oldEventMask)
                                     + " due to mask:" + mInternalEventFlagsMask);
                 }
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_POWER)) {
                     Trace.instant(Trace.TRACE_TAG_POWER,
                             "notifyDisplayEventAsync#notSendingEvents="
-                                    + eventsToString(eventMask) + ",mInternalEventFlagsMask="
+                                    + eventsToString(oldEventMask) + ",mInternalEventFlagsMask="
                                     + mInternalEventFlagsMask + ",uid" + mUid);
                 }
                 // The client is not interested in these events, so do nothing.
