@@ -21,6 +21,8 @@ import static org.junit.Assert.fail;
 
 import android.os.SystemProperties;
 
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.junit.Test;
 
 public class RavenwoodSystemPropertiesTest {
@@ -61,5 +63,19 @@ public class RavenwoodSystemPropertiesTest {
         assertException("failed to set system property \"ro.board.first_api_level\" ", () -> {
             SystemProperties.set("ro.board.first_api_level", "2");
         });
+    }
+
+    @Test
+    public void testPerTestProperty() {
+        assertThat(SystemProperties.get("ravenwood.com.android.ravenwoodtest.coretest.testvalue"))
+                .isEqualTo("abc");
+
+        // This should be normally false, but if you change
+        // ravenwood.android.app.ContextImpl.isSystemOrSystemUI to 1, it should turn true.
+        assertThat(InstrumentationRegistry.getInstrumentation().getContext().isUiContext())
+                .isEqualTo(false);
+
+        assertThat(SystemProperties.get("ravenwood.android.app.ContextImpl.isSystemOrSystemUI"))
+                .isEqualTo("0");
     }
 }
