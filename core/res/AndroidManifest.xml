@@ -3617,6 +3617,17 @@
         android:protectionLevel="normal"
         android:featureFlag="android.permission.flags.use_loopback_interface_permission_enabled" />
 
+    <!-- @SystemApi @hide Required to be able to interact with other applications via IP packets on
+         the loopback interface, without requiring permissions from the other app.
+         @FlaggedApi(android.permission.flags.Flags.FLAG_USE_LOOPBACK_INTERFACE_PERMISSION_ENABLED)
+         <p>Protection level: signature|role -->
+    <permission
+        android:name="android.permission.FORCE_USE_LOOPBACK_INTERFACE"
+        android:description="@string/permdesc_force_use_loopback_interface"
+        android:label="@string/permlab_force_use_loopback_interface"
+        android:protectionLevel="signature|role"
+        android:featureFlag="android.permission.flags.use_loopback_interface_permission_enabled" />
+
     <!-- @SystemApi @hide Allows an application to call APIs that allow it to query and manage
          users on the device. This permission is not available to
          third party applications. -->
