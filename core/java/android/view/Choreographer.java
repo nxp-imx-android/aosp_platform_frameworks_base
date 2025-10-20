@@ -651,6 +651,26 @@ public final class Choreographer {
     }
 
     /**
+     * Posts a vsync callback to run on the next frame.
+     * <p>
+     * The callback runs once then is automatically removed.
+     * </p>
+     *
+     * @param callbackType The callback type.
+     * @param callback The vsync callback to run during the next frame.
+     *
+     * @see #removeVsyncCallback
+     * @hide
+     */
+    public void postVsyncCallback(int callbackType, @NonNull VsyncCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("callback must not be null");
+        }
+
+        postCallbackDelayedInternal(callbackType, callback, VSYNC_CALLBACK_TOKEN, 0);
+    }
+
+    /**
      * Removes callbacks that have the specified action and token.
      *
      * @param callbackType The callback type.
