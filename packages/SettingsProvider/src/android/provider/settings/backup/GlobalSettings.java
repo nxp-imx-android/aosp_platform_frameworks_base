@@ -134,6 +134,5 @@ public class GlobalSettings {
         Settings.Global.WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE,
         Settings.Global.MINMODE_ACTIVE,
         Settings.Global.WATCH_RANGING_AVAILABLE,
-        Settings.Global.AIRPLANE_MODE_SYNC,
     };
 }

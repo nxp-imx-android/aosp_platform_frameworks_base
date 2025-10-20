@@ -63,6 +63,7 @@ public class SettingsBackupTest {
                     Settings.Global.ADB_DISCONNECT_SESSIONS_ON_REVOKE,
                     Settings.Global.AIRPLANE_MODE_ON,
                     Settings.Global.AIRPLANE_MODE_RADIOS,
+                    Settings.Global.AIRPLANE_MODE_SYNC,
                     Settings.Global.ALLOW_WORK_PROFILE_TELEPHONY_FOR_NON_DPM_ROLE_HOLDERS,
                     Settings.Global.SATELLITE_MODE_RADIOS,
                     Settings.Global.SATELLITE_MODE_ENABLED,
