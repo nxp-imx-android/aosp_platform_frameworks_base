@@ -958,6 +958,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     final TelephonyManager mTelephonyManager;
     final RoleManager mRoleManager;
     final SupervisionManagerInternal mSupervisionManagerInternal;
+    final PolicyDefinitionMap mPolicyDefinitionMap;
 
     private final LockPatternUtils mLockPatternUtils;
     private final LockSettingsInternal mLockSettingsInternal;
@@ -2191,6 +2192,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mContext = Objects.requireNonNull(injector.mContext);
         mPermissions = new PermissionChecker(mContext, new PermissionCheckerDelegate());
         mHandler = new Handler(Objects.requireNonNull(injector.getMyLooper()));
+        mPolicyDefinitionMap = new PolicyDefinitionMap();
 
         mConstantsObserver = new DevicePolicyConstantsObserver(mHandler);
         mConstantsObserver.register();
@@ -2256,7 +2258,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mOwners = makeOwners(injector, pathProvider);
 
         mDevicePolicyEngine = new DevicePolicyEngine(
-                mContext, mDeviceAdminServiceController, getLockObject(), mPathProvider);
+                mContext,
+                mDeviceAdminServiceController,
+                getLockObject(),
+                mPathProvider,
+                mPolicyDefinitionMap
+        );
 
         if (isDeviceAdminFeatureDisabled()) {
             // Skip the rest of the initialization
@@ -2852,7 +2859,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         if (newOwner || mInjector.settingsSecureGetIntForUser(
                 Settings.Secure.UNKNOWN_SOURCES_DEFAULT_REVERSED, 0, userId) != 0) {
             mDevicePolicyEngine.setLocalPolicy(
-                    PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
+                    mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
                             UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES),
                     EnforcingAdmin.createEnterpriseEnforcingAdmin(
                             profileOwner.info.getComponent(),
@@ -2875,7 +2882,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         for (String restriction : newDefaultRestrictions) {
             mDevicePolicyEngine.setLocalPolicy(
-                    PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(restriction),
+                    mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(restriction),
                     EnforcingAdmin.createEnterpriseEnforcingAdmin(
                             admin.info.getComponent(),
                             admin.getUserHandle().getIdentifier()),
@@ -9445,7 +9452,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return false;
         }
         Boolean required = mDevicePolicyEngine.getResolvedPolicy(
-                PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
+                mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
                         UserManager.DISALLOW_CONFIG_DATE_TIME),
                 mInjector.binderGetCallingUserHandle().getIdentifier());
         return required != null && required;
@@ -9859,7 +9866,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         int affectedUserId = parent ? getProfileParentId(userHandle) : userHandle;
         PolicyDefinition<Boolean> policy =
-                PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
+                mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
                         UserManager.DISALLOW_CAMERA);
         if (who != null) {
             EnforcingAdmin admin = getEnforcingAdmin(caller);
@@ -14084,7 +14091,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 throw new IllegalArgumentException("Invalid restriction key: " + key);
             }
             PolicyDefinition<Boolean> policyDefinition =
-                    PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key);
+                    mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key);
             if (enabledFromThisOwner) {
                 setLocalUserRestrictionInternal(
                         admin, key, /* enabled= */ true, affectedUserId);
@@ -14286,7 +14293,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private void setLocalUserRestrictionInternal(
             EnforcingAdmin admin, String key, boolean enabled, int userId) {
         PolicyDefinition<Boolean> policyDefinition =
-                PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key);
+                mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key);
         if (enabled) {
             mDevicePolicyEngine.setLocalPolicy(
                     policyDefinition,
@@ -14304,10 +14311,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private void setGlobalUserRestrictionInternal(
             EnforcingAdmin admin, String key, boolean enabled) {
         PolicyDefinition<Boolean> policyDefinition =
-                PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key);
+                mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key);
         if (enabled) {
             mDevicePolicyEngine.setGlobalPolicy(
-                    PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key),
+                    mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(key),
                     admin,
                     new BooleanPolicyValue(true));
         } else {
@@ -16694,7 +16701,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         public List<EnforcingUser> getUserRestrictionSources(String restriction,
                 @UserIdInt int userId) {
             PolicyDefinition<Boolean> policy =
-                    PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(restriction);
+                    mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(restriction);
 
             Set<EnforcingAdmin> localAdmins =
                     mDevicePolicyEngine.getLocalPoliciesSetByAdmins(policy, userId).keySet();
@@ -16842,7 +16849,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
         } else if (DevicePolicyManager.POLICY_DISABLE_CAMERA.equals(restriction)) {
             PolicyDefinition<Boolean> policyDefinition =
-                    PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
+                    mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
                             UserManager.DISALLOW_CAMERA);
             Boolean value = mDevicePolicyEngine.getResolvedPolicy(policyDefinition, userId);
             if (value != null && value) {
@@ -16989,20 +16996,20 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return admins;
     }
 
-    private static PolicyDefinition<Boolean> getPolicyDefinitionForRestriction(
+    private PolicyDefinition<Boolean> getPolicyDefinitionForRestriction(
             @NonNull String restriction) {
         Objects.requireNonNull(restriction);
         if (DevicePolicyManager.POLICY_DISABLE_CAMERA.equals(restriction)) {
-            return PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
+            return mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
                     UserManager.DISALLOW_CAMERA);
         } else if (DevicePolicyManager.POLICY_DISABLE_SCREEN_CAPTURE.equals(restriction)) {
             return PolicyDefinition.SCREEN_CAPTURE_DISABLED;
         } else {
-            return PolicyDefinitionMap.getPolicyDefinitionForUserRestriction(restriction);
+            return mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(restriction);
         }
     }
 
-    private static <V> PolicyDefinition<V> getPolicyDefinitionForIdentifier(
+    private <V> PolicyDefinition<V> getPolicyDefinitionForIdentifier(
             @NonNull String identifier) {
         Objects.requireNonNull(identifier);
         if (MEMORY_TAGGING_POLICY.equals(identifier)) {
@@ -17081,7 +17088,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
 
             PolicyDefinition<?> policyDefinition =
-                    PolicyDefinitionMap.getPolicyDefinitionForIdentifier(policyIdentifier);
+                    mPolicyDefinitionMap.getPolicyDefinitionForIdentifier(policyIdentifier);
             if (policyDefinition == null) {
                 throw new IllegalArgumentException(
                         "Unknown policy identifier: " + policyIdentifier);
@@ -17089,7 +17096,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             // Generic policy definitions are never set directly. They're set through
             // parameterized policy keys, thus the callers need to query them using the
             // corresponding  {@code PolicyKey}.
-            if (PolicyDefinitionMap.isGenericDefinition(policyDefinition)) {
+            if (mPolicyDefinitionMap.isGenericDefinition(policyDefinition)) {
                 throw new IllegalArgumentException(
                         "Generic policies are not supported. Call DPM"
                                 + ".getEnforcingAdminsForPolicyKey "
