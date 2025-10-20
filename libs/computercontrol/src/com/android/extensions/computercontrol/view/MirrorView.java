@@ -22,6 +22,7 @@ import android.content.Context;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Size;
+import android.view.Gravity;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -126,6 +127,7 @@ public class MirrorView extends FrameLayout {
             post(() -> {
                 mMirrorSurface.setMirrorSurfaceControl(mirrorSurface, size);
                 updateMirrorSurfaceVisibility(/* visible= */ mirrorSurface != null);
+                requestLayout();
             });
         });
     }
@@ -186,8 +188,8 @@ public class MirrorView extends FrameLayout {
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
             }
         });
-        addView(mMirrorSurface, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        addView(mMirrorSurface, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
     }
 
     private float getCompoundedAlpha() {
@@ -253,6 +255,48 @@ public class MirrorView extends FrameLayout {
         }
 
         @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+            if (mDisplaySize == null || mDisplaySize.getWidth() == 0
+                    || mDisplaySize.getHeight() == 0) {
+                // No display size, or invalid. Let SurfaceView do its default thing.
+                return;
+            }
+
+            final int parentWidth = MeasureSpec.getSize(widthMeasureSpec);
+            final int parentHeight = MeasureSpec.getSize(heightMeasureSpec);
+
+            if (parentWidth == 0 || parentHeight == 0) {
+                return;
+            }
+
+            final int displayWidth = mDisplaySize.getWidth();
+            final int displayHeight = mDisplaySize.getHeight();
+
+            final float viewAspectRatio = (float) parentWidth / parentHeight;
+            final float displayAspectRatio = (float) displayWidth / displayHeight;
+
+            final int surfaceWidth;
+            final int surfaceHeight;
+
+            if (viewAspectRatio > displayAspectRatio) {
+                // The parent is wider than the display, so there will be pillarboxing.
+                // The surface should be scaled to fit the height of the parent.
+                surfaceHeight = parentHeight;
+                surfaceWidth = (int) (surfaceHeight * displayAspectRatio);
+            } else {
+                // The parent is taller than or has the same aspect ratio as the display, so there
+                // will be letterboxing. The surface should be scaled to fit the width of the
+                // parent.
+                surfaceWidth = parentWidth;
+                surfaceHeight = (int) (surfaceWidth / displayAspectRatio);
+            }
+
+            setMeasuredDimension(surfaceWidth, surfaceHeight);
+        }
+
+        @Override
         protected void updateSurface() {
             super.updateSurface();
             updateMirrorSurface();
@@ -310,8 +354,8 @@ public class MirrorView extends FrameLayout {
             if (mDisplaySize == null) {
                 return null;
             }
-            return computeCenterFitTransformation(mDisplaySize.getWidth(), mDisplaySize.getHeight(),
-                    getWidth(), getHeight());
+            return computerCenterFillTransformation(mDisplaySize.getWidth(),
+                    mDisplaySize.getHeight(), getWidth(), getHeight());
         }
 
         private void applyTransactionOnVriDraw(SurfaceControl.Transaction t) {
@@ -331,8 +375,9 @@ public class MirrorView extends FrameLayout {
     }
 
     /**
-     * Returns the transformation that should be applied to the mirror contents to center-fit the
-     * input content into the output space.
+     * Returns the transformation that should be applied to the mirror contents to center-fill the
+     * input content into the output space. This will crop the content if the aspect ratio of the
+     * input and output do not match.
      *
      * @param inputWidth   The width of the content to be transformed.
      * @param inputHeight  The height of the content to be transformed.
@@ -341,32 +386,16 @@ public class MirrorView extends FrameLayout {
      * @return a {@link Transformation} object, or null if the transformation is invalid.
      */
     @Nullable
-    private static Transformation computeCenterFitTransformation(int inputWidth, int inputHeight,
+    private static Transformation computerCenterFillTransformation(int inputWidth, int inputHeight,
             int outputWidth, int outputHeight) {
         if (outputWidth == 0 || outputHeight == 0 || inputWidth == 0 || inputHeight == 0) {
             return null;
         }
 
-        final float outputAspectRatio = (float) outputWidth / outputHeight;
-        final float inputAspectRatio = (float) inputWidth / inputHeight;
-
-        final float scale;
-        final float tx;
-        final float ty;
-
-        if (outputAspectRatio > inputAspectRatio) {
-            // The output is wider than the input, so there will be letterboxing.
-            // The content should be scaled to fit the height of the output.
-            scale = (float) outputHeight / inputHeight;
-            tx = (outputWidth - inputWidth * scale) / 2.0f;
-            ty = 0;
-        } else {
-            // The output is taller than or has the same aspect ratio as the input, so there will
-            // be pillarboxing. The content should be scaled to fit the width of the output.
-            scale = (float) outputWidth / inputWidth;
-            tx = 0;
-            ty = (outputHeight - inputHeight * scale) / 2.0f;
-        }
+        final float scale = Math.max((float) outputHeight / inputHeight,
+                (float) outputWidth / inputWidth);
+        final float tx = (outputWidth - inputWidth * scale) / 2.0f;
+        final float ty = (outputHeight - inputHeight * scale) / 2.0f;
 
         return new Transformation(scale, tx, ty);
     }
