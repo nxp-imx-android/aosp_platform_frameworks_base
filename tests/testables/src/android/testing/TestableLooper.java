@@ -347,7 +347,7 @@ public class TestableLooper {
 
     private boolean processSingleMessage(Runnable barrierRunnable) {
         try {
-            if (mQueueWrapper.peekWhen() == null) {
+            if (peekWhen() == 0) {
                 // No messages, don't continue parsing
                 return false;
             }
