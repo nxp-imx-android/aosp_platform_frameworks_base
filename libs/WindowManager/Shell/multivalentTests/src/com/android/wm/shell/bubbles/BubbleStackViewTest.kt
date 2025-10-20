@@ -1316,6 +1316,93 @@ class BubbleStackViewTest {
         assertThat(sessionInstanceIds).hasSize(1)
     }
 
+    @EnableFlags(com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
+    @Test
+    fun updateBubbleOrder_expanded_removedBubbleNotInStack_isNotReAdded() {
+        // 1. Setup: expanded stack with two bubbles.
+        val bubble1 = createAndInflateChatBubble(key = "bubble1")
+        val bubble2 = createAndInflateChatBubble(key = "bubble2")
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble1) // bubble1 at index 0
+            bubbleStackView.addBubble(bubble2) // bubble2 at index 0, bubble1 at index 1
+            bubbleStackView.setSelectedBubble(bubble2)
+            bubbleData.isExpanded = true
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(2)
+        // Initial order in container: [bubble2.iconView, bubble1.iconView]
+
+        // 2. Simulate a bubble view being removed from the container before reorder,
+        // like in a jumpcut switch.
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.hideJumpcutClosingBubble(bubble2)
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.getBubbleIndex(bubble2)).isEqualTo(-1)
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+
+        // 3. Trigger reorder. The bubble list from BubbleData still contains both bubbles.
+        val currentOrderInBubbleData = listOf(bubble2, bubble1)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.updateBubbleOrder(currentOrderInBubbleData, false)
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        // 4. Verify. With the fix, the removed bubble (bubble2) should not be re-added.
+        // Only bubble1 should remain, at index 0.
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+        assertThat(bubbleStackView.getBubbleIndex(bubble1)).isEqualTo(0)
+        assertThat(bubbleStackView.getBubbleIndex(bubble2)).isEqualTo(-1)
+    }
+
+    @EnableFlags(com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
+    @Test
+    fun updateBubbleOrder_collapsed_listModifiedDuringAnimation() {
+        // 1. Setup: Add two bubbles to the collapsed stack.
+        val bubble1 = createAndInflateChatBubble(key = "bubble1")
+        val bubble2 = createAndInflateChatBubble(key = "bubble2")
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble1) // bubble1 at index 0
+            bubbleStackView.addBubble(bubble2) // bubble2 at index 0, bubble1 at index 1
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(2)
+        // Initial order in container: [bubble2.iconView, bubble1.iconView]
+
+        // 2. Trigger reorder. New desired order is [bubble1, bubble2]
+        val newOrder = listOf(bubble1, bubble2)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.updateBubbleOrder(newOrder, false)
+            // The animation starts here. Let's advance time a bit to be in the middle of it.
+            animatorTestRule.advanceTimeBy(100)
+
+            // 3. Modify the list during animation: remove bubble1
+            bubbleData.dismissBubbleWithKey(bubble1.key, Bubbles.DISMISS_NO_LONGER_BUBBLE)
+            bubbleStackView.removeBubble(bubble1)
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+        assertThat(bubbleStackView.getBubbleIndex(bubble1)).isEqualTo(-1)
+        assertThat(bubbleStackView.getBubbleIndex(bubble2)).isEqualTo(0)
+
+        // 4. Let the animation finish, which will trigger the reorder runnable
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            animatorTestRule.advanceTimeBy(500) // Ensure animation is done
+            shellExecutor.flushAll()
+        }
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+        // 5. Verify the final state. The stack should not have crashed, and the removed
+        // bubble should not have been re-added by the reorder runnable.
+        assertThat(bubbleStackView.bubbleCount).isEqualTo(1)
+        assertThat(bubbleStackView.getBubbleIndex(bubble2)).isEqualTo(0)
+        assertThat(bubbleStackView.getBubbleIndex(bubble1)).isEqualTo(-1)
+    }
+
     @Test
     fun animateConvert_expandAnimationRunning_cancelExpand() {
         bubbleStackView = spy(bubbleStackView)
