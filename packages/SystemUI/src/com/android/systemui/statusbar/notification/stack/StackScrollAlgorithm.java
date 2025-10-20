@@ -60,7 +60,6 @@ public class StackScrollAlgorithm {
     private static final String TAG = "StackScrollAlgorithm";
     private static final SourceType STACK_SCROLL_ALGO = SourceType.from("StackScrollAlgorithm");
     private final ViewGroup mHostView;
-    @Nullable
     private final HeadsUpAnimator mHeadsUpAnimator;
 
     private float mPaddingBetweenElements;
@@ -89,7 +88,7 @@ public class StackScrollAlgorithm {
     public StackScrollAlgorithm(
             Context context,
             ViewGroup hostView,
-            @Nullable HeadsUpAnimator headsUpAnimator) {
+            HeadsUpAnimator headsUpAnimator) {
         mHostView = hostView;
         mHeadsUpAnimator = headsUpAnimator;
         initView(context);

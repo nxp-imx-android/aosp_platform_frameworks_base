@@ -26,7 +26,6 @@ import static com.android.systemui.statusbar.notification.stack.NotificationStac
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
-import android.annotation.Nullable;
 import android.content.Context;
 import android.util.Property;
 import android.view.View;
@@ -81,7 +80,6 @@ public class StackStateAnimator {
     private final ExpandableViewState mTmpState = new ExpandableViewState();
     private final AnimationProperties mAnimationProperties;
     public NotificationStackScrollLayout mHostLayout;
-    @Nullable
     private final HeadsUpAnimator mHeadsUpAnimator;
 
     private ArrayList<NotificationStackScrollLayout.AnimationEvent> mNewEvents =
@@ -106,7 +104,7 @@ public class StackStateAnimator {
     public StackStateAnimator(
             Context context,
             NotificationStackScrollLayout hostLayout,
-            @Nullable HeadsUpAnimator headsUpAnimator) {
+            HeadsUpAnimator headsUpAnimator) {
         mHostLayout = hostLayout;
         mHeadsUpAnimator = headsUpAnimator;
         initView(context);
