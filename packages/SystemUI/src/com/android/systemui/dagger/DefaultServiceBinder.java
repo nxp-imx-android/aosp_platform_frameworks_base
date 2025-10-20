@@ -24,6 +24,7 @@ import com.android.systemui.doze.DozeService;
 import com.android.systemui.dreams.DreamOverlayService;
 import com.android.systemui.dump.SystemUIAuxiliaryDumpService;
 import com.android.systemui.keyguard.KeyguardService;
+import com.android.systemui.locationbutton.LocationButtonRenderService;
 import com.android.systemui.personalcontext.SysuiVisualizerService;
 import com.android.systemui.recordissue.IssueRecordingService;
 import com.android.systemui.screenrecord.RecordingService;
@@ -107,4 +108,10 @@ public abstract class DefaultServiceBinder {
     @IntoMap
     @ClassKey(SysuiVisualizerService.class)
     public abstract Service bindSysuiVisualizerService(SysuiVisualizerService service);
+
+    /** Inject into LocationButtonRenderService */
+    @Binds
+    @IntoMap
+    @ClassKey(LocationButtonRenderService.class)
+    public abstract Service bindLocationButtonRenderService(LocationButtonRenderService service);
 }
