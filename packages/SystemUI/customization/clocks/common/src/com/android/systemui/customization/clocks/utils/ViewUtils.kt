@@ -18,6 +18,7 @@ package com.android.systemui.customization.clocks.utils
 
 import android.view.View
 import com.android.systemui.customization.clocks.view.DigitalClockViewAdapter
+import com.android.systemui.plugins.keyguard.VMeasurePoint
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VRect
 import com.android.systemui.plugins.keyguard.VRectF
@@ -47,6 +48,9 @@ object ViewUtils {
             translationX = value.x
             translationY = value.y
         }
+
+    val View.measuredSizeAndState: VMeasurePoint
+        get() = VMeasurePoint.fromSpecs(measuredWidthAndState, measuredHeightAndState)
 
     fun View.animateToAlpha(float: Float) {
         this.animate()

@@ -29,8 +29,11 @@ import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
 import com.android.systemui.customization.clocks.utils.ViewUtils.layout
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
+import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSizeAndState
 import com.android.systemui.customization.clocks.utils.ViewUtils.position
 import com.android.systemui.customization.clocks.utils.ViewUtils.setLeftTopRightBottom
+import com.android.systemui.plugins.keyguard.VMeasurePoint
+import com.android.systemui.plugins.keyguard.VMeasureSpec
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VPointF.Companion.max
 import com.android.systemui.plugins.keyguard.VRectF
@@ -40,6 +43,7 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.HOUR_SECOND_
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_DIGIT_PAIR
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_FIRST_DIGIT
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_SECOND_DIGIT
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 interface DigitalClockViewGroupAdapter : DigitalClockViewAdapter {
@@ -121,18 +125,10 @@ abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
     }
 
     override fun updateMeasuredSize() {
-        updateMeasuredSize(
-            measuredWidthAndState,
-            measuredHeightAndState,
-            shouldMeasureChildren = false,
-        )
+        updateMeasuredSize(measuredSizeAndState, shouldMeasureChildren = false)
     }
 
-    private fun updateMeasuredSize(
-        widthMeasureSpec: Int,
-        heightMeasureSpec: Int,
-        shouldMeasureChildren: Boolean,
-    ) {
+    private fun updateMeasuredSize(measureSpec: VMeasurePoint, shouldMeasureChildren: Boolean) {
         maxChildSize = VPointF(-1f)
         children.forEach { textView ->
             if (shouldMeasureChildren) {
@@ -141,11 +137,14 @@ abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
             maxChildSize = max(maxChildSize, textView.measuredSize)
         }
 
-        val size = calculateSize(widthMeasureSpec, heightMeasureSpec)
-        setMeasuredDimension(size.x.roundToInt(), size.y.roundToInt())
+        val size = calculateSize(measureSpec)
+        setMeasuredDimension(
+            VMeasureSpec.exactly(ceil(size.x).toInt()).spec,
+            VMeasureSpec.exactly(ceil(size.y).toInt()).spec,
+        )
     }
 
-    abstract fun calculateSize(widthMeasureSpec: Int, heightMeasureSpec: Int): VPointF
+    abstract fun calculateSize(measureSpec: VMeasurePoint): VPointF
 
     private fun recomputeMaxTextSize() {
         var maxSize = VPointF(-1f)
@@ -188,8 +187,9 @@ abstract class DigitalClockViewGroup<TChild>(clockCtx: ClockContext) :
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        logger.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        updateMeasuredSize(widthMeasureSpec, heightMeasureSpec, shouldMeasureChildren = true)
+        val measureSpec = VMeasurePoint.fromSpecs(widthMeasureSpec, heightMeasureSpec)
+        logger.onMeasure(measureSpec)
+        updateMeasuredSize(measureSpec, shouldMeasureChildren = true)
     }
 
     private var layoutBounds = VRectF.ZERO
