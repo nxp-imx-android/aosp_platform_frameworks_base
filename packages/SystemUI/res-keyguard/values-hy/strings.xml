@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Մատնահետքով ապակողպման փորձերի սահմանաչափը լրացել է։"</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Trust agent-ն անհասանելի է"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Չափից շատ փորձեր են արվել սխալ PIN կոդով"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Դուք արդեն մուտքագրել եք այդ PIN կոդը։ Փորձեք մեկ ուրիշը։"</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"Դուք արդեն մուտքագրել եք այդ գաղտնաբառը։ Փորձեք մեկ ուրիշը։"</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"Դուք արդեն մուտքագրել եք այդ նախշը։ Փորձեք մեկ ուրիշը։"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Չափից շատ փորձեր են արվել սխալ նախշով"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Չափից շատ փորձեր են արվել սխալ գաղտնաբառով"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Չափից շատ փորձեր են արվել սխալ PIN կոդով\nՄանրամասների համար անցեք <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Չափից շատ փորձեր են արվել սխալ նախշով\nՄանրամասների համար անցեք <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Չափից շատ փորձեր են արվել սխալ գաղտնաբառով\nՄանրամասների համար անցեք <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Նորից փորձեք # վայրկյանից։}one{Նորից փորձեք # վայրկյանից։}other{Նորից փորձեք # վայրկյանից։}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{Նորից փորձեք # վայրկյանից}one{Նորից փորձեք # վայրկյանից}other{Նորից փորձեք # վայրկյանից}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{Նորից փորձեք # րոպեից}one{Նորից փորձեք # րոպեից}other{Նորից փորձեք # րոպեից}}"</string>

@@ -87,9 +87,9 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"በጣት አሻራ መክፈት አልተቻለም። በጣም ብዙ ሙከራዎች።"</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"የተአማኒነት ወኪል አይገኝም"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"በተሳሳተ ፒን በጣም ብዙ ሙከራዎች"</string>
-    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"አስቀድመው ያንን ፒን ሞክረውታል። ሌላ ይሞከሩ።"</string>
-    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"አስቀድመው ያንን የይለፍ ቃል ሞክረውታል። ሌላ ይሞከሩ።"</string>
-    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"አስቀድመው ያንን ሥርዓተ ጥለት ሞክረውታል። ሌላ ይሞከሩ።"</string>
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"አስቀድመው ያንን ፒን ሞክረውታል። ሌላ ይሞክሩ።"</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"አስቀድመው ያንን የይለፍ ቃል ሞክረውታል። ሌላ ይሞክሩ።"</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"አስቀድመው ያንን ሥርዓተ ጥለት ሞክረውታል። ሌላ ይሞክሩ።"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"በተሳሳተ ስርዓተ ጥለት በጣም ብዙ ሙከራዎች"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"በተሳሳተ የይለፍ ቃል በጣም ብዙ ሙከራዎች"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"በተሳሳተ ፒን በጣም ብዙ ሙከራዎች\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> ላይ የበለጠ ይወቁ"</string>

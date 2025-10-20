@@ -87,20 +87,14 @@
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"ଟିପଚିହ୍ନ ସହ ଅନଲକ କରିହେବ ନାହିଁ। ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା।"</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"ଟ୍ରଷ୍ଟ ଏଜେଣ୍ଟ ଉପଲବ୍ଧ ନାହିଁ"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"ଭୁଲ PIN ସହ ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି"</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pin (5834891656916692329) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (7373825671396212841) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (8830545654233356393) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"ସେହି PIN ପୂର୍ବରୁ ବ୍ୟବହାର କରି ଦେଖିଛନ୍ତି। ଅନ୍ୟ ଏକ PIN ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="7373825671396212841">"ସେହି ପାସୱାର୍ଡ ଆଗରୁ ବ୍ୟବହାର କରି ଦେଖିଛନ୍ତି। ଅନ୍ୟ ଏକ ପାସୱାର୍ଡ ଚେଷ୍ଟା କର।"</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="8830545654233356393">"ସେହି ପାଟର୍ନ ପୂର୍ବରୁ ବ୍ୟବହାର କରି ଦେଖିଛନ୍ତି। ଆଉ ଏକ ପାଟର୍ନ ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"ଭୁଲ ପାଟର୍ନ ସହ ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"ଭୁଲ ପାସୱାର୍ଡ ସହ ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି"</string>
-    <!-- no translation found for kg_primary_auth_locked_out_pin_shortlink (1294871994741389848) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_pattern_shortlink (5998598232858156495) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_locked_out_password_shortlink (7035847891707609104) -->
-    <skip />
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"ଭୁଲ PIN ସହ ଅନେକ ଥର ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g>ରେ ଅଧିକ ଜାଣନ୍ତୁ"</string>
+    <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"ଭୁଲ ପାଟର୍ନ ସହ ଅନେକ ଥର ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g>ରେ ଅଧିକ ଜାଣନ୍ତୁ"</string>
+    <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"ଭୁଲ ପାସୱାର୍ଡ ସହ ଅନେକ ଥର ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g>ରେ ଅଧିକ ଜାଣନ୍ତୁ"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# ସେକେଣ୍ଡ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।}other{# ସେକେଣ୍ଡ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{# ସେକେଣ୍ଡରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ}other{# ସେକେଣ୍ଡରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{# ମିନିଟରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ}other{# ମିନିଟରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ}}"</string>
