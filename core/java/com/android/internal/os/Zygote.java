@@ -23,6 +23,7 @@ import android.annotation.Nullable;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.Disabled;
 import android.compat.annotation.EnabledAfter;
+import android.compat.annotation.EnabledSince;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ProcessInfo;
@@ -203,6 +204,9 @@ public final class Zygote {
 
     /** Load 4KB ELF files on 16KB device using appcompat mode */
     public static final int ENABLE_PAGE_SIZE_APP_COMPAT = 1 << 26;
+
+    /** Enable XO memory regions; if false, XO regions will be marked readable */
+    public static final int EXECUTE_ONLY_MEMORY_ENABLED = 1 << 27;
 
     /** No external storage should be mounted. */
     public static final int MOUNT_EXTERNAL_NONE = IVold.REMOUNT_MODE_NONE;
@@ -1286,6 +1290,13 @@ public final class Zygote {
     @ChangeId @Disabled
     private static final long NATIVE_HEAP_ZERO_INIT = 178038272; // This is a bug id.
 
+
+    /** Enable execute-only memory for apps which target SDK versions after BAKLAVA  */
+    @ChangeId
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    static final long ENFORCE_EXECUTE_ONLY_MEMORY = 441041342L;
+
+
     /**
      * Enable sampled memory bug detection in the app.
      *
@@ -1432,6 +1443,21 @@ public final class Zygote {
         return GWP_ASAN_LEVEL_DEFAULT;
     }
 
+    /**
+     * Check whether XO memory should be enabled for this particular app.
+     *
+     * @see <a href="https://source.android.com/devices/tech/debug/execute-only-memory">Execute-only Memory</a>
+     */
+    private static boolean enableExecuteOnlyMemory(
+            @NonNull ApplicationInfo info,
+            @Nullable ProcessInfo processInfo,
+            @Nullable IPlatformCompat platformCompat) {
+        if (isCompatChangeEnabled(ENFORCE_EXECUTE_ONLY_MEMORY, info, platformCompat, 0)) {
+            return true;
+        }
+        return false;
+    }
+
     private static boolean enableNativeHeapZeroInit(
             @NonNull ApplicationInfo info,
             @Nullable ProcessInfo processInfo,
@@ -1478,6 +1504,10 @@ public final class Zygote {
         if (enableNativeHeapZeroInit(info, processInfo, platformCompat)) {
             runtimeFlags |= NATIVE_HEAP_ZERO_INIT_ENABLED;
         }
+        if (enableExecuteOnlyMemory(info, processInfo, platformCompat)) {
+            runtimeFlags |= EXECUTE_ONLY_MEMORY_ENABLED;
+        }
+
         return runtimeFlags;
     }
 
