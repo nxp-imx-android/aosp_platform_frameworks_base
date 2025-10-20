@@ -1798,10 +1798,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Tindakan menahan kedua-dua kekunci kelantangan selama beberapa saat akan menghidupkan <xliff:g id="SERVICE">%1$s</xliff:g>, iaitu satu ciri kebolehaksesan. Ini mungkin mengubah cara peranti anda berfungsi.\n\nAnda boleh menukar pintasan ini kepada ciri lain dalam Tetapan &gt; Kebolehaksesan."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Hidupkan"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Jangan hidupkan"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Hidup"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Mati"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Benarkan <xliff:g id="SERVICE">%1$s</xliff:g> mempunyai kawalan penuh atas peranti anda?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Kawalan penuh sesuai untuk apl yang berkaitan dengan keperluan kebolehaksesan anda tetapi bukan untuk kebanyakan apl."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Melihat dan mengawal skrin"</string>
@@ -1815,16 +1813,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Ketik ciri untuk mula menggunakan ciri itu:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Pilih ciri untuk digunakan dengan butang kebolehaksesan"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Pilih ciri untuk digunakan dengan pintasan kekunci kelantangan"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"butang kebolehaksesan"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"kekunci kelantangan"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"gerak isyarat"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"tetapan pantas"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ketik tiga kali"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> telah dimatikan"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Edit pintasan"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Selesai"</string>

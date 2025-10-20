@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Точно!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Обидете се повторно"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Обидете се повторно"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Кликнете за да отклучите"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Притиснете некое копче за да отклучите"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Отклучете за пристап до сите функции и податоци"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Максималниот број обиди на отклучување со лик е надминат"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Нема SIM-картичка"</string>
@@ -1287,7 +1285,7 @@
     <string name="whichGiveAccessToApplicationLabel" msgid="7805857277166106236">"Дозволи пристап"</string>
     <string name="whichEditApplication" msgid="6191568491456092812">"Измени со"</string>
     <string name="whichEditApplicationNamed" msgid="8096494987978521514">"Измени со %1$s"</string>
-    <string name="whichEditApplicationLabel" msgid="1463288652070140285">"Измени"</string>
+    <string name="whichEditApplicationLabel" msgid="1463288652070140285">"Изменете"</string>
     <string name="whichSendApplication" msgid="4143847974460792029">"Сподели"</string>
     <string name="whichSendApplicationNamed" msgid="4470386782693183461">"Сподели со %1$s"</string>
     <string name="whichSendApplicationLabel" msgid="7467813004769188515">"Сподели"</string>
@@ -1680,7 +1678,7 @@
     <string name="storage_usb_drive" msgid="448030813201444573">"USB-меморија"</string>
     <string name="storage_usb_drive_label" msgid="6631740655876540521">"<xliff:g id="MANUFACTURER">%s</xliff:g> USB-меморија"</string>
     <string name="storage_usb" msgid="2391213347883616886">"USB меморија"</string>
-    <string name="extract_edit_menu_button" msgid="63954536535863040">"Измени"</string>
+    <string name="extract_edit_menu_button" msgid="63954536535863040">"Изменете"</string>
     <string name="data_usage_warning_title" msgid="9034893717078325845">"Предупредување за интернет"</string>
     <string name="data_usage_warning_body" msgid="1669325367188029454">"Потрошивте <xliff:g id="APP">%s</xliff:g> интернет"</string>
     <string name="data_usage_mobile_limit_title" msgid="3911447354393775241">"Достигнат лимит за моб. интернет"</string>
@@ -1800,10 +1798,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Ако ги задржите притиснати двете копчиња за јачина на звук неколку секунди, ќе се вклучи функцијата за пристапност <xliff:g id="SERVICE">%1$s</xliff:g>. Ова може да го промени начинот на функционирање на уредот.\n\nМоже да ја измените кратенкава да биде за друга функција во „Поставки &gt; Пристапност“."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Вклучи"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Не вклучувај"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Вклучено"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Исклучено"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Да се дозволи <xliff:g id="SERVICE">%1$s</xliff:g> да има целосна контрола врз вашиот уред?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Целосната контрола е соодветна за апликации што ви помагаат со потребите за пристапност, но не и за повеќето апликации."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Преглед и контрола на екранот"</string>
@@ -1817,16 +1813,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Допрете на функција за да почнете да ја користите:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Изберете ги функциите што ќе ги користите со копчето за пристапност"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Изберете ги функциите што ќе ги користите со кратенката за копчињата за јачина на звук"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"копче за пристапност"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"копчиња за јачина на звук"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"движење"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"брзи поставки"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"троен допир"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> е исклучена"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Изменете ги кратенките"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Готово"</string>
@@ -2227,7 +2218,7 @@
     <string name="harmful_app_warning_open_anyway" msgid="5963657791740211807">"СЕПАК ОТВОРИ"</string>
     <string name="harmful_app_warning_title" msgid="8794823880881113856">"Откриена е штетна апликација"</string>
     <string name="slices_permission_request" msgid="3677129866636153406">"<xliff:g id="APP_0">%1$s</xliff:g> сака да прикажува делови од <xliff:g id="APP_2">%2$s</xliff:g>"</string>
-    <string name="screenshot_edit" msgid="7408934887203689207">"Измени"</string>
+    <string name="screenshot_edit" msgid="7408934887203689207">"Изменете"</string>
     <string name="volume_dialog_ringer_guidance_vibrate" msgid="2055927873175228519">"Повиците и известувањата ќе вибрираат"</string>
     <string name="volume_dialog_ringer_guidance_silent" msgid="1011246774949993783">"Повиците и известувањата нема да имаат звук"</string>
     <string name="notification_channel_system_changes" msgid="2462010596920209678">"Системски промени"</string>

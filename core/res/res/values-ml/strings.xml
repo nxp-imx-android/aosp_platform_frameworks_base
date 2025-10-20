@@ -1798,10 +1798,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"രണ്ട് വോളിയം കീകളും അൽപ്പ നേരത്തേക്ക് അമർത്തിപ്പിടിക്കുന്നത് ഉപയോഗസഹായി ഫീച്ചറായ <xliff:g id="SERVICE">%1$s</xliff:g> എന്നതിനെ ഓണാക്കുന്നു. നിങ്ങളുടെ ഉപകരണം പ്രവർത്തിക്കുന്ന വിധം ഇത് മാറ്റിയേക്കാം.\n\nക്രമീകരണം &gt; ഉപയോഗസഹായി എന്നതിലെ മറ്റൊരു ഫീച്ചറിലേക്ക് നിങ്ങൾക്ക് ഈ കുറുക്കുവഴി മാറ്റാനാവും."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"ഓണാക്കുക"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"ഓണാക്കരുത്"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"ഓണാണ്"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"ഓഫാണ്"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> എന്നതിന് നിങ്ങളുടെ ഉപകരണത്തിന്മേൽ പൂർണ്ണ നിയന്ത്രണം അനുവദിക്കണോ?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"ഉപയോഗസഹായി ആവശ്യങ്ങൾക്കായി നിങ്ങളെ സഹായിക്കുന്ന ആപ്പുകൾക്ക് പൂർണ്ണ നിയന്ത്രണം അനുയോജ്യമാണെങ്കിലും മിക്ക ആപ്പുകൾക്കും അനുയോജ്യമല്ല."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"സ്‌ക്രീൻ കാണുക, നിയന്ത്രിക്കുക"</string>
@@ -1815,16 +1813,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"ഉപയോഗിച്ച് തുടങ്ങാൻ ഫീച്ചർ ടാപ്പ് ചെയ്യുക:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"ഉപയോഗസഹായി ബട്ടണിന്റെ സഹായത്തോടെ, ഉപയോഗിക്കാൻ ഫീച്ചറുകൾ തിരഞ്ഞെടുക്കുക"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"വോളിയം കീകളുടെ കുറുക്കുവഴികൾക്കൊപ്പം ഉപയോഗിക്കേണ്ട ഫീച്ചറുകൾ തിരഞ്ഞെടുക്കുക"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"ഉപയോഗസഹായി ബട്ടൺ"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"വോളിയം കീകൾ"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"ജെസ്ച്ചർ"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"ദ്രുത ക്രമീകരണം"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ട്രിപ്പിൾ ടാപ്പ്"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> ഓഫാക്കിയിരിക്കുന്നു"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"കുറുക്കുവഴികൾ തിരുത്തുക"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"പൂർത്തിയാക്കി"</string>

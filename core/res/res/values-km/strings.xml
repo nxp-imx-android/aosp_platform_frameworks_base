@@ -1798,10 +1798,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"ការសង្កត់​គ្រាប់ចុច​កម្រិតសំឡេង​ទាំងពីរ​ឱ្យជាប់​រយៈពេល​ពីរបីវិនាទី​នឹងបើក <xliff:g id="SERVICE">%1$s</xliff:g> ដែលជា​មុខងារ​ភាពងាយប្រើ។ ការធ្វើ​បែបនេះ​អាចផ្លាស់ប្ដូរ​របៀបដែល​ឧបករណ៍​របស់អ្នក​ដំណើរការ។\n\nអ្នកអាច​ប្ដូរផ្លូវកាត់​នេះទៅ​មុខងារ​ផ្សេងទៀត​នៅក្នុង​ការកំណត់ &gt; ភាពងាយស្រួល។"</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"បើក"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"កុំបើក"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"បើក"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"បិទ"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"អនុញ្ញាតឱ្យ <xliff:g id="SERVICE">%1$s</xliff:g> មានសិទ្ធិគ្រប់គ្រងឧបករណ៍​របស់អ្នក​ទាំងស្រុងឬ?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"ការគ្រប់គ្រង​ទាំងស្រុងមានលក្ខណៈ​សមស្របសម្រាប់​កម្មវិធី ដែលជួយអ្នក​ទាក់ទងនឹងការប្រើមុខងារភាពងាយស្រួល ប៉ុន្តែមិនសមស្របសម្រាប់​កម្មវិធីភាគច្រើនទេ។"</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"មើល និង​គ្រប់គ្រងអេក្រង់"</string>
@@ -1815,16 +1813,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"ចុចមុខងារណាមួយ ដើម្បចាប់ផ្ដើមប្រើ៖"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"ជ្រើសរើស​មុខងារ ដើម្បីប្រើ​ជាមួយ​ប៊ូតុង​ភាពងាយស្រួល"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"ជ្រើសរើស​មុខងារ ដើម្បីប្រើ​ជាមួយផ្លូវកាត់គ្រាប់ចុច​កម្រិតសំឡេង"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"ប៊ូតុង​ភាពងាយស្រួល"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"គ្រាប់ចុច​កម្រិតសំឡេង"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"ចលនា"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"ការកំណត់រហ័ស"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ចុចបីដង"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"បានបិទ <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"កែ​ផ្លូវកាត់"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"រួចរាល់"</string>

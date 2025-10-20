@@ -1054,10 +1054,8 @@
     <string name="lockscreen_pattern_correct" msgid="8050630103651508582">"Rétt!"</string>
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Reyndu aftur"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Reyndu aftur"</string>
-    <!-- no translation found for lockscreen_click_to_unlock_hint (6056691847669178119) -->
-    <skip />
-    <!-- no translation found for lockscreen_key_to_unlock_hint (9042402393653798264) -->
-    <skip />
+    <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Smelltu til að taka tækið úr lás"</string>
+    <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Ýttu á hvaða hnapp sem er til að taka tækið úr lás"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Taktu úr lás til að sjá alla eiginleika og gögn"</string>
     <string name="faceunlock_multiple_failures" msgid="681991538434031708">"Hámarksfjölda tilrauna til andlitsopnunar náð"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Ekkert SIM-kort"</string>
@@ -1800,10 +1798,8 @@
     <string name="accessibility_shortcut_single_service_warning" msgid="6363127705112844257">"Ef báðum hljóðstyrkstökkunum er haldið inni í nokkrar sekúndur er kveikt á aðgengiseiginleikanum <xliff:g id="SERVICE">%1$s</xliff:g>. Þetta getur breytt því hvernig tækið virkar.\n\nÞú getur breytt þessari flýtileið í annan eiginleika í Stillingar &gt; Aðgengi."</string>
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"Kveikja"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"Ekki kveikja"</string>
-    <!-- no translation found for accessibility_shortcut_menu_item_status_on (6162756705754654002) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_menu_item_status_off (6274512913017713543) -->
-    <skip />
+    <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"Kveikt"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"Slökkt"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"Viltu leyfa „<xliff:g id="SERVICE">%1$s</xliff:g>“ að hafa fulla stjórn yfir tækinu þínu?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"Full stjórn er viðeigandi fyrir forrit sem hjálpa þér ef þú hefur ekki aðgang, en ekki fyrir flest forrit."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"Skoða og stjórna skjá"</string>
@@ -1817,16 +1813,11 @@
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Ýttu á eiginleika til að byrja að nota hann:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Veldu eiginleika sem á að nota með aðgengishnappinum"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Veldu eiginleika sem á að nota með flýtileið hljóðstyrkstakka"</string>
-    <!-- no translation found for accessibility_shortcut_label_button (6473341300585254821) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_volume_keys (5642990791242136231) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_gesture (7987298674836890931) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_quick_settings (6851280333772213611) -->
-    <skip />
-    <!-- no translation found for accessibility_shortcut_label_triple_tap (9058975959054454796) -->
-    <skip />
+    <string name="accessibility_shortcut_label_button" msgid="6473341300585254821">"aðgengishnappur"</string>
+    <string name="accessibility_shortcut_label_volume_keys" msgid="5642990791242136231">"hljóðstyrkstakkar"</string>
+    <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"bendingar"</string>
+    <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"flýtistillingar"</string>
+    <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"ýttu þrisvar"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Slökkt hefur verið á <xliff:g id="SERVICE_NAME">%s</xliff:g>"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Breyta flýtileiðum"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Lokið"</string>
