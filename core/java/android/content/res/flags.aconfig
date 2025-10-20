@@ -124,6 +124,22 @@ flag {
 }
 
 flag {
+    name: "overlay_readwrite_flags"
+    is_exported: false
+    namespace: "resource_manager"
+    description: "Feature flag for allowing read/write flags on overlay entries"
+    bug: "437989879"
+}
+
+flag {
+    name: "bag_readwrite_flags"
+    is_exported: false
+    namespace: "resource_manager"
+    description: "Feature flag for allowing read/write flags on bag items"
+    bug: "452682378"
+}
+
+flag {
     name: "resources_minor_version_support"
     is_exported: true
     namespace: "resource_manager"
