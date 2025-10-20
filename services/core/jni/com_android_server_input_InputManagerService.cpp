@@ -374,8 +374,9 @@ public:
     std::optional<vec2> getMouseCursorPositionInLogicalDisplay(ui::LogicalDisplayId displayId);
     void setStylusPointerIconEnabled(bool enabled);
     void setInputMethodConnectionIsActive(bool isActive);
-    void setKeyRemapping(const std::map<int32_t, int32_t>& keyRemapping);
-    void setKeyRemappingForDevice(int32_t deviceId, const std::map<int32_t, int32_t>& keyRemapping);
+    void setKeyRemapping(const std::unordered_map<int32_t, int32_t>& keyRemapping);
+    void setKeyRemappingForDevice(int32_t deviceId,
+                                  const std::unordered_map<int32_t, int32_t>& keyRemapping);
     void setAxisRemappingForDevice(int32_t deviceId,
                                    const std::unordered_map<int32_t, int32_t>& axisRemapping);
 
@@ -560,12 +561,12 @@ private:
         bool isInputMethodConnectionActive{false};
 
         // Keycodes to be remapped.
-        std::map<int32_t /* fromKeyCode */, int32_t /* toKeyCode */> keyRemapping{};
+        std::unordered_map<int32_t /* fromKeyCode */, int32_t /* toKeyCode */> keyRemapping{};
 
         // Keycodes to be remapped for device. This take precedence over global key remapping stored
         // in keyRemapping map which applies to all devices.
-        std::map<int32_t /* deviceId */,
-                 std::map<int32_t /* fromKeyCode */, int32_t /* toKeyCode */>>
+        std::unordered_map<int32_t /* deviceId */,
+                           std::unordered_map<int32_t /* fromKeyCode */, int32_t /* toKeyCode */>>
                 keyRemappingPerDevice{};
 
         // Axes to be remapped for device.
@@ -2212,7 +2213,7 @@ void NativeInputManager::setInputMethodConnectionIsActive(bool isActive) {
     mInputManager->getDispatcher().setInputMethodConnectionIsActive(isActive);
 }
 
-void NativeInputManager::setKeyRemapping(const std::map<int32_t, int32_t>& keyRemapping) {
+void NativeInputManager::setKeyRemapping(const std::unordered_map<int32_t, int32_t>& keyRemapping) {
     { // acquire lock
         std::scoped_lock _l(mLock);
         mLocked.keyRemapping = keyRemapping;
@@ -2222,8 +2223,8 @@ void NativeInputManager::setKeyRemapping(const std::map<int32_t, int32_t>& keyRe
             InputReaderConfiguration::Change::KEY_REMAPPING);
 }
 
-void NativeInputManager::setKeyRemappingForDevice(int32_t deviceId,
-                                                  const std::map<int32_t, int32_t>& keyRemapping) {
+void NativeInputManager::setKeyRemappingForDevice(
+        int32_t deviceId, const std::unordered_map<int32_t, int32_t>& keyRemapping) {
     bool needsRefresh = false;
     { // acquire lock
         std::scoped_lock _l(mLock);
@@ -2371,7 +2372,7 @@ static void nativeSetKeyRemapping(JNIEnv* env, jobject nativeImplObj, jintArray 
         jniThrowRuntimeException(env, "FromKeycodes and toKeycodes cannot match.");
     }
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
-    std::map<int32_t, int32_t> keyRemapping;
+    std::unordered_map<int32_t, int32_t> keyRemapping;
     for (int i = 0; i < fromKeycodes.size(); i++) {
         keyRemapping.insert_or_assign(fromKeycodes[i], toKeycodes[i]);
     }
@@ -2383,10 +2384,10 @@ static void nativeSetKeyRemappingForDevice(JNIEnv* env, jobject nativeImplObj, j
     const std::vector<int32_t> fromKeyCodes = getIntArray(env, fromKeyCodesArr);
     const std::vector<int32_t> toKeycodes = getIntArray(env, toKeyCodesArr);
     if (fromKeyCodes.size() != toKeycodes.size()) {
-        jniThrowRuntimeException(env, "FromKeycodes and toKeycodes sizes cannot match.");
+        jniThrowRuntimeException(env, "FromKeycodes and toKeycodes sizes don't match.");
     }
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
-    std::map<int32_t, int32_t> keyRemapping;
+    std::unordered_map<int32_t, int32_t> keyRemapping;
     for (int i = 0; i < fromKeyCodes.size(); i++) {
         keyRemapping.insert_or_assign(fromKeyCodes[i], toKeycodes[i]);
     }

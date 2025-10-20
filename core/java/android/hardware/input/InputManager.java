@@ -772,7 +772,7 @@ public final class InputManager {
     }
 
     /**
-     * Clears all existing controller button remapping for a given device.
+     * Clears all existing controller button remappings for a given device.
      *
      * @param identifier The unique identifier for the device.
      *
@@ -781,17 +781,17 @@ public final class InputManager {
     @TestApi
     @FlaggedApi(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
     @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
-    public void clearAllControllerButtonRemapping(@NonNull InputDeviceIdentifier identifier) {
+    public void clearAllControllerButtonRemappings(@NonNull InputDeviceIdentifier identifier) {
         Objects.requireNonNull(identifier, "Device identifier must not be null");
         try {
-            mIm.clearAllControllerButtonRemapping(mContext.getUserId(), identifier);
+            mIm.clearAllControllerButtonRemappings(mContext.getUserId(), identifier);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }
     }
 
     /**
-     * Provides the current controller button remapping for a given device.
+     * Provides the current controller button remappings for a given device.
      *
      * @param identifier The unique identifier for the device.
      * @return a {fromButton, toKeycode} map that contains the existing controller button remapping.
@@ -803,11 +803,11 @@ public final class InputManager {
     @NonNull
     @SuppressWarnings("unchecked")
     @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
-    public Map<Integer, Integer> getControllerButtonRemapping(
+    public Map<Integer, Integer> getControllerButtonRemappings(
             @NonNull InputDeviceIdentifier identifier) {
         Objects.requireNonNull(identifier, "Device identifier must not be null");
         try {
-            return mIm.getControllerButtonRemapping(mContext.getUserId(), identifier);
+            return mIm.getControllerButtonRemappings(mContext.getUserId(), identifier);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }

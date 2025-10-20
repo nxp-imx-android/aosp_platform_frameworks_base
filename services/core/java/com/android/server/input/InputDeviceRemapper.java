@@ -59,9 +59,11 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
     private final Handler mHandler;
     private InputManager mInputManager;
 
-    // A SparseArray where the index is the userId. Each entry is per device key remapping.
-    // Per device key mappings are stored as a nested map of InputDeviceIdentifier to key remapping.
-    // i.e. SparseArray<UserId, Map<InputDeviceIdentifier, Map<fromKeyCode, toKeyCode>>>.
+    /**
+     * A SparseArray where the index is the userId. Each entry is per device key remapping.
+     * Per device key mappings are stored as a nested map of InputDeviceIdentifier to key remapping.
+     * i.e. [UserId, [InputDeviceIdentifier, [fromKeyCode, toKeyCode]]].
+     */
     @GuardedBy("mLock")
     private final SparseArray<Map<InputDeviceIdentifier, Map<Integer, Integer>>> mKeyRemappingData =
             new SparseArray<>();
@@ -105,86 +107,90 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
         mHandler.sendMessage(msg);
     }
 
-    public void remapKey(@UserIdInt int userId, @NonNull InputDeviceIdentifier identifier,
+    public void remapKey(@UserIdInt int userId, @NonNull InputDeviceIdentifier deviceIdentifier,
             int fromKeyCode, int toKeyCode) {
         if (fromKeyCode == toKeyCode) {
-            removeKeyRemapping(userId, identifier, fromKeyCode);
+            removeKeyRemapping(userId, deviceIdentifier, fromKeyCode);
             return;
         }
-        Map<Integer, Integer> remapping;
+        Map<Integer, Integer> deviceRemappings;
         synchronized (mLock) {
             if (!mKeyRemappingData.contains(userId)) {
                 mKeyRemappingData.put(userId, new ArrayMap<>());
             }
-            Map<InputDeviceIdentifier, Map<Integer, Integer>> remappingData =
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
                     mKeyRemappingData.get(userId);
-            if (!remappingData.containsKey(identifier)) {
-                remappingData.put(identifier, new ArrayMap<>());
+            if (!userRemappings.containsKey(deviceIdentifier)) {
+                userRemappings.put(deviceIdentifier, new ArrayMap<>());
             }
-            remapping = remappingData.get(identifier);
-            remapping.put(fromKeyCode, toKeyCode);
+            deviceRemappings = userRemappings.get(deviceIdentifier);
+            deviceRemappings.put(fromKeyCode, toKeyCode);
         }
-        applyKeyRemapping(identifier, remapping);
+        findButtonDeviceAndApplyKeyRemapping(deviceIdentifier, deviceRemappings);
     }
 
-    public void removeKeyRemapping(@UserIdInt int userId, @NonNull InputDeviceIdentifier identifier,
-            int fromKeyCode) {
-        Map<Integer, Integer> remapping;
+    public void removeKeyRemapping(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier deviceIdentifier, int fromKeyCode) {
+        Map<Integer, Integer> deviceRemappings;
         synchronized (mLock) {
             if (!mKeyRemappingData.contains(userId)) {
                 Slog.d(TAG, "No existing remapping for userId = " + userId);
                 return;
             }
-            Map<InputDeviceIdentifier, Map<Integer, Integer>> remappingData =
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
                     mKeyRemappingData.get(userId);
-            if (!remappingData.containsKey(identifier)) {
-                Slog.d(TAG, "No existing remapping for device = " + identifier);
+            if (!userRemappings.containsKey(deviceIdentifier)) {
+                Slog.d(TAG, "No existing remapping for device = " + deviceIdentifier);
                 return;
             }
-            remapping = remappingData.get(identifier);
-            remapping.remove(fromKeyCode);
-            if (remapping.isEmpty()) {
-                remappingData.remove(identifier);
+            deviceRemappings = userRemappings.get(deviceIdentifier);
+            if (deviceRemappings.remove(fromKeyCode) == null) {
+                Slog.d(TAG, "No existing key remapping for device = " + deviceIdentifier
+                        + " for fromKeyCode = " + fromKeyCode);
+                return;
             }
-            if (remappingData.isEmpty()) {
+            if (deviceRemappings.isEmpty()) {
+                userRemappings.remove(deviceIdentifier);
+            }
+            if (userRemappings.isEmpty()) {
                 mKeyRemappingData.remove(userId);
             }
         }
-        applyKeyRemapping(identifier, remapping);
+        findButtonDeviceAndApplyKeyRemapping(deviceIdentifier, deviceRemappings);
     }
 
-    public void clearAllKeyRemapping(@UserIdInt int userId,
-            @NonNull InputDeviceIdentifier identifier) {
+    public void clearAllKeyRemappings(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier deviceIdentifier) {
         synchronized (mLock) {
             if (!mKeyRemappingData.contains(userId)) {
                 Slog.d(TAG, "No existing remapping for userId = " + userId);
                 return;
             }
-            Map<InputDeviceIdentifier, Map<Integer, Integer>> remappingData =
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
                     mKeyRemappingData.get(userId);
-            if (!remappingData.containsKey(identifier)) {
-                Slog.d(TAG, "No existing remapping for device = " + identifier);
+            if (!userRemappings.containsKey(deviceIdentifier)) {
+                Slog.d(TAG, "No existing remapping for device = " + deviceIdentifier);
                 return;
             }
             // Cleanup if remapping map is empty
-            remappingData.remove(identifier);
-            if (remappingData.isEmpty()) {
+            userRemappings.remove(deviceIdentifier);
+            if (userRemappings.isEmpty()) {
                 mKeyRemappingData.remove(userId);
             }
         }
-        applyKeyRemapping(identifier, /* remapping= */null);
+        findButtonDeviceAndApplyKeyRemapping(deviceIdentifier, /* deviceRemappings= */null);
     }
 
     @NonNull
-    public Map<Integer, Integer> getKeyRemapping(@UserIdInt int userId,
-            @NonNull InputDeviceIdentifier identifier) {
+    public Map<Integer, Integer> getKeyRemappings(@UserIdInt int userId,
+            @NonNull InputDeviceIdentifier deviceIdentifier) {
         synchronized (mLock) {
-            Map<InputDeviceIdentifier, Map<Integer, Integer>> remappingData =
+            Map<InputDeviceIdentifier, Map<Integer, Integer>> userRemappings =
                     mKeyRemappingData.get(userId);
-            if (remappingData == null) {
+            if (userRemappings == null) {
                 return new ArrayMap<>();
             }
-            return remappingData.getOrDefault(identifier, new ArrayMap<>());
+            return userRemappings.getOrDefault(deviceIdentifier, new ArrayMap<>());
         }
     }
 
@@ -298,7 +304,7 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
             return;
         }
         if (isPhysicalButtonDevice(device)) {
-            setKeyRemapping(deviceId, getKeyRemapping(mCurrentUserId, device.getIdentifier()));
+            setKeyRemapping(deviceId, getKeyRemappings(mCurrentUserId, device.getIdentifier()));
         }
         if (isPhysicalJoystickDevice(device)) {
             setAxisRemapping(deviceId, getAxisRemappings(mCurrentUserId, device.getIdentifier()));
@@ -312,16 +318,17 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
     }
 
 
-    private void applyKeyRemapping(@NonNull InputDeviceIdentifier identifier,
-            @Nullable Map<Integer, Integer> remapping) {
-        InputDevice device = mInputManager.getInputDeviceByDescriptor(identifier.getDescriptor());
+    private void findButtonDeviceAndApplyKeyRemapping(
+            @NonNull InputDeviceIdentifier deviceIdentifier,
+            @Nullable Map<Integer, Integer> deviceRemappings) {
+        InputDevice device = getDeviceByIdentifier(deviceIdentifier);
         if (device == null) {
             return;
         }
         if (!isPhysicalButtonDevice(device)) {
             return;
         }
-        setKeyRemapping(device.getId(), remapping);
+        setKeyRemapping(device.getId(), deviceRemappings);
     }
 
     private void findJoystickDeviceAndApplyAxisRemapping(
