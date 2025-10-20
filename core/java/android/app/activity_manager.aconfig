@@ -109,3 +109,13 @@ flag {
      description: "Add API to get free memory."
      bug: "417358222"
 }
+
+flag {
+     namespace: "backstage_power"
+     name: "single_user_provider_cache_fix"
+     description: "Store single-user content providers under the USER_ALL user id."
+     bug: "448742092"
+     metadata {
+         purpose: PURPOSE_BUGFIX
+     }
+}
