@@ -65,6 +65,22 @@ public class PolicyEnforcementInfo {
     }
 
     /**
+     * Returns true if the policy is enforced by system authorities.
+     * @hide
+     */
+    public boolean isEnforcedBySystem() {
+        return mAllAdmins.stream().anyMatch(PolicyEnforcementInfo::isSystemAuthority);
+    }
+
+    /**
+     * Returns true if the policy is enforced by any admin, including system authorities.
+     * @hide
+     */
+    public boolean isEnforced() {
+        return !mAllAdmins.isEmpty();
+    }
+
+    /**
      * Returns one EnforcingAdmin from all admins that enforced the policy. If there is a
      * supervision admin, returns that admin as supervision admins have higher priority due to
      * regulations (b/392057517). If there are no admins enforcing the particular policy on device,
