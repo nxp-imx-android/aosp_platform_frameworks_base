@@ -216,3 +216,32 @@ filegroup {
     ],
     path: "aidl",
 }
+
+aidl_interface {
+    name: "packagemanager_aidl",
+    unstable: true,
+    local_include_dir: "aidl",
+    host_supported: true,
+    srcs: [
+        "aidl/android/content/pm/ApexStagedEvent.aidl",
+        "aidl/android/content/pm/IPackageManagerNative.aidl",
+        "aidl/android/content/pm/IStagedApexObserver.aidl",
+        "aidl/android/content/pm/PackageInfoNative.aidl",
+        "aidl/android/content/pm/SignatureNative.aidl",
+        "aidl/android/content/pm/SigningInfoNative.aidl",
+        "aidl/android/content/pm/StagedApexInfo.aidl",
+    ],
+    backend: {
+        rust: {
+            apex_available: [
+                "//apex_available:platform",
+                "com.android.virt",
+            ],
+            enabled: true,
+            gen_mockall: true,
+            additional_rustlibs: [
+                "libmockall",
+            ],
+        },
+    },
+}
