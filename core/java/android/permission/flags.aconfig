@@ -320,6 +320,14 @@ flag {
 }
 
 flag {
+    name: "should_show_permission_rationale_in_context_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "Adds the shouldShowPermissionRationale API in Context"
+    bug: "279537108"
+}
+
+flag {
     name: "health_connect_backup_restore_permission_enabled"
     is_fixed_read_only: true
     namespace: "health_fitness_aconfig"
