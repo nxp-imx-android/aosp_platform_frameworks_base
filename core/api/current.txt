@@ -38664,12 +38664,11 @@ package android.provider {
     field public static final int FLAG_WEB_LINKABLE = 4096; // 0x1000
     field public static final String MIME_TYPE_DIR = "vnd.android.document/directory";
     field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_AVAILABLE_LOCALLY = 1; // 0x1
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_ERROR = 64; // 0x40
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_PROGRESS = 16; // 0x10
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_ERROR = 32; // 0x20
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_DOWNLOAD_PROGRESS = 8; // 0x8
     field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_LOCAL_CHANGES = 2; // 0x2
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_REMOTE_CHANGES = 4; // 0x4
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_ERROR = 32; // 0x20
-    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_PROGRESS = 8; // 0x8
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_ERROR = 16; // 0x10
+    field @FlaggedApi("android.provider.enable_sync_state") public static final int SYNC_STATE_FLAG_UPLOAD_PROGRESS = 4; // 0x4
   }
 
   public static final class DocumentsContract.Path implements android.os.Parcelable {
