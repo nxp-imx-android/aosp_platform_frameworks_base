@@ -710,6 +710,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Беззвучни"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Известия"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Разговори"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Изчистване на всички беззвучни известия"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Отваряне на настройките за известията"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Няма известия}=1{Известията са поставени на пауза от {mode}}=2{Известията са поставени на пауза от {mode} и един друг режим}other{Известията са поставени на пауза от {mode} и # други режима}}"</string>
@@ -1473,8 +1475,17 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"С цел подобряване на практическата работа с устройството приложенията и услугите пак могат да сканират за Wi‑Fi мрежи по всяко време дори когато функцията за Wi‑Fi e изключена. Можете да промените съответното поведение от настройките за сканиране за Wi‑Fi. "<annotation id="link">"Промяна"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Изключване на режима"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> иска да добави следния панел към бързите настройки"</string>
+    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
+    <skip />
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Добавяне на панел"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Отмяна на добавянето"</string>
+    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Избор на потребител"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# приложение е активно}other{# приложения са активни}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Нова информация"</string>

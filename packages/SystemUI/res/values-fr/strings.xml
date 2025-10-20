@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"Les captures d\'écran ne sont pas autorisées par l\'application ni par votre organisation"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"La capture d\'écran est bloquée par votre administrateur informatique"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"Modifier"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"Bouton \"Modifier la capture d\'écran\""</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"Partager"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"Bouton \"Partager la capture d\'écran\""</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Capturer plus"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Fermer la capture d\'écran"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Ignorer le message du profil professionnel"</string>
@@ -161,8 +159,7 @@
     <string name="screen_record_pause" msgid="1715012292444967776">"Pause"</string>
     <string name="screen_record_mute" msgid="8111682249858638168">"Couper le son"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Réactiver le son"</string>
-    <!-- no translation found for screen_capture_blocked_by_admin (1751756953683506644) -->
-    <skip />
+    <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"La capture d\'écran est bloquée par votre administrateur informatique"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Capturer tout l\'écran"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Enregistrer tout l\'écran"</string>
     <string name="screen_capture_region_selection_button" msgid="515608875142444130">"Faire une capture d\'écran de la zone sélectionnée"</string>
@@ -428,10 +425,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"Diffusion"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Appareil sans nom"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Aucun appareil disponible."</string>
-    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
-    <skip />
-    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
-    <skip />
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"Caster l\'écran sur l\'appareil"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"Recherche d\'appareils…"</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"Aucune connexion Wi‑Fi ou Ethernet"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"Déconnecter"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"Le micro actuel est"</string>
@@ -713,6 +708,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Silencieux"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notifications"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversations"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Effacer toutes les notifications silencieuses"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Ouvrir les paramètres de notification"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Aucune notification}=1{Notifications suspendues par le mode {mode}}=2{Notifications suspendues par le mode {mode} et un autre mode}one{Notifications suspendues par le mode {mode} et # autre mode}many{Notifications suspendues par le mode {mode} et # d\'autres modes}other{Notifications suspendues par le mode {mode} et # autres modes}}"</string>
@@ -1027,8 +1024,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"Ouvrir la liste d\'applications"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Ouvrir les paramètres"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Ouvrir l\'assistant numérique"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"Recherche contextuelle"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Verrouiller l\'écran"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Créer une note"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitâche"</string>
@@ -1476,8 +1472,17 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Pour améliorer l\'expérience sur l\'appareil, les applis et les services peuvent continuer de rechercher les réseaux Wi-Fi, même si le Wi-Fi est désactivé. Vous pouvez modifier cela dans les paramètres de recherche Wi-Fi. "<annotation id="link">"Modifier"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Désactiver mode Avion"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> veut ajouter le bloc suivant aux Réglages rapides"</string>
+    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
+    <skip />
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Ajouter le bloc"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Ne pas ajouter le bloc"</string>
+    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Choisir l\'utilisateur"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# appli est active}one{# appli est active}many{# applis sont actives}other{# applis sont actives}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nouvelles informations"</string>
@@ -1720,8 +1725,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Balayez l\'écran depuis le coin supérieur gauche pour ouvrir les notifications"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Balayez l\'écran depuis le coin supérieur droit pour ouvrir les Réglages rapides"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Retour"</string>
-    <!-- no translation found for accessibility_button_on_bouncer_description (9186344135931507168) -->
-    <skip />
+    <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Accessibilité"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Précédent"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Suivant"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"accéder à la page suivante"</string>

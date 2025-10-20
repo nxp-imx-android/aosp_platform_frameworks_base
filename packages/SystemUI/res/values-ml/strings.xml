@@ -88,11 +88,9 @@
     <string name="screenshot_failed_to_capture_text" msgid="7818288545874407451">"സ്ക്രീൻഷോട്ടുകൾ എടുക്കുന്നത് ആപ്പോ നിങ്ങളുടെ സ്ഥാപനമോ അനുവദിക്കുന്നില്ല"</string>
     <string name="screenshot_blocked_by_admin" msgid="5486757604822795797">"സ്ക്രീൻഷോട്ടുകൾ എടുക്കുന്നത് നിങ്ങളുടെ ഐടി അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
     <string name="screenshot_edit_label" msgid="8754981973544133050">"എഡിറ്റ് ചെയ്യുക"</string>
-    <!-- no translation found for screenshot_edit_description (7802378587672433507) -->
-    <skip />
+    <string name="screenshot_edit_description" msgid="7802378587672433507">"\'സ്ക്രീൻഷോട്ട് എഡിറ്റ് ചെയ്യുക\' ബട്ടൺ"</string>
     <string name="screenshot_share_label" msgid="1653061117238861559">"പങ്കിടുക"</string>
-    <!-- no translation found for screenshot_share_description (2654362001720033972) -->
-    <skip />
+    <string name="screenshot_share_description" msgid="2654362001720033972">"\'സ്ക്രീൻഷോട്ട് പങ്കിടുക\' ബട്ടൺ"</string>
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"കൂടുതൽ ക്യാപ്‌ചർ ചെയ്യുക"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"സ്ക്രീൻഷോട്ട് ഡിസ്‌മിസ് ചെയ്യുക"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ഔദ്യോഗിക പ്രൊഫൈൽ സന്ദേശം ഡിസ്‌മിസ് ചെയ്യുക"</string>
@@ -427,10 +425,8 @@
     <string name="quick_settings_casting" msgid="1435880708719268055">"കാസ്റ്റുചെയ്യുന്നു"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"പേരിടാത്ത ഉപകരണം"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"ഉപകരണങ്ങളൊന്നും ലഭ്യമല്ല"</string>
-    <!-- no translation found for quick_settings_cast_detail_title (8212426967651562547) -->
-    <skip />
-    <!-- no translation found for quick_settings_cast_detail_subtitle (6406833630052788623) -->
-    <skip />
+    <string name="quick_settings_cast_detail_title" msgid="8212426967651562547">"സ്‌ക്രീൻ ഉപകരണത്തിലേക്ക് കാസ്റ്റ് ചെയ്യുക"</string>
+    <string name="quick_settings_cast_detail_subtitle" msgid="6406833630052788623">"ഉപകരണങ്ങൾക്കായി തിരയുന്നു..."</string>
     <string name="quick_settings_cast_no_network" msgid="3863016850468559522">"വൈഫൈ അല്ലെങ്കിൽ ഇതർനെറ്റ് കണക്ഷൻ ഇല്ല"</string>
     <string name="quick_settings_cast_disconnect" msgid="4836025217838730930">"വിച്ഛേദിക്കുക"</string>
     <string name="quick_settings_audio_current_input" msgid="8219735427828862612">"ഇനിപ്പറയുന്നതാണ് നിലവിലെ മൈക്ക്"</string>
@@ -712,6 +708,8 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"നിശബ്‌ദം"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"അറിയിപ്പുകൾ"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"സംഭാഷണങ്ങൾ"</string>
+    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
+    <skip />
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"എല്ലാ നിശബ്‌ദ അറിയിപ്പുകളും മായ്ക്കുക"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"അറിയിപ്പ് ക്രമീകരണം തുറക്കുക"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{അറിയിപ്പുകൾ ഒന്നുമില്ല}=1{{mode}, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}=2{{mode} എന്നതും മറ്റൊരു മോഡും, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}other{{mode} എന്നതും മറ്റ് # മോഡുകളും, അറിയിപ്പുകൾ താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു}}"</string>
@@ -1026,8 +1024,7 @@
     <string name="group_system_access_all_apps_search" msgid="1553588630154197469">"ആപ്പ് ലിസ്റ്റ് തുറക്കുക"</string>
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ക്രമീകരണം തുറക്കുക"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ഡിജിറ്റൽ അസിസ്‌റ്റന്റ് തുറക്കുക"</string>
-    <!-- no translation found for group_system_access_contextual_search (525635757621336007) -->
-    <skip />
+    <string name="group_system_access_contextual_search" msgid="525635757621336007">"സന്ദർഭോചിത തിരയൽ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ഒരു കുറിപ്പെടുക്കുക"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"മൾട്ടിടാസ്‌കിംഗ്"</string>
@@ -1475,8 +1472,17 @@
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"ഉപകരണ അനുഭവം മെച്ചപ്പെടുത്താൻ, വൈഫൈ ഓഫാക്കിയിരിക്കുമ്പോൾ പോലും ആപ്പുകൾക്കും സേവനങ്ങൾക്കും വൈഫൈ നെറ്റ്‌വർക്കുകൾ കണ്ടെത്താൻ ഏത് സമയത്തും സ്‌കാൻ ചെയ്യാനാകും. നിങ്ങൾക്ക് ഇത് വൈഫൈ സ്‌കാനിംഗ് ക്രമീകരണത്തിൽ മാറ്റാം. "<annotation id="link">"മാറ്റുക"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"ഫ്ലൈറ്റ് മോഡ് ഓഫാക്കുക"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"ദ്രുത ക്രമീകരണത്തിലേക്ക് ഇനിപ്പറയുന്ന ടൈൽ ചേർക്കാൻ <xliff:g id="APPNAME">%1$s</xliff:g> ആവശ്യപ്പെടുന്നു"</string>
+    <!-- no translation found for qs_tile_request_dialog_text_with_size (732578771040573291) -->
+    <skip />
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"ടൈൽ ചേർക്കുക"</string>
-    <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"ടൈൽ ചേർക്കരുത്"</string>
+    <!-- no translation found for qs_tile_request_dialog_not_add (8375425041428574394) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_title (5654666862347548966) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_small_format_content_description (5429197059724172135) -->
+    <skip />
+    <!-- no translation found for qs_tile_request_dialog_large_format_content_description (67983044110405787) -->
+    <skip />
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ഉപയോക്താവിനെ തിരഞ്ഞെടുക്കൂ"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ആപ്പ് സജീവമാണ്}other{# ആപ്പുകൾ സജീവമാണ്}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"പുതിയ വിവരങ്ങൾ"</string>
