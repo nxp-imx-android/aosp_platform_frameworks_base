@@ -265,16 +265,12 @@ fun ContentScope.ScrollingNotificationPanel(
     )
 }
 
-@Composable @OptIn(ExperimentalLayoutApi::class)
-
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun ContentScope.NestedScrollingNotificationPanel(
-
     tag: String,
-
     shadeSession: SaveableSession,
-
     stackScrollView: NotificationScrollView,
-
     viewModel: NotificationsPlaceholderViewModel,
     shouldPunchHoleBehindScrim: Boolean,
     isTransparencyEnabled: Boolean,
