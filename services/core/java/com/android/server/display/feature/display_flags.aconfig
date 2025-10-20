@@ -433,3 +433,13 @@ flag {
     description: "Enable merging of display events"
     bug: "378668902"
 }
+
+flag {
+    name: "send_non_rr_callbacks_when_in_background"
+    namespace: "display_manager"
+    description: "Continue sending non refresh rate events callbacks when the corresponding pid is not in the foreground"
+    bug: "449949226"
+    metadata {
+          purpose: PURPOSE_BUGFIX
+    }
+}
