@@ -32,6 +32,7 @@
 #include "android-base/logging.h"
 #include "android-base/properties.h"
 #include "android-base/stringprintf.h"
+#include "android_content_res.h"
 #include "android_content_res_ApkAssets.h"
 #include "android_runtime/AndroidRuntime.h"
 #include "androidfw/Asset.h"
@@ -620,9 +621,11 @@ static jlong NativeOpenXmlAsset(JNIEnv* env, jobject /*clazz*/, jlong ptr, jint 
   auto assetmanager = LockAndStartAssetManager(ptr);
   std::unique_ptr<Asset> asset;
   if (cookie != kInvalidCookie) {
-    asset = assetmanager->OpenNonAsset(asset_path_utf8.c_str(), cookie, Asset::ACCESS_RANDOM);
+      asset = assetmanager->OpenNonAsset(asset_path_utf8.c_str(), cookie, Asset::ACCESS_RANDOM,
+                                         kMaxXmlAssetSize);
   } else {
-    asset = assetmanager->OpenNonAsset(asset_path_utf8.c_str(), Asset::ACCESS_RANDOM, &cookie);
+      asset = assetmanager->OpenNonAsset(asset_path_utf8.c_str(), Asset::ACCESS_RANDOM, &cookie,
+                                         kMaxXmlAssetSize);
   }
 
   if (!asset) {
@@ -665,12 +668,18 @@ static jlong NativeOpenXmlAssetFd(JNIEnv* env, jobject /*clazz*/, jlong ptr, int
   std::unique_ptr<Asset>
       asset(Asset::createFromFd(dup_fd.release(), nullptr, Asset::AccessMode::ACCESS_BUFFER));
 
+  const size_t length = asset->getLength();
+  if (android_content_res_xml_file_size_limit() && length > kMaxXmlAssetSize) {
+      LOG(ERROR) << "FD size " << asset->getLength() << " is greater than the maximum allowed size "
+                 << kMaxXmlAssetSize;
+      return {};
+  }
+
   auto assetmanager = LockAndStartAssetManager(ptr);
 
   ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
 
   const incfs::map_ptr<void> buffer = asset->getIncFsBuffer(true /* aligned */);
-  const size_t length = asset->getLength();
   if (!buffer.convert<uint8_t>().verify(length)) {
       jniThrowException(env, "java/io/FileNotFoundException",
                         "File not fully present due to incremental installation");

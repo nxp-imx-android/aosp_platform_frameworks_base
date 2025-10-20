@@ -153,6 +153,7 @@ android_test {
         ":HelloWorldUsingSdkMalformedNegativeVersion",
         ":NoUpdateAppWidgetTestApp",
         ":com.android.cts.helpers.aosp",
+        ":ResApkBadXml",
     ],
 }
 
