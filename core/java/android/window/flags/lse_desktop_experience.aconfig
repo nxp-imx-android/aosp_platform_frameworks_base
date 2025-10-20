@@ -714,6 +714,13 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_windowing_free_floating_pip"
+    namespace: "lse_desktop_experience"
+    description: "Enables free-floating PiP in desktop windowing."
+    bug: "416788567"
+}
+
+flag {
     name: "enable_desktop_windowing_hsum"
     namespace: "lse_desktop_experience"
     description: "Enables HSUM on desktop mode."
