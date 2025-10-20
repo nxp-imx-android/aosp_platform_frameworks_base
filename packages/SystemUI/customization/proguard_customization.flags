@@ -110,6 +110,7 @@
     *** getSetResolvedCompositionLocals(...);
     *** getSetCompositeKeyHash(...);
     *** getSetModifier(...);
+    *** getApplyOnDeactivatedNodeAssertion(...);
 }
 
 -keep class com.android.compose.animation.scene.ElementKey {
