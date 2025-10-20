@@ -46,8 +46,6 @@ import java.util.concurrent.Executor;
 @FlaggedApi(Flags.FLAG_LOCATION_BUTTON_ENABLED)
 public class LocationButtonProviderFactory {
     private static final String TAG = "LocationButtonProvider";
-    private static final String SERVICE_INTERFACE =
-            "android.service.location.LocationButtonRenderService";
 
     private LocationButtonProviderFactory() {
     }
@@ -311,7 +309,7 @@ public class LocationButtonProviderFactory {
             ServiceConnectionHandler(Context context, LocationButtonProviderImpl provider) {
                 mContext = context;
                 mProvider = provider;
-                mIntent = new Intent(SERVICE_INTERFACE);
+                mIntent = new Intent();
                 mIntent.setComponent(ComponentName.unflattenFromString(
                         context.getResources().getString(
                                 R.string.config_locationButtonRenderService)));

@@ -137,6 +137,24 @@ final class LocationButtonSessionWrapper implements LocationButtonSession, IBind
     }
 
     @Override
+    public void setStrokeColor(int color) {
+        try {
+            mSessionResponse.getSession().setStrokeColor(color);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
+    public void setStrokeWidth(int width) {
+        try {
+            mSessionResponse.getSession().setStrokeWidth(width);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @Override
     public void binderDied() {
         mLocationButtonClientWrapper.onSessionError(new ParcelableException(
                 new RuntimeException("Binder object hosting this session has died. "
