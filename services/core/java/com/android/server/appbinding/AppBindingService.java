@@ -19,6 +19,7 @@ package com.android.server.appbinding;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppGlobals;
+import android.app.contentrestriction.ContentRestrictionManager;
 import android.app.supervision.SupervisionManager;
 import android.app.supervision.flags.Flags;
 import android.content.BroadcastReceiver;
@@ -46,6 +47,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.appbinding.finders.AppServiceFinder;
 import com.android.server.appbinding.finders.CarrierMessagingClientServiceFinder;
+import com.android.server.appbinding.finders.ContentRestrictionAppServiceFinder;
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 import com.android.server.utils.Slogf;
 
@@ -59,7 +61,7 @@ import java.util.function.Consumer;
 /**
  * System server that keeps a binding to an app to keep it always running.
  *
- * <p>We only use it for the default SMS app and the Supervision App.
+ * <p>We only use it for the default SMS app, the Supervision App and the Content Restriction App.
  *
  * Relevant tests:
  * atest CtsAppBindingHostTestCases
@@ -224,6 +226,10 @@ public class AppBindingService extends Binder {
         mApps.add(new CarrierMessagingClientServiceFinder(context, this::onAppChanged, mHandler));
         if (Flags.enableSupervisionAppService()) {
             mApps.add(new SupervisionAppServiceFinder(context, this::onAppChanged, mHandler));
+        }
+        if (android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
+            mApps.add(new ContentRestrictionAppServiceFinder(
+                    context, this::onAppChanged, mHandler));
         }
 
         // Initialize with the default value to make it non-null.
