@@ -43,6 +43,18 @@ class PolicyProcessorTest {
         const val POLICY_IDENTIFIER_TEXTPROTO = "$POLICY_IDENTIFIER.textproto"
         const val POLICY_METADATA_CODEGEN = "$RESOURCE_ROOT/Policies.java"
 
+        // Can be used by tests that do not care about the allowedDpcTypes field.
+        const val ALLOWED_DPC_TYPES_SNIPPET = """
+            allowedDpcTypes = @AllowedDpcTypes(
+                    defaultDeviceOwner = DISALLOWED,
+                    financedDeviceOwner = DISALLOWED,
+                    profileOwner = DISALLOWED,
+                    profileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                    profileOwnerOnUser0 = DISALLOWED,
+                    profileOwnerOnUser = DISALLOWED,
+                    affiliatedProfileOwnerOnUser = DISALLOWED)
+        """
+
         val METADATA_FILES_JAVA = setOf(
             "PolicyMetadata",
             "BooleanPolicyMetadata",
@@ -87,7 +99,11 @@ class PolicyProcessorTest {
             """
                 package android.app.admin;
 
+                import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
+                import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
+
                 import android.annotation.IntDef;
+                import android.processor.devicepolicy.AllowedDpcTypes;
                 import android.processor.devicepolicy.BooleanPolicyDefinition;
                 import android.processor.devicepolicy.EnumPolicyDefinition;
                 import android.processor.devicepolicy.IntegerPolicyDefinition;
@@ -146,6 +162,10 @@ class PolicyProcessorTest {
             """
                 package android.app.admin;
 
+                import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
+                import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
+
+                import android.processor.devicepolicy.AllowedDpcTypes;
                 import android.processor.devicepolicy.BooleanPolicyDefinition;
                 import android.processor.devicepolicy.PolicyDefinition;
 
@@ -158,7 +178,8 @@ class PolicyProcessorTest {
                     @BooleanPolicyDefinition(
                             base = @PolicyDefinition(
                                     allowedScopes = { 1 },
-                                    affectedResource = 1
+                                    affectedResource = 1,
+                                    $ALLOWED_DPC_TYPES_SNIPPET
                             )
                     )
                     public static final PolicyIdentifier<Boolean> LOST_POLICY =
@@ -184,7 +205,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_DEVICE },
-                            affectedResource = RESOURCE_DEVICE_WIDE
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Integer> INVALID_TYPE =
@@ -208,7 +230,8 @@ class PolicyProcessorTest {
              */
             @PolicyDefinition(
                     allowedScopes = { POLICY_SCOPE_DEVICE },
-                    affectedResource = RESOURCE_DEVICE_WIDE
+                    affectedResource = RESOURCE_DEVICE_WIDE,
+                    $ALLOWED_DPC_TYPES_SNIPPET
             )
             public static final PolicyIdentifier<Boolean> INVALID_ANNOTATION =
                 new PolicyIdentifier<>("INVALID_ANNOTATION");
@@ -229,7 +252,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_DEVICE },
-                            affectedResource = RESOURCE_DEVICE_WIDE
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> MISSING_DOCS =
@@ -254,7 +278,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = {},
-                            affectedResource = RESOURCE_PER_USER
+                            affectedResource = RESOURCE_PER_USER,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
@@ -279,7 +304,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { 100 },
-                            affectedResource = RESOURCE_PER_USER
+                            affectedResource = RESOURCE_PER_USER,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
@@ -304,7 +330,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { 0 },
-                            affectedResource = RESOURCE_PER_USER
+                            affectedResource = RESOURCE_PER_USER,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> UNDEFINED_SCOPE =
@@ -329,7 +356,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_USER },
-                            affectedResource = 100
+                            affectedResource = 100,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> INVALID_AFFECTED_RESOURCE_POLICY =
@@ -354,7 +382,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_USER },
-                            affectedResource = 0
+                            affectedResource = 0,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> UNSPECIFIED_AFFECTED_RESOURCE_POLICY =
@@ -370,7 +399,7 @@ class PolicyProcessorTest {
     }
 
     @Test
-    fun test_invalid_failsToCompile() {
+    fun test_invalidCrossUserPermission_failsToCompile() {
         val policyIdentifier = buildPolicyIdentifier(
             """
             /**
@@ -380,7 +409,8 @@ class PolicyProcessorTest {
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_USER },
                             affectedResource = RESOURCE_DEVICE_WIDE,
-                            requiredCrossUserPermission = "my.custom.PERMISSION"
+                            requiredCrossUserPermission = "my.custom.PERMISSION",
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> INVALID_PERMISSION =
@@ -405,7 +435,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_USER },
-                            affectedResource = RESOURCE_DEVICE_WIDE
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             private PolicyIdentifier<Boolean> MISSING_MODIFIERS =
@@ -433,7 +464,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_USER },
-                            affectedResource = RESOURCE_DEVICE_WIDE
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> INVALID_INITIALIZER =
@@ -458,7 +490,8 @@ class PolicyProcessorTest {
             @BooleanPolicyDefinition(
                     base = @PolicyDefinition(
                             allowedScopes = { POLICY_SCOPE_USER },
-                            affectedResource = RESOURCE_DEVICE_WIDE
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                     )
             )
             public static final PolicyIdentifier<Boolean> INVALID_KEY_POLICY =

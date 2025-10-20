@@ -34,18 +34,21 @@ public abstract class PolicyMetadata<T> {
     private final int mAffectedResource;
     @Nullable private final String mRequiredPermission;
     @Nullable private final String mRequiredCrossUserPermission;
+    @NonNull private final Set<Integer> mAllowedDpcTypes;
 
     public PolicyMetadata(
             @NonNull PolicyIdentifier<T> id,
             @NonNull Set<Integer> allowedScopes,
             int affectedResource,
             @Nullable String requiredPermission,
-            @Nullable String requiredCrossUserPermission) {
+            @Nullable String requiredCrossUserPermission,
+            @NonNull Set<Integer> allowedDpcTypes) {
         this.mId = id;
         this.mAllowedScopes = allowedScopes;
         this.mAffectedResource = affectedResource;
         this.mRequiredPermission = requiredPermission;
         this.mRequiredCrossUserPermission = requiredCrossUserPermission;
+        this.mAllowedDpcTypes = allowedDpcTypes;
     }
 
     @NonNull
@@ -72,12 +75,19 @@ public abstract class PolicyMetadata<T> {
         return mRequiredPermission;
     }
 
+    @NonNull
+    public Set<Integer> getAllowedDpcTypes() {
+        return mAllowedDpcTypes;
+    }
+
     protected String toAttributes() {
         return "mId=" + mId
                 + ", mAllowedScopes=" + mAllowedScopes
                 + ", mAffectedResource=" + mAffectedResource
                 + ", mRequiredPermission=" + mRequiredPermission
-                + ", mRequiredCrossUserPermission=" + mRequiredCrossUserPermission;
+                + ", mRequiredCrossUserPermission=" + mRequiredCrossUserPermission
+                + ", mAllowedScopes=" + mAllowedScopes
+                + ", mAllowedDpcTypes=" + mAllowedDpcTypes;
     }
 
     @Override

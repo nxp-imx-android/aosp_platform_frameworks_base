@@ -134,7 +134,8 @@ class PolicyMetadataCodeGeneratorTest {
                     ),
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
-                    /* requiredCrossUserPermission= */ null
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of()
                 ));
                 """
             )
@@ -191,7 +192,8 @@ class PolicyMetadataCodeGeneratorTest {
                     ),
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
-                    /* requiredCrossUserPermission= */ null
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of()
                 ));
                 policies.add(new BooleanPolicyMetadata(
                     /* id= */ MY_SECOND_TEST_BOOL_POLICY,
@@ -201,7 +203,8 @@ class PolicyMetadataCodeGeneratorTest {
                     ),
                     /* affectedResource= */ 2,
                     /* requiredPermission= */ null,
-                    /* requiredCrossUserPermission= */ null
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of()
                 ));
                 """
             )
@@ -249,7 +252,8 @@ class PolicyMetadataCodeGeneratorTest {
                     ),
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
-                    /* requiredCrossUserPermission= */ null
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of()
                 ));
                 """
             )
@@ -304,6 +308,7 @@ class PolicyMetadataCodeGeneratorTest {
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of(),
                     /* allowedValues= */ Set.of(
                         1,
                         5,
@@ -357,6 +362,7 @@ class PolicyMetadataCodeGeneratorTest {
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of(),
                     /* emptyStringAllowed= */ false
                 ));
                 """
@@ -415,6 +421,7 @@ class PolicyMetadataCodeGeneratorTest {
                         /* affectedResource= */ 1,
                         /* requiredPermission= */ null,
                         /* requiredCrossUserPermission= */ null,
+                        /* allowedDpcTypes= */ Set.of(),
                         /* emptyStringAllowed= */ false
                     ),
                     /* emptyListAllowed= */ false
@@ -459,7 +466,104 @@ class PolicyMetadataCodeGeneratorTest {
                     ),
                     /* affectedResource= */ 1,
                     /* requiredPermission= */ "test_permission",
-                    /* requiredCrossUserPermission= */ "test_cross_permission"
+                    /* requiredCrossUserPermission= */ "test_cross_permission",
+                    /* allowedDpcTypes= */ Set.of()
+                ));
+                """
+            )
+        )
+    }
+
+    @Test
+    fun test_allowedDpcTypes_outputMatches() {
+        val policyList = PolicyMetadataList.newBuilder()
+            .addPolicyMetadata(
+                enumTestPolicy("test.package.MY_TEST_POLICY", setOf())
+                    .addAllAllowedScopes(listOf(
+                        PolicyMetadata.PolicyScope.POLICY_SCOPE_USER,
+                    ))
+                    .setAffectedResource(
+                        PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
+                    )
+                    .addAllAllowedDpcTypes(listOf(
+                        PolicyMetadata.DpcType.DPC_TYPE_DEFAULT_DEVICE_OWNER,
+                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER
+                    ))
+            )
+            .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile)).isEqualTo(
+            fillInFile(
+              staticImports = listOf("test.package.MY_TEST_POLICY"),
+               code =  """
+                policies.add(new EnumPolicyMetadata(
+                    /* id= */ MY_TEST_POLICY,
+                    /* allowedScopes= */ Set.of(
+                        1
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of(
+                        1, // DEFAULT_DEVICE_OWNER
+                        5  // PROFILE_OWNER
+                    ),
+                    /* allowedValues= */ Set.of()
+                ));
+                """
+            )
+        )
+    }
+
+    @Test
+    fun test_allAllowedDpcTypes_outputMatches() {
+        val policyList = PolicyMetadataList.newBuilder()
+            .addPolicyMetadata(
+                enumTestPolicy("test.package.MY_TEST_POLICY", setOf())
+                    .addAllAllowedScopes(listOf(
+                        PolicyMetadata.PolicyScope.POLICY_SCOPE_USER,
+                    ))
+                    .setAffectedResource(
+                        PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
+                    )
+                    .addAllAllowedDpcTypes(listOf(
+                        PolicyMetadata.DpcType.DPC_TYPE_DEFAULT_DEVICE_OWNER,
+                        PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER,
+                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE,
+                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER_0,
+                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER,
+                        PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER,
+                        PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER,
+                    ))
+            )
+            .build()
+
+        val javaFile = PolicyMetadataCodeGenerator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile)).isEqualTo(
+            fillInFile(
+              staticImports = listOf("test.package.MY_TEST_POLICY"),
+               code =  """
+                policies.add(new EnumPolicyMetadata(
+                    /* id= */ MY_TEST_POLICY,
+                    /* allowedScopes= */ Set.of(
+                        1
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of(
+                        1, // DEFAULT_DEVICE_OWNER
+                        2, // FINANCED_DEVICE_OWNER
+                        3, // PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+                        4, // PROFILE_OWNER_ON_USER_0
+                        5, // PROFILE_OWNER
+                        6, // PROFILE_OWNER_ON_USER
+                        7  // AFFILIATED_PROFILE_OWNER_ON_USER
+                    ),
+                    /* allowedValues= */ Set.of()
                 ));
                 """
             )

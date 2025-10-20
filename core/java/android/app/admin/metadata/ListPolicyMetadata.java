@@ -43,7 +43,8 @@ public class ListPolicyMetadata<T> extends PolicyMetadata<List<T>> {
                 elementMetadata.getAllowedScopes(),
                 elementMetadata.getAffectedResource(),
                 elementMetadata.getRequiredPermission(),
-                elementMetadata.getRequiredCrossUserPermission()
+                elementMetadata.getRequiredCrossUserPermission(),
+                elementMetadata.getAllowedDpcTypes()
         );
 
         mElementMetadata = elementMetadata;

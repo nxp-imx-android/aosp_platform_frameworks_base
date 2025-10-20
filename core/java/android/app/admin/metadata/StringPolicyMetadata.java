@@ -36,6 +36,7 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
             int affectedResource,
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
+            @NonNull Set<Integer> allowedDpcTypes,
             boolean emptyStringAllowed
     ) {
         super(
@@ -43,7 +44,8 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
                 allowedScopes,
                 affectedResource,
                 requiredPermission,
-                requiredCrossUserPermission
+                requiredCrossUserPermission,
+                allowedDpcTypes
         );
 
         mEmptyStringAllowed = emptyStringAllowed;

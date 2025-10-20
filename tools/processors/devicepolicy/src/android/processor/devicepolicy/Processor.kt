@@ -302,6 +302,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
                 ?: ""
         val allowedScopes = convertScopes(element, definition.allowedScopes.toList())
         val affectedResource = convertResourceType(element, definition.affectedResource) ?: return null
+        val allowedDpcTypes = convertDpcTypes(definition.allowedDpcTypes)
 
         if (documentation.trim().isEmpty()) {
             printError(element, "Missing JavaDoc")
@@ -318,6 +319,7 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
             .setTypeSpecificMetadata(typeSpecificMetadata)
             .addAllAllowedScopes(allowedScopes)
             .setAffectedResource(affectedResource)
+            .addAllAllowedDpcTypes(allowedDpcTypes)
 
         if (!requiredPermission.isEmpty()) {
             builder.setRequiredPermission(requiredPermission)
@@ -376,6 +378,45 @@ abstract class Processor<T : Annotation>(protected val processingEnv: Processing
                 }
         }
     }
+
+    private fun convertDpcTypes(input: AllowedDpcTypes): List<PolicyMetadata.DpcType> {
+        var result = mutableListOf<PolicyMetadata.DpcType>()
+
+        if (input.defaultDeviceOwner == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_DEFAULT_DEVICE_OWNER)
+        }
+        if (input.financedDeviceOwner == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_FINANCED_DEVICE_OWNER)
+        }
+        if (input.profileOwnerOfOrganizationOwnedDevice == AllowedDpcTypes.ALLOWED) {
+            result.add(
+                PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+            )
+        }
+        if (input.profileOwnerOnUser0 == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER_0)
+        }
+        if (input.profileOwner == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER)
+        }
+        if (input.profileOwnerOnUser == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_PROFILE_OWNER_ON_USER)
+        }
+        if (input.affiliatedProfileOwnerOnUser == AllowedDpcTypes.ALLOWED) {
+            result.add(PolicyMetadata.DpcType.DPC_TYPE_AFFILIATED_PROFILE_OWNER_ON_USER)
+        }
+
+        return result
+    }
+
+    private fun scopeToString(value: Int): String {
+        val enumValue = PolicyMetadata.PolicyScope.forNumber(value)
+        return enumValue?.name ?: "$value"
+    }
+
+    private fun getDuplicates(values: List<Int>) =
+         values.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
+
     fun convertResourceType(element: Element, affectedResource: Int): PolicyMetadata.ResourceType? =
         PolicyMetadata.ResourceType.forNumber(affectedResource)
             ?.let {

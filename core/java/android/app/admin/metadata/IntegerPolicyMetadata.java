@@ -33,13 +33,15 @@ public class IntegerPolicyMetadata extends PolicyMetadata<Integer> {
             @NonNull Set<Integer> allowedScopes,
             int affectedResource,
             @Nullable String requiredPermission,
-            @Nullable String requiredCrossUserPermission) {
+            @Nullable String requiredCrossUserPermission,
+            @NonNull Set<Integer> allowedDpcTypes) {
         super(
                 id,
                 allowedScopes,
                 affectedResource,
                 requiredPermission,
-                requiredCrossUserPermission
+                requiredCrossUserPermission,
+                allowedDpcTypes
         );
     }
 }

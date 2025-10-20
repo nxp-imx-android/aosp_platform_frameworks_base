@@ -18733,6 +18733,7 @@ public class DevicePolicyManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ResourceType {}
 
+    // LINT.IfChange(dpc_type)
     /** @hide */
     public static final int NOT_A_DPC = -1;
     /** @hide */
@@ -18766,6 +18767,7 @@ public class DevicePolicyManager {
             AFFILIATED_PROFILE_OWNER_ON_USER
     })
     public @interface DpcType {}
+    // LINT.ThenChange(/tools/processors/devicepolicy/proto/policy_metadata.proto:dpc_type)
 
     /**
      * Sets the given policy.
