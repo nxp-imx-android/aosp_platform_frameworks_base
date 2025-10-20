@@ -2253,6 +2253,11 @@ package android.app.compat {
 
 package android.app.contentrestriction {
 
+  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionAppService extends android.app.Service {
+    ctor public ContentRestrictionAppService();
+    method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+  }
+
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
   }
 
