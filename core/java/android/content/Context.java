@@ -8761,6 +8761,7 @@ public abstract class Context {
      * @see #getSystemService(String)
      * @see android.os.StrictMode.VmPolicy.Builder#detectIncorrectContextUse()
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl")
     public boolean isUiContext() {
         throw new RuntimeException("Not implemented. Must override in a subclass.");
     }
