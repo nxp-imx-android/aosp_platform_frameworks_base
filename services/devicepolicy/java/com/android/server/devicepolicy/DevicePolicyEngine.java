@@ -2826,7 +2826,7 @@ final class DevicePolicyEngine {
                 String tag = parser.getName();
                 switch (tag) {
                     case TAG_POLICY_KEY_ENTRY:
-                        policyDefinition = PolicyDefinition.readFromXml(parser);
+                        policyDefinition = PolicyDefinitionMap.readFromXml(parser);
                         if (policyDefinition != null) {
                             policyKey = policyDefinition.getPolicyKey();
                         }
