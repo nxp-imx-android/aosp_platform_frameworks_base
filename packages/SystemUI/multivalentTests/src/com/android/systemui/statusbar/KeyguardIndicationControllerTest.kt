@@ -120,7 +120,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         mController.setVisible(true)
 
         mAlignmentListener.getValue().onAlignmentStateChanged(DockManager.ALIGN_STATE_POOR)
-        mTestableLooper.processAllMessages()
+        mExecutor.runAllReady()
 
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_ALIGNMENT,
@@ -137,7 +137,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         mController.setVisible(true)
 
         mAlignmentListener.getValue().onAlignmentStateChanged(DockManager.ALIGN_STATE_TERRIBLE)
-        mTestableLooper.processAllMessages()
+        mExecutor.runAllReady()
 
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_ALIGNMENT,
@@ -156,7 +156,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         mStatusBarStateListener.onDozingChanged(true)
 
         mAlignmentListener.getValue().onAlignmentStateChanged(DockManager.ALIGN_STATE_POOR)
-        mTestableLooper.processAllMessages()
+        mExecutor.runAllReady()
 
         assertThat(mTextView.getText())
             .isEqualTo(mContext.resources.getString(R.string.dock_alignment_slow_charging))
@@ -172,7 +172,7 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         mStatusBarStateListener.onDozingChanged(true)
 
         mAlignmentListener.getValue().onAlignmentStateChanged(DockManager.ALIGN_STATE_TERRIBLE)
-        mTestableLooper.processAllMessages()
+        mExecutor.runAllReady()
 
         assertThat(mTextView.getText())
             .isEqualTo(mContext.resources.getString(R.string.dock_alignment_not_charging))
