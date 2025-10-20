@@ -111,7 +111,8 @@ public class ImeBackCallbackSender implements OnBackInvokedDispatcher {
         // This is necessary because the callback is sent to and registered from
         // the app process, which may treat the IME callback as weakly referenced. This will not
         // cause a memory leak because the app side already clears the reference correctly.
-        final IOnBackInvokedCallback iCallback = new ImeOnBackInvokedCallbackWrapper(callback);
+        final IOnBackInvokedCallback iCallback =
+                new ImeOnBackInvokedCallbackWrapper(callback, mHandler);
         bundle.putBinder(RESULT_KEY_CALLBACK, iCallback.asBinder());
         bundle.putInt(RESULT_KEY_PRIORITY, priority);
         bundle.putInt(RESULT_KEY_ID, callback.hashCode());
@@ -188,12 +189,15 @@ public class ImeBackCallbackSender implements OnBackInvokedDispatcher {
      * Wrapper class that wraps an OnBackInvokedCallback. This is used when a callback is sent from
      * the IME process to the app process.
      */
-    private class ImeOnBackInvokedCallbackWrapper extends IOnBackInvokedCallback.Stub {
+    private static class ImeOnBackInvokedCallbackWrapper extends IOnBackInvokedCallback.Stub {
 
         private final OnBackInvokedCallback mCallback;
+        private final Handler mHandler;
 
-        ImeOnBackInvokedCallbackWrapper(@NonNull OnBackInvokedCallback callback) {
+        ImeOnBackInvokedCallbackWrapper(@NonNull OnBackInvokedCallback callback,
+                @NonNull Handler handler) {
             mCallback = callback;
+            mHandler = handler;
         }
 
         @Override
