@@ -21,6 +21,7 @@ import android.graphics.Rect
 import android.os.IBinder
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.google.common.truth.Truth.assertThat
 
 object BubbleTestUtils {
@@ -83,6 +84,11 @@ object BubbleTestUtils {
         captionInsetsOwner: IBinder? = null,
     ) {
         // Verify hierarchy ops
+        if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            assertThat(
+                wct.hierarchyOps.any { op -> op.container == taskToken && !op.isAlwaysOnTop }
+            ).isTrue()
+        }
 
         // If there is a caption insets owner set, then that will add an hierarchy op after the
         // alwaysOnTop hierarchy op to remove the insets source.
@@ -97,11 +103,7 @@ object BubbleTestUtils {
                 .isTrue()
         }
 
-        assertThat(wct.hierarchyOps.any { op -> op.container == taskToken && !op.isAlwaysOnTop })
-            .isTrue()
-
         // Verify Change
-
         assertThat(wct.changes[taskToken]).isNotNull()
         val change = wct.changes[taskToken]!!
         if (!com.android.window.flags.Flags.rootTaskForBubble()) {
