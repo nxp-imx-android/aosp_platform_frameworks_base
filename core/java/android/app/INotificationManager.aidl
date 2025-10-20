@@ -34,6 +34,7 @@ import android.os.Bundle;
 import android.os.UserHandle;
 import android.service.notification.Adjustment;
 import android.service.notification.Condition;
+import android.service.notification.DynamicBundle;
 import android.service.notification.IConditionListener;
 import android.service.notification.IConditionProvider;
 import android.service.notification.INotificationListener;
@@ -188,6 +189,9 @@ interface INotificationManager
     void applyAdjustmentsFromAssistant(in INotificationListener token, in List<Adjustment> adjustments);
     void unsnoozeNotificationFromAssistant(in INotificationListener token, String key);
     void unsnoozeNotificationFromSystemListener(in INotificationListener token, String key);
+    void createDynamicBundle(in INotificationListener token, int dynamicBundleId, String bundleName);
+    void deleteDynamicBundle(in INotificationListener token, int dynamicBundleId);
+    List<DynamicBundle> getDynamicBundles(in INotificationListener token);
 
     ComponentName getEffectsSuppressor();
     boolean matchesCallFilter(in Bundle extras);

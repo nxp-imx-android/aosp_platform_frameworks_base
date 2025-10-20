@@ -1429,8 +1429,7 @@ public class PreferencesHelper implements RankingConfig {
         }
     }
 
-    public NotificationChannel getReservedChannel(String pkg, int uid,
-            @Adjustment.Types int type) {
+    public NotificationChannel getReservedChannel(String pkg, int uid, int type) {
         Objects.requireNonNull(pkg);
         if (uid == INVALID_UID) {
             return null;
@@ -1444,8 +1443,7 @@ public class PreferencesHelper implements RankingConfig {
         return channel;
     }
 
-    public NotificationChannel createReservedChannel(String pkg, int uid,
-            @Adjustment.Types int type) {
+    public NotificationChannel createReservedChannel(String pkg, int uid, int type) {
         Objects.requireNonNull(pkg);
         synchronized (mLock) {
             PackagePreferences r = getOrCreatePackagePreferencesLocked(pkg, uid);
